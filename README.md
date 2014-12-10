@@ -1,4 +1,6 @@
 xio
 ===
 
-High performance Multithreaded Async I/O for Java 8
+High performance Multithreaded non-blocking Async I/O for Java 8
+
+`Simplicity Leads to Purity - Jiro`
