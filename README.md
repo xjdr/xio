@@ -16,24 +16,24 @@ server.addKey("resourcse/my.key");
 server.addCsr("resources/my.csr");
 server.announce("/my/server/v1/, ("zk://localhost:2181", "zk://localhost:2182", "zk://localhost:2183"));
 server.serve(443);
-server.addRoute("/", rootService);
-server.addRoute("/health", heathService);
-server.addRoute("/admin", adminService);
+server.addRoute("/", new RootService());
+server.addRoute("/health", new HeathService());
+server.addRoute("/admin", new AdminService);
 ```
 
 ####Service
 ```java
 Service rootService = new Service();
 rootService.proto(HTTP/2);
-rootService.addFilter(new timeoutFilert)
-            .andThen(new ratelimitFilter)
-            .andThen(new oAuthService);
+rootService.addFilter(timeoutFilert)
+            .andThen(ratelimitFilter)
+            .andThen(oAuthService);
 ```
 
 ####Filter
 ```java
 // RateLimitFilter is specified as # of Connections, to what, over what period
-Filter ratelimitFilter = new RateLimitFilter(200, perHost, perSecond)
+Future<Function<Channel, Filter>> ratelimitFilter = new RateLimitFilter(200, perHost, perSecond)
 ```
 
 
