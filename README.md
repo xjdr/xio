@@ -44,8 +44,8 @@ ratelimitFilter.hosts("/my/server/v1/, ("zk://localhost:2181", "zk://localhost:2
 Client xioClient =  new XioClient("get", "https://github.com/users");
 xioClient.response    // will return an int of the returncode i.e 200
 xioClient.headers     // will dump the headers as a HashMap
-xioClient.text        // will dump the body of the HTTP response as a string
-xioClient.test.toJson // will parse the body of the response as json
+xioClient.body        // will dump the body of the HTTP response as a string
+xioClient.body.toJson // will parse the body of the response as json
 
 Client xioRestClient = new XioClient();
 xioRestClient.method(post);
