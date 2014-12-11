@@ -15,11 +15,11 @@ Server server = new Server();
 server.addKey("resourcse/my.key");
 server.addCsr("resources/my.csr");
 server.announce("/my/server/v1/, ("zk://localhost:2181", "zk://localhost:2182", "zk://localhost:2183"));
-server.serve(443);
+server.port(443);
 server.addRoute("/", rootService);
 server.addRoute("/health", heathService);
 server.addRoute("/admin", adminService);
-
+server.await();
 ```
 
 ####Service
@@ -52,6 +52,8 @@ xioRestClient.method(post);
 xioRestClient.url("https://github.com/users");
 xioRestClient.addHeader("X-Auth: My Voice is My Password");
 Future<Response> response = xioRestClient.send;
+response.onFailure(new XioClientException);
+response.onSuccess(System.out.println(response.body.toString);
 
 Client xioFancyClient = new xioClient();
 xioFancyClient.proto(HTTP/2);
@@ -60,4 +62,6 @@ xioFancyClient.secret("mySecret");
 xioFancyClient.hosts("/my/server/v1/, ("zk://localhost:2181", "zk://localhost:2182", "zk://localhost:2183"));mySecret");
 xioFancyClient.method(get);
 Future<Response> response = xioFancyClient.send;
+response.onFailure(new XioClientException);
+response.onSuccess(System.out.println(response.body.toString);
 ```
