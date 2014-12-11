@@ -34,7 +34,7 @@ rootService.addFilter(timeoutFilert)
 ####Filter
 ```java
 // RateLimitFilter is specified as # of Connections, to what, over what period
-Future<Function<Channel, Filter>> ratelimitFilter = new RateLimitFilter(200, perHost, perSecond)
+Function<Channel, Filter> ratelimitFilter = new RateLimitFilter(200, perHost, perSecond)
 ```
 
 
