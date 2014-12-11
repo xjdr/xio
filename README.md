@@ -16,9 +16,9 @@ server.addKey("resourcse/my.key");
 server.addCsr("resources/my.csr");
 server.announce("/my/server/v1/, ("zk://localhost:2181", "zk://localhost:2182", "zk://localhost:2183"));
 server.serve(443);
-server.addRoute("/", new RootService());
-server.addRoute("/health", new HeathService());
-server.addRoute("/admin", new AdminService);
+server.addRoute("/", rootService);
+server.addRoute("/health", heathService);
+server.addRoute("/admin", adminService);
 
 ```
 
