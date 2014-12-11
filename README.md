@@ -4,6 +4,7 @@ xio
 High performance Multithreaded non-blocking Async I/O for Java 8
 
 `Simplicity Leads to Purity - Jiro`
+![Jiro](http://www.cool-ny.com/wp-content/uploads/2011/05/Jiro2.jpg)
 
 
 ## Server Quickstart
