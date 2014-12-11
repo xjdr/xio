@@ -61,6 +61,7 @@ xioFancyClient.proto(HTTP/2);
 xioFancyClient.auth("resources/myAuth.key");
 xioFancyClient.secret("mySecret");
 xioFancyClient.hosts("/my/server/v1/, ("zk://localhost:2181", "zk://localhost:2182", "zk://localhost:2183"));mySecret");
+xioFancyClient.lb(roundRobin, 3, false) // load-balancer type, number of retries before ejection, auto rejoing to cluster
 xioFancyClient.method(get);
 Future<Response> response = xioFancyClient.send;
 response.onFailure(new XioClientException);
