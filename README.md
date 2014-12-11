@@ -20,9 +20,6 @@ server.addRoute("/", new RootService());
 server.addRoute("/health", new HeathService());
 server.addRoute("/admin", new AdminService);
 
-
-Server preConfigServer = new Server().configure("/etc/xio/SuperAwesomeBattleTestedConfig.cfg");
-preConfigServer.run();
 ```
 
 ####Service
