@@ -35,6 +35,7 @@ rootService.addFilter(timeoutFilert)
 ```java
 // RateLimitFilter is specified as # of Connections, to what, over what period
 Function<Channel, Filter> ratelimitFilter = new RateLimitFilter(200, perHost, perSecond)
+ratelimitFilter.hosts("/my/server/v1/, ("zk://localhost:2181", "zk://localhost:2182", "zk://localhost:2183"));
 ```
 
 
