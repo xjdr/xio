@@ -54,16 +54,16 @@ xioRestClient.url("https://github.com/users");
 xioRestClient.addHeader("X-Auth: My Voice is My Password");
 Future<Response> response = xioRestClient.send;
 response.onFailure(new XioClientException);
-response.onSuccess(System.out.println(response.body.toString);
+response.onSuccess((r) -> System.out.println(r.body.toString));
 
 Client xioFancyClient = new xioClient();
 xioFancyClient.proto(HTTP/2);
 xioFancyClient.auth("resources/myAuth.key");
 xioFancyClient.secret("mySecret");
-xioFancyClient.hosts("/my/server/v1/, ("zk://localhost:2181", "zk://localhost:2182", "zk://localhost:2183"));mySecret");
+xioFancyClient.hosts("/my/server/v1/, ("zk://localhost:2181", "zk://localhost:2182", "zk://localhost:2183"));
 xioFancyClient.lb(roundRobin, 3, false) // load-balancer type, number of retries before ejection, auto rejoing to cluster
 xioFancyClient.method(get);
 Future<Response> response = xioFancyClient.send;
 response.onFailure(new XioClientException);
-response.onSuccess(System.out.println(response.body.toString);
+response.onSuccess((r) -> System.out.println(r.body.toString));
 ```
