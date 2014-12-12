@@ -5,7 +5,82 @@ High performance Multithreaded non-blocking Async I/O for Java 8
 
 `Simplicity Leads to Purity - Jiro`
 
+## Obligatory ascii art
 
+# Gatekeeper
+
+* Network Acceptor
+* IP Filter
+* Rate Limiter
+* Any other Filter that can be applied to a Network Connection
+
+```
++--------------------------------------+
+|                                      |
+|   GateKeeper                         |
+|                                      |
+|                                      |
+|                                      |
+|                                      |
+|               +------------------+   |
+|               |                  |   |
+|               |    Acceptor      |   |
+|               |                  |   |
+|               +---------+--------+   |
+|                         |            |
+|                         |            |
+|               +---------+--------+   |
+|               |                  |   |
+|               |    IP Filter     |   |
+|               |                  |   |
+|               +---------+--------+   |
+|                         |            |
+|                         |            |
+|               +---------+--------+   |
+|               |                  |   |
+|               |   Rate Limiter   |   |
+|               |                  |   |
+|               +------------------+   |
+|                                      |
+|                                      |
++--------------------------------------+
+```
+
+# Terminator
+
+* SSL/TLS wrapped Network Connection
+
+```
++--------------------------------------+
+|                                      |
+|   Terminator                         |
+|                                      |
+|                                      |
+|                                      |
+|                                      |
+|               +------------------+   |
+|               |                  |   |
+|               |    Connection    |   |
+|               |                  |   |
+|               +---------+--------+   |
+|                         |            |
+|                         |            |
+|               +---------+--------+   |
+|               |                  |   |
+|               |    Crypto Engine |   |
+|               |                  |   |
+|               +------------------+   |
+|                                      |
+|                                      |
+|                                      |
+|                                      |
+|                                      |
+|                                      |
+|                                      |
+|                                      |
+|                                      |
++--------------------------------------+
+```
 
 ## Server Quickstart
 
