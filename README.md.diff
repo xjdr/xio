@@ -1,0 +1,92 @@
+xjeffrose
+=========
+
+### This is meant to be a stable of tools to allow you to write highly performant
+### Client <-> Server | Server <-> Server code in Java 8.
+
+## Problem Statment
+
+In looking to write high performance code for Client <-> Server and Server <-> Server applications
+it became apparent that I would need to learn many different tools and then write my own middleware
+to make them play nicely together. Mastering many tool sets and then writing your own middleware is
+not scalable, especially as the development cycles for these tools change at drastically different Speeds.
+It seems to me that there wasn't a Simple, Powerful, Scalable and Fast tools that worked for client and server.
+
+### Candidates evaluated
+I've written these systems professionally and have used the following systems:
+
+- Netty [Powerful, Scalable, Fast(ish)]
+- Jetty [Simple(ish)]
+- Jetty/Guice [Simple(ish), Powerful]
+- Finagle [Powerful, Scalable]
+- JBOSS/J2EE [None of the Above]
+
+### Initial use cases:
+- System Front end (What most of us use Nginx for these days)
+.. Terminate all incomming TLS connections
+.. Perform Global filtering (IPFilter, RateLimiting, etc)
+.. Provide Application specific routing for API requests
+
+- High speed Andriod Client and Server
+.. Establish high speed connection with mobile phone
+.. Perform low latency communication with Moble App
+.. Gracefully handle errors due to timeout or loss of connectivity
+
+- Server to Server API backend
+.. API backend (Pretty Straight forward)
+
+- Simple Http/2 server
+.. Server side rendering of pages (using mustache)
+.. proxy api requests
+.. be badass in general
+
+### I wanted to write a toolset that I could use to build large projects time and time again.
+### Right now this framework only supports HTTP/2 but I am hoping to add redis and thrift (maybe avro) soon.
+### Hopefully you will find it useful too.
+
+## XIO Server
+```Java
+import com.xjeffrose.xio.Server;
+import com.xjeffrose.util.Await;
+
+class MyAwesomeServer {
+  Server s = new Server(8080);
+  s.proto(HTTP/2);
+  s.addRoute("/", new EchoService());
+
+  public static void main(Sting[] args) {
+    Await.ready(s.serve());
+  }
+
+}
+```
+
+## XIO Service
+```Java
+import com.xjeffrose.xio.Service;
+
+Class EchoService {
+
+  EchoService() {
+
+  }
+}
+```
+
+## XIO Client
+```Java
+import com.xjeffrose.xio.Client;
+import com.xjeffrose.xio.Future;
+
+class MyAwesomeClient {
+  public static void main(Stiring[] args) {
+    Client c = new Client();
+    c.proto(HTTP/2);
+    c.tls(false);
+
+    Future<Http2Response> resp = c.("GET", "127.0.0.1", 8080);
+    resp.onFailure( e -> System.out.println("Got error " + e.get());
+    resp.onSuccess( r -> System.out.println(r.get().toString);
+  }
+}
+```
