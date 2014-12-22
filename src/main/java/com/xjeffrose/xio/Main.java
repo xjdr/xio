@@ -16,7 +16,7 @@ class Main {
       // s.addroute("/", exampleService)
 
       s.serve();
-      // Await(s.serve()); => all async and stuff
+      // Await.ready(s.serve()); => all async and stuff
 
     } catch (IOException e) {
       e.printStackTrace();
