@@ -1,14 +1,22 @@
 package com.xjeffrose.util;
 
+import java.util.logging.*;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.*;
+
+import com.xjeffrose.log.*;
+
 class Future<T> {
-  private T t;
+  private static final Logger log = Log.getLogger(Future.class.getName());
+
+  private final T t;
+  private final ExecutorService exs = Executors.newFixedThreadPool(24);
+
+  public AtomicBoolean isReady = new AtomicBoolean(false);
+  public AtomicBoolean isError = new AtomicBoolean(false);
 
   public Future(T t) {
     this.t = t;
-  }
-
-  public T collect() {
-    return t;
   }
 
   /* (timeout: Duration) : A */
@@ -25,7 +33,9 @@ class Future<T> {
 
   /* Returns the Results from a list of futures in */
   /* as a list in a new future */
-  //public T collect() {}
+  public T collect() {
+    return t;
+  }
 
   /* (k: (A) ⇒ Unit) : Unit */
   /* Invoke the callback only if the Future returns sucessfully. */
@@ -34,7 +44,9 @@ class Future<T> {
   /* (timeout: Duration) : Try[A] */
   /* Demands that the result of the future be available within timeout. */
   /* Block, but only as long as the given Timeout if a timeout is given, then return timeout error. */
-  public void get() {}
+  public T get() {
+    return t;
+  }
 
   /* [B] (other: Future[B]) : Future[(A, B)] */
   /* Combines two Futures into one Future of the Tuple of the two results. */
