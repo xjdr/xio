@@ -1,25 +1,25 @@
 package com.xjeffrose.util;
 
 import java.util.logging.*;
-import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;
 
 import com.xjeffrose.log.*;
 
-class Future<T> implements Runnable {
+//TODO: This should be Callable not Runnable
+public class Future<T extends Runnable> {
   private static final Logger log = Log.getLogger(Future.class.getName());
 
   private final T t;
-  private final ExecutorService exs = Executors.newFixedThreadPool(24);
 
   public AtomicBoolean isReady = new AtomicBoolean(false);
   public AtomicBoolean isError = new AtomicBoolean(false);
 
   public Future(T t) {
     this.t = t;
-  }
 
-  @Override public void run() {
+    Thread futureWorker = new Thread(t);
+    futureWorker.start();
+    isReady.set(true);
   }
 
   /* (timeout: Duration) : A */

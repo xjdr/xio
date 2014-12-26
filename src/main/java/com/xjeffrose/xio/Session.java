@@ -9,6 +9,7 @@ import java.util.stream.*;
 
 
 import com.xjeffrose.log.*;
+import com.xjeffrose.util.*;
 
 class Session {
   private static final Logger log = Log.getLogger(Session.class.getName());
@@ -20,9 +21,11 @@ class Session {
     this.channel = channel;
     this.ctx = new ChannelContext(channel);
     /* read(); */
-    InputStream stream = new InputStream(ctx);
-    Thread inStream = new Thread(stream); // Should be a Future
-    inStream.start();
+    /* InputStream stream = new InputStream(ctx); */
+    /* Thread inStream = new Thread(stream); // Should be a Future */
+    /* inStream.start(); */
+    Future f = new Future(new InputStream(ctx));
+    Await.ready(f);
     try {
       Thread.sleep(200);
     } catch (Exception e) {}

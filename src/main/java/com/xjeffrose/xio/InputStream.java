@@ -7,7 +7,7 @@ import java.util.logging.*;
 
 import com.xjeffrose.log.*;
 
-//TODO: Implement Closable and isRunning while loop to prevent runaway stream
+//TODO: Implement Closable and isRunning while loop to prevent runaway stram
 class InputStream implements Runnable {
   private static final Logger log = Log.getLogger(InputStream.class.getName());
   private ChannelContext ctx;
