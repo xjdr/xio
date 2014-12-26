@@ -5,7 +5,7 @@ class RateLimit {
   RateLimit() {
   }
 
-  public static boolean limit() {
+  public boolean limit() {
     return false;
   }
 }

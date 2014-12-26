@@ -6,7 +6,7 @@ import java.util.concurrent.atomic.*;
 
 import com.xjeffrose.log.*;
 
-class Future<T> {
+class Future<T> implements Runnable {
   private static final Logger log = Log.getLogger(Future.class.getName());
 
   private final T t;
@@ -17,6 +17,9 @@ class Future<T> {
 
   public Future(T t) {
     this.t = t;
+  }
+
+  @Override public void run() {
   }
 
   /* (timeout: Duration) : A */

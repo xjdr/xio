@@ -7,7 +7,7 @@ class IpFilter {
   IpFilter() {
   }
 
-  public static boolean filter(SocketAddress remoteAddress) {
+  public boolean filter(SocketAddress remoteAddress) {
     return false;
   }
 

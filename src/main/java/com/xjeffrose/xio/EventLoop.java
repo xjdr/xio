@@ -28,9 +28,10 @@ class EventLoop implements Closeable {
   }
 
   private void doAccept(SelectionKey key) {
+    //TODO: Clean up this Logic
     g.acceptor(key);
-    g.ipFilter(key);
-    g.rateLimit(key);
+    g.ipFilter();
+    g.rateLimit();
     exs.submit(g);
   }
 
