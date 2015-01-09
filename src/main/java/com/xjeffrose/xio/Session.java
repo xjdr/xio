@@ -20,9 +20,9 @@ class Session {
     this.channel = channel;
     this.ctx = new ChannelContext(channel);
     /* read(); */
-    /* InputStream stream = new InputStream(ctx); */
-    /* Thread inStream = new Thread(stream); // Should be a Future */
-    /* inStream.start(); */
+    InputStream stream = new InputStream(ctx);
+    Thread inStream = new Thread(stream); // Should be a Future
+    inStream.start();
     /* xioFuture f = new xioFuture(new InputStream(ctx)); */
     /* Await.ready(f); */
     try {
