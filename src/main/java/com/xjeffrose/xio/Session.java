@@ -7,7 +7,6 @@ import java.nio.charset.*;
 import java.util.logging.*;
 import java.util.stream.*;
 
-
 import com.xjeffrose.log.*;
 import com.xjeffrose.util.*;
 
@@ -24,8 +23,8 @@ class Session {
     /* InputStream stream = new InputStream(ctx); */
     /* Thread inStream = new Thread(stream); // Should be a Future */
     /* inStream.start(); */
-    Future f = new Future(new InputStream(ctx));
-    Await.ready(f);
+    /* xioFuture f = new xioFuture(new InputStream(ctx)); */
+    /* Await.ready(f); */
     try {
       Thread.sleep(200);
     } catch (Exception e) {}
