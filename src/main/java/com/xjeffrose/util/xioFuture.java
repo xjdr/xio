@@ -10,16 +10,19 @@ public class xioFuture<T extends Awaitable> implements Future {
   private static final Logger log = Log.getLogger(xioFuture.class.getName());
 
   private final T t;
+  private Thread futureWorker;
 
   public AtomicBoolean isReady = new AtomicBoolean(false);
   public AtomicBoolean isError = new AtomicBoolean(false);
 
   public xioFuture(T t) {
     this.t = t;
+  }
 
-    /* Thread futureWorker = new Thread(t); */
-    /* futureWorker.start(); */
-    /* isReady.set(true); */
+  private <T> void raw_run(T t) {
+    Thread futureWorker = new Thread(t);
+    futureWorker.start();
+    isReady.set(true);
   }
 
   @Override public boolean cancel(boolean mayInterruptIfRunning) {
