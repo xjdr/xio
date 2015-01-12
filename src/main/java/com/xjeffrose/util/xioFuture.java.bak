@@ -6,7 +6,7 @@ import java.util.concurrent.atomic.*;
 
 import com.xjeffrose.log.*;
 
-public class xioFuture<T extends Awaitable> implements Future {
+public class xioFuture<T super Awaitable> extends Future {
   private static final Logger log = Log.getLogger(xioFuture.class.getName());
 
   private final T t;
@@ -25,23 +25,23 @@ public class xioFuture<T extends Awaitable> implements Future {
     isReady.set(true);
   }
 
-  @Override public boolean cancel(boolean mayInterruptIfRunning) {
+  public boolean cancel(boolean mayInterruptIfRunning) {
     return false;
   }
 
-  @Override public boolean isCancelled() {
+  public boolean isCancelled() {
     return false;
   }
 
-  @Override public boolean isDone() {
+  public boolean isDone() {
     return false;
   }
 
-  @Override public Object get() throws InterruptedException, ExecutionException {
+  public Object get() throws InterruptedException, ExecutionException {
     return null;
   }
 
-  @Override public Object get(long timeout, TimeUnit unit)
+  public Object get(long timeout, TimeUnit unit)
       throws InterruptedException, ExecutionException, TimeoutException {
     return null;
   }

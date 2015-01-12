@@ -2,25 +2,23 @@ package com.xjeffrose.xio;
 
 import java.io.*;
 import java.nio.channels.*;
-/* import java.util.concurrent.*; */
 import java.util.concurrent.atomic.*;
 import java.util.logging.*;
 import java.util.stream.*;
 
 import com.xjeffrose.log.*;
 
-class EventLoop extends Thread {
-  private static final Logger log = Log.getLogger(EventLoop.class.getName());
+class IOService extends Thread {
+  private static final Logger log = Log.getLogger(IOService.class.getName());
 
   private final AtomicBoolean isRunning = new AtomicBoolean(true);
   private final AtomicBoolean isReady = new AtomicBoolean(true);
-  private final Gatekeeper g = new Gatekeeper();
 
-  private Selector selector;
+  private Selector ioSelector;
 
-  EventLoop() {
+  IOService() {
     try {
-      selector = Selector.open();
+      ioSelector = Selector.open();
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
@@ -34,33 +32,37 @@ class EventLoop extends Thread {
     return isRunning.get();
   }
 
-  public void register(ServerSocketChannel channel) {
+  public void register(SocketChannel channel) {
+    log.info("Registered " + channel);
     try {
-      channel.register(selector, SelectionKey.OP_ACCEPT);
+      channel.configureBlocking(false);
+      channel.register(ioSelector, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
   }
 
-  private void doAccept(SelectionKey key) {
-    //TODO: Clean up this Logic
-    g.accept(key);
-    g.ipFilter();
-    g.rateLimit();
+  private void readEvent(SelectionKey key) {
+    log.info("am reading " + key);
+  }
+
+  private void writeEvent(SelectionKey key) {
   }
 
   private void process() {
-    log.info("processing");
     try{
       while (Ready()) {
-        selector.select();
-        selector.selectedKeys()
+        Thread.sleep(1200);
+        ioSelector.select();
+        log.info("IOServ");
+        ioSelector.selectedKeys()
             .stream()
             .distinct()
-            .filter(SelectionKey::isAcceptable)
-            .forEach(this::doAccept);
+            /* .filter(SelectionKey::isReadable) */
+            .forEach(this::readEvent);
       }
-    } catch (IOException e) {
+    } catch (Exception e) {
+      log.info(""+e);
       throw new RuntimeException(e);
     }
   }

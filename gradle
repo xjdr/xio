@@ -1,0 +1,34 @@
+#!/bin/bash
+
+INSTALL_ROOT=$HOME/Gradle
+
+if [ ! -d $INSTALL_ROOT ]; then
+  echo "Downloading Gradle"
+  pushd $INSTALL_ROOT
+      wget https://services.gradle.org/distributions/gradle-2.2.1-bin.zip > /dev/null 1>&2
+      unzip gradle-2.2.1-bin.zip > /dev/null 1>&2
+      rm gradle-2.2.1-bin.zip
+      mv gradle-2.2.1 $INSTALL_ROOT
+  popd
+  echo add GRADLE_HOME=$INSTALL_ROOT
+fi
+
+GRADLE_HOME=$INSTALL_ROOT
+
+java -ea                          \
+  $JAVA_OPTS                      \
+  -Djava.net.preferIPv4Stack=true \
+  -XX:+AggressiveOpts             \
+  -XX:+UseParNewGC                \
+  -XX:+UseConcMarkSweepGC         \
+  -XX:+CMSParallelRemarkEnabled   \
+  -XX:+CMSClassUnloadingEnabled   \
+  -XX:ReservedCodeCacheSize=128m  \
+  -XX:SurvivorRatio=128           \
+  -XX:MaxTenuringThreshold=0      \
+  -Xss8M                          \
+  -Xms512M                        \
+  -Xmx4G                          \
+  -server                         \
+  -jar $GRADLE_HOME/lib/gradle-launcher-2.2.1.jar "$@"
+

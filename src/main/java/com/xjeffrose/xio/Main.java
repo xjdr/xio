@@ -12,10 +12,16 @@ class Main {
     log.info("Starting xio: Be well John Spartan");
 
     try {
-      Server s = new Server(8080);
+      Server s = new Server();
       // s.addroute("/", exampleService)
 
-      s.serve();
+      s.serve(8080);
+      /* s.serve(8080, 8); */
+      /* s.serve("localhost",8080); */
+      /* s.serve("localhost",8080, 8); */
+      /* s.serve(127.0.0.1,8080); */
+      /* serve(127.0.0.1,8080,8); */
+
       // Await.ready(s.serve()); => all async and stuff
 
     } catch (IOException e) {
