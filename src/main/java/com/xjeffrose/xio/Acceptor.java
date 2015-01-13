@@ -16,9 +16,11 @@ class Acceptor extends Thread {
   private final AtomicBoolean isReady = new AtomicBoolean(true);
   private final ServerSocketChannel serverChannel;
   private final Selector selector;
+  private final EventLoopPool eventLoopPool;
 
-  Acceptor(ServerSocketChannel serverChannel) {
+  Acceptor(ServerSocketChannel serverChannel, EventLoopPool eventLoopPool) {
     this.serverChannel = serverChannel;
+    this.eventLoopPool = eventLoopPool;
 
     try {
     selector = Selector.open();
@@ -61,9 +63,11 @@ class Acceptor extends Thread {
             ServerSocketChannel server = (ServerSocketChannel) key.channel();
             SocketChannel channel = server.accept();
             log.info("Accepting Connection from: " + channel);
-            channel.configureBlocking(false);
-            ChannelContext ctx = new ChannelContext(channel);
-            channel.register(selector, SelectionKey.OP_WRITE | SelectionKey.OP_READ, ctx);
+            EventLoopPool.EventLoop next = eventLoopPool.next();
+            //channel.register(next, SelectionKey.OP_WRITE | SelectionKey.OP_READ, ctx);
+            //next.wakeup();
+            next.addChannel(channel);
+            log.info("springstein rules");
           }
 
           if (key.isReadable()) {

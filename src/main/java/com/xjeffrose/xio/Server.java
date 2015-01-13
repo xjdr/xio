@@ -23,19 +23,17 @@ class Server {
 
   private void schedule(ServerSocketChannel channel) {
     cores = Runtime.getRuntime().availableProcessors();
-    Acceptor[] ioPool = new Acceptor[cores];
-
-    for (int i=0;i<cores;i++) {
-      ioPool[i] = new Acceptor(channel);
-      ioPool[i].start();
-    }
-
+    EventLoopPool pool = new EventLoopPool(cores);
+    Acceptor acceptor = new Acceptor(channel, pool);
+    acceptor.start();
+    pool.start();
   }
 
   private void bind(InetSocketAddress addr) throws IOException {
     channel = ServerSocketChannel.open();
     channel.configureBlocking(false);
     channel.bind(addr);
+    channel.socket().setReuseAddress(true);
     schedule(channel);
   }
 
