@@ -68,15 +68,16 @@ class EventLoopPool {
             if (key.isValid() && key.isWritable()) {
               SocketChannel client = (SocketChannel) key.channel();
               ChannelContext ctx = (ChannelContext) key.attachment();
-              if (ctx.write()) {
-                cancelMeKeys.add(key);
-              }
+              /* if (ctx.write()) { */
+              /*   cancelMeKeys.add(key); */
+              /* } */
             }
 
           } catch (Exception e) {
             throw new RuntimeException(e);
           }
 
+          /* key.interestOps(key.interestOps() & ~SelectionKey.OP_WRITE); */
         }
 
         while (channelsToAdd.size() > 0) {

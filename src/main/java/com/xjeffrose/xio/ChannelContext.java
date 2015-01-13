@@ -54,8 +54,8 @@ class ChannelContext {
     String[] headers = parts[0].split("\r\n");
     //log.info(headers[0]);
 
-    //super_naivet_proxy(raw);
-    super_naive_output();
+    super_naive_proxy(raw);
+    /* super_naive_output(); */
   }
 
 
