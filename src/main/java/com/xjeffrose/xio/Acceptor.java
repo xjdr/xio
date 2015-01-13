@@ -1,11 +1,11 @@
 package com.xjeffrose.xio;
 
 import java.io.*;
+import java.nio.*;
 import java.nio.channels.*;
-/* import java.util.concurrent.*; */
+import java.util.*;
 import java.util.concurrent.atomic.*;
 import java.util.logging.*;
-import java.util.stream.*;
 
 import com.xjeffrose.log.*;
 
@@ -14,17 +14,19 @@ class Acceptor extends Thread {
 
   private final AtomicBoolean isRunning = new AtomicBoolean(true);
   private final AtomicBoolean isReady = new AtomicBoolean(true);
-  private final Gatekeeper g = new Gatekeeper();
-  private IOService[] ioPool;
+  private final ServerSocketChannel serverChannel;
+  private final Selector selector;
 
-  private Selector selector;
+  Acceptor(ServerSocketChannel serverChannel) {
+    this.serverChannel = serverChannel;
 
-  Acceptor() {
     try {
-      selector = Selector.open();
-    } catch (IOException e) {
+    selector = Selector.open();
+    serverChannel.register(selector, SelectionKey.OP_ACCEPT);
+    } catch (Exception e) {
       throw new RuntimeException(e);
     }
+
   }
 
   public boolean Ready() {
@@ -35,51 +37,52 @@ class Acceptor extends Thread {
     return isRunning.get();
   }
 
-  public void register(ServerSocketChannel channel) {
-    try {
-      channel.register(selector, SelectionKey.OP_ACCEPT);
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  public void ioPool(IOService[] ioPool) {
-    this.ioPool = ioPool;
-  }
-
-  private void doAccept(SelectionKey key) {
-    //TODO: Clean up this Logic
-    g.ioPool(ioPool);
-    log.info("ohai");
-    g.accept(key);
-    g.ipFilter();
-    g.rateLimit();
-  }
-
-  private void process() {
-    while (Running() && Ready()) {
-      try {
-        Thread.sleep(12);
-        selector.select();
-        selector.selectedKeys()
-            .stream()
-            .distinct()
-            .filter(SelectionKey::isAcceptable)
-            .forEach(this::doAccept);
-      } catch (Exception e) {
-        log.info(""+e);
-        throw new RuntimeException(e);
-      }
-    }
-  }
-
-
   public void close() {
     isRunning.set(false);
   }
 
   public void run() {
-    process();
-  }
+    while(Running()){
+      try {
+        selector.select();
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
 
+      Set<SelectionKey> acceptKeys = selector.selectedKeys();
+      Iterator<SelectionKey> iterator = acceptKeys.iterator();
+
+      while (iterator.hasNext()) {
+        SelectionKey key = iterator.next();
+        iterator.remove();
+
+        try {
+          if (key.isAcceptable()) {
+            ServerSocketChannel server = (ServerSocketChannel) key.channel();
+            SocketChannel channel = server.accept();
+            log.info("Accepting Connection from: " + channel);
+            channel.configureBlocking(false);
+            ChannelContext ctx = new ChannelContext(channel);
+            channel.register(selector, SelectionKey.OP_WRITE | SelectionKey.OP_READ, ctx);
+          }
+
+          if (key.isReadable()) {
+              SocketChannel client = (SocketChannel) key.channel();
+              ChannelContext ctx = (ChannelContext) key.attachment();
+              ctx.read();
+          }
+
+          if (key.isWritable()) {
+              SocketChannel client = (SocketChannel) key.channel();
+              ChannelContext ctx = (ChannelContext) key.attachment();
+              ctx.write();
+          }
+
+        } catch (IOException e) {
+          throw new RuntimeException(e);
+        }
+
+      }
+    }
+  }
 }

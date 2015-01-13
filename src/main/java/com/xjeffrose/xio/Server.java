@@ -17,33 +17,26 @@ class Server {
   private InetAddress host;
   private InetSocketAddress addr;
   private ServerSocketChannel channel;
-  private Acceptor acceptor;
-  private IOService[] ioPool;
 
   Server() {
   }
 
-  private void startIOService(int cores){
-    ioPool = new IOService[cores];
+  private void schedule(ServerSocketChannel channel) {
+    cores = Runtime.getRuntime().availableProcessors();
+    Acceptor[] ioPool = new Acceptor[cores];
+
     for (int i=0;i<cores;i++) {
-      ioPool[i] = new IOService();
+      ioPool[i] = new Acceptor(channel);
       ioPool[i].start();
     }
+
   }
 
   private void bind(InetSocketAddress addr) throws IOException {
     channel = ServerSocketChannel.open();
     channel.configureBlocking(false);
     channel.bind(addr);
-    acceptor = getAcceptor();
-    acceptor.ioPool(ioPool);
-    acceptor.start();
-    acceptor.register(channel);
-  }
-
-  private Acceptor getAcceptor() {
-    Acceptor ac = new Acceptor();
-    return ac;
+    schedule(channel);
   }
 
   /* private void announce(String path, Set<String> zkHosts) { */
@@ -55,7 +48,6 @@ class Server {
   void serve(int port) throws IOException {
     cores = Runtime.getRuntime().availableProcessors();
     addr = new InetSocketAddress(port);
-    startIOService(cores);
     bind(addr);
   }
 
