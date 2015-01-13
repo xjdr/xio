@@ -52,21 +52,25 @@ class EventLoopPool {
         Set<SelectionKey> acceptKeys = selector.selectedKeys();
         Iterator<SelectionKey> iterator = acceptKeys.iterator();
 
+        Set<SelectionKey> cancelMeKeys = new HashSet<SelectionKey>();
+
         while (iterator.hasNext()) {
           SelectionKey key = iterator.next();
           iterator.remove();
 
           try {
-            if (key.isReadable()) {
+            if (key.isValid() && key.isReadable()) {
               SocketChannel client = (SocketChannel) key.channel();
               ChannelContext ctx = (ChannelContext) key.attachment();
               ctx.read();
             }
 
-            if (key.isWritable()) {
+            if (key.isValid() && key.isWritable()) {
               SocketChannel client = (SocketChannel) key.channel();
               ChannelContext ctx = (ChannelContext) key.attachment();
-              ctx.write();
+              if (ctx.write()) {
+                cancelMeKeys.add(key);
+              }
             }
 
           } catch (Exception e) {

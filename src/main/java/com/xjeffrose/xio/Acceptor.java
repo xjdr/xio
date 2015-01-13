@@ -62,26 +62,10 @@ class Acceptor extends Thread {
           if (key.isAcceptable()) {
             ServerSocketChannel server = (ServerSocketChannel) key.channel();
             SocketChannel channel = server.accept();
-            log.info("Accepting Connection from: " + channel);
+            //log.info("Accepting Connection from: " + channel);
             EventLoopPool.EventLoop next = eventLoopPool.next();
-            //channel.register(next, SelectionKey.OP_WRITE | SelectionKey.OP_READ, ctx);
-            //next.wakeup();
             next.addChannel(channel);
-            log.info("springstein rules");
           }
-
-          if (key.isReadable()) {
-              SocketChannel client = (SocketChannel) key.channel();
-              ChannelContext ctx = (ChannelContext) key.attachment();
-              ctx.read();
-          }
-
-          if (key.isWritable()) {
-              SocketChannel client = (SocketChannel) key.channel();
-              ChannelContext ctx = (ChannelContext) key.attachment();
-              ctx.write();
-          }
-
         } catch (IOException e) {
           throw new RuntimeException(e);
         }

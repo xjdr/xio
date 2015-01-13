@@ -74,7 +74,8 @@ void request_handler::handle_request(const request& req, reply& rep)
   while (is.read(buf, sizeof(buf)).gcount() > 0)
     rep.content.append(buf, is.gcount());
 */
-  std::string payload = "<html><body>HELLO WORLD!</body></html>";
+  rep.status = reply::ok;
+  std::string payload = "<html><body>HELLO WORLD!</body></html>\r\n";
   rep.content.append(payload.c_str(), payload.length());
   rep.headers.resize(2);
   rep.headers[0].name = "Content-Length";
