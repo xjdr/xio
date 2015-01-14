@@ -20,7 +20,7 @@ class ChannelContext {
   private final String outputPayload = new String("HTTP/1.0 200 OK\r\n" +
                                         "Content-Length: 40\r\n" +
                                         "Content-Type: text/html\r\n" +
-                                        "\r\n\r\n" + 
+                                        "\r\n\r\n" +
                                         "<html><body>HELLO WORLD!</body></html>");
 
   ChannelContext(SocketChannel channel) {

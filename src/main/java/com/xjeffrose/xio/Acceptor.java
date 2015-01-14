@@ -59,7 +59,7 @@ class Acceptor extends Thread {
         iterator.remove();
 
         try {
-          if (key.isAcceptable()) {
+          if (key.isValid() && key.isAcceptable()) {
             ServerSocketChannel server = (ServerSocketChannel) key.channel();
             SocketChannel channel = server.accept();
             //log.info("Accepting Connection from: " + channel);
