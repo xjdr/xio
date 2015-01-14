@@ -33,7 +33,7 @@ class EventLoopPool {
       selector.wakeup();
     }
 
-    public boolean Running() {
+    public boolean running() {
       return isRunning.get();
     }
 
@@ -42,7 +42,7 @@ class EventLoopPool {
     }
 
     public void run() {
-      while(Running()){
+      while(running()){
         try {
           selector.select();
         } catch (IOException e) {
@@ -52,7 +52,7 @@ class EventLoopPool {
         Set<SelectionKey> acceptKeys = selector.selectedKeys();
         Iterator<SelectionKey> iterator = acceptKeys.iterator();
 
-        Set<SelectionKey> cancelMeKeys = new HashSet<SelectionKey>();
+        /* Set<SelectionKey> cancelMeKeys = new HashSet<SelectionKey>(); */
 
         while (iterator.hasNext()) {
           SelectionKey key = iterator.next();
@@ -68,17 +68,15 @@ class EventLoopPool {
             if (key.isValid() && key.isWritable()) {
               SocketChannel client = (SocketChannel) key.channel();
               ChannelContext ctx = (ChannelContext) key.attachment();
-              if (ctx.write()) {
-                cancelMeKeys.add(key);
-              }
+              ctx.write();
+              /* key.interestOps(key.interestOps() & ~SelectionKey.OP_WRITE); */
+              /* if (ctx.write()) { */
+              /*   cancelMeKeys.add(key); */
+              /* } */
             }
 
           } catch (Exception e) {
             throw new RuntimeException(e);
-          }
-
-          if (key.isValid() && key.isWritable()) {
-            key.interestOps(key.interestOps() & ~SelectionKey.OP_WRITE);
           }
         }
 

@@ -17,7 +17,7 @@ class ChannelContext {
   public final ByteBuffer outBuf = ByteBuffer.allocate(1024);
   private final StringBuffer return_payload = new StringBuffer();
   private boolean readyToWrite = false;
-  private final String outputPayload = new String("HTTP/1.0 200 OK\r\n" +
+  private final String outputPayload = new String("HTTP/1.1 200 OK\r\n" +
                                         "Content-Length: 40\r\n" +
                                         "Content-Type: text/html\r\n" +
                                         "\r\n\r\n" +

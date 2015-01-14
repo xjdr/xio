@@ -1,6 +1,5 @@
 apply plugin: 'java'
-apply plugin: 'idea'
-apply plugin: 'project-report'
+apply plugin: 'application'
 
 version = "0.0.1"
 group = "com.xjeffrose"
@@ -15,6 +14,13 @@ dependencies {
 compileJava {
     sourceCompatibility = 1.8
     targetCompatibility = 1.8
+    options.compilerArgs << '-XDignore.symbol.file'
+    options.fork = true
+    options.forkOptions.executable = 'javac'
+    options.compilerArgs << '-Werror'
+    options.compilerArgs << '-Xlint:all'
+    options.compilerArgs << '-Xlint:-processing'
+    options.compilerArgs << '-Xlint:-serial'
 }
 
 repositories {
@@ -27,13 +33,30 @@ from sourceSets.main.allJava
 }
 
 
+mainClassName = "com.xjeffrose.xio.Main"
 
-task(runApp, dependsOn: 'classes', type: JavaExec) {
-    main = 'com.xjeffrose.xio.Main'
+applicationDefaultJvmArgs = ["\
+-Djava.net.preferIPv4Stack=true \
+-XX:+AggressiveOpts \
+-XX:+UseParNewGC \
+-XX:+UseConcMarkSweepGC \
+-XX:+CMSParallelRemarkEnabled \
+-XX:+CMSClassUnloadingEnabled \
+-XX:ReservedCodeCacheSize=128m \
+-XX:MaxPermSize=2048m \
+-XX:MaxMetaspaceSize=128m \
+-XX:SurvivorRatio=128 \
+-XX:MaxTenuringThreshold=0 \
+-Xss12M \
+-Xms512M \
+-Xmx2G \
+-server \
+" ]
 
-    classpath = sourceSets.main.runtimeClasspath
-
-}
+// task(runApp, dependsOn: 'classes', type: JavaExec) {
+//     main = 'com.xjeffrose.xio.Main'
+//     classpath = sourceSets.main.runtimeClasspath
+// }
 
 test {
     maxParallelForks = 5
@@ -44,3 +67,4 @@ task copyToLib(type: Copy) {
     into "lib"
     from configurations.runtime
 }
+
