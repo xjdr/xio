@@ -1,0 +1,76 @@
+package com.xjeffrose.xio;
+
+import java.io.*;
+import java.nio.channels.*;
+
+class SourceChannel {
+
+  SourceChannel() {
+  }
+
+  void prepareEngines() {
+    try {
+    Pipe clientSendPipe=Pipe.open();
+    Pipe serverSendPipe=Pipe.open();
+    SourceChannel clientSink=clientSendPipe.sink();
+    SinkChannel serverSource=clientSendPipe.source();
+    SourceChannel serverSink=serverSendPipe.sink();
+    SinkChannel clientSource=serverSendPipe.source();
+    /* clientEngine=new HandshakeHandler(true,clientSource,clientSink); */
+    /* serverEngine=new HandshakeHandler(false,serverSource,serverSink); */
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+}
+
+/*   Selector selector=SelectorProvider.provider().openSelector(); */
+/*   Pipe pipe=SelectorProvider.provider().openPipe(); */
+/*   pipe.open(); */
+/*   pipe.sink().configureBlocking(false); */
+/*   SelectionKey key=pipe.sink().register(selector,SelectionKey.OP_WRITE); */
+/*   key.cancel(); */
+/*   try { */
+/*     key.isWritable(); */
+/*     fail("should throw IAE."); */
+/*   } */
+/*  catch (  CancelledKeyException ex) { */
+/*   } */
+/* } */
+/*  */
+/*  */
+/*  */
+/* public void test_cancelledKeys() throws Exception { */
+/*   final AtomicReference<Throwable> failure=new AtomicReference<Throwable>(); */
+/*   final AtomicBoolean complete=new AtomicBoolean(); */
+/*   final Pipe pipe=Pipe.open(); */
+/*   pipe.source().configureBlocking(false); */
+/*   final SelectionKey key=pipe.source().register(selector,SelectionKey.OP_READ); */
+/*   Thread thread=new Thread(){ */
+/*     public void run(){ */
+/*       try { */
+/*         Thread.sleep(500); */
+/*         key.cancel(); */
+/*         assertFalse(key.isValid()); */
+/*         pipe.sink().write(ByteBuffer.allocate(4)); */
+/*       } */
+/*  catch (      Throwable e) { */
+/*         failure.set(e); */
+/*       } */
+/*  finally { */
+/*         complete.set(true); */
+/*       } */
+/*     } */
+/*   } */
+/* ; */
+/*   assertTrue(key.isValid()); */
+/*   thread.start(); */
+/*   do { */
+/*     assertEquals(0,selector.select(5000)); */
+/*     assertEquals(0,selector.selectedKeys().size()); */
+/*   } */
+/*  while (!complete.get()); */
+/*   assertFalse(key.isValid()); */
+/*   thread.join(); */
+/*   assertNull(failure.get()); */
+/* } */

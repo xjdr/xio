@@ -31,11 +31,11 @@ class Acceptor extends Thread {
 
   }
 
-  public boolean Ready() {
+  public boolean ready() {
     return isReady.get();
   }
 
-  public boolean Running() {
+  public boolean running() {
     return isRunning.get();
   }
 
@@ -44,7 +44,7 @@ class Acceptor extends Thread {
   }
 
   public void run() {
-    while(Running()){
+    while(running()){
       try {
         selector.select();
       } catch (IOException e) {
@@ -63,7 +63,7 @@ class Acceptor extends Thread {
             ServerSocketChannel server = (ServerSocketChannel) key.channel();
             SocketChannel channel = server.accept();
             //log.info("Accepting Connection from: " + channel);
-            EventLoopPool.EventLoop next = eventLoopPool.next();
+            EventLoop next = eventLoopPool.next();
             next.addChannel(channel);
           }
         } catch (IOException e) {
