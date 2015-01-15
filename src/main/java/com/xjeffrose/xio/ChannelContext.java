@@ -1,10 +1,10 @@
 package com.xjeffrose.xio;
 
 import java.io.*;
-import java.net.*;
+/* import java.net.*; */
 import java.nio.*;
 import java.nio.channels.*;
-import java.nio.charset.*;
+/* import java.nio.charset.*; */
 import java.util.logging.*;
 
 import com.xjeffrose.log.*;
@@ -14,7 +14,6 @@ class ChannelContext {
 
   public final SocketChannel channel;
   public final ChannelBuffer cb = new ChannelBuffer();
-  /* private final StringBuffer return_payload = new StringBuffer(); */
   private boolean readyToWrite = false;
   private final String outputPayload = new String("HTTP/1.1 200 OK\r\n" +
                                         "Content-Length: 40\r\n" +
@@ -51,21 +50,16 @@ class ChannelContext {
     }
     cb.addStream();
 
-    /* cb.bb.flip(); */
-    /* String[] parts = raw.split("\r\n\r\n"); */
-    /* String[] headers = parts[0].split("\r\n"); */
-    //log.info(headers[0]);
-
     /* super_naive_proxy(cb.toString()); */
     /* super_naive_output(); */
-    readyToWrite = true;
+    readyToWrite = true; //Neet to make this Future<boolean>
   }
 
   public void write() {
     try {
-        /* channel.write(cb.getStream()); */
-      if(readyToWrite) {
-        channel.write(ByteBuffer.wrap(outputPayload.getBytes()));
+      if(readyToWrite) { // Need to do the blocking Future<boolean>.get() here
+        /* channel.write(cb.getStream()); // Is an EchoServer for Testing */
+        channel.write(ByteBuffer.wrap(outputPayload.getBytes())); // COMMENT LINE OUT: This is Only for testing
         channel.close();
       }
     } catch (IOException e) {
@@ -75,33 +69,26 @@ class ChannelContext {
 
   public void write(ByteBuffer bb) {
     try {
+      if (readyToWrite) {
         channel.write(bb);
         channel.close();
+      }
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }
 
-  /* public boolean write() { */
   public void write(ChannelBuffer cbOut) {
     try {
-      /* if (readyToWrite) { */
-        /* channel.write(ByteBuffer.wrap(return_payload.toString().getBytes())); */
+      if (readyToWrite) {
         channel.write(cbOut.getStream());
         channel.close();
-        /* return true; */
-      /* } */
+      }
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
-    /* return false; */
   }
 
-  /* private void super_naive_output() { */
-    /* return_payload.append(outputPayload); */
-  /*   readyToWrite = true; */
-  /* } */
-  /*  */
   /* private void super_naive_proxy(String payload) { */
   /*   //log.info("HERE WE GO BRO: " + payload); */
   /*   byte[] pbites = new byte[1024];// = 1024; */

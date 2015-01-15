@@ -63,6 +63,7 @@ class ChannelBuffer {
     final ByteBuffer temp = copy();
     stream[streamIndex] = temp;
     streamIndex++;
+    bb.flip();
     bb.clear();
   }
 
