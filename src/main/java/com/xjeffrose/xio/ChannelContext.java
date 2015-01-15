@@ -13,7 +13,7 @@ class ChannelContext {
   private static final Logger log = Log.getLogger(ChannelContext.class.getName());
 
   public final SocketChannel channel;
-  public final ChannelBuffer cb = new ChannelBuffer();
+  public final ChannelBuffer cb =  new ChannelBuffer();
   private boolean readyToWrite = false;
   private final String outputPayload = new String("HTTP/1.1 200 OK\r\n" +
                                         "Content-Length: 40\r\n" +
@@ -31,7 +31,7 @@ class ChannelContext {
     int nread = 1;
     while (nread > 0) {
       try {
-        nread = channel.read(cb.bb);
+        nread = channel.read(cb);
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
