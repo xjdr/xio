@@ -17,7 +17,7 @@ compileJava {
     options.compilerArgs << '-XDignore.symbol.file'
     options.fork = true
     options.forkOptions.executable = 'javac'
-    options.compilerArgs << '-Werror'
+    // options.compilerArgs << '-Werror'
     options.compilerArgs << '-Xlint:all'
     options.compilerArgs << '-Xlint:-processing'
     options.compilerArgs << '-Xlint:-serial'

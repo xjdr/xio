@@ -6,6 +6,8 @@ import java.nio.charset.*;
 import java.util.concurrent.*;
 import java.util.logging.*;
 
+import sun.nio.ch.*;
+
 import com.xjeffrose.log.*;
 
 class ChannelBuffer {
