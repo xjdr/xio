@@ -14,6 +14,7 @@ class HTTPParser {
 
   HTTPParser(ByteBuffer bb) {
     this.bb = bb;
+    getHeaders();
   }
 
   private enum http_method {
@@ -278,6 +279,7 @@ class HTTPParser {
     while (temp.hasRemaining()) {
       int index = temp.position();
       byte bite = temp.get();
+      parse(bite);
     }
   }
 

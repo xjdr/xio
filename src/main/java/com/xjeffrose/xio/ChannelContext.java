@@ -48,6 +48,7 @@ class ChannelContext {
         }
       }
     }
+    HTTPParser parser = new HTTPParser(cb.bb);
     cb.addStream();
 
     /* super_naive_proxy(cb.toString()); */
