@@ -14,6 +14,7 @@ class ChannelContext {
 
   public final SocketChannel channel;
   public final ChannelBuffer cb = new ChannelBuffer();
+  public HttpParser parser = new HttpParser();
   private boolean readyToWrite = false;
   private final String outputPayload = new String("HTTP/1.1 200 OK\r\n" +
                                         "Content-Length: 40\r\n" +
@@ -32,6 +33,9 @@ class ChannelContext {
     while (nread > 0) {
       try {
         nread = channel.read(cb.bb);
+        if (!parser.parse(cb.bb)) {
+          throw new RuntimeException("Parser Failed to Parse");
+        }
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
@@ -48,7 +52,6 @@ class ChannelContext {
         }
       }
     }
-    HTTPParser parser = new HTTPParser(cb.bb);
     cb.addStream();
 
     /* super_naive_proxy(cb.toString()); */
