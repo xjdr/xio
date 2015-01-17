@@ -29,8 +29,6 @@ class HttpParser {
       byte bite = temp.get();
       result = parseSegment(bite);
     }
-    log.info(req.method());
-    log.info(req.uri());
     if(result == ParseState.good) {
       return true;
     }

@@ -27,6 +27,12 @@ class HttpRequest {
     return uri.getUri();
   }
 
+  public String getQueryString() {
+    String fullString = uri.getUri();
+    String qs = fullString.split("?", 1)[1];
+    return qs;
+  }
+
   class Method {
     private int position = 0;
     private int limit =0;
@@ -80,6 +86,10 @@ class HttpRequest {
 
     public void push_back_value(String value) {
       header_list.getLast().value += value;
+    }
+
+    public Map<String,String> get(String name) {
+      return new HashMap<String,String>();
     }
 
   }

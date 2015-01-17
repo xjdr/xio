@@ -15,11 +15,6 @@ class ChannelContext {
   public final ChannelBuffer cb = new ChannelBuffer();
   public HttpParser parser = new HttpParser();
   private boolean readyToWrite = false;
-  private final String outputPayload = new String("HTTP/1.1 200 OK\r\n" +
-                                        "Content-Length: 40\r\n" +
-                                        "Content-Type: text/html\r\n" +
-                                        "\r\n\r\n" +
-                                        "<html><body>HELLO WORLD!</body></html>");
 
   ChannelContext(SocketChannel channel) {
     this.channel = channel;
@@ -62,7 +57,7 @@ class ChannelContext {
     try {
       if(readyToWrite) { // Need to do the blocking Future<boolean>.get() here
         /* channel.write(cb.getStream()); // Is an EchoServer for Testing */
-        channel.write(ByteBuffer.wrap(outputPayload.getBytes())); // COMMENT LINE OUT: This is Only for testing
+        channel.write(new HttpResponse().defaultResponse()); // COMMENT LINE OUT: This is Only for testing
         channel.close();
       }
     } catch (IOException e) {

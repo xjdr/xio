@@ -30,6 +30,15 @@ class HttpResponse {
     return ChannelBuffer.toString(httpStatus.get());
   }
 
+  public ByteBuffer[] defaultResponse() {
+    httpVersion.set("HTTP/1.1");
+    httpStatus.set("OK\r\n");
+    httpStatusCode.set("200");
+    body.set("html><body>HELLO WORLD!</body></html>");
+
+    return get();
+  }
+
   public ByteBuffer[] get() {
     final ByteBuffer[] resp = {
       httpVersion.get(), httpStatus.get(), httpStatusCode.get(),
@@ -41,9 +50,13 @@ class HttpResponse {
   }
 
   class HttpVersion {
-    private final ByteBuffer httpVersion = ByteBuffer.wrap(new String("HTTP/1.1").getBytes());
+    private ByteBuffer httpVersion;
 
     HttpVersion() {
+    }
+
+    public void set(String version) {
+      httpVersion = ByteBuffer.wrap(new String(version).getBytes());
     }
 
     public ByteBuffer get() {
@@ -52,9 +65,13 @@ class HttpResponse {
   }
 
   class HttpStatusCode {
-    private final ByteBuffer httpStatusCode = ByteBuffer.wrap(new String("200").getBytes());
+    private ByteBuffer httpStatusCode;
 
     HttpStatusCode() {
+    }
+
+    public void set(String statusCode) {
+      httpStatusCode = ByteBuffer.wrap(new String(statusCode).getBytes());
     }
 
     public ByteBuffer get() {
@@ -63,9 +80,13 @@ class HttpResponse {
   }
 
   class HttpStatus {
-    private final ByteBuffer httpStatus = ByteBuffer.wrap(new String("OK\r\n").getBytes());
+    private ByteBuffer httpStatus;
 
     HttpStatus() {
+    }
+
+    public void set(String status) {
+      httpStatus = ByteBuffer.wrap(new String(status).getBytes());
     }
 
     public ByteBuffer get() {
@@ -91,8 +112,6 @@ class HttpResponse {
   }
 
   class Headers {
-    /* private int headerIndex = 0; */
-    /* private final ByteBuffer[] headers = new ByteBuffer[256]; */
     private final ByteBuffer headers = ByteBuffer.allocateDirect(512);
 
     Headers() {
@@ -113,9 +132,13 @@ class HttpResponse {
   }
 
   class Body {
-    private final ByteBuffer body = ByteBuffer.wrap(new String("html><body>HELLO WORLD!</body></html>").getBytes());
+    private ByteBuffer body;
 
     Body() {
+    }
+
+    public void set(String responseBody) {
+      body = ByteBuffer.wrap(new String(responseBody).getBytes());
     }
 
     public ByteBuffer get() {
