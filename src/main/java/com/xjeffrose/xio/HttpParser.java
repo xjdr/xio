@@ -28,10 +28,10 @@ class HttpParser {
       int index = temp.position();
       lastByteRead = index;
       byte bite = temp.get();
-      /* log.info("byte " + bite + " index " + index); */
-      /* debug.append((char)bite); */
       result = parseSegment(bite);
     }
+    log.info(req.method() + "\n");
+    log.info(req.uri() + "\n");
     if(result == ParseState.good) {
       return true;
     }

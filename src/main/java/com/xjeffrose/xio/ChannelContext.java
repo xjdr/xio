@@ -4,7 +4,6 @@ import java.io.*;
 /* import java.net.*; */
 import java.nio.*;
 import java.nio.channels.*;
-/* import java.nio.charset.*; */
 import java.util.logging.*;
 
 import com.xjeffrose.log.*;
@@ -24,8 +23,6 @@ class ChannelContext {
 
   ChannelContext(SocketChannel channel) {
     this.channel = channel;
-
-    //log.info("ChannelContext Created");
   }
 
   public void read() {
@@ -33,6 +30,9 @@ class ChannelContext {
     while (nread > 0) {
       try {
         nread = channel.read(cb.bb);
+        if (nread == 0) {
+          break;
+        }
         if (!parser.parse(cb.bb)) {
           throw new RuntimeException("Parser Failed to Parse");
         }
@@ -53,7 +53,6 @@ class ChannelContext {
       }
     }
     cb.addStream();
-
     /* super_naive_proxy(cb.toString()); */
     /* super_naive_output(); */
     readyToWrite = true; //Neet to make this Future<boolean>

@@ -14,25 +14,39 @@ class HttpRequest {
   public Uri uri = new Uri();
   public Headers headers = new Headers();
 
-  private String methodString = new String();
-  private String uriString = new String();
-  private Deque<Header> header_list = new ArrayDeque<Header>();
   private String regex = "\\s*\\bnull\\b\\s*";
 
+  public String method() {
+    return method.getMethod();
+  }
+
+  public String uri() {
+    return uri.getUri();
+  }
 
   class Method {
+    private String methodString = new String();
+
     public void push_back(String in) {
       methodString += in;
       methodString = methodString.replaceAll(regex, "");
-      /* log.info(methodString); */
+    }
+
+    public String getMethod() {
+      return methodString;
     }
   }
 
   class Uri {
+    private String uriString = new String();
+
     public void push_back(String in) {
       uriString += in;
       uriString = uriString.replaceAll(regex, "");
-      /* log.info(uriString); */
+    }
+
+    public String getUri() {
+      return uriString;
     }
   }
 
@@ -42,6 +56,7 @@ class HttpRequest {
   }
 
   class Headers {
+    private Deque<Header> header_list = new ArrayDeque<Header>();
     private boolean headers_empty = true;
 
     public boolean empty() {
@@ -58,7 +73,6 @@ class HttpRequest {
 
     public void push_back_value(String value) {
       header_list.getLast().value += value;
-      /* log.info( header_list.getLast().name + " : " + header_list.getLast().value); */
     }
 
     public void back() {
