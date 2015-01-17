@@ -25,13 +25,19 @@ class ChannelBuffer {
     return slice;
   }
 
-  @Override public String toString() {
+  public String toString() {
      final ByteBuffer temp = bb.duplicate();
      temp.flip();
      return new String(temp.asCharBuffer().toString().getBytes(), Charset.forName("UTF-8"));
   }
 
-  private String toString(Charset charset, int position, int limit) {
+  public static String toString(ByteBuffer tempbb) {
+     final ByteBuffer temp = tempbb.duplicate();
+     temp.flip();
+     return new String(temp.asCharBuffer().toString().getBytes(), Charset.forName("UTF-8"));
+  }
+
+  public String toString(Charset charset, int position, int limit) {
      final ByteBuffer temp = bb.duplicate();
      temp.position(position);
      temp.limit(limit);
@@ -42,7 +48,7 @@ class ChannelBuffer {
     }
   }
 
-  private ByteBuffer copy() {
+  public ByteBuffer copy() {
     final ByteBuffer copy = ByteBuffer.allocateDirect(bb.capacity());
     final ByteBuffer temp = bb.duplicate();
     final int pos = bb.position();
@@ -88,6 +94,5 @@ class ChannelBuffer {
 
   private void put(ByteBuffer buf, final int position, final int offset) {
   }
-
 
 }

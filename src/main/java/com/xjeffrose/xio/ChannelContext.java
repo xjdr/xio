@@ -33,7 +33,7 @@ class ChannelContext {
         if (nread == 0) {
           break;
         }
-        if (!parser.parse(cb.bb)) {
+        if (!parser.parse(cb)) {
           throw new RuntimeException("Parser Failed to Parse");
         }
       } catch (IOException e) {

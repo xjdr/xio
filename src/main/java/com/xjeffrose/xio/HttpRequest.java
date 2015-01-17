@@ -5,16 +5,19 @@ import java.util.logging.*;
 
 import com.xjeffrose.log.*;
 
+//TODO: Add query string support
+//TODO: Get header by name
+
 class HttpRequest {
   private static final Logger log = Log.getLogger(HttpRequest.class.getName());
 
   public int http_version_major = 0;
   public int http_version_minor = 0;
-  public Method method = new Method();
-  public Uri uri = new Uri();
-  public Headers headers = new Headers();
+  public final Method method = new Method();
+  public final Uri uri = new Uri();
+  public final Headers headers = new Headers();
 
-  private String regex = "\\s*\\bnull\\b\\s*";
+  private final String regex = "\\s*\\bnull\\b\\s*";
 
   public String method() {
     return method.getMethod();
@@ -25,6 +28,8 @@ class HttpRequest {
   }
 
   class Method {
+    private int position = 0;
+    private int limit =0;
     private String methodString = new String();
 
     public void push_back(String in) {
@@ -38,6 +43,8 @@ class HttpRequest {
   }
 
   class Uri {
+    private int position = 0;
+    private int limit =0;
     private String uriString = new String();
 
     public void push_back(String in) {
@@ -56,7 +63,7 @@ class HttpRequest {
   }
 
   class Headers {
-    private Deque<Header> header_list = new ArrayDeque<Header>();
+    private final Deque<Header> header_list = new ArrayDeque<Header>();
     private boolean headers_empty = true;
 
     public boolean empty() {
@@ -75,8 +82,6 @@ class HttpRequest {
       header_list.getLast().value += value;
     }
 
-    public void back() {
-    }
   }
 
 }

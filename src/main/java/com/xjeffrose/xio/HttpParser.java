@@ -6,21 +6,20 @@ import java.util.logging.*;
 
 import com.xjeffrose.log.*;
 
-@SuppressWarnings (value={"unchecked", "fallthrough"})
+@SuppressWarnings (value={"fallthrough"})
 
 class HttpParser {
   private static final Logger log = Log.getLogger(HttpParser.class.getName());
-  /* private final ByteBuffer bb; */
+
   private final HttpRequest req = new HttpRequest();
   private int lastByteRead;
-  private StringBuilder debug = new StringBuilder();
 
   HttpParser() {
     lastByteRead = -1;
   }
 
-  public boolean parse(ByteBuffer bb) {
-    ByteBuffer temp = bb.duplicate();
+  public boolean parse(ChannelBuffer cb) {
+    final ByteBuffer temp = cb.bb.duplicate();
     ParseState result = ParseState.good;
     temp.flip();
     temp.position(lastByteRead + 1);
@@ -30,8 +29,8 @@ class HttpParser {
       byte bite = temp.get();
       result = parseSegment(bite);
     }
-    log.info(req.method() + "\n");
-    log.info(req.uri() + "\n");
+    log.info(req.method());
+    log.info(req.uri());
     if(result == ParseState.good) {
       return true;
     }
@@ -103,7 +102,7 @@ class HttpParser {
   }
 
   private ParseState parseSegment(byte input) {
-    byte[] inputs = {input};
+    final byte[] inputs = {input};
     switch (state_) {
       case method_start:
         if (!is_char(input) || is_ctl(input) || is_tspecial(input)) {
@@ -276,7 +275,6 @@ class HttpParser {
           return ParseState.bad;
         }
       case expecting_newline_3:
-        /* log.info("andrei needs a diaper change: " + debug); */
         return ParseState.fromBoolean(input == '\n');
       default:
         return ParseState.bad;
