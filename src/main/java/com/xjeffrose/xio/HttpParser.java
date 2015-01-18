@@ -21,6 +21,7 @@ class HttpParser {
   public boolean parse(ChannelBuffer cb) {
     final ByteBuffer temp = cb.bb.duplicate();
     ParseState result = ParseState.good;
+    req.setbb(temp);
     temp.flip();
     temp.position(lastByteRead + 1);
     while (temp.hasRemaining()) {
@@ -100,14 +101,15 @@ class HttpParser {
   }
 
   private ParseState parseSegment(byte input) {
-    final byte[] inputs = {input};
+    /* final byte[] inputs = {input}; */
+
     switch (state_) {
       case method_start:
         if (!is_char(input) || is_ctl(input) || is_tspecial(input)) {
           return ParseState.bad;
         } else {
           state_ = state.method;
-          req.method.push_back(new String(inputs, Charset.forName("UTF-8")));
+          req.method.set();
           return ParseState.indeterminate;
         }
       case method:
@@ -117,7 +119,8 @@ class HttpParser {
         } else if (!is_char(input) || is_ctl(input) || is_tspecial(input)) {
           return ParseState.bad;
         } else {
-          req.method.push_back(new String(inputs, Charset.forName("UTF-8")));
+          req.method.tick();
+          req.uri.set();
           return ParseState.indeterminate;
         }
       case uri:
@@ -127,12 +130,14 @@ class HttpParser {
         } else if (is_ctl(input)) {
           return ParseState.bad;
         } else {
-          req.uri.push_back(new String(inputs, Charset.forName("UTF-8")));
+          req.uri.tick();
+          /* log.info(req.method()); */
           return ParseState.indeterminate;
         }
       case http_version_h:
         if (input == 'H') {
           state_ = state.http_version_t_1;
+          /* log.info(req.uri()); */
           return ParseState.indeterminate;
         } else {
           return ParseState.bad;
@@ -160,8 +165,8 @@ class HttpParser {
         }
       case http_version_slash:
         if (input == '/') {
-          req.http_version_major = 0;
-          req.http_version_minor = 0;
+          /* req.http_version_major = 0; */
+          /* req.http_version_minor = 0; */
           state_ = state.http_version_major_start;
           return ParseState.indeterminate;
         } else {
@@ -205,6 +210,8 @@ class HttpParser {
         }
       case expecting_newline_1:
         if (input == '\n') {
+          /* log.info(""+req.http_version_major); */
+          /* log.info(""+req.http_version_minor); */
           state_ = state.header_line_start;
           return ParseState.indeterminate;
         } else {
@@ -220,8 +227,10 @@ class HttpParser {
         } else if (!is_char(input) || is_ctl(input) || is_tspecial(input)) {
           return ParseState.bad;
         } else {
-          req.headers.push_back();
-          req.headers.push_back_name(new String(inputs, Charset.forName("UTF-8")));
+          req.headers.newHeader();
+          req.headers.set();
+          /* req.headers.push_back(); */
+          /* req.headers.push_back_name(new String(inputs, Charset.forName("UTF-8"))); */
           state_ = state.header_name;
           return ParseState.indeterminate;
         }
@@ -235,7 +244,8 @@ class HttpParser {
           return ParseState.bad;
         } else {
           state_ = state.header_value;
-          req.headers.push_back_value(new String(inputs, Charset.forName("UTF-8")));
+          req.headers.tick();
+          /* req.headers.push_back_value(new String(inputs, Charset.forName("UTF-8"))); */
           return ParseState.indeterminate;
         }
       case header_name:
@@ -245,7 +255,8 @@ class HttpParser {
         } else if (!is_char(input) || is_ctl(input) || is_tspecial(input)) {
           return ParseState.bad;
         } else {
-          req.headers.push_back_name(new String(inputs, Charset.forName("UTF-8")));
+          //TODO
+          /* req.headers.push_back_name(new String(inputs, Charset.forName("UTF-8"))); */
           return ParseState.indeterminate;
         }
       case space_before_header_value:
@@ -262,7 +273,8 @@ class HttpParser {
         } else if (is_ctl(input)) {
           return ParseState.bad;
         } else {
-          req.headers.push_back_value(new String(inputs, Charset.forName("UTF-8")));
+          req.headers.tick();
+          /* req.headers.push_back_value(new String(inputs, Charset.forName("UTF-8"))); */
           return ParseState.indeterminate;
         }
       case expecting_newline_2:

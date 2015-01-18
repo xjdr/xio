@@ -6,7 +6,6 @@ import java.util.logging.*;
 
 import com.xjeffrose.log.*;
 
-
 //TODO: This should be a ByteBuffer[] that gets sent to channel.write();
 
 class HttpResponse {
@@ -31,9 +30,11 @@ class HttpResponse {
   }
 
   public ByteBuffer[] defaultResponse() {
-    httpVersion.set("HTTP/1.1");
-    httpStatus.set("OK\r\n");
-    httpStatusCode.set("200");
+    httpVersion.set("HTTP/1.1 ");
+    httpStatusCode.set("200 ");
+    httpStatus.set("OK");
+    headers.set("Content-Length", "40");
+    headers.set("Content-Type", "text/html");
     body.set("html><body>HELLO WORLD!</body></html>");
 
     return get();
@@ -41,7 +42,7 @@ class HttpResponse {
 
   public ByteBuffer[] get() {
     final ByteBuffer[] resp = {
-      httpVersion.get(), httpStatus.get(), httpStatusCode.get(),
+      httpVersion.get(), httpStatusCode.get(), httpStatus.get(),
       headers.get(),
       ByteBuffer.wrap(new String("\r\n\r\n").getBytes()),
       body.get()
@@ -86,7 +87,7 @@ class HttpResponse {
     }
 
     public void set(String status) {
-      httpStatus = ByteBuffer.wrap(new String(status).getBytes());
+      httpStatus = ByteBuffer.wrap(new String(status + "\r\n").getBytes());
     }
 
     public ByteBuffer get() {
@@ -112,12 +113,12 @@ class HttpResponse {
   }
 
   class Headers {
-    private final ByteBuffer headers = ByteBuffer.allocateDirect(512);
+    private final ByteBuffer headers = ByteBuffer.allocateDirect(256);
 
     Headers() {
     }
 
-    public void add(String name, String value) {
+    public void set(String name, String value) {
       final Header h = new Header(name,value);
       headers.put(h.get());
     }
