@@ -65,6 +65,10 @@ class Acceptor extends Thread {
             //log.info("Accepting Connection from: " + channel);
             EventLoop next = eventLoopPool.next();
             next.addChannel(channel);
+          } else if (!key.isValid() && !key.isAcceptable()) {
+            key.cancel();
+          } else if (!key.isValid()) {
+            key.cancel();
           }
         } catch (IOException e) {
           throw new RuntimeException(e);

@@ -47,17 +47,18 @@ class ChannelContext {
         }
       }
     }
-    cb.addStream();
+
+    //TODO: Do something upon read!
+
     /* super_naive_proxy(cb.toString()); */
-    /* super_naive_output(); */
+
     readyToWrite = true; //Neet to make this Future<boolean>
   }
 
   public void write() {
     try {
       if(readyToWrite) { // Need to do the blocking Future<boolean>.get() here
-        /* channel.write(cb.getStream()); // Is an EchoServer for Testing */
-        channel.write(new HttpResponse().defaultResponse()); // COMMENT LINE OUT: This is Only for testing
+        channel.write(new HttpResponse().defaultResponse()); //TODO: REMOVE THIS LINE ONLY FOR BENCHMARKING
         channel.close();
       }
     } catch (IOException e) {

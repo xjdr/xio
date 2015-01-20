@@ -17,14 +17,14 @@ class HttpRequest {
   public final Headers headers = new Headers();
 
   private final String regex = "\\s*\\bnull\\b\\s*";
+  private ChannelBuffer cb;
   private ByteBuffer bb;
 
   HttpRequest() {
   }
 
-  public void setbb(ByteBuffer parserbuf) {
-    bb = parserbuf.duplicate();
-    bb.flip();
+  public void cb(ChannelBuffer cb) {
+    this.cb = cb;
   }
 
   public String method() {
@@ -51,10 +51,10 @@ class HttpRequest {
   class Method {
     private int position = 0;
     private int limit =0;
-    private byte[] method = new byte[12];
+    private byte[] method;
 
     public void set() {
-      position = bb.position();
+      position = cb.position();
     }
 
     public void tick() {
@@ -62,7 +62,7 @@ class HttpRequest {
     }
 
     public String getMethod() {
-      bb.get(method, position, limit + 1);
+      method = cb.get(position, limit);
       return new String(method, Charset.forName("UTF-8"));
     }
   }
@@ -70,10 +70,10 @@ class HttpRequest {
   class Uri {
     private int position = 0;
     private int limit =0;
-    private byte[] uri = new byte[12];
+    private byte[] uri;
 
     public void set() {
-      position = bb.position();
+      position = cb.position();
     }
 
     public void tick() {
@@ -81,7 +81,7 @@ class HttpRequest {
     }
 
     public String getUri() {
-      bb.get(uri, position, limit + 1);
+      uri = cb.get(position, limit);
       return new String(uri, Charset.forName("UTF-8"));
     }
   }
@@ -89,16 +89,15 @@ class HttpRequest {
   class Header {
     private int position = 0;
     private int limit = 0;
-    private final byte[] tempHeader = new byte[256];
+    private byte[] tempHeader;
 
     Header(int pos, int limit) {
       this.position = pos;
       this.limit = limit;
-
     }
 
     public String getHeader() {
-      bb.get(tempHeader, position, limit + 1);
+      tempHeader = cb.get(position, limit);
       return new String(tempHeader, Charset.forName("UTF-8"));
     }
   }
@@ -115,7 +114,7 @@ class HttpRequest {
     }
 
     public void set() {
-      position = bb.position();
+      position = cb.position();
     }
 
     public void tick() {

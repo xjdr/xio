@@ -20,8 +20,8 @@ class HttpParser {
 
   public boolean parse(ChannelBuffer cb) {
     final ByteBuffer temp = cb.bb.duplicate();
+    req.cb(cb);
     ParseState result = ParseState.good;
-    req.setbb(temp);
     temp.flip();
     temp.position(lastByteRead + 1);
     while (temp.hasRemaining()) {
@@ -101,8 +101,6 @@ class HttpParser {
   }
 
   private ParseState parseSegment(byte input) {
-    /* final byte[] inputs = {input}; */
-
     switch (state_) {
       case method_start:
         if (!is_char(input) || is_ctl(input) || is_tspecial(input)) {
@@ -165,8 +163,6 @@ class HttpParser {
         }
       case http_version_slash:
         if (input == '/') {
-          /* req.http_version_major = 0; */
-          /* req.http_version_minor = 0; */
           state_ = state.http_version_major_start;
           return ParseState.indeterminate;
         } else {
@@ -210,8 +206,6 @@ class HttpParser {
         }
       case expecting_newline_1:
         if (input == '\n') {
-          /* log.info(""+req.http_version_major); */
-          /* log.info(""+req.http_version_minor); */
           state_ = state.header_line_start;
           return ParseState.indeterminate;
         } else {
@@ -227,6 +221,7 @@ class HttpParser {
         } else if (!is_char(input) || is_ctl(input) || is_tspecial(input)) {
           return ParseState.bad;
         } else {
+          //TODO
           req.headers.newHeader();
           req.headers.set();
           /* req.headers.push_back(); */

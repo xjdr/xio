@@ -6,7 +6,7 @@ import java.nio.charset.*;
 import java.util.concurrent.*;
 import java.util.logging.*;
 
-import sun.nio.ch.*;
+/* import sun.nio.ch.*; */
 
 import com.xjeffrose.log.*;
 
@@ -16,6 +16,14 @@ class ChannelBuffer {
   public final ByteBuffer bb = ByteBuffer.allocateDirect(1024);
   private final ByteBuffer[] stream = new ByteBuffer[256];
   private int streamIndex = 0;
+
+  public int position() {
+    return bb.position();
+  }
+
+  public int limit() {
+    return bb.limit();
+  }
 
   private ByteBuffer slice(final int position, final int limit) {
     final ByteBuffer temp = bb.duplicate();
@@ -60,10 +68,6 @@ class ChannelBuffer {
     return copy;
   }
 
-  public ByteBuffer[] getStream() {
-    return stream;
-  }
-
   public void addStream(){
     if (streamIndex > 254) {
       throw new RuntimeException("Exceeded ChannelBuffer Stream Capacity");
@@ -75,24 +79,34 @@ class ChannelBuffer {
     bb.clear();
   }
 
-  private byte[] get() {
-    return new byte[1];
+  public ByteBuffer get() {
+    ByteBuffer temp = bb.duplicate();
+    temp.flip();
+    return temp;
   }
 
-  private byte[] get(final int position, final int offset) {
-    return new byte[1];
+  public ByteBuffer[] getStream() {
+    return stream;
   }
 
-  private void put(byte[] bite) {
+  public byte[] get(final int position, final int limit) {
+    final byte[] temp = new byte[256];
+    bb.get(temp, position, limit + 1);
+    return temp;
   }
 
-  private void put(byte[] bite, final int position, final int offset) {
+  /* private void put(byte[] bite) { */
+  /*   bb.put(bite); */
+  /* } */
+  /*  */
+  /* private void put(byte[] bite, final int position, final int offset) { */
+  /* } */
+
+  public void put(ByteBuffer buf) {
+    bb.put(buf);
   }
 
-  private void put(ByteBuffer buf) {
-  }
-
-  private void put(ByteBuffer buf, final int position, final int offset) {
-  }
+  /* private void put(ByteBuffer buf, final int position, final int offset) { */
+  /* } */
 
 }

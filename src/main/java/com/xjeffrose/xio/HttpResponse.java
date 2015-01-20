@@ -6,11 +6,10 @@ import java.util.logging.*;
 
 import com.xjeffrose.log.*;
 
-//TODO: This should be a ByteBuffer[] that gets sent to channel.write();
-
 class HttpResponse {
   private static final Logger log = Log.getLogger(HttpResponse.class.getName());
 
+  private final ChannelBuffer cb = new ChannelBuffer();
   private final HttpVersion httpVersion = new HttpVersion();
   private final HttpStatus httpStatus = new HttpStatus();
   private final HttpStatusCode httpStatusCode = new HttpStatusCode();
@@ -29,26 +28,28 @@ class HttpResponse {
     return ChannelBuffer.toString(httpStatus.get());
   }
 
-  public ByteBuffer[] defaultResponse() {
+  public ByteBuffer defaultResponse() {
     httpVersion.set("HTTP/1.1 ");
     httpStatusCode.set("200 ");
     httpStatus.set("OK");
-    headers.set("Content-Length", "40");
-    headers.set("Content-Type", "text/html");
-    body.set("html><body>HELLO WORLD!</body></html>");
+    headers.set("Content-Length", "40"); // change to actual length of the body
+    headers.set("Content-Type", "text/html"); // default text/html for now
+    body.set("<html><body>HELLO WORLD!</body></html>");
 
     return get();
   }
 
-  public ByteBuffer[] get() {
-    final ByteBuffer[] resp = {
-      httpVersion.get(), httpStatusCode.get(), httpStatus.get(),
-      headers.get(),
-      ByteBuffer.wrap(new String("\r\n\r\n").getBytes()),
-      body.get()
-    };
-    return resp;
+  private ByteBuffer get() {
+    cb.put(httpVersion.get());
+    cb.put(httpStatusCode.get());
+    cb.put(httpStatus.get());
+    cb.put(headers.get());
+    cb.put(ByteBuffer.wrap(new String("\r\n\r\n").getBytes()));
+    cb.put(body.get());
+
+    return cb.get();
   }
+
 
   class HttpVersion {
     private ByteBuffer httpVersion;
@@ -124,6 +125,7 @@ class HttpResponse {
     }
 
     public ByteBuffer get() {
+      headers.flip();
       return headers;
     }
 
