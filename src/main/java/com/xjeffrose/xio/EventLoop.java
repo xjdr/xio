@@ -12,9 +12,10 @@ import com.xjeffrose.log.*;
 
 class EventLoop extends Thread {
   private final Logger log = Log.getLogger(EventLoop.class.getName());
+
+  private final ConcurrentLinkedDeque<SocketChannel> channelsToAdd = new ConcurrentLinkedDeque<SocketChannel>();
   private final AtomicBoolean isRunning = new AtomicBoolean(true);
   private final Selector selector;
-  private final ConcurrentLinkedDeque<SocketChannel> channelsToAdd = new ConcurrentLinkedDeque<SocketChannel>();
 
   EventLoop() {
     try {
@@ -22,7 +23,6 @@ class EventLoop extends Thread {
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
-
   }
 
   public void addChannel(SocketChannel channel) {
@@ -65,7 +65,6 @@ class EventLoop extends Thread {
             ChannelContext ctx = (ChannelContext) key.attachment();
             ctx.write();
           }
-
         } catch (Exception e) {
           throw new RuntimeException(e);
         }

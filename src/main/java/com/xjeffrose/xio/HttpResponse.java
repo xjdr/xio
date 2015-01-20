@@ -9,7 +9,7 @@ import com.xjeffrose.log.*;
 class HttpResponse {
   private static final Logger log = Log.getLogger(HttpResponse.class.getName());
 
-  private final ChannelBuffer cb = new ChannelBuffer();
+  private final ByteBuffer bb = ByteBuffer.allocateDirect(1024);
   private final HttpVersion httpVersion = new HttpVersion();
   private final HttpStatus httpStatus = new HttpStatus();
   private final HttpStatusCode httpStatusCode = new HttpStatusCode();
@@ -28,7 +28,7 @@ class HttpResponse {
     return ChannelBuffer.toString(httpStatus.get());
   }
 
-  public ByteBuffer defaultResponse() {
+  public ByteBuffer[] defaultResponse() {
     httpVersion.set("HTTP/1.1 ");
     httpStatusCode.set("200 ");
     httpStatus.set("OK");
@@ -39,15 +39,15 @@ class HttpResponse {
     return get();
   }
 
-  private ByteBuffer get() {
-    cb.put(httpVersion.get());
-    cb.put(httpStatusCode.get());
-    cb.put(httpStatus.get());
-    cb.put(headers.get());
-    cb.put(ByteBuffer.wrap(new String("\r\n\r\n").getBytes()));
-    cb.put(body.get());
+  private ByteBuffer[] get() {
+    final ByteBuffer[] resp = {
+      httpVersion.get(), httpStatusCode.get(), httpStatus.get(),
+      headers.get(),
+      ByteBuffer.wrap(new String("\r\n\r\n").getBytes()),
+      body.get(),
+    };
 
-    return cb.get();
+    return resp;
   }
 
 

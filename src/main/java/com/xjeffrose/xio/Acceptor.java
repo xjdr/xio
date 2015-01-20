@@ -28,7 +28,6 @@ class Acceptor extends Thread {
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
-
   }
 
   public boolean ready() {
@@ -65,15 +64,12 @@ class Acceptor extends Thread {
             //log.info("Accepting Connection from: " + channel);
             EventLoop next = eventLoopPool.next();
             next.addChannel(channel);
-          } else if (!key.isValid() && !key.isAcceptable()) {
-            key.cancel();
-          } else if (!key.isValid()) {
+          } else if (!key.isValid() || !key.isAcceptable()) {
             key.cancel();
           }
         } catch (IOException e) {
           throw new RuntimeException(e);
         }
-
       }
     }
   }

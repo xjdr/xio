@@ -17,14 +17,14 @@ class HttpRequest {
   public final Headers headers = new Headers();
 
   private final String regex = "\\s*\\bnull\\b\\s*";
-  private ChannelBuffer cb;
   private ByteBuffer bb;
 
   HttpRequest() {
   }
 
-  public void cb(ChannelBuffer cb) {
-    this.cb = cb;
+  public void bb(ByteBuffer pbb) {
+    bb = pbb.duplicate();
+    bb.flip();
   }
 
   public String method() {
@@ -33,6 +33,10 @@ class HttpRequest {
 
   public String uri() {
     return uri.getUri();
+  }
+
+  public String headers() {
+    return headers.get();
   }
 
   public String httpVersion() {
@@ -51,10 +55,10 @@ class HttpRequest {
   class Method {
     private int position = 0;
     private int limit =0;
-    private byte[] method;
+    private byte[] method = new byte[12];
 
     public void set() {
-      position = cb.position();
+      position = bb.position();
     }
 
     public void tick() {
@@ -62,7 +66,7 @@ class HttpRequest {
     }
 
     public String getMethod() {
-      method = cb.get(position, limit);
+      bb.get(method, position, limit+1);
       return new String(method, Charset.forName("UTF-8"));
     }
   }
@@ -70,10 +74,10 @@ class HttpRequest {
   class Uri {
     private int position = 0;
     private int limit =0;
-    private byte[] uri;
+    private byte[] uri = new byte[12];
 
     public void set() {
-      position = cb.position();
+      position = bb.position();
     }
 
     public void tick() {
@@ -81,7 +85,7 @@ class HttpRequest {
     }
 
     public String getUri() {
-      uri = cb.get(position, limit);
+      bb.get(uri, position, limit+1);
       return new String(uri, Charset.forName("UTF-8"));
     }
   }
@@ -89,43 +93,53 @@ class HttpRequest {
   class Header {
     private int position = 0;
     private int limit = 0;
-    private byte[] tempHeader;
+    private byte[] temp = new byte[256];
 
     Header(int pos, int limit) {
       this.position = pos;
       this.limit = limit;
     }
 
-    public String getHeader() {
-      tempHeader = cb.get(position, limit);
-      return new String(tempHeader, Charset.forName("UTF-8"));
+    public Map<String,String> get() {
+      bb.get(temp, position, limit);
+      String rawHeader = new String(temp, Charset.forName("UTF-8"));
+      String[] splitHeader = rawHeader.split(":");
+      /* Map<String,String> hmap = new HashMap(splitHeader[0],splitHeader[1]); */
+      /* return hmap; */
+      return new HashMap<String,String>();
     }
   }
 
   class Headers {
-    private int position = 0;
-    private int limit = 0;
+    private final Deque<Header> header_list = new ArrayDeque<Header>();
+    /* String header = new String(); */
+    /* private int position = 0; */
+    /* private int limit = 0; */
 
     Headers() {
     }
 
     public boolean empty() {
-      return true;
+      return header_list.size() == 0;
     }
 
     public void set() {
-      position = cb.position();
+      header_list.getLast().position = bb.position();
     }
 
     public void tick() {
-      limit++;
+      header_list.getLast().limit++;
     }
 
     public void newHeader() {
-      Header h = new Header(position, limit);
+      header_list.addLast(new Header(bb.position(), bb.position()));
     }
 
-    public String getHeaders() {
+    public String get() {
+    /*   for (Header h : header_list) { */
+    /*     header += h.get(); */
+    /*   } */
+    /*   return header; */
       return new String();
     }
 

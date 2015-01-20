@@ -11,24 +11,22 @@ import com.xjeffrose.log.*;
 class HttpParser {
   private static final Logger log = Log.getLogger(HttpParser.class.getName());
 
-  private final HttpRequest req = new HttpRequest();
   private int lastByteRead;
+  private final HttpRequest req = new HttpRequest();
 
   HttpParser() {
     lastByteRead = -1;
   }
 
-  public boolean parse(ChannelBuffer cb) {
-    final ByteBuffer temp = cb.bb.duplicate();
-    req.cb(cb);
+  public boolean parse(ByteBuffer bb) {
+    final ByteBuffer temp = bb.duplicate();
     ParseState result = ParseState.good;
+    req.bb(temp);
     temp.flip();
     temp.position(lastByteRead + 1);
     while (temp.hasRemaining()) {
-      int index = temp.position();
-      lastByteRead = index;
-      byte bite = temp.get();
-      result = parseSegment(bite);
+      lastByteRead = temp.position();
+      result = parseSegment(temp.get());
     }
     if(result == ParseState.good) {
       return true;
@@ -280,6 +278,7 @@ class HttpParser {
           return ParseState.bad;
         }
       case expecting_newline_3:
+        /* log.info(req.headers()); */
         return ParseState.fromBoolean(input == '\n');
       default:
         return ParseState.bad;

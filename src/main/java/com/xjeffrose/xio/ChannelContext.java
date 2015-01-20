@@ -8,12 +8,17 @@ import java.util.logging.*;
 
 import com.xjeffrose.log.*;
 
+// TODO: On HTTP GET method stop reading after \r\n\r\n
+// TODO: On HTTP POST method create a new ByteBuffer for the payload
+// TODO: Parse JSON
+
 class ChannelContext {
   private static final Logger log = Log.getLogger(ChannelContext.class.getName());
 
   public final SocketChannel channel;
-  public final ChannelBuffer cb = new ChannelBuffer();
-  public HttpParser parser = new HttpParser();
+  public final ByteBuffer bb = ByteBuffer.allocateDirect(1024);
+  public final HttpParser parser = new HttpParser();
+
   private boolean readyToWrite = false;
 
   ChannelContext(SocketChannel channel) {
@@ -22,21 +27,18 @@ class ChannelContext {
 
   public void read() {
     int nread = 1;
+
     while (nread > 0) {
       try {
-        nread = channel.read(cb.bb);
+        nread = channel.read(bb);
         if (nread == 0) {
           break;
         }
-        if (!parser.parse(cb)) {
+        if (!parser.parse(bb)) {
           throw new RuntimeException("Parser Failed to Parse");
         }
       } catch (IOException e) {
         throw new RuntimeException(e);
-      }
-      if (nread > 1020) {
-        cb.addStream();
-        nread = 1;
       }
       if (nread == -1) {
         try {
@@ -49,7 +51,6 @@ class ChannelContext {
     }
 
     //TODO: Do something upon read!
-
     /* super_naive_proxy(cb.toString()); */
 
     readyToWrite = true; //Neet to make this Future<boolean>
@@ -125,6 +126,5 @@ class ChannelContext {
   /*     throw new RuntimeException(e); */
   /*   } */
   /* } */
-
 
 }
