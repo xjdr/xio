@@ -19,6 +19,8 @@ class ChannelContext {
   public final ByteBuffer bb = ByteBuffer.allocateDirect(1024);
   public final HttpParser parser = new HttpParser();
 
+  private final ByteBuffer[] defaultHttpResponse = new HttpResponse().defaultResponse();
+
   private boolean readyToWrite = false;
 
   ChannelContext(SocketChannel channel) {
@@ -59,7 +61,7 @@ class ChannelContext {
   public void write() {
     try {
       if(readyToWrite) { // Need to do the blocking Future<boolean>.get() here
-        channel.write(new HttpResponse().defaultResponse()); //TODO: REMOVE THIS LINE ONLY FOR BENCHMARKING
+        channel.write(defaultHttpResponse); //TODO: REMOVE THIS LINE ONLY FOR BENCHMARKING
         channel.close();
       }
     } catch (IOException e) {

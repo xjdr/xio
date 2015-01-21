@@ -13,9 +13,11 @@ class Main {
 
     try {
       Server s = new Server();
+      Client c = new Client();
       // s.addroute("/", exampleService)
 
       s.serve(8080);
+      /* c.get(8080); */
       /* s.serve(8080, 8); */
       /* s.serve("localhost",8080); */
       /* s.serve("localhost",8080, 8); */
