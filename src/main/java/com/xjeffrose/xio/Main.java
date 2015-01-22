@@ -17,7 +17,7 @@ class Main {
       // s.addroute("/", exampleService)
 
       s.serve(8080);
-      /* c.get(8080); */
+      c.get(8000);
       /* s.serve(8080, 8); */
       /* s.serve("localhost",8080); */
       /* s.serve("localhost",8080, 8); */

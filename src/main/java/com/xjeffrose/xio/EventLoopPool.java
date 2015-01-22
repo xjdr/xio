@@ -14,6 +14,7 @@ class EventLoopPool {
   private static final Logger log = Log.getLogger(EventLoopPool.class.getName());
 
   private final ConcurrentLinkedDeque<EventLoop> pool = new ConcurrentLinkedDeque<EventLoop>();
+  private EventLoop loop;
 
   EventLoopPool(int poolSize) {
     for (int i=0; i<poolSize; i++) {
@@ -28,7 +29,7 @@ class EventLoopPool {
   }
 
   public EventLoop next() {
-    EventLoop loop = pool.removeFirst();
+    loop = pool.removeFirst();
     pool.addLast(loop);
     return loop;
   }

@@ -1,9 +1,6 @@
 #!/bin/bash
 
-javac src/main/java/com/xjeffrose/{log,xio}/*.java &&
-
-echo 'Running xio on port 8080'
-
+javac src/main/java/com/xjeffrose/{log,xio}/*.java && \
 java -ea                          \
   $JAVA_OPTS                      \
   -Djava.net.preferIPv4Stack=true \
@@ -19,5 +16,5 @@ java -ea                          \
   -Xms512M                        \
   -Xmx2G                          \
   -server                         \
-  -cp src/main/java com.xjeffrose.xio.Main "$@"
-
+  -cp src/main/java com.xjeffrose.xio.Main "$@" &&
+echo 'Running xio on port 8080'

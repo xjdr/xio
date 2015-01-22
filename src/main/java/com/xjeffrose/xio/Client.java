@@ -11,6 +11,7 @@ import com.xjeffrose.log.*;
 
 //TODO: Add support for tuples of hosts for round robin LB
 //TODO: Add support for pull based / latency based LB algo
+//TODO: Add support for GET and POST methods
 
 class Client {
   private static final Logger log = Log.getLogger(Client.class.getName());
