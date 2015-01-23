@@ -1,6 +1,7 @@
 package com.xjeffrose.xio;
 
 import java.io.*;
+import java.util.concurrent.*;
 import java.util.logging.*;
 
 import com.xjeffrose.log.*;
@@ -17,7 +18,7 @@ class Main {
       // s.addroute("/", exampleService)
 
       s.serve(8080);
-      c.get(8000);
+      Future<HttpResponse> f = c.get(8000);
       /* s.serve(8080, 8); */
       /* s.serve("localhost",8080); */
       /* s.serve("localhost",8080, 8); */

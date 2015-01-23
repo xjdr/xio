@@ -3,14 +3,14 @@ import spock.lang.*
 import java.nio.*
 
 
-class Http extends Specification {
+class HttpParser extends Specification {
 def payload = """\
 GET / HTTP/1.1\r
 User-Agent: curl/7.35.0\r
 Host: localhost:8000\r
 Accept: */*\r\n\r\n"""
 
-    def "http does stuff"() {
+    def "HttpParser parses headers correctly"() {
         when:
         def buffer = ByteBuffer.allocateDirect(1024)
         def parser = new HttpParser()

@@ -4,6 +4,7 @@ import java.io.*;
 import java.nio.*;
 import java.nio.channels.*;
 import java.util.*;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;
 import java.util.logging.*;
 
@@ -17,10 +18,12 @@ class Connector {
   private final SocketChannel clientChannel;
   private final Selector selector;
   private final EventLoopPool eventLoopPool;
+  private final ClientChannelContext context;
 
   Connector(SocketChannel clientChannel, EventLoopPool eventLoopPool) {
     this.clientChannel = clientChannel;
     this.eventLoopPool = eventLoopPool;
+    context = new ClientChannelContext(clientChannel);
 
     try {
     selector = Selector.open();
@@ -28,6 +31,10 @@ class Connector {
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
+  }
+
+  public Future<HttpResponse> getResponse() {
+    return context.promise;
   }
 
   public boolean ready() {
@@ -68,7 +75,7 @@ class Connector {
             }
             //log.info("Connecting to: " + channel);
             EventLoop next = eventLoopPool.next();
-            next.addChannel(channel);
+            next.addContext(context);
             isRunning.set(false);
           } else if (!key.isValid() || !key.isConnectable()) {
             key.cancel();

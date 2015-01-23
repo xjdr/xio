@@ -4,6 +4,7 @@ import java.io.*;
 import java.net.*;
 import java.nio.channels.*;
 import java.util.*;
+import java.util.concurrent.*;
 import java.util.logging.*;
 import java.util.stream.*;
 
@@ -28,26 +29,27 @@ class Client {
     pool = new EventLoopPool(cores);
   }
 
-  private void schedule(SocketChannel channel) {
-    Connector connector = new Connector(channel, pool);
+  private void schedule(Connector connector) {
     connector.start();
     pool.start();
   }
 
-  private void connect(InetSocketAddress addr) throws IOException {
+  private Connector connect(InetSocketAddress addr) throws IOException {
     channel = SocketChannel.open();
     channel.configureBlocking(false);
     channel.connect(addr);
-    schedule(channel);
+    Connector connector = new Connector(channel, pool);
+    schedule(connector);
+    return connector;
   }
 
   /* private void announce(String path, Set<String> zkHosts) { */
   /* } */
 
-  void get(int port) throws IOException {
-    cores = Runtime.getRuntime().availableProcessors();
+  Future<HttpResponse> get(int port) throws IOException {
     addr = new InetSocketAddress(port);
-    connect(addr);
+    Connector connector = connect(addr);
+    return connector.getResponse();
   }
 
   void get(int port, int cores) throws IOException {

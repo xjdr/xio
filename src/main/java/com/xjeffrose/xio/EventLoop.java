@@ -14,6 +14,7 @@ class EventLoop extends Thread {
   private final Logger log = Log.getLogger(EventLoop.class.getName());
 
   private final ConcurrentLinkedDeque<SocketChannel> channelsToAdd = new ConcurrentLinkedDeque<SocketChannel>();
+  private final ConcurrentLinkedDeque<ChannelContext> contextsToAdd = new ConcurrentLinkedDeque<ChannelContext>();
   private final AtomicBoolean isRunning = new AtomicBoolean(true);
   private final Selector selector;
 
@@ -27,6 +28,11 @@ class EventLoop extends Thread {
 
   public void addChannel(SocketChannel channel) {
     channelsToAdd.push(channel);
+    selector.wakeup();
+  }
+
+  public void addContext(ChannelContext context) {
+    contextsToAdd.push(context);
     selector.wakeup();
   }
 
@@ -70,15 +76,33 @@ class EventLoop extends Thread {
         }
       }
 
-      while (channelsToAdd.size() > 0) {
-        try {
-          SocketChannel channel = channelsToAdd.pop();
-          channel.configureBlocking(false);
-          ChannelContext ctx = new ChannelContext(channel);
-          channel.register(selector, SelectionKey.OP_WRITE | SelectionKey.OP_READ, ctx);
-        } catch (IOException e) {
-          throw new RuntimeException(e);
-        }
+      _addChannels();
+      _addContexts();
+    }
+  }
+
+  private void _addChannels() {
+    while (channelsToAdd.size() > 0) {
+      try {
+        SocketChannel channel = channelsToAdd.pop();
+        channel.configureBlocking(false);
+        ChannelContext ctx = new ChannelContext(channel);
+        channel.register(selector, SelectionKey.OP_WRITE | SelectionKey.OP_READ, ctx);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    }
+  }
+
+  private void _addContexts() {
+    while (contextsToAdd.size() > 0) {
+      try {
+        ChannelContext context = contextsToAdd.pop();
+        context.channel.configureBlocking(false);
+        context.channel.register(selector, SelectionKey.OP_WRITE | SelectionKey.OP_READ, context);
+        //TODO: context.channel.register(selector, context.interestedOps(), context);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
       }
     }
   }
