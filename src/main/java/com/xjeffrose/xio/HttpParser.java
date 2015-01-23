@@ -34,6 +34,10 @@ class HttpParser {
     return false;
   }
 
+  public HttpRequest request() {
+    return req;
+  }
+
   private enum state {
     method_start,
     method,
@@ -80,7 +84,7 @@ class HttpParser {
     }
   }
 
-  private boolean is_digit(int c) {
+  private boolean is_digit(char c) {
     return c >= '0' && c <= '9';
   }
 
@@ -105,7 +109,7 @@ class HttpParser {
           return ParseState.bad;
         } else {
           state_ = state.method;
-          req.method.set();
+          req.method.tick(lastByteRead);
           return ParseState.indeterminate;
         }
       case method:
@@ -115,8 +119,7 @@ class HttpParser {
         } else if (!is_char(input) || is_ctl(input) || is_tspecial(input)) {
           return ParseState.bad;
         } else {
-          req.method.tick();
-          req.uri.set();
+          req.method.tick(lastByteRead);
           return ParseState.indeterminate;
         }
       case uri:
@@ -126,7 +129,7 @@ class HttpParser {
         } else if (is_ctl(input)) {
           return ParseState.bad;
         } else {
-          req.uri.tick();
+          req.uri.tick(lastByteRead);
           /* log.info(req.method()); */
           return ParseState.indeterminate;
         }
@@ -167,8 +170,8 @@ class HttpParser {
           return ParseState.bad;
         }
       case http_version_major_start:
-        if (is_digit(input)) {
-          req.http_version_major = req.http_version_major * 10 + input - '0';
+        if (is_digit((char)input)) {
+          req.http_version_major = (char)input - '0'; //req.http_version_major * 10 + input - '0';
           state_ = state.http_version_major;
           return ParseState.indeterminate;
         } else {
@@ -178,15 +181,15 @@ class HttpParser {
         if (input == '.') {
           state_ = state.http_version_minor_start;
           return ParseState.indeterminate;
-        } else if (is_digit(input)) {
-          req.http_version_major = req.http_version_major * 10 + input - '0';
+        } else if (is_digit((char)input)) {
+          req.http_version_major = req.http_version_major * 10 + (char)input - '0'; //req.http_version_major * 10 + input - '0';
           return ParseState.indeterminate;
         } else {
           return ParseState.bad;
         }
       case http_version_minor_start:
-        if (is_digit(input)) {
-          req.http_version_minor = req.http_version_minor * 10 + input - '0';
+        if (is_digit((char)input)) {
+          req.http_version_minor = (char)input - '0'; //req.http_version_minor * 10 + input - '0';
           state_ = state.http_version_minor;
           return ParseState.indeterminate;
         } else {
@@ -196,8 +199,9 @@ class HttpParser {
         if (input == '\r') {
           state_ = state.expecting_newline_1;
           return ParseState.indeterminate;
-        } else if (is_digit(input)) {
-          req.http_version_minor = req.http_version_minor * 10 + input - '0';
+        } else if (is_digit((char)input)) {
+          /* req.http_version_minor = req.http_version_minor * 10 + input - '0'; */
+          req.http_version_minor = req.http_version_minor * 10 + (char)input - '0';
           return ParseState.indeterminate;
         } else {
           return ParseState.bad;
@@ -221,7 +225,7 @@ class HttpParser {
         } else {
           //TODO
           req.headers.newHeader();
-          req.headers.set();
+          req.headers.tick(lastByteRead);
           /* req.headers.push_back(); */
           /* req.headers.push_back_name(new String(inputs, Charset.forName("UTF-8"))); */
           state_ = state.header_name;
@@ -237,7 +241,8 @@ class HttpParser {
           return ParseState.bad;
         } else {
           state_ = state.header_value;
-          req.headers.tick();
+          req.headers.newValue();
+          req.headers.tick(lastByteRead);
           /* req.headers.push_back_value(new String(inputs, Charset.forName("UTF-8"))); */
           return ParseState.indeterminate;
         }
@@ -249,12 +254,14 @@ class HttpParser {
           return ParseState.bad;
         } else {
           //TODO
+          req.headers.tick(lastByteRead);
           /* req.headers.push_back_name(new String(inputs, Charset.forName("UTF-8"))); */
           return ParseState.indeterminate;
         }
       case space_before_header_value:
         if (input == ' ') {
           state_ = state.header_value;
+          req.headers.newValue();
           return ParseState.indeterminate;
         } else {
           return ParseState.bad;
@@ -266,7 +273,7 @@ class HttpParser {
         } else if (is_ctl(input)) {
           return ParseState.bad;
         } else {
-          req.headers.tick();
+          req.headers.tick(lastByteRead);
           /* req.headers.push_back_value(new String(inputs, Charset.forName("UTF-8"))); */
           return ParseState.indeterminate;
         }
@@ -279,6 +286,7 @@ class HttpParser {
         }
       case expecting_newline_3:
         /* log.info(req.headers()); */
+        req.headers.done();
         return ParseState.fromBoolean(input == '\n');
       default:
         return ParseState.bad;

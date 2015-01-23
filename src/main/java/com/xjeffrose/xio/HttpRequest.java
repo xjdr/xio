@@ -16,7 +16,6 @@ class HttpRequest {
   public final Method method = new Method();
   public final Headers headers = new Headers();
 
-  private final String regex = "\\s*\\bnull\\b\\s*";
   private ByteBuffer bb;
 
   HttpRequest() {
@@ -35,15 +34,12 @@ class HttpRequest {
     return uri.getUri();
   }
 
-  public String headers() {
-    return headers.get();
-  }
-
   public String httpVersion() {
     return new String("HTTP" +
-                      Integer.toString(http_version_major) +
                       "/" +
-                      Integer.toString(http_version_minor));
+                      http_version_major +
+                      "." +
+                      http_version_minor);
   }
 
   public String getQueryString() {
@@ -52,129 +48,103 @@ class HttpRequest {
     return qs;
   }
 
-  class Method {
-    private int position = 0;
-    private int limit =0;
-    private byte[] method = new byte[12];
+  class Picker {
+    private int position = -1;
+    private int limit = 0;
 
-    public void set() {
-      position = bb.position();
-    }
-
-    public void tick() {
+    public void tick(int currentPos) {
+      if (position == -1) {
+        position = currentPos;
+      }
       limit++;
     }
 
-    public String getMethod() {
-      bb.get(method, position, limit+1);
-      return new String(method, Charset.forName("UTF-8"));
+    public String get() {
+      final byte[] value = new byte[limit];
+      bb.position(position);
+      bb.get(value);
+      return new String(value, Charset.forName("UTF-8"));
     }
   }
 
-  class Uri {
-    private int position = 0;
-    private int limit =0;
-    private byte[] uri = new byte[12];
-
-    public void set() {
-      position = bb.position();
+  class Method extends Picker {
+    public String getMethod() {
+      return get();
     }
+  }
 
-    public void tick() {
-      limit++;
-    }
-
+  class Uri extends Picker {
     public String getUri() {
-      bb.get(uri, position, limit+1);
-      return new String(uri, Charset.forName("UTF-8"));
+      return get();
     }
   }
 
   class Header {
-    private int position = 0;
-    private int limit = 0;
-    private byte[] temp = new byte[256];
 
-    Header(int pos, int limit) {
-      this.position = pos;
-      this.limit = limit;
+    private final Picker name = new Picker();
+    private final Picker value = new Picker();
+    private Picker currentPicker;
+
+    Header() {
+      currentPicker = name;
     }
 
-    public Map<String,String> get() {
-      bb.get(temp, position, limit);
-      String rawHeader = new String(temp, Charset.forName("UTF-8"));
-      String[] splitHeader = rawHeader.split(":");
-      /* Map<String,String> hmap = new HashMap(splitHeader[0],splitHeader[1]); */
-      /* return hmap; */
-      return new HashMap<String,String>();
+    public String name() {
+      return name.get();
+    }
+
+    public String value() {
+      return value.get();
+    }
+
+    public void tick(int currentPos) {
+      currentPicker.tick(currentPos);
+    }
+
+    public void startValue() {
+      currentPicker = value;
     }
   }
 
   class Headers {
     private final Deque<Header> header_list = new ArrayDeque<Header>();
-    /* String header = new String(); */
-    /* private int position = 0; */
-    /* private int limit = 0; */
+
+    public Map<String, Header> headerMap = new HashMap<String, Header>();
+    private Header currentHeader = null;
 
     Headers() {
+    }
+
+    public void newHeader() {
+      if (currentHeader != null) {
+        done();
+      }
+      currentHeader = new Header();
+    }
+
+    public void done() {
+      headerMap.put(currentHeader.name(), currentHeader);
+    }
+
+    public void newValue() {
+      currentHeader.startValue();
+    }
+
+    public void tick(int currentPos) {
+      currentHeader.tick(currentPos);
     }
 
     public boolean empty() {
       return header_list.size() == 0;
     }
 
-    public void set() {
-      header_list.getLast().position = bb.position();
+    public String get(String name) {
+      Header header = headerMap.get(name);
+      if (header != null) {
+        return header.value();
+      } else {
+        return "";
+      }
     }
-
-    public void tick() {
-      header_list.getLast().limit++;
-    }
-
-    public void newHeader() {
-      header_list.addLast(new Header(bb.position(), bb.position()));
-    }
-
-    public String get() {
-    /*   for (Header h : header_list) { */
-    /*     header += h.get(); */
-    /*   } */
-    /*   return header; */
-      return new String();
-    }
-
-
   }
-
-  /* class Header { */
-  /*   public String name = new String(); */
-  /*   public String value = new String(); */
-  /* } */
-
-  /* class Headers { */
-  /*   private final Deque<Header> header_list = new ArrayDeque<Header>(); */
-  /*   private boolean headers_empty = true; */
-  /*  */
-  /*   public boolean empty() { */
-  /*     return header_list.size() == 0; */
-  /*   } */
-  /*  */
-  /*   public void push_back() { */
-  /*     header_list.addLast(new Header()); */
-  /*   } */
-  /*  */
-  /*   public void push_back_name(String name) { */
-  /*     header_list.getLast().name += name; */
-  /*   } */
-  /*  */
-  /*   public void push_back_value(String value) { */
-  /*     header_list.getLast().value += value; */
-  /*   } */
-  /*  */
-  /*   public Map<String,String> get(String name) { */
-  /*     return new HashMap<String,String>(); */
-  /*   } */
-  /*  */
-  /* } */
-
 }

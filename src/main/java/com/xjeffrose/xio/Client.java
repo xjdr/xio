@@ -21,13 +21,14 @@ class Client {
   private InetAddress host;
   private InetSocketAddress addr;
   private SocketChannel channel;
+  private EventLoopPool pool;
 
   Client() {
+    cores = Runtime.getRuntime().availableProcessors();
+    pool = new EventLoopPool(cores);
   }
 
   private void schedule(SocketChannel channel) {
-    cores = Runtime.getRuntime().availableProcessors();
-    EventLoopPool pool = new EventLoopPool(cores);
     Connector connector = new Connector(channel, pool);
     connector.start();
     pool.start();
@@ -66,7 +67,6 @@ class Client {
   }
 
   void get(InetAddress host, int port) throws IOException {
-    cores = Runtime.getRuntime().availableProcessors();
     addr = new InetSocketAddress(host, port);
     connect(addr);
   }

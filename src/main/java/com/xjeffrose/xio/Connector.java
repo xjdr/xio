@@ -9,7 +9,7 @@ import java.util.logging.*;
 
 import com.xjeffrose.log.*;
 
-class Connector extends Thread {
+class Connector {
   private static final Logger log = Log.getLogger(Connector.class.getName());
 
   private final AtomicBoolean isRunning = new AtomicBoolean(true);
@@ -42,6 +42,8 @@ class Connector extends Thread {
     isRunning.set(false);
   }
 
+  public void start() { run(); }
+
   public void run() {
     while(running()){
       try {
@@ -67,8 +69,10 @@ class Connector extends Thread {
             //log.info("Connecting to: " + channel);
             EventLoop next = eventLoopPool.next();
             next.addChannel(channel);
+            isRunning.set(false);
           } else if (!key.isValid() || !key.isConnectable()) {
             key.cancel();
+            isRunning.set(false);
           }
         } catch (IOException e) {
           throw new RuntimeException(e);
