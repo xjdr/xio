@@ -109,6 +109,8 @@ class HttpRequest {
   class Headers {
     private final Deque<Header> header_list = new ArrayDeque<Header>();
 
+    // TODO prefer list of Header objects to minimize String objects at parse
+    // time.
     public Map<String, Header> headerMap = new HashMap<String, Header>();
     private Header currentHeader = null;
 
