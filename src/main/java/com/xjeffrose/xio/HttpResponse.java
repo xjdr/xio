@@ -1,152 +1,139 @@
 package com.xjeffrose.xio;
 
 import java.nio.*;
+import java.time.*;
+import java.time.format.*;
 import java.util.*;
+import java.util.concurrent.*;
 import java.util.logging.*;
 
 import com.xjeffrose.log.*;
 
+//TODO: Need to actually handle setting and getting the body of the response
+
 class HttpResponse {
   private static final Logger log = Log.getLogger(HttpResponse.class.getName());
 
-  private final ByteBuffer bb = ByteBuffer.allocateDirect(1024);
-  private final HttpVersion httpVersion = new HttpVersion();
-  private final HttpStatus httpStatus = new HttpStatus();
-  private final HttpStatusCode httpStatusCode = new HttpStatusCode();
-  private final Headers headers = new Headers();
-  private final Body body = new Body();
+  private ResponseBuilder resp;
 
-  public String httpVersion() {
-    return ChannelBuffer.toString(httpVersion.get());
+  HttpResponse() {
+    this.resp = defaultNotFound();
   }
 
-  public String statusCode() {
-    return ChannelBuffer.toString(httpStatusCode.get());
+  public ByteBuffer[] get() {
+    return resp.build();
   }
 
-  public String status() {
-    return ChannelBuffer.toString(httpStatus.get());
+  public void ok() {
+    resp = defaultResponse();
   }
 
-  public ByteBuffer[] defaultResponse() {
-    httpVersion.set("HTTP/1.1 ");
-    httpStatusCode.set("200 ");
-    httpStatus.set("OK");
-    headers.set("Content-Length", "40"); // change to actual length of the body
-    headers.set("Content-Type", "text/html"); // default text/html for now
-    body.set("<html><body>HELLO WORLD!</body></html>");
-
-    return get();
+  public void notFound() {
+    resp = defaultNotFound();
   }
 
-  private ByteBuffer[] get() {
-    final ByteBuffer[] resp = {
-      httpVersion.get(), httpStatusCode.get(), httpStatus.get(),
-      headers.get(),
-      ByteBuffer.wrap(new String("\r\n\r\n").getBytes()),
-      body.get(),
-    };
-
-    return resp;
+  public void body(String body) {
+    resp = resp.addHeader("Content-Length", Integer.toString(body.length()));
+    resp = resp.addBody(body);
   }
 
+  static class ResponseBuilder {
+    private String protocol;
+    private String responseCode;
+    private String responseString;
+    private List<String> headers = new CopyOnWriteArrayList<String>();
+    private String body = new String();;
 
-  class HttpVersion {
-    private ByteBuffer httpVersion;
-
-    HttpVersion() {
+    static public ResponseBuilder newBuilder() {
+      return new ResponseBuilder();
     }
 
-    public void set(String version) {
-      httpVersion = ByteBuffer.wrap(new String(version).getBytes());
+    public ResponseBuilder protocol(String protocol) {
+      this.protocol = protocol;
+      return this;
     }
 
-    public ByteBuffer get() {
-      return httpVersion;
-    }
-  }
-
-  class HttpStatusCode {
-    private ByteBuffer httpStatusCode;
-
-    HttpStatusCode() {
+    public ResponseBuilder responseCode(String code) {
+      this.responseCode = code;
+      return this;
     }
 
-    public void set(String statusCode) {
-      httpStatusCode = ByteBuffer.wrap(new String(statusCode).getBytes());
+    public ResponseBuilder responseString(String rString) {
+      this.responseString = rString;
+      return this;
     }
 
-    public ByteBuffer get() {
-      return httpStatusCode;
-    }
-  }
-
-  class HttpStatus {
-    private ByteBuffer httpStatus;
-
-    HttpStatus() {
+    public ResponseBuilder addHeader(String name, String value) {
+      headers.add(name + ": " + value);
+      return this;
     }
 
-    public void set(String status) {
-      httpStatus = ByteBuffer.wrap(new String(status + "\r\n").getBytes());
+    public ResponseBuilder addBody(String body) {
+      this.body += body;
+      return this;
     }
 
-    public ByteBuffer get() {
-      return httpStatus;
+    public ByteBuffer[] build() {
+      ByteBuffer[] buffers = {
+        // Response Line
+        ByteBuffer.wrap(protocol.getBytes()),
+        ByteBuffer.wrap(responseCode.getBytes()),
+        ByteBuffer.wrap(responseString.getBytes()),
+        ByteBuffer.wrap(new String("\r\n").getBytes()),
+        // headers
+        _headers(),
+        ByteBuffer.wrap(new String("\r\n").getBytes()),
+        //body
+        _body(),
+      };
+
+      return buffers;
     }
-  }
 
-  class Header {
-    private final String name;
-    private final String value;
-    private final ByteBuffer header;
+    private ByteBuffer _headers() {
+      int sum = 0;
+      for (String header : headers) {
+        sum += header.length();
+        sum += 2; // \r\n
+      }
 
-    Header(String name, String value) {
-      this.name = name;
-      this.value = value;
+      final ByteBuffer buffer = ByteBuffer.allocateDirect(sum + 128);
+      for (String header : headers) {
+        buffer.put(ByteBuffer.wrap(header.getBytes()));
+        buffer.put(ByteBuffer.wrap(new String("\r\n").getBytes()));
+      }
 
-      header = ByteBuffer.wrap(new String(name + ": " + value + "\r\n").getBytes());
+      buffer.flip();
+      return buffer;
     }
 
-    public ByteBuffer get() {
-      return header;
+    private ByteBuffer _body() {
+      return ByteBuffer.wrap(body.getBytes());
     }
   }
 
-  class Headers {
-    private final ByteBuffer headers = ByteBuffer.allocateDirect(256);
-
-    Headers() {
-    }
-
-    public void set(String name, String value) {
-      final Header h = new Header(name,value);
-      headers.put(h.get());
-    }
-
-    public ByteBuffer get() {
-      headers.flip();
-      return headers;
-    }
-
-    /* public String get(String name) { */
-    /* } */
-
+  public ResponseBuilder defaultResponse() {
+    return ResponseBuilder.newBuilder()
+                         .protocol("HTTP/1.1 ")
+                         .responseCode("200 ")
+                         .responseString("OK")
+                         .addHeader("Date", ZonedDateTime
+                                    .now(ZoneId.of("UTC"))
+                                    .format(DateTimeFormatter.RFC_1123_DATE_TIME))
+                         .addHeader("Content-Type", "text/html")
+                         .addHeader("Server", "xio");
   }
 
-  class Body {
-    private ByteBuffer body;
-
-    Body() {
-    }
-
-    public void set(String responseBody) {
-      body = ByteBuffer.wrap(new String(responseBody).getBytes());
-    }
-
-    public ByteBuffer get() {
-      return body;
-    }
+  public ResponseBuilder defaultNotFound() {
+    return ResponseBuilder.newBuilder()
+                         .protocol("HTTP/1.1 ")
+                         .responseCode("404 ")
+                         .responseString("Not Found")
+                         .addHeader("Date", ZonedDateTime
+                                    .now(ZoneId.of("UTC"))
+                                    .format(DateTimeFormatter.RFC_1123_DATE_TIME))
+                         .addHeader("Content-Length", "0")
+                         .addHeader("Content-Type", "text/html")
+                         .addHeader("Server", "xio");
   }
-
 }

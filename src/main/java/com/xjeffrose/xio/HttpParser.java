@@ -12,30 +12,11 @@ class HttpParser {
   private static final Logger log = Log.getLogger(HttpParser.class.getName());
 
   private int lastByteRead;
-  private final HttpRequest req = new HttpRequest();
+  private HttpRequest req;
+  private ByteBuffer temp;
 
   HttpParser() {
     lastByteRead = -1;
-  }
-
-  public boolean parse(ByteBuffer bb) {
-    final ByteBuffer temp = bb.duplicate();
-    ParseState result = ParseState.good;
-    req.bb(temp);
-    temp.flip();
-    temp.position(lastByteRead + 1);
-    while (temp.hasRemaining()) {
-      lastByteRead = temp.position();
-      result = parseSegment(temp.get());
-    }
-    if(result == ParseState.good) {
-      return true;
-    }
-    return false;
-  }
-
-  public HttpRequest request() {
-    return req;
   }
 
   private enum state {
@@ -61,8 +42,30 @@ class HttpParser {
     expecting_newline_3
   };
 
-
   private state state_ = state.method_start;
+
+  public boolean parse(HttpRequest req, ByteBuffer bb) {
+    this.req = req;
+    this.temp = bb.duplicate();
+
+    ParseState result = ParseState.good;
+    req.bb(temp);
+    temp.flip();
+    temp.position(lastByteRead + 1);
+    while (temp.hasRemaining()) {
+      lastByteRead = temp.position();
+      result = parseSegment(temp.get());
+    }
+    if(result == ParseState.good) {
+      return true;
+    }
+    return false;
+  }
+
+  public HttpRequest request() {
+    return req;
+  }
+
 
   private boolean is_char(int c) {
     return c >= 0 && c <= 127;
@@ -88,12 +91,12 @@ class HttpParser {
     return c >= '0' && c <= '9';
   }
 
-  enum ParseState {
+  private enum ParseState {
     good,
     bad,
     indeterminate;
 
-    static public ParseState fromBoolean(boolean state) {
+    private static final ParseState fromBoolean(boolean state) {
       if (state) {
         return ParseState.good;
       } else {
@@ -130,13 +133,11 @@ class HttpParser {
           return ParseState.bad;
         } else {
           req.uri.tick(lastByteRead);
-          /* log.info(req.method()); */
           return ParseState.indeterminate;
         }
       case http_version_h:
         if (input == 'H') {
           state_ = state.http_version_t_1;
-          /* log.info(req.uri()); */
           return ParseState.indeterminate;
         } else {
           return ParseState.bad;
@@ -171,7 +172,7 @@ class HttpParser {
         }
       case http_version_major_start:
         if (is_digit((char)input)) {
-          req.http_version_major = (char)input - '0'; //req.http_version_major * 10 + input - '0';
+          req.http_version_major = (char)input - '0';
           state_ = state.http_version_major;
           return ParseState.indeterminate;
         } else {
@@ -182,14 +183,14 @@ class HttpParser {
           state_ = state.http_version_minor_start;
           return ParseState.indeterminate;
         } else if (is_digit((char)input)) {
-          req.http_version_major = req.http_version_major * 10 + (char)input - '0'; //req.http_version_major * 10 + input - '0';
+          req.http_version_major = req.http_version_major * 10 + (char)input - '0';
           return ParseState.indeterminate;
         } else {
           return ParseState.bad;
         }
       case http_version_minor_start:
         if (is_digit((char)input)) {
-          req.http_version_minor = (char)input - '0'; //req.http_version_minor * 10 + input - '0';
+          req.http_version_minor = (char)input - '0';
           state_ = state.http_version_minor;
           return ParseState.indeterminate;
         } else {
@@ -200,7 +201,6 @@ class HttpParser {
           state_ = state.expecting_newline_1;
           return ParseState.indeterminate;
         } else if (is_digit((char)input)) {
-          /* req.http_version_minor = req.http_version_minor * 10 + input - '0'; */
           req.http_version_minor = req.http_version_minor * 10 + (char)input - '0';
           return ParseState.indeterminate;
         } else {
@@ -226,8 +226,6 @@ class HttpParser {
           //TODO
           req.headers.newHeader();
           req.headers.tick(lastByteRead);
-          /* req.headers.push_back(); */
-          /* req.headers.push_back_name(new String(inputs, Charset.forName("UTF-8"))); */
           state_ = state.header_name;
           return ParseState.indeterminate;
         }
@@ -243,7 +241,6 @@ class HttpParser {
           state_ = state.header_value;
           req.headers.newValue();
           req.headers.tick(lastByteRead);
-          /* req.headers.push_back_value(new String(inputs, Charset.forName("UTF-8"))); */
           return ParseState.indeterminate;
         }
       case header_name:
@@ -253,9 +250,7 @@ class HttpParser {
         } else if (!is_char(input) || is_ctl(input) || is_tspecial(input)) {
           return ParseState.bad;
         } else {
-          //TODO
           req.headers.tick(lastByteRead);
-          /* req.headers.push_back_name(new String(inputs, Charset.forName("UTF-8"))); */
           return ParseState.indeterminate;
         }
       case space_before_header_value:
@@ -274,7 +269,6 @@ class HttpParser {
           return ParseState.bad;
         } else {
           req.headers.tick(lastByteRead);
-          /* req.headers.push_back_value(new String(inputs, Charset.forName("UTF-8"))); */
           return ParseState.indeterminate;
         }
       case expecting_newline_2:
@@ -285,7 +279,6 @@ class HttpParser {
           return ParseState.bad;
         }
       case expecting_newline_3:
-        /* log.info(req.headers()); */
         req.headers.done();
         return ParseState.fromBoolean(input == '\n');
       default:

@@ -14,7 +14,7 @@ class ClientChannelContext extends ChannelContext {
   public final HttpParser parser = new HttpParser();
   public final Promise<HttpResponse> promise = new Promise<HttpResponse>();
 
-  enum State {
+  private enum State {
     start_request,
     start_receive,
     parse_receive,

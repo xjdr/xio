@@ -4,13 +4,15 @@ import java.io.*;
 import java.net.*;
 import java.nio.channels.*;
 import java.util.*;
+import java.util.concurrent.*;
 import java.util.logging.*;
-import java.util.stream.*;
 
 import com.xjeffrose.log.*;
 
 class Server {
   private static final Logger log = Log.getLogger(Server.class.getName());
+
+  private final Map<String, Service> routes = new ConcurrentHashMap<String, Service>();
 
   private int port;
   private int cores;
@@ -24,7 +26,7 @@ class Server {
   private void schedule(ServerSocketChannel channel) {
     cores = Runtime.getRuntime().availableProcessors();
     EventLoopPool pool = new EventLoopPool(cores);
-    Acceptor acceptor = new Acceptor(channel, pool);
+    Acceptor acceptor = new Acceptor(channel, pool, routes);
     acceptor.start();
     pool.start();
   }
@@ -40,7 +42,8 @@ class Server {
   /* private void announce(String path, Set<String> zkHosts) { */
   /* } */
 
-  private void addRoute(String route, Service service) {
+  void addRoute(String route, Service service) {
+    routes.putIfAbsent(route, service);
   }
 
   void serve(int port) throws IOException {

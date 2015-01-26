@@ -17,10 +17,14 @@ class Acceptor extends Thread {
   private final ServerSocketChannel serverChannel;
   private final Selector selector;
   private final EventLoopPool eventLoopPool;
+  private final Map<String, Service> routes;
 
-  Acceptor(ServerSocketChannel serverChannel, EventLoopPool eventLoopPool) {
+  private ChannelContext ctx;
+
+  Acceptor(ServerSocketChannel serverChannel, EventLoopPool eventLoopPool, Map<String, Service> routes) {
     this.serverChannel = serverChannel;
     this.eventLoopPool = eventLoopPool;
+    this.routes = routes;
 
     try {
     selector = Selector.open();
@@ -63,6 +67,7 @@ class Acceptor extends Thread {
             SocketChannel channel = server.accept();
             //log.info("Accepting Connection from: " + channel);
             EventLoop next = eventLoopPool.next();
+            next.addRoutes(routes);
             next.addChannel(channel);
           } else if (!key.isValid() || !key.isAcceptable()) {
             key.cancel();

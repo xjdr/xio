@@ -1,15 +1,14 @@
 package com.xjeffrose.xio;
 
 import java.io.*;
-/* import java.net.*; */
 import java.nio.*;
 import java.nio.channels.*;
+import java.util.*;
 import java.util.logging.*;
 
 import com.xjeffrose.log.*;
 
 // TODO: On HTTP GET method stop reading after \r\n\r\n
-// TODO: On HTTP POST method create a new ByteBuffer for the payload
 // TODO: Parse JSON
 
 class ChannelContext {
@@ -18,14 +17,26 @@ class ChannelContext {
   public final SocketChannel channel;
   public final ByteBuffer bb = ByteBuffer.allocateDirect(1024);
   public final HttpParser parser = new HttpParser();
+  public final HttpRequest req = new HttpRequest();
+  public final HttpResponse resp = new HttpResponse();
 
-  private final ByteBuffer[] defaultHttpResponse = new HttpResponse().defaultResponse();
+  private final Map<String, Service> routes;
+  private Service service;
 
-  private boolean readyToWrite = false;
-
-  ChannelContext(SocketChannel channel) {
+  ChannelContext(SocketChannel channel, Map<String, Service> routes) {
     this.channel = channel;
+    this.routes = routes;
   }
+
+  private enum State {
+    got_request,
+    start_parse,
+    finished_parse,
+    start_response,
+    finished_response,
+  };
+
+  State state = State.got_request;
 
   public void read() {
     int nread = 1;
@@ -36,7 +47,8 @@ class ChannelContext {
         if (nread == 0) {
           break;
         }
-        if (!parser.parse(bb)) {
+        state = State.start_parse;
+        if (!parser.parse(req, bb)) {
           throw new RuntimeException("Parser Failed to Parse");
         }
       } catch (IOException e) {
@@ -51,82 +63,28 @@ class ChannelContext {
         }
       }
     }
+    state = State.finished_parse;
+    handleReq();
+  }
 
-    //TODO: Do something upon read!
-    /* super_naive_proxy(cb.toString()); */
-
-    readyToWrite = true; //Neet to make this Future<boolean>
+  private void handleReq() {
+    final String uri = req.uri();
+    if (state == State.finished_parse && routes.containsKey(uri)) {
+      service = routes.get(uri);
+      service.handle(req, resp);
+    }
   }
 
   public void write() {
     try {
-      if(readyToWrite) { // Need to do the blocking Future<boolean>.get() here
-        channel.write(defaultHttpResponse); //TODO: REMOVE THIS LINE ONLY FOR BENCHMARKING
+      if(state == State.finished_parse) {
+        state = State.start_response;
+        channel.write(resp.get());
         channel.close();
       }
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+    state = State.finished_response;
   }
-
-  public void write(ByteBuffer bb) {
-    try {
-      if (readyToWrite) {
-        channel.write(bb);
-        channel.close();
-      }
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  public void write(ChannelBuffer cbOut) {
-    try {
-      if (readyToWrite) {
-        channel.write(cbOut.getStream());
-        channel.close();
-      }
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  /* private void super_naive_proxy(String payload) { */
-  /*   //log.info("HERE WE GO BRO: " + payload); */
-  /*   byte[] pbites = new byte[1024];// = 1024; */
-  /*   try{ */
-  /*     InetAddress address = InetAddress.getByName("127.0.0.1"); */
-  /*     Socket proxy = new Socket(address, 8000); */
-  /*     proxy.getOutputStream().write(payload.getBytes("UTF-8")); */
-  /*     boolean all_done = false; */
-  /*     while (!all_done) { */
-  /*       int bytes_read = proxy.getInputStream().read(pbites); */
-  /*       return_payload.append((new String(pbites, Charset.forName("UTF-8"))).substring(0,bytes_read)); */
-  /*       ///channel.write(ByteBuffer.wrap(pbites, 0, bytes_read)); */
-  /*       //log.info("bytes_read: " + bytes_read); */
-  /*       //log.info("payload length: " + return_payload.toString().length()); */
-  /*       if (return_payload.indexOf("\r\n\r\n") != -1) { */
-  /*         //log.info("separator at: " + return_payload.indexOf("\r\n\r\n")); */
-  /*         String[] parts = return_payload.toString().split("\r\n\r\n"); */
-  /*         String[] headers = parts[0].split("\r\n"); */
-  /*         for (String header : headers) { */
-  /*           //log.info("HEADER " + header); */
-  /*           if (header.contains("Content-Length")) { */
-  /*             int length = Integer.parseInt(header.split(": ")[1]); */
-  /*             //log.info("length " + length + " parts " + parts[1].length()); */
-  /*             if (parts[1].length() >= length) { */
-  /*               all_done = true; */
-  /*               readyToWrite = true; */
-  /*               break; */
-  /*             } */
-  /*           } */
-  /*         } */
-  /*       } */
-  /*     } */
-  /*     proxy.close(); */
-  /*   } catch (IOException e) { */
-  /*     throw new RuntimeException(e); */
-  /*   } */
-  /* } */
-
 }

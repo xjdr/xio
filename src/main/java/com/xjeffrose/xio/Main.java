@@ -14,11 +14,13 @@ class Main {
 
     try {
       Server s = new Server();
-      Client c = new Client();
-      // s.addroute("/", exampleService)
+      s.addRoute("/", new HelloService());
+      s.addRoute("/poo", new PooService());
 
       s.serve(8080);
-      Future<HttpResponse> f = c.get(8000);
+
+      /* Client c = new Client(); */
+      /* Future<HttpResponse> f = c.get(8000); */
       /* s.serve(8080, 8); */
       /* s.serve("localhost",8080); */
       /* s.serve("localhost",8080, 8); */
