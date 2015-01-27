@@ -1,4 +1,7 @@
 package com.xjeffrose.xio;
 
-class Service {
+interface Service {
+
+  public void handle(HttpRequest req, HttpResponse resp);
+
 }

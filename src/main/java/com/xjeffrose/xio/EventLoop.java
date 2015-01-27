@@ -18,12 +18,18 @@ class EventLoop extends Thread {
   private final AtomicBoolean isRunning = new AtomicBoolean(true);
   private final Selector selector;
 
+  private Map<String, Service> routes;
+
   EventLoop() {
     try {
       selector = Selector.open();
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
+  }
+
+  public void addRoutes(Map<String, Service> routes) {
+    this.routes = routes;
   }
 
   public void addChannel(SocketChannel channel) {
@@ -33,7 +39,7 @@ class EventLoop extends Thread {
 
   public void addContext(ChannelContext context) {
     contextsToAdd.push(context);
-    selector.wakeup();
+    /* selector.wakeup(); */
   }
 
   public boolean running() {
@@ -75,9 +81,8 @@ class EventLoop extends Thread {
           throw new RuntimeException(e);
         }
       }
-
       _addChannels();
-      _addContexts();
+      /* _addContexts(); */
     }
   }
 
@@ -86,7 +91,7 @@ class EventLoop extends Thread {
       try {
         SocketChannel channel = channelsToAdd.pop();
         channel.configureBlocking(false);
-        ChannelContext ctx = new ChannelContext(channel);
+        ChannelContext ctx = new ChannelContext(channel, routes);
         channel.register(selector, SelectionKey.OP_WRITE | SelectionKey.OP_READ, ctx);
       } catch (IOException e) {
         throw new RuntimeException(e);
@@ -97,6 +102,7 @@ class EventLoop extends Thread {
   private void _addContexts() {
     while (contextsToAdd.size() > 0) {
       try {
+        SocketChannel channel = channelsToAdd.pop();
         ChannelContext context = contextsToAdd.pop();
         context.channel.configureBlocking(false);
         context.channel.register(selector, SelectionKey.OP_WRITE | SelectionKey.OP_READ, context);

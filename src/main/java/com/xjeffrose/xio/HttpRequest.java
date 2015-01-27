@@ -3,6 +3,7 @@ package com.xjeffrose.xio;
 import java.nio.*;
 import java.nio.charset.*;
 import java.util.*;
+import java.util.concurrent.*;
 import java.util.logging.*;
 
 import com.xjeffrose.log.*;
@@ -29,7 +30,7 @@ class HttpRequest {
     private String method;
     private String path;
     private String protocol;
-    private List<String> headers = new ArrayList<String>();
+    private List<String> headers = new CopyOnWriteArrayList<String>();
 
     public RequestBuilder method(String method) {
       this.method = method;
@@ -135,7 +136,11 @@ class HttpRequest {
 
     public String get() {
       final byte[] value = new byte[limit];
-      bb.position(position);
+      if (position > 0) {
+        bb.position(position);
+      } else {
+        bb.position(0);
+      }
       bb.get(value);
       return new String(value, Charset.forName("UTF-8"));
     }
