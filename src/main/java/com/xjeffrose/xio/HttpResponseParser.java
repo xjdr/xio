@@ -8,6 +8,7 @@ import com.xjeffrose.log.*;
 
 @SuppressWarnings (value={"fallthrough"})
 
+// http://tools.ietf.org/html/rfc2616
 class HttpResponseParser {
   private static final Logger log = Log.getLogger(HttpResponseParser.class.getName());
 
