@@ -14,6 +14,12 @@ class Server {
 
   private final Map<String, Service> routes = new ConcurrentHashMap<String, Service>();
 
+  private final ChannelContextFactory factory = new ChannelContextFactory() {
+    public ChannelContext build(SocketChannel channel) {
+        return new ChannelContext(channel, routes);
+    }
+  };
+
   private int port;
   private int cores;
   private InetAddress host;
@@ -26,7 +32,7 @@ class Server {
   private void schedule(ServerSocketChannel channel) {
     cores = Runtime.getRuntime().availableProcessors();
     EventLoopPool pool = new EventLoopPool(cores);
-    Acceptor acceptor = new Acceptor(channel, pool, routes);
+    Acceptor acceptor = new Acceptor(channel, pool, factory);
     acceptor.start();
     pool.start();
   }
