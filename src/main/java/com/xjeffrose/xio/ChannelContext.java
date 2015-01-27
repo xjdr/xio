@@ -11,7 +11,7 @@ import com.xjeffrose.log.*;
 // TODO: On HTTP GET method stop reading after \r\n\r\n
 // TODO: Parse JSON
 
-class ChannelContext {
+abstract class ChannelContext {
   private static final Logger log = Log.getLogger(ChannelContext.class.getName());
 
   public final SocketChannel channel;
@@ -20,12 +20,10 @@ class ChannelContext {
   public final HttpRequest req = new HttpRequest();
   public final HttpResponse resp = new HttpResponse();
 
-  private final Map<String, Service> routes;
   private Service service;
 
-  ChannelContext(SocketChannel channel, Map<String, Service> routes) {
+  ChannelContext(SocketChannel channel) {
     this.channel = channel;
-    this.routes = routes;
   }
 
   private enum State {
@@ -38,42 +36,7 @@ class ChannelContext {
 
   State state = State.got_request;
 
-  public void read() {
-    int nread = 1;
-
-    while (nread > 0) {
-      try {
-        nread = channel.read(bb);
-        if (nread == 0) {
-          break;
-        }
-        state = State.start_parse;
-        if (!parser.parse(req, bb)) {
-          throw new RuntimeException("Parser Failed to Parse");
-        }
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
-      if (nread == -1) {
-        try {
-          //log.info("Closing Channel " + channel);
-          channel.close();
-        } catch (IOException e) {
-          throw new RuntimeException(e);
-        }
-      }
-    }
-    state = State.finished_parse;
-    handleReq();
-  }
-
-  private void handleReq() {
-    final String uri = req.uri();
-    if (state == State.finished_parse && routes.containsKey(uri)) {
-      service = routes.get(uri);
-      service.handle(req, resp);
-    }
-  }
+  abstract public void read();
 
   public void write() {
     try {

@@ -16,7 +16,7 @@ class Server {
 
   private final ChannelContextFactory factory = new ChannelContextFactory() {
     public ChannelContext build(SocketChannel channel) {
-        return new ChannelContext(channel, routes);
+        return new ServerChannelContext(channel, routes);
     }
   };
 
