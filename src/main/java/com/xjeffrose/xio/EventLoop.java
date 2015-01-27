@@ -17,18 +17,12 @@ class EventLoop extends Thread {
   private final AtomicBoolean isRunning = new AtomicBoolean(true);
   private final Selector selector;
 
-  private Map<String, Service> routes;
-
   EventLoop() {
     try {
       selector = Selector.open();
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
-  }
-
-  public void addRoutes(Map<String, Service> routes) {
-    this.routes = routes;
   }
 
   public void addContext(ChannelContext context) {
