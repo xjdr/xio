@@ -1,9 +1,12 @@
 #!/bin/bash
 
-javac src/main/java/com/xjeffrose/{log,xio}/*.java && \
-java -ea                          \
+javac -XDignore.symbol.file src/main/java/com/xjeffrose/{log,xio}/*.java && \
+java -ea                                             \
+  -Xbootclasspath/p:src/main/java/com/xjeffrose/xio/ \
   $JAVA_OPTS                      \
   -Djava.net.preferIPv4Stack=true \
+  -XX:+UseStringDeduplication     \
+  -XX:-UseTLAB                    \
   -XX:+AggressiveOpts             \
   -XX:+UseParNewGC                \
   -XX:+UseConcMarkSweepGC         \
