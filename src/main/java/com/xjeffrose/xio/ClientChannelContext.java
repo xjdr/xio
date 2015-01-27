@@ -11,7 +11,8 @@ class ClientChannelContext extends ChannelContext {
   private static final Logger log = Log.getLogger(ClientChannelContext.class.getName());
 
   public final ByteBuffer bb = ByteBuffer.allocateDirect(1024);
-  public final HttpParser parser = new HttpParser();
+  public final HttpResponse response = new HttpResponse();
+  public final HttpResponseParser parser = new HttpResponseParser(response);
   public final Promise<HttpResponse> promise = new Promise<HttpResponse>();
 
   private enum State {
