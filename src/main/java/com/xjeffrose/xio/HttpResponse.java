@@ -41,6 +41,8 @@ class HttpResponse {
     private String protocol;
     private String responseCode;
     private String responseString;
+    //TODO: Needed to add this or else I kept getting a ConcurrentModification
+    //Exception. FIXME
     private List<String> headers = new CopyOnWriteArrayList<String>();
     private String body = new String();;
 
@@ -96,7 +98,8 @@ class HttpResponse {
         sum += header.length();
         sum += 2; // \r\n
       }
-
+      //TODO: Needed to add the +128 to account for Content-Length header. Am
+      //prob doing something wrong. FIXME
       final ByteBuffer buffer = ByteBuffer.allocateDirect(sum + 128);
       for (String header : headers) {
         buffer.put(ByteBuffer.wrap(header.getBytes()));
