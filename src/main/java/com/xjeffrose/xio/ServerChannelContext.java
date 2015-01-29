@@ -37,20 +37,24 @@ class ServerChannelContext extends ChannelContext{
 
   public void read() {
     int nread = 1;
+    Boolean parserOk = false;
 
     while (nread > 0) {
       try {
-        if (parser.getBody && req.setBody()) {
-          nread = channel.read(req.body);
-        } else {
+        if (parser.getBody) {
+          int i = 0;
+          int limit = req.contentLength();
+          while (i <= limit) {
+            nread = channel.read(req.body);
+            i++;
+          }
+        } else if (!parser.done) {
           nread = channel.read(req.requestBuffer);
+          parserOk = parser.parse(req, req.requestBuffer);
+          state = State.start_parse;
+        } else {
+          break;
         }
-
-        state = State.start_parse;
-        if (!parser.parse(req, req.requestBuffer)) {
-          throw new RuntimeException("Parser Failed to Parse");
-        }
-
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
@@ -63,7 +67,9 @@ class ServerChannelContext extends ChannelContext{
       }
     }
     state = State.finished_parse;
-    handleReq();
+    if (parserOk) {
+      handleReq();
+    }
   }
 
   private void handleReq() {

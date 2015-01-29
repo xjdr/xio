@@ -16,9 +16,9 @@ class HttpParser {
   private ByteBuffer temp;
 
   private state state_ = state.method_start;
-  private method method_ = method.get;
 
   public Boolean getBody = false;
+  public Boolean setBody = false;
   public Boolean done = false;
 
   HttpParser() {
@@ -47,14 +47,6 @@ class HttpParser {
     expecting_newline_2,
     expecting_newline_3
   };
-
-  private enum method {
-    get,
-    post,
-    put,
-    delete
-  };
-
 
   public boolean parse(HttpRequest req, ByteBuffer bb) {
     this.req = req;
@@ -116,21 +108,6 @@ class HttpParser {
     }
   }
 
-  private void setMethod() {
-    String meth = req.method();
-
-    if (meth.equalsIgnoreCase("get")) {
-      method_ = method.get;
-    } else if (meth.equalsIgnoreCase("post")) {
-      method_ = method.post;
-    } else if (meth.equalsIgnoreCase("put")) {
-      method_ = method.put;
-    } else if (meth.equalsIgnoreCase("delete")) {
-      method_ = method.delete;
-    }
-
-  }
-
   private ParseState parseSegment(byte input) {
     switch (state_) {
       case method_start:
@@ -158,7 +135,7 @@ class HttpParser {
         } else if (is_ctl(input)) {
           return ParseState.bad;
         } else {
-          setMethod();
+          req.setMethod();
           req.uri.tick(lastByteRead);
           return ParseState.indeterminate;
         }
@@ -306,7 +283,7 @@ class HttpParser {
         }
       case expecting_newline_3:
         finish();
-        return ParseState.fromBoolean(input == '\n');
+        return ParseState.fromBoolean(true);//(input == '\n');
       default:
         return ParseState.bad;
       }
@@ -314,19 +291,27 @@ class HttpParser {
 
   private void finish() {
     req.headers.done();
-    done = true;
-    switch(method_) {
+    switch(req.method_) {
       case get:
+        done = true;
         return;
       case post:
+        if (!setBody) {
+          req.setBody();
+          setBody = true;
+        }
         getBody = true;
+        done = true;
         return;
       case put:
         getBody = true;
+        done = true;
         return;
       case delete:
+        done = true;
         return;
       default:
+        done = true;
         return;
     }
   }

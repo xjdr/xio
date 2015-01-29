@@ -20,9 +20,17 @@ class HttpRequest {
   private final ByteBuffer bb = requestBuffer.duplicate();
 
   public ByteBuffer body;
+  public HttpMethod method_ = HttpMethod.get;
 
   HttpRequest() {
   }
+
+  public enum HttpMethod {
+    get,
+    post,
+    put,
+    delete
+  };
 
   static class RequestBuilder {
     static public RequestBuilder newBuilder() {
@@ -93,7 +101,7 @@ class HttpRequest {
                          .method("GET")
                          .path("/")
                          .protocol("HTTP/1.1")
-                         .addHeader("User-Agent", "xio/0.0.0.0.0.0.0.0.0.0.0.0.1")
+                         .addHeader("User-Agent", "xio/0.1")
                          .addHeader("Host", "localhost:8000")
                          .addHeader("Accept", "*/*")
                          .build();
@@ -115,6 +123,14 @@ class HttpRequest {
                       http_version_minor);
   }
 
+  public int contentLength() {
+    String limitString = headers.get("Content-Length");
+    if (!limitString.equals(null) && !limitString.equals("")) {
+      return Integer.parseInt(limitString);
+    }
+    return 0;
+  }
+
   //TODO: Make this a real thing
   public String getQueryString() {
     String fullString = uri.getUri();
@@ -122,16 +138,27 @@ class HttpRequest {
     return qs;
   }
 
-  public Boolean setBody() {
-    String length = headers.get("Content-Length");
-    if (!length.equals(null) && !length.equalsIgnoreCase("")) {
-      int lengthInt = Integer.parseInt(length);
-      body = ByteBuffer.allocateDirect(lengthInt);
-      return true;
-    } else {
-      //TODO: Return malformed request response
-      return false;
+  public void setMethod() {
+    String meth = method();
+    if (meth.equalsIgnoreCase("get")) {
+      method_ = HttpMethod.get;
+    } else if (meth.equalsIgnoreCase("post")) {
+      method_ = HttpMethod.post;
+    } else if (meth.equalsIgnoreCase("put")) {
+      method_ = HttpMethod.put;
+    } else if (meth.equalsIgnoreCase("delete")) {
+      method_ = HttpMethod.delete;
     }
+  }
+
+  public void setBody() {
+    body = ByteBuffer.allocateDirect(contentLength());
+  }
+
+  public ByteBuffer getBody() {
+    ByteBuffer temp = body.duplicate();
+    temp.flip();
+    return temp;
   }
 
   class Picker {

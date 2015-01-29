@@ -12,11 +12,31 @@ class SimpleService implements Service {
     this.req = req;
     this.resp = resp;
 
-    doHandle();
+    switch(req.method_) {
+      case get:
+        handleGet();
+        return;
+      case post:
+        handlePost();
+        return;
+      case put:
+        handlePut();
+        return;
+      case delete:
+        handlePost();
+        return;
+      default:
+        return;
+    }
   }
 
-  public void doHandle() {
-  }
+  public void handleGet() {}
+
+  public void handlePost() {}
+
+  public void handlePut() {}
+
+  public void handleDelete() {}
 
 
 }
