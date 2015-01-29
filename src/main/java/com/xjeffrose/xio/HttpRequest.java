@@ -16,8 +16,10 @@ class HttpRequest {
   public final Uri uri = new Uri();
   public final Method method = new Method();
   public final Headers headers = new Headers();
+  public final ByteBuffer requestBuffer = ByteBuffer.allocateDirect(4096);
+  private final ByteBuffer bb = requestBuffer.duplicate();
 
-  private ByteBuffer bb;
+  public ByteBuffer body;
 
   HttpRequest() {
   }
@@ -30,6 +32,7 @@ class HttpRequest {
     private String method;
     private String path;
     private String protocol;
+    //TODO: Fix this. Should not need to be Concurrent Class
     private List<String> headers = new CopyOnWriteArrayList<String>();
 
     public RequestBuilder method(String method) {
@@ -96,11 +99,6 @@ class HttpRequest {
                          .build();
   }
 
-  public void bb(ByteBuffer pbb) {
-    bb = pbb.duplicate();
-    bb.flip();
-  }
-
   public String method() {
     return method.getMethod();
   }
@@ -117,10 +115,23 @@ class HttpRequest {
                       http_version_minor);
   }
 
+  //TODO: Make this a real thing
   public String getQueryString() {
     String fullString = uri.getUri();
     String qs = fullString.split("?", 1)[1];
     return qs;
+  }
+
+  public Boolean setBody() {
+    String length = headers.get("Content-Length");
+    if (!length.equals(null) && !length.equalsIgnoreCase("")) {
+      int lengthInt = Integer.parseInt(length);
+      body = ByteBuffer.allocateDirect(lengthInt);
+      return true;
+    } else {
+      //TODO: Return malformed request response
+      return false;
+    }
   }
 
   class Picker {

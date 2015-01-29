@@ -15,6 +15,12 @@ class HttpParser {
   private HttpRequest req;
   private ByteBuffer temp;
 
+  private state state_ = state.method_start;
+  private method method_ = method.get;
+
+  public Boolean getBody = false;
+  public Boolean done = false;
+
   HttpParser() {
     lastByteRead = -1;
   }
@@ -42,14 +48,19 @@ class HttpParser {
     expecting_newline_3
   };
 
-  private state state_ = state.method_start;
+  private enum method {
+    get,
+    post,
+    put,
+    delete
+  };
+
 
   public boolean parse(HttpRequest req, ByteBuffer bb) {
     this.req = req;
     this.temp = bb.duplicate();
 
     ParseState result = ParseState.good;
-    req.bb(temp);
     temp.flip();
     temp.position(lastByteRead + 1);
     while (temp.hasRemaining()) {
@@ -105,6 +116,21 @@ class HttpParser {
     }
   }
 
+  private void setMethod() {
+    String meth = req.method();
+
+    if (meth.equalsIgnoreCase("get")) {
+      method_ = method.get;
+    } else if (meth.equalsIgnoreCase("post")) {
+      method_ = method.post;
+    } else if (meth.equalsIgnoreCase("put")) {
+      method_ = method.put;
+    } else if (meth.equalsIgnoreCase("delete")) {
+      method_ = method.delete;
+    }
+
+  }
+
   private ParseState parseSegment(byte input) {
     switch (state_) {
       case method_start:
@@ -132,6 +158,7 @@ class HttpParser {
         } else if (is_ctl(input)) {
           return ParseState.bad;
         } else {
+          setMethod();
           req.uri.tick(lastByteRead);
           return ParseState.indeterminate;
         }
@@ -223,7 +250,6 @@ class HttpParser {
         } else if (!is_char(input) || is_ctl(input) || is_tspecial(input)) {
           return ParseState.bad;
         } else {
-          //TODO
           req.headers.newHeader();
           req.headers.tick(lastByteRead);
           state_ = state.header_name;
@@ -279,12 +305,31 @@ class HttpParser {
           return ParseState.bad;
         }
       case expecting_newline_3:
-        req.headers.done();
+        finish();
         return ParseState.fromBoolean(input == '\n');
       default:
         return ParseState.bad;
       }
     }
+
+  private void finish() {
+    req.headers.done();
+    done = true;
+    switch(method_) {
+      case get:
+        return;
+      case post:
+        getBody = true;
+        return;
+      case put:
+        getBody = true;
+        return;
+      case delete:
+        return;
+      default:
+        return;
+    }
+  }
 
 }
 

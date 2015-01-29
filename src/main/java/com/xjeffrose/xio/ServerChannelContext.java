@@ -8,10 +8,9 @@ import java.util.logging.*;
 
 import com.xjeffrose.log.*;
 
-// TODO: On HTTP GET method stop reading after \r\n\r\n
 // TODO: Parse JSON
 
-class ServerChannelContext extends ChannelContext {
+class ServerChannelContext extends ChannelContext{
   private static final Logger log = Log.getLogger(ServerChannelContext.class.getName());
 
   public final HttpParser parser = new HttpParser();
@@ -19,6 +18,7 @@ class ServerChannelContext extends ChannelContext {
   public final HttpResponse resp = new HttpResponse();
 
   private final Map<String, Service> routes;
+  private State state = State.got_request;
   private Service service;
 
   ServerChannelContext(SocketChannel channel, Map<String, Service> routes) {
@@ -34,31 +34,32 @@ class ServerChannelContext extends ChannelContext {
     finished_response,
   };
 
-  State state = State.got_request;
 
   public void read() {
     int nread = 1;
 
     while (nread > 0) {
       try {
-        nread = channel.read(bb);
-        if (nread == 0) {
-          break;
+        if (parser.getBody && req.setBody()) {
+          nread = channel.read(req.body);
+        } else {
+          nread = channel.read(req.requestBuffer);
         }
+
         state = State.start_parse;
-        if (!parser.parse(req, bb)) {
+        if (!parser.parse(req, req.requestBuffer)) {
           throw new RuntimeException("Parser Failed to Parse");
         }
+
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
-      if (nread == -1) {
-        try {
-          //log.info("Closing Channel " + channel);
-          channel.close();
-        } catch (IOException e) {
-          throw new RuntimeException(e);
-        }
+    }
+    if (nread == -1) {
+      try {
+        channel.close();
+      } catch (IOException e) {
+        throw new RuntimeException(e);
       }
     }
     state = State.finished_parse;
@@ -69,7 +70,7 @@ class ServerChannelContext extends ChannelContext {
     final String uri = req.uri();
     if (state == State.finished_parse) {
       service = routes.get(uri);
-      if (service != null) {
+      if (!service.equals(null)) {
         service.handle(req, resp);
       }
     }
