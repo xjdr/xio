@@ -68,11 +68,8 @@ class ServerChannelContext extends ChannelContext{
 
   private void handleReq() {
     final String uri = req.uri();
-    if (state == State.finished_parse) {
-      service = routes.get(uri);
-      if (!service.equals(null)) {
-        service.handle(req, resp);
-      }
+    if (state == State.finished_parse && routes.containsKey(uri)) {
+      routes.get(uri).handle(req, resp);
     }
   }
 
