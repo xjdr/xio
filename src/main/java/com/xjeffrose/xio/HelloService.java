@@ -9,26 +9,14 @@ import java.util.logging.*;
 
 import com.xjeffrose.log.*;
 
-class HelloService implements Service {
+class HelloService extends Service {
   private static final Logger log = Log.getLogger(HelloService.class.getName());
-
-  private HttpRequest req;
-  private HttpResponse resp;
 
   HelloService() {
   }
 
-  public void handle(HttpRequest req, HttpResponse resp) {
-    this.req = req;
-    this.resp = resp;
-
-    doHello();
-  }
-
-  private void doHello() {
+  public void handleGet() {
     resp.ok();
-    resp.body("Hello from / \n");
   }
-
 
 }

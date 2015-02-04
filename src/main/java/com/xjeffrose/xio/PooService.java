@@ -6,7 +6,7 @@ import java.util.logging.*;
 
 import com.xjeffrose.log.*;
 
-class PooService extends SimpleService {
+class PooService extends Service {
   private static final Logger log = Log.getLogger(PooService.class.getName());
 
   PooService() {
