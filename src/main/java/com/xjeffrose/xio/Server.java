@@ -25,14 +25,16 @@ class Server {
   private InetAddress host;
   private InetSocketAddress addr;
   private ServerSocketChannel channel;
+  private Acceptor acceptor;
+  private EventLoopPool pool;
 
   Server() {
   }
 
   private void schedule(ServerSocketChannel channel) {
     cores = Runtime.getRuntime().availableProcessors();
-    EventLoopPool pool = new EventLoopPool(cores);
-    Acceptor acceptor = new Acceptor(channel, pool, factory);
+    pool = new EventLoopPool(cores);
+    acceptor = new Acceptor(channel, pool, factory);
     acceptor.start();
     pool.start();
   }
@@ -50,6 +52,11 @@ class Server {
 
   void addRoute(String route, Service service) {
     routes.putIfAbsent(route, service);
+  }
+
+  public void close() {
+    acceptor.close();
+    pool.close();
   }
 
   void serve(int port) throws IOException {

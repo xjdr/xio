@@ -2,30 +2,30 @@ import com.xjeffrose.xio.*
 import spock.lang.*
 import java.nio.*
 
+class HttpParserSpock extends Specification {
+  def payload = """\
+    GET / HTTP/1.1
+    User-Agent: curl/7.35.0
+    Host: localhost:8000
+    Accept: */*
 
-class HttpParser extends Specification {
-def payload = """\
-GET / HTTP/1.1\r
-User-Agent: curl/7.35.0\r
-Host: localhost:8000\r
-Accept: */*\r\n\r\n"""
+    """.stripIndent().replaceAll("\n", "\r\n")
 
-    def "HttpParser parses headers correctly"() {
-        when:
-        def buffer = ByteBuffer.allocateDirect(1024)
-        def parser = new HttpParser()
-        buffer.put(ByteBuffer.wrap(payload.getBytes()))
-        def parsedOk = parser.parse(buffer)
-        def request = parser.request()
+  def "HttpParser parses headers correctly"() {
+    when:
+    def parser = new HttpParser()
+    def request = new HttpRequest()
+    request.requestBuffer.put(ByteBuffer.wrap(payload.getBytes()))
+    def parsedOk = parser.parse(request, request.requestBuffer)
 
-        then:
-        parsedOk == true
-        request.method() == "GET"
-        request.uri() == "/"
-        request.httpVersion() == "HTTP/1.1"
-        request.headers.headerMap.size() == 3
-        request.headers.get("User-Agent") == "curl/7.35.0"
-        request.headers.get("Host") == "localhost:8000"
-        request.headers.get("Accept") == "*/*"
-    }
+    then:
+    parsedOk == true
+    request.method() == "GET"
+    request.uri() == "/"
+    request.httpVersion() == "HTTP/1.1"
+    request.headers.headerMap.size() == 3
+    request.headers.get("User-Agent") == "curl/7.35.0"
+    request.headers.get("Host") == "localhost:8000"
+    request.headers.get("Accept") == "*/*"
+  }
 }

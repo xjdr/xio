@@ -16,10 +16,10 @@ class HttpRequest {
   public final Uri uri = new Uri();
   public final Method method = new Method();
   public final Headers headers = new Headers();
-  public final ByteBuffer requestBuffer = ByteBuffer.allocateDirect(4096);
+  public final Body body = new Body();
+  public final ByteBuffer requestBuffer = ByteBuffer.allocateDirect(4096); // Set maximum request size here
   private final ByteBuffer bb = requestBuffer.duplicate();
 
-  public ByteBuffer body;
   public HttpMethod method_ = HttpMethod.get;
 
   HttpRequest() {
@@ -151,15 +151,12 @@ class HttpRequest {
     }
   }
 
-  public void setBody() {
-    body = ByteBuffer.allocateDirect(contentLength());
-  }
-
-  public ByteBuffer getBody() {
-    ByteBuffer temp = body.duplicate();
-    temp.flip();
-    return temp;
-  }
+  /* public void setBody() { */
+  /* } */
+  /*  */
+  /* public ByteBuffer getBody() { */
+  /*   //TODO: slice requestBuffer and return body */
+  /* } */
 
   class Picker {
     private int position = -1;
@@ -193,6 +190,32 @@ class HttpRequest {
   class Uri extends Picker {
     public String getUri() {
       return get();
+    }
+  }
+
+  class Body {
+    private int position = 0;
+    private int limit = 0;
+
+    public void set(int lastByte) {
+      if (position == 0 && limit == 0) {
+        position = lastByte;
+        limit = position + contentLength();
+      }
+    }
+
+    public ByteBuffer get() {
+      final ByteBuffer temp = bb.duplicate();
+      temp.position(position);
+      temp.limit(limit);
+      return temp.slice();
+    }
+
+    public String toString() {
+      final ByteBuffer temp = get();
+      final byte[] value = new byte[temp.remaining()];
+      temp.get(value);
+      return new String(value, Charset.forName("UTF-8"));
     }
   }
 

@@ -16,10 +16,7 @@ class HttpParser {
   private ByteBuffer temp;
 
   private state state_ = state.method_start;
-
-  public Boolean getBody = false;
-  public Boolean setBody = false;
-  public Boolean done = false;
+  public boolean done = false;
 
   HttpParser() {
     lastByteRead = -1;
@@ -48,9 +45,9 @@ class HttpParser {
     expecting_newline_3
   };
 
-  public boolean parse(HttpRequest req, ByteBuffer bb) {
+  public boolean parse(HttpRequest req) {
     this.req = req;
-    this.temp = bb.duplicate();
+    this.temp = req.requestBuffer.duplicate();
 
     ParseState result = ParseState.good;
     temp.flip();
@@ -283,7 +280,7 @@ class HttpParser {
         }
       case expecting_newline_3:
         finish();
-        return ParseState.fromBoolean(true);//(input == '\n');
+        return ParseState.fromBoolean(input == '\n');
       default:
         return ParseState.bad;
       }
@@ -291,27 +288,18 @@ class HttpParser {
 
   private void finish() {
     req.headers.done();
+    done = true;
     switch(req.method_) {
       case get:
-        done = true;
         return;
       case post:
-        if (!setBody) {
-          req.setBody();
-          setBody = true;
-        }
-        getBody = true;
-        done = true;
+        req.body.set(lastByteRead);
         return;
       case put:
-        getBody = true;
-        done = true;
         return;
       case delete:
-        done = true;
         return;
       default:
-        done = true;
         return;
     }
   }

@@ -19,13 +19,7 @@ class PooService extends SimpleService {
 
   public void handlePost() {
     resp.ok();
-    byte[] reqBites = new byte[req.contentLength()];
-    ByteBuffer temp = req.getBody();
-    temp.get(reqBites);
-    String bodyString = new String(reqBites, Charset.forName("UTF-8"));
-    log.info(bodyString);
-    resp.body(bodyString + "\n");
+    resp.body(req.body.toString() + "\n");
   }
-
 
 }

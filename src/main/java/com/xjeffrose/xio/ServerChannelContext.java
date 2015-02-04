@@ -20,6 +20,7 @@ class ServerChannelContext extends ChannelContext{
   private final Map<String, Service> routes;
   private State state = State.got_request;
   private Service service;
+  private boolean parserOk;
 
   ServerChannelContext(SocketChannel channel, Map<String, Service> routes) {
     super(channel);
@@ -34,27 +35,14 @@ class ServerChannelContext extends ChannelContext{
     finished_response,
   };
 
-
   public void read() {
     int nread = 1;
-    Boolean parserOk = false;
 
     while (nread > 0) {
       try {
-        if (parser.getBody) {
-          int i = 0;
-          int limit = req.contentLength();
-          while (i <= limit) {
-            nread = channel.read(req.body);
-            i++;
-          }
-        } else if (!parser.done) {
-          nread = channel.read(req.requestBuffer);
-          parserOk = parser.parse(req, req.requestBuffer);
-          state = State.start_parse;
-        } else {
-          break;
-        }
+        nread = channel.read(req.requestBuffer);
+        parserOk = parser.parse(req);
+        state = State.start_parse;
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
