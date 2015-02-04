@@ -16,11 +16,21 @@ class HttpRequest {
   public final Uri uri = new Uri();
   public final Method method = new Method();
   public final Headers headers = new Headers();
+  public final Body body = new Body();
+  public final ByteBuffer requestBuffer = ByteBuffer.allocateDirect(4096); // Set maximum request size here
+  private final ByteBuffer bb = requestBuffer.duplicate();
 
-  private ByteBuffer bb;
+  public HttpMethod method_ = HttpMethod.get;
 
   HttpRequest() {
   }
+
+  public enum HttpMethod {
+    get,
+    post,
+    put,
+    delete
+  };
 
   static class RequestBuilder {
     static public RequestBuilder newBuilder() {
@@ -30,6 +40,7 @@ class HttpRequest {
     private String method;
     private String path;
     private String protocol;
+    //TODO: Fix this. Should not need to be Concurrent Class
     private List<String> headers = new CopyOnWriteArrayList<String>();
 
     public RequestBuilder method(String method) {
@@ -90,15 +101,10 @@ class HttpRequest {
                          .method("GET")
                          .path("/")
                          .protocol("HTTP/1.1")
-                         .addHeader("User-Agent", "xio/0.0.0.0.0.0.0.0.0.0.0.0.1")
+                         .addHeader("User-Agent", "xio/0.1")
                          .addHeader("Host", "localhost:8000")
                          .addHeader("Accept", "*/*")
                          .build();
-  }
-
-  public void bb(ByteBuffer pbb) {
-    bb = pbb.duplicate();
-    bb.flip();
   }
 
   public String method() {
@@ -117,11 +123,40 @@ class HttpRequest {
                       http_version_minor);
   }
 
+  public int contentLength() {
+    String limitString = headers.get("Content-Length");
+    if (!limitString.equals(null) && !limitString.equals("")) {
+      return Integer.parseInt(limitString);
+    }
+    return 0;
+  }
+
+  //TODO: Make this a real thing
   public String getQueryString() {
     String fullString = uri.getUri();
     String qs = fullString.split("?", 1)[1];
     return qs;
   }
+
+  public void setMethod() {
+    String meth = method();
+    if (meth.equalsIgnoreCase("get")) {
+      method_ = HttpMethod.get;
+    } else if (meth.equalsIgnoreCase("post")) {
+      method_ = HttpMethod.post;
+    } else if (meth.equalsIgnoreCase("put")) {
+      method_ = HttpMethod.put;
+    } else if (meth.equalsIgnoreCase("delete")) {
+      method_ = HttpMethod.delete;
+    }
+  }
+
+  /* public void setBody() { */
+  /* } */
+  /*  */
+  /* public ByteBuffer getBody() { */
+  /*   //TODO: slice requestBuffer and return body */
+  /* } */
 
   class Picker {
     private int position = -1;
@@ -155,6 +190,32 @@ class HttpRequest {
   class Uri extends Picker {
     public String getUri() {
       return get();
+    }
+  }
+
+  class Body {
+    private int position = 0;
+    private int limit = 0;
+
+    public void set(int lastByte) {
+      if (position == 0 && limit == 0) {
+        position = lastByte;
+        limit = position + contentLength();
+      }
+    }
+
+    public ByteBuffer get() {
+      final ByteBuffer temp = bb.duplicate();
+      temp.position(position);
+      temp.limit(limit);
+      return temp.slice();
+    }
+
+    public String toString() {
+      final ByteBuffer temp = get();
+      final byte[] value = new byte[temp.remaining()];
+      temp.get(value);
+      return new String(value, Charset.forName("UTF-8"));
     }
   }
 

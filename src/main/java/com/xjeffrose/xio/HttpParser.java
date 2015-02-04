@@ -15,6 +15,9 @@ class HttpParser {
   private HttpRequest req;
   private ByteBuffer temp;
 
+  private state state_ = state.method_start;
+  public boolean done = false;
+
   HttpParser() {
     lastByteRead = -1;
   }
@@ -42,14 +45,11 @@ class HttpParser {
     expecting_newline_3
   };
 
-  private state state_ = state.method_start;
-
-  public boolean parse(HttpRequest req, ByteBuffer bb) {
+  public boolean parse(HttpRequest req) {
     this.req = req;
-    this.temp = bb.duplicate();
+    this.temp = req.requestBuffer.duplicate();
 
     ParseState result = ParseState.good;
-    req.bb(temp);
     temp.flip();
     temp.position(lastByteRead + 1);
     while (temp.hasRemaining()) {
@@ -132,6 +132,7 @@ class HttpParser {
         } else if (is_ctl(input)) {
           return ParseState.bad;
         } else {
+          req.setMethod();
           req.uri.tick(lastByteRead);
           return ParseState.indeterminate;
         }
@@ -223,7 +224,6 @@ class HttpParser {
         } else if (!is_char(input) || is_ctl(input) || is_tspecial(input)) {
           return ParseState.bad;
         } else {
-          //TODO
           req.headers.newHeader();
           req.headers.tick(lastByteRead);
           state_ = state.header_name;
@@ -279,12 +279,30 @@ class HttpParser {
           return ParseState.bad;
         }
       case expecting_newline_3:
-        req.headers.done();
+        finish();
         return ParseState.fromBoolean(input == '\n');
       default:
         return ParseState.bad;
       }
     }
+
+  private void finish() {
+    req.headers.done();
+    done = true;
+    switch(req.method_) {
+      case get:
+        return;
+      case post:
+        req.body.set(lastByteRead);
+        return;
+      case put:
+        return;
+      case delete:
+        return;
+      default:
+        return;
+    }
+  }
 
 }
 

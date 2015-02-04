@@ -33,4 +33,10 @@ class EventLoopPool {
     pool.addLast(loop);
     return loop;
   }
+
+  public void close() {
+    for(EventLoop loop : pool) {
+      loop.close();
+    }
+  }
 }

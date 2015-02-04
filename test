@@ -1,3 +1,5 @@
 #!/bin/bash
 
-lib/groovy/bin/groovy  -cp "lib/junit-4.12.jar:lib/spock-core-0.7-groovy-2.0.jar:src/main/java" "$@" src/test/groovy/com/xjeffrose/*/*.groovy
+for i in $(find . -name *.groovy); do
+  lib/groovy/bin/groovy  -cp "lib/junit-4.12.jar:lib/spock-core-0.7-groovy-2.0.jar:src/main/java" "$@" $i
+done

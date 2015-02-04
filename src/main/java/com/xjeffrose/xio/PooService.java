@@ -1,5 +1,7 @@
 package com.xjeffrose.xio;
 
+import java.nio.*;
+import java.nio.charset.*;
 import java.util.logging.*;
 
 import com.xjeffrose.log.*;
@@ -10,11 +12,14 @@ class PooService extends SimpleService {
   PooService() {
   }
 
-  @Override
-  public void doHandle() {
+  public void handleGet() {
     resp.ok();
     resp.body("Hello from /poo \n");
   }
 
+  public void handlePost() {
+    resp.ok();
+    resp.body(req.body.toString() + "\n");
+  }
 
 }
