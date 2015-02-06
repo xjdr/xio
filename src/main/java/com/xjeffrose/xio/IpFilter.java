@@ -2,7 +2,7 @@ package com.xjeffrose.xio;
 
 import java.net.*;
 
-class IpFilter {
+class IpFilter extends Filter {
 
   IpFilter() {
   }
