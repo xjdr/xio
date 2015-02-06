@@ -5,6 +5,7 @@ import java.net.*;
 import java.nio.channels.*;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.Future;
 import java.util.logging.*;
 
 import com.xjeffrose.log.*;
@@ -13,6 +14,7 @@ class Server {
   private static final Logger log = Log.getLogger(Server.class.getName());
 
   private final Map<String, Service> routes = new ConcurrentHashMap<String, Service>();
+  private final Promise<Server> serverPromise = new Promise<Server>();
 
   private final ChannelContextFactory factory = new ChannelContextFactory() {
     public ChannelContext build(SocketChannel channel) {
@@ -59,10 +61,14 @@ class Server {
     pool.close();
   }
 
-  void serve(int port) throws IOException {
+  public Future<Server> serve(int port) throws IOException {
     cores = Runtime.getRuntime().availableProcessors();
     addr = new InetSocketAddress(port);
     bind(addr);
+
+    serverPromise.set(this);
+    return serverPromise;
+
   }
 
   void serve(int port, int cores) throws IOException {

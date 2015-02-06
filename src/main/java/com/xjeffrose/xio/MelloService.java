@@ -1,4 +1,3 @@
-
 package com.xjeffrose.xio;
 
 import java.io.*;
@@ -9,16 +8,16 @@ import java.util.logging.*;
 
 import com.xjeffrose.log.*;
 
-class HelloService extends Service {
-  private static final Logger log = Log.getLogger(HelloService.class.getName());
+class MelloService extends Service {
+  private static final Logger log = Log.getLogger(MelloService.class.getName());
 
-  HelloService() {
+  MelloService() {
   }
 
   public void handleGet() {
     resp.ok();
-    log.info("From Hello");
 
+    resp.body("From Mello");
   }
 
 }

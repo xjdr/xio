@@ -2,6 +2,7 @@ package com.xjeffrose.xio;
 
 import java.io.*;
 import java.util.concurrent.*;
+import java.util.concurrent.Future;
 import java.util.logging.*;
 
 import com.xjeffrose.log.*;
@@ -14,10 +15,20 @@ class Main {
 
     try {
       Server s = new Server();
-      s.addRoute("/", new HelloService());
+
+      Service rootService = new HelloService();
+
+      rootService.andThen(new MelloService());
+
+      s.addRoute("/", rootService);
       s.addRoute("/poo", new PooService());
 
-      s.serve(8080);
+      Future<Server> sf = s.serve(8080);
+
+      Thread.sleep(300);
+
+      sf.get().close();
+      System.exit(0);
 
       /* Client c = new Client(); */
       /* Future<HttpResponse> f = c.get(8000); */
@@ -29,7 +40,7 @@ class Main {
 
       // Await.ready(s.serve()); => all async and stuff
 
-    } catch (IOException e) {
+    } catch (Exception e) {
       e.printStackTrace();
       System.exit(-1);
     }

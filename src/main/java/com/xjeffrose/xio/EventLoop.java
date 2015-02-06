@@ -68,6 +68,9 @@ class EventLoop extends Thread {
         } catch (Exception e) {
           throw new RuntimeException(e);
         }
+        if (!running()) {
+          break;
+        }
       }
       _addContexts();
     }
@@ -82,6 +85,9 @@ class EventLoop extends Thread {
         //TODO: context.channel.register(selector, context.interestedOps(), context);
       } catch (IOException e) {
         throw new RuntimeException(e);
+      }
+      if (!running()) {
+        break;
       }
     }
   }

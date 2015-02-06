@@ -32,45 +32,27 @@ I've written these systems professionally and have used the following systems:
 
 - Server to Server API backend
 
-- Simple Http/2 server
-
-### I wanted to write a toolset that I could use to build large projects time and time again.
-### Right now this framework only supports HTTP/2 but I am hoping to add redis and thrift (maybe avro) soon.
-### Hopefully you will find it useful too.
+- Simple Http server
 
 ## Server Quickstart
-
 
 ####Server
 ```java
 Server server = new Server();
-server.addKey("resourcse/my.key");
-server.addCsr("resources/my.csr");
-server.announce("/my/server/v1/, ("zk://localhost:2181", "zk://localhost:2182", "zk://localhost:2183"));
-server.port(443);
-server.tls(true);
-server.addRoute("/", rootService);
-server.addRoute("/health", heathService);
-server.addRoute("/admin", adminService);
-Await.ready(server.serve());
+
+server.addRoute("/", new rootService);
+server.addRoute("/health", new heathService);
+server.addRoute("/admin", new adminService);
+
+server.serve(8080);
 ```
 
 ####Service
 ```java
 Service rootService = new Service();
-rootService.proto(HTTP/2);
-rootService.addFilter(timeoutFilert)
-            .andThen(ratelimitFilter)
-            .andThen(oAuthService);
+rootService.andThen(new RatelimitFilter)
+           .andThen(new OAuthService);
 ```
-
-####Filter
-```java
-// RateLimitFilter is specified as # of Connections, to what, over what period
-Function<Channel, Filter> ratelimitFilter = new RateLimitFilter(200, perHost, perSecond)
-ratelimitFilter.hosts("/my/server/v1/, ("zk://localhost:2181", "zk://localhost:2182", "zk://localhost:2183"));
-```
-
 
 ## Client Quickstart
 ```java

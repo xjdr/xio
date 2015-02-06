@@ -1,9 +1,13 @@
 package com.xjeffrose.xio;
 
+import java.util.concurrent.*;
+
 abstract class Service {
 
   public HttpRequest req;
   public HttpResponse resp;
+
+  private final ConcurrentLinkedDeque<Service> serviceList = new ConcurrentLinkedDeque<Service>();
 
   Service() {
   }
@@ -15,18 +19,23 @@ abstract class Service {
     switch(req.method_) {
       case get:
         handleGet();
+        serviceStream();
         return;
       case post:
         handlePost();
+        serviceStream();
         return;
       case put:
         handlePut();
+        serviceStream();
         return;
       case delete:
         handlePost();
+        serviceStream();
         return;
       default:
         handleGet();
+        serviceStream();
         return;
     }
   }
@@ -38,5 +47,15 @@ abstract class Service {
   public void handlePut() {}
 
   public void handleDelete() {}
+
+  public void andThen(Service service) {
+    serviceList.addLast(service);
+  }
+
+  private void serviceStream() {
+    while (serviceList.size() > 0) {
+      serviceList.removeLast().handle(req,resp);
+    }
+  }
 
 }
