@@ -2,9 +2,11 @@ package com.xjeffrose.xio;
 
 import java.io.*;
 import java.net.*;
+import java.nio.*;
 import java.nio.channels.*;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.Future;
 import java.util.logging.*;
 import java.util.stream.*;
 
@@ -24,6 +26,8 @@ class Client {
   private SocketChannel channel;
   private EventLoopPool pool;
 
+  public ByteBuffer[] req;
+
   Client() {
     cores = Runtime.getRuntime().availableProcessors();
     pool = new EventLoopPool(cores);
@@ -38,13 +42,35 @@ class Client {
     channel = SocketChannel.open();
     channel.configureBlocking(false);
     channel.connect(addr);
-    Connector connector = new Connector(channel, pool);
+    Connector connector = new Connector(channel, pool, req);
     schedule(connector);
     return connector;
   }
 
   /* private void announce(String path, Set<String> zkHosts) { */
   /* } */
+
+  public void defaultRequest() {
+    req = HttpRequest.RequestBuilder.newBuilder()
+                         .method("GET")
+                         .path("/")
+                         .protocol("HTTP/1.1")
+                         .addHeader("User-Agent", "xio/0.1")
+                         .addHeader("Host", "localhost:8000")
+                         .addHeader("Accept", "*/*")
+                         .build();
+  }
+
+  public void request() {
+    req = HttpRequest.RequestBuilder.newBuilder()
+                         .method("GET")
+                         .path("/")
+                         .protocol("HTTP/1.1")
+                         .addHeader("User-Agent", "xio/0.1")
+                         .addHeader("Host", "localhost:8000")
+                         .addHeader("Accept", "*/*")
+                         .build();
+  }
 
   Future<HttpResponse> get(int port) throws IOException {
     addr = new InetSocketAddress(port);

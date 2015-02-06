@@ -2,6 +2,7 @@ package com.xjeffrose.xio;
 
 import java.io.*;
 import java.util.concurrent.*;
+import java.util.concurrent.Future;
 import java.util.logging.*;
 
 import com.xjeffrose.log.*;
@@ -20,7 +21,15 @@ class Main {
       s.serve(8080);
 
       /* Client c = new Client(); */
-      /* Future<HttpResponse> f = c.get(8000); */
+      /* c.defaultRequest(); */
+      /* try { */
+      /*   Thread.sleep(200); */
+      /*   Future<HttpResponse> f = c.get(8000); */
+      /*   HttpResponse resp = f.get(); */
+      /*   log.info(resp.uri.get()); */
+      /* } catch (Exception e) { */
+      /*   throw new RuntimeException(e); */
+      /* } */
       /* s.serve(8080, 8); */
       /* s.serve("localhost",8080); */
       /* s.serve("localhost",8080, 8); */

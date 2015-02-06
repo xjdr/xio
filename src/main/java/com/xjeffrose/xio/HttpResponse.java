@@ -17,10 +17,15 @@ class HttpResponse {
 
   public int http_version_major = 0;
   public int http_version_minor = 0;
+  public final Uri uri = new Uri();
+  public final Method method = new Method();
   public final Headers headers = new Headers();
-  private ResponseBuilder resp;
+  /* public final Body body = new Body(); */
+  /* public final Headers headers = new Headers(); */
+  public final ByteBuffer responseBuffer = ByteBuffer.allocateDirect(4096); // Set maximum request size here
+  private final ByteBuffer bb = responseBuffer.duplicate();
 
-  private ByteBuffer bb;
+  private ResponseBuilder resp;
 
   class Picker {
     private int position = -1;
@@ -132,10 +137,10 @@ class HttpResponse {
     this.resp = defaultNotFound();
   }
 
-  public void bb(ByteBuffer pbb) {
-    bb = pbb.duplicate();
-    bb.flip();
-  }
+  /* public void bb(ByteBuffer pbb) { */
+  /*   bb = pbb.duplicate(); */
+  /*   bb.flip(); */
+  /* } */
 
   public ByteBuffer[] get() {
     return resp.build();

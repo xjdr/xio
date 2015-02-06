@@ -10,10 +10,12 @@ import com.xjeffrose.log.*;
 class ClientChannelContext extends ChannelContext {
   private static final Logger log = Log.getLogger(ClientChannelContext.class.getName());
 
-  public final ByteBuffer bb = ByteBuffer.allocateDirect(1024);
+  /* public final HttpRequest request = new HttpRequest(); */
   public final HttpResponse response = new HttpResponse();
-  public final HttpResponseParser parser = new HttpResponseParser(response);
+  public final HttpResponseParser parser = new HttpResponseParser();
   public final Promise<HttpResponse> promise = new Promise<HttpResponse>();
+
+  private final ByteBuffer[] req;
 
   private enum State {
     start_request,
@@ -23,8 +25,9 @@ class ClientChannelContext extends ChannelContext {
 
   State state = State.start_request;
 
-  ClientChannelContext(SocketChannel channel) {
+  ClientChannelContext(SocketChannel channel, ByteBuffer[] req) {
     super(channel);
+    this.req = req;
   }
 
   public void read() {
@@ -32,11 +35,11 @@ class ClientChannelContext extends ChannelContext {
 
     while (nread > 0) {
       try {
-        nread = channel.read(bb);
+        nread = channel.read(response.responseBuffer);
         if (nread == 0) {
           break;
         }
-        if (!parser.parse(bb)) {
+        if (!parser.parse(response)) {
           throw new RuntimeException("Parser Failed to Parse");
         }
       } catch (IOException e) {
@@ -51,14 +54,12 @@ class ClientChannelContext extends ChannelContext {
         }
       }
     }
-
-    //TODO: Do something upon read!
   }
 
   public void write() {
     try {
       if (state == State.start_request) {
-        channel.write(HttpRequest.defaultRequest());
+        channel.write(req);
       }
     } catch (IOException e) {
       throw new RuntimeException(e);

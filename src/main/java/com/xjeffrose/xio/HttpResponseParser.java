@@ -13,11 +13,10 @@ class HttpResponseParser {
   private static final Logger log = Log.getLogger(HttpResponseParser.class.getName());
 
   private int lastByteRead;
-  private final HttpResponse response;
+  private HttpResponse response;
   private ByteBuffer temp;
 
-  HttpResponseParser(HttpResponse response) {
-    this.response = response;
+  HttpResponseParser() {
     lastByteRead = -1;
   }
 
@@ -45,11 +44,11 @@ class HttpResponseParser {
 
   private state state_ = state.http_version_h;
 
-  public boolean parse(ByteBuffer bb) {
-    this.temp = bb.duplicate();
+  public boolean parse(HttpResponse response) {
+    this.response = response;
+    this.temp = response.responseBuffer.duplicate();
 
     ParseState result = ParseState.good;
-    response.bb(temp);
     temp.flip();
     temp.position(lastByteRead + 1);
     while (temp.hasRemaining()) {
