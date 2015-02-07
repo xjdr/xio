@@ -17,7 +17,6 @@ class HelloService extends Service {
 
   public void handleGet() {
     resp.ok();
-    log.info("From Hello");
 
   }
 

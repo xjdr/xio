@@ -57,8 +57,13 @@ class Server {
   }
 
   public void close() {
+    try {
     acceptor.close();
     pool.close();
+    channel.socket().close();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   public Future<Server> serve(int port) throws IOException {

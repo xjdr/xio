@@ -14,21 +14,19 @@ class Main {
     log.info("Starting xio: Be well John Spartan");
 
     try {
-      Server s = new Server();
-
       Service rootService = new HelloService();
-
       rootService.andThen(new MelloService());
 
+      Server s = new Server();
       s.addRoute("/", rootService);
       s.addRoute("/poo", new PooService());
 
       Future<Server> sf = s.serve(8080);
 
-      Thread.sleep(300);
-
-      sf.get().close();
-      System.exit(0);
+      /* Thread.sleep(500); */
+      /*  */
+      /* sf.get().close(); */
+      /* System.exit(0); */
 
       /* Client c = new Client(); */
       /* Future<HttpResponse> f = c.get(8000); */
