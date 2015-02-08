@@ -96,7 +96,7 @@ class HttpRequest {
     }
   }
 
-  static public ByteBuffer[] defaultRequest() {
+  public static ByteBuffer[] defaultRequest() {
     return RequestBuilder.newBuilder()
                          .method("GET")
                          .path("/")

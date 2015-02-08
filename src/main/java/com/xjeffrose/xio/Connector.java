@@ -5,6 +5,7 @@ import java.nio.*;
 import java.nio.channels.*;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.*;
 import java.util.logging.*;
 
@@ -19,11 +20,14 @@ class Connector {
   private final Selector selector;
   private final EventLoopPool eventLoopPool;
   private final ClientChannelContext context;
+  private final ByteBuffer[] req;
 
-  Connector(SocketChannel clientChannel, EventLoopPool eventLoopPool) {
+  Connector(SocketChannel clientChannel, EventLoopPool eventLoopPool, ByteBuffer[] req) {
     this.clientChannel = clientChannel;
     this.eventLoopPool = eventLoopPool;
-    context = new ClientChannelContext(clientChannel);
+    this.req = req;
+
+    context = new ClientChannelContext(clientChannel, req);
 
     try {
     selector = Selector.open();
