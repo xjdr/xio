@@ -14,7 +14,7 @@ class PooService extends Service {
 
   public void handleGet() {
     resp.ok();
-    resp.body("Hello from /poo \n");
+    resp.body("Hello from /poo\n");
   }
 
   public void handlePost() {

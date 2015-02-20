@@ -15,8 +15,8 @@ class HttpParserSpock extends Specification {
     when:
     def parser = new HttpParser()
     def request = new HttpRequest()
-    request.requestBuffer.put(ByteBuffer.wrap(payload.getBytes()))
-    def parsedOk = parser.parse(request, request.requestBuffer)
+    request.buffer.put(ByteBuffer.wrap(payload.getBytes()))
+    def parsedOk = parser.parse(request)
 
     then:
     parsedOk == true

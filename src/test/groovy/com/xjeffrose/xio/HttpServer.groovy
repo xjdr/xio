@@ -19,8 +19,6 @@ class HttpServerSpock extends Specification {
       server.close()
 
     then:
-      html.response == "Hello from /poo"
-
+      html == "Hello from /poo\n"
   }
-
 }
