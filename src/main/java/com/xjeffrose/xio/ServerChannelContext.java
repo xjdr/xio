@@ -17,12 +17,12 @@ class ServerChannelContext extends ChannelContext{
   public final HttpRequest req = new HttpRequest();
   public final HttpResponse resp = new HttpResponse();
 
-  private final Map<String, Service> routes;
+  private final Map<Route, Service> routes;
   private State state = State.got_request;
   private Service service;
   private boolean parserOk;
 
-  ServerChannelContext(SocketChannel channel, Map<String, Service> routes) {
+  ServerChannelContext(SocketChannel channel, Map<Route, Service> routes) {
     super(channel);
     this.routes = routes;
   }
@@ -62,8 +62,12 @@ class ServerChannelContext extends ChannelContext{
 
   private void handleReq() {
     final String uri = req.uri();
-    if (state == State.finished_parse && routes.containsKey(uri)) {
-      routes.get(uri).handle(req, resp);
+    if (state == State.finished_parse) {
+      for (Map.Entry<Route,Service> entry: routes.entrySet()) {
+        if (entry.getKey().matches(uri)) {
+          entry.getValue().handle(entry.getKey(), req, resp);
+        }
+      }
     }
   }
 
