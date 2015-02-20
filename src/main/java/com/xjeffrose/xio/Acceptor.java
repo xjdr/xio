@@ -42,6 +42,7 @@ class Acceptor extends Thread {
 
   public void close() {
     isRunning.set(false);
+    selector.wakeup();
   }
 
   public void run() {

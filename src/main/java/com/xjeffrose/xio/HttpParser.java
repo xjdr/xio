@@ -47,7 +47,7 @@ class HttpParser {
 
   public boolean parse(HttpRequest req) {
     this.req = req;
-    this.temp = req.requestBuffer.duplicate();
+    this.temp = req.buffer.duplicate();
 
     ParseState result = ParseState.good;
     temp.flip();

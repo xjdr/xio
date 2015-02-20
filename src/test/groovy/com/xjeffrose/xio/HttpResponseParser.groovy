@@ -21,11 +21,10 @@ class HttpResponseParserSpock extends Specification {
 
   def "HttpResponseParser parses headers correctly"() {
     when:
-    def buffer = ByteBuffer.allocateDirect(1024)
     def response = new HttpResponse()
     def parser = new HttpResponseParser(response)
-    buffer.put(ByteBuffer.wrap(payload.getBytes()))
-    def parsedOk = parser.parse(buffer)
+    response.buffer.put(ByteBuffer.wrap(payload.getBytes()))
+    def parsedOk = parser.parse(response)
 
     then:
     parsedOk == true

@@ -2,17 +2,19 @@ package com.xjeffrose.xio;
 
 import java.util.concurrent.*;
 
-abstract class Service {
+public abstract class Service {
 
+  public Route route;
   public HttpRequest req;
   public HttpResponse resp;
 
   private final ConcurrentLinkedDeque<Service> serviceList = new ConcurrentLinkedDeque<Service>();
 
-  Service() {
+  public Service() {
   }
 
-  public void handle(HttpRequest req, HttpResponse resp) {
+  public void handle(Route route, HttpRequest req, HttpResponse resp) {
+    this.route = route;
     this.req = req;
     this.resp = resp;
 
@@ -30,7 +32,7 @@ abstract class Service {
         serviceStream();
         return;
       case delete:
-        handlePost();
+        handleDelete();
         serviceStream();
         return;
       default:
@@ -54,7 +56,7 @@ abstract class Service {
 
   private void serviceStream() {
     while (serviceList.size() > 0) {
-      serviceList.removeLast().handle(req,resp);
+      serviceList.removeLast().handle(route,req,resp);
     }
   }
 

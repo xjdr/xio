@@ -13,7 +13,7 @@ import com.xjeffrose.log.*;
 class Server {
   private static final Logger log = Log.getLogger(Server.class.getName());
 
-  private final Map<String, Service> routes = new ConcurrentHashMap<String, Service>();
+  private final Map<Route, Service> routes = new ConcurrentHashMap<Route, Service>();
   private final Promise<Server> serverPromise = new Promise<Server>();
 
   private final ChannelContextFactory factory = new ChannelContextFactory() {
@@ -53,7 +53,7 @@ class Server {
   /* } */
 
   void addRoute(String route, Service service) {
-    routes.putIfAbsent(route, service);
+    routes.putIfAbsent(Route.build(route), service);
   }
 
   public void close() {
