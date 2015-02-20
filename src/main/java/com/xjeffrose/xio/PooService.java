@@ -19,7 +19,7 @@ class PooService extends Service {
 
   public void handlePost() {
     resp.ok();
-    resp.body(req.body.toString() + "\n");
+    resp.body(req.body.toString() + "\n"); //TODO: Should accept ByteBuffers for Proxy Functionality
   }
 
 }

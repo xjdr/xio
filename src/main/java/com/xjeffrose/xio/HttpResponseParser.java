@@ -45,11 +45,10 @@ class HttpResponseParser {
 
   private state state_ = state.http_version_h;
 
-  public boolean parse(ByteBuffer bb) {
-    this.temp = bb.duplicate();
+  public boolean parse(HttpResponse resp) {
+    this.temp = resp.buffer.duplicate();
 
     ParseState result = ParseState.good;
-    response.bb(temp);
     temp.flip();
     temp.position(lastByteRead + 1);
     while (temp.hasRemaining()) {

@@ -32,11 +32,11 @@ class ClientChannelContext extends ChannelContext {
 
     while (nread > 0) {
       try {
-        nread = channel.read(bb);
+        nread = channel.read(response.buffer);
         if (nread == 0) {
           break;
         }
-        if (!parser.parse(bb)) {
+        if (!parser.parse(response)) {
           throw new RuntimeException("Parser Failed to Parse");
         }
       } catch (IOException e) {

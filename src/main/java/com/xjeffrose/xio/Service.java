@@ -2,14 +2,14 @@ package com.xjeffrose.xio;
 
 import java.util.concurrent.*;
 
-abstract class Service {
+public abstract class Service {
 
   public HttpRequest req;
   public HttpResponse resp;
 
   private final ConcurrentLinkedDeque<Service> serviceList = new ConcurrentLinkedDeque<Service>();
 
-  Service() {
+  public Service() {
   }
 
   public void handle(HttpRequest req, HttpResponse resp) {
@@ -30,7 +30,7 @@ abstract class Service {
         serviceStream();
         return;
       case delete:
-        handlePost();
+        handleDelete();
         serviceStream();
         return;
       default:

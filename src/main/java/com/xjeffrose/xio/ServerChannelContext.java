@@ -40,7 +40,7 @@ class ServerChannelContext extends ChannelContext{
 
     while (nread > 0) {
       try {
-        nread = channel.read(req.requestBuffer);
+        nread = channel.read(req.buffer);
         parserOk = parser.parse(req);
         state = State.start_parse;
       } catch (IOException e) {
