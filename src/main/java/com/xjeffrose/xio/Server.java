@@ -67,40 +67,36 @@ class Server {
   }
 
   public Future<Server> serve(int port) throws IOException {
-    cores = Runtime.getRuntime().availableProcessors();
-    addr = new InetSocketAddress(port);
-    bind(addr);
+    return serve(port, 0);
+  }
 
+  public Future<Server> serve(int port, int cores) throws IOException {
+    return serve(new InetSocketAddress(port), cores);
+  }
+
+  public Future<Server> serve(String host, int port) throws IOException {
+    return serve(new InetSocketAddress(host, port), 0);
+  }
+
+  public Future<Server> serve(String host, int port, int cores) throws IOException {
+    return serve(new InetSocketAddress(host, port), cores);
+  }
+
+  public Future<Server> serve(InetAddress host, int port) throws IOException {
+    return serve(new InetSocketAddress(host, port), 0);
+  }
+
+  public Future<Server> serve(InetAddress host, int port, int cores) throws IOException {
+    return serve(new InetSocketAddress(host, port), cores);
+  }
+
+  public Future<Server> serve(InetSocketAddress endpoint, int cores) throws IOException {
+    if (cores == 0) {
+      cores = Runtime.getRuntime().availableProcessors();
+    }
+    bind(endpoint);
     serverPromise.set(this);
     return serverPromise;
-
-  }
-
-  void serve(int port, int cores) throws IOException {
-    addr = new InetSocketAddress(port);
-    bind(addr);
-  }
-
-  void serve(String host, int port) throws IOException {
-    cores = Runtime.getRuntime().availableProcessors();
-    addr = new InetSocketAddress(host, port);
-    bind(addr);
-  }
-
-  void serve(String host, int port, int cores) throws IOException {
-    addr = new InetSocketAddress(host, port);
-    bind(addr);
-  }
-
-  void serve(InetAddress host, int port) throws IOException {
-    cores = Runtime.getRuntime().availableProcessors();
-    addr = new InetSocketAddress(host, port);
-    bind(addr);
-  }
-
-  void serve(InetAddress host, int port, int cores) throws IOException {
-    addr = new InetSocketAddress(host, port);
-    bind(addr);
   }
 
 }
