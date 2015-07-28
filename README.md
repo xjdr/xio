@@ -1,6 +1,13 @@
 ### Status
 [![Build Status](https://travis-ci.org/xjdr/xio.png)](https://travis-ci.org/xjdr/xio)
 
+
+CURRENTLY DEPRICATED IN FAVOR OF XIO2
+=====================================
+
+[xio2](https://github.com/xjdr/xio2)
+
+
 xio
 ===
 
