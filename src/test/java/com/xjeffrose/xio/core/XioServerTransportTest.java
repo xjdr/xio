@@ -57,6 +57,11 @@ public class XioServerTransportTest {
                 });
                 return httpResponseFuture;
               }
+
+              @Override
+              public void executeInIoThread(Runnable runnable) {
+
+              }
             };
           }
         })

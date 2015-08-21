@@ -1,10 +1,11 @@
 package com.xjeffrose.xio.client;
 
+import com.xjeffrose.xio.core.XioTimer;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.URI;
 import org.jboss.netty.bootstrap.ClientBootstrap;
-import org.jboss.netty.buffer.ChannelBuffer;
+import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
@@ -15,7 +16,7 @@ import org.jboss.netty.handler.codec.http.HttpClientCodec;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class XioClientConnector implements RequestChannel {
+public class XioClientConnector {
   private final URI endpointUri;
   private SocketAddress address;
   private String hostname;
@@ -65,24 +66,19 @@ public class XioClientConnector implements RequestChannel {
     return bootstrap.connect(new InetSocketAddress(hostname, port));
   }
 
-  @Override
-  public String toString() {
-    return endpointUri.toString();
-  }
+  public XioClientChannel newXioClientChannel(Channel channel) {
 
-  @Override
-  public void sendAsynchronousRequest(ChannelBuffer request, boolean oneway, Listener listener) {
+//    HttpClientChannel channel =
+//        new HttpClientChannel(nettyChannel,
+//            clientConfig.getTimer(),
+//            getProtocolFactory(),
+//            endpointUri.getHost(),
+//            endpointUri.getPath());
+//    channel.getNettyChannel().getPipeline().addLast("thriftHandler", channel);
+//    return channel;
 
-  }
 
-  @Override
-  public void close() {
-
-  }
-
-  @Override
-  public boolean hasError() {
-    return false;
+    return new XioClientChannelImpl(channel, new XioTimer("Xio-Timer"));
   }
 
 }

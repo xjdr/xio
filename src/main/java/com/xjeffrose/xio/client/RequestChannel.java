@@ -1,10 +1,11 @@
 package com.xjeffrose.xio.client;
 
 import org.jboss.netty.buffer.ChannelBuffer;
+import org.jboss.netty.handler.codec.http.HttpRequest;
 
 public interface RequestChannel {
 
-  void sendAsynchronousRequest(final ChannelBuffer request,
+  void sendAsynchronousRequest(final HttpRequest request,
                                final boolean oneway,
                                final Listener listener);
 
