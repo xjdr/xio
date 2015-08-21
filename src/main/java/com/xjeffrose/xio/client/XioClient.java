@@ -113,6 +113,7 @@ public class XioClient implements Closeable {
             if (future.isSuccess()) {
               Channel channel = future.getChannel();
 ///////////////////////////////////////////////////////////////////
+              XioClientChannel channel1 = clientChannelConnector.newXioClientChannel(channel);
               ///////////////////////////////
             } else if (future.isCancelled()) {
               if (!cancel(true)) {

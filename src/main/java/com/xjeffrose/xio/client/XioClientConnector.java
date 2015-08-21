@@ -68,17 +68,18 @@ public class XioClientConnector {
 
   public XioClientChannel newXioClientChannel(Channel channel) {
 
+    XioClientChannelImpl _channel = new XioClientChannelImpl(channel, new XioTimer("Xio-Timer"));
 //    HttpClientChannel channel =
 //        new HttpClientChannel(nettyChannel,
 //            clientConfig.getTimer(),
 //            getProtocolFactory(),
 //            endpointUri.getHost(),
 //            endpointUri.getPath());
-//    channel.getNettyChannel().getPipeline().addLast("thriftHandler", channel);
-//    return channel;
+    _channel.getNettyChannel().getPipeline().addLast("httpClientHandler", _channel);
+    return (XioClientChannel) channel;
 
 
-    return new XioClientChannelImpl(channel, new XioTimer("Xio-Timer"));
+
   }
 
 }
