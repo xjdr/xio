@@ -5,7 +5,14 @@ import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.xjeffrose.xio.processor.XioProcessor;
 import com.xjeffrose.xio.processor.XioProcessorFactory;
+import com.xjeffrose.xio.server.RequestContext;
+import com.xjeffrose.xio.server.XioServerConfig;
+import com.xjeffrose.xio.server.XioServerConfigBuilder;
+import com.xjeffrose.xio.server.XioServerDef;
+import com.xjeffrose.xio.server.XioServerDefBuilder;
+import com.xjeffrose.xio.server.XioServerTransport;
 import io.airlift.units.Duration;
+import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
@@ -19,18 +26,16 @@ import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.jboss.netty.handler.codec.http.HttpVersion;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
-
-public class NettyServerTransportTest {
+public class XioServerTransportTest {
 
   @Test
   public void testComplexServerConfiguration() throws Exception {
-    HttpServerDef serverDef = new HttpServerDefBuilder()
+    XioServerDef serverDef = new XioServerDefBuilder()
         .clientIdleTimeout(new Duration((double) 200, TimeUnit.MILLISECONDS))
         .limitConnectionsTo(200)
         .limitFrameSizeTo(1024)
         .limitQueuedResponsesPerConnection(50)
-        .listen(8082)
+        .listen(new InetSocketAddress("127.0.0.1", 8082))
         .name("Xio Test Server")
         .taskTimeout(new Duration((double) 20000, TimeUnit.MILLISECONDS))
         .using(Executors.newCachedThreadPool())
@@ -57,7 +62,7 @@ public class NettyServerTransportTest {
         })
         .build();
 
-    NettyServerConfig serverConfig = new NettyServerConfigBuilder()
+    XioServerConfig serverConfig = new XioServerConfigBuilder()
         .setBossThreadCount(12)
         .setBossThreadExecutor(Executors.newCachedThreadPool())
         .setWorkerThreadCount(20)
@@ -67,7 +72,7 @@ public class NettyServerTransportTest {
         .build();
 
     // Create the server transport
-    final NettyServerTransport server = new NettyServerTransport(serverDef,
+    final XioServerTransport server = new XioServerTransport(serverDef,
         serverConfig,
         new DefaultChannelGroup());
 

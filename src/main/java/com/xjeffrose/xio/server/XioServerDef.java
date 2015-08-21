@@ -1,12 +1,15 @@
-package com.xjeffrose.xio.core;
+package com.xjeffrose.xio.server;
 
 
+import com.xjeffrose.xio.core.XioSecurityFactory;
 import com.xjeffrose.xio.processor.XioProcessorFactory;
 import io.airlift.units.Duration;
+import java.net.InetSocketAddress;
 import java.util.concurrent.Executor;
 
-public class HttpServerDef {
+public class XioServerDef {
   private final int serverPort;
+  private InetSocketAddress hostAddress;
   private final int maxFrameSize;
   private final int maxConnections;
   private final int queuedResponseLimit;
@@ -19,9 +22,10 @@ public class HttpServerDef {
   private final String name;
   private final XioSecurityFactory securityFactory;
 
-  public HttpServerDef(
+  public XioServerDef(
       String name,
       int serverPort,
+      InetSocketAddress hostAddress,
       int maxFrameSize,
       int queuedResponseLimit,
       int maxConnections,
@@ -33,6 +37,7 @@ public class HttpServerDef {
 
     this.name = name;
     this.serverPort = serverPort;
+    this.hostAddress = hostAddress;
     this.maxFrameSize = maxFrameSize;
     this.maxConnections = maxConnections;
     this.queuedResponseLimit = queuedResponseLimit;
@@ -43,12 +48,16 @@ public class HttpServerDef {
     this.securityFactory = securityFactory;
   }
 
-  public static HttpServerDefBuilder newBuilder() {
-    return new HttpServerDefBuilder();
+  public static XioServerDefBuilder newBuilder() {
+    return new XioServerDefBuilder();
   }
 
   public int getServerPort() {
     return serverPort;
+  }
+
+  public InetSocketAddress getHostAddress() {
+    return hostAddress;
   }
 
   public int getMaxFrameSize() {

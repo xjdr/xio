@@ -1,7 +1,7 @@
 package com.xjeffrose.xio.processor;
 
 import com.google.common.util.concurrent.ListenableFuture;
-import com.xjeffrose.xio.core.RequestContext;
+import com.xjeffrose.xio.server.RequestContext;
 import java.util.Map;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.handler.codec.http.HttpMessage;

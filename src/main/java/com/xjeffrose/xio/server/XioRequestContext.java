@@ -1,7 +1,8 @@
-package com.xjeffrose.xio.core;
+package com.xjeffrose.xio.server;
 
 
 import com.google.common.collect.Maps;
+import com.xjeffrose.xio.core.ConnectionContext;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;

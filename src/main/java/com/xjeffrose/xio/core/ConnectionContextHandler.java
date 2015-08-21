@@ -1,5 +1,6 @@
 package com.xjeffrose.xio.core;
 
+import com.xjeffrose.xio.server.XioConnectionContext;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;

@@ -6,8 +6,8 @@ import com.google.inject.Provides;
 import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.Multibinder;
 import com.google.inject.util.Providers;
-import com.xjeffrose.xio.core.HttpServerDef;
-import com.xjeffrose.xio.core.NettyServerConfig;
+import com.xjeffrose.xio.server.XioServerDef;
+import com.xjeffrose.xio.server.XioServerConfig;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 import org.jboss.netty.channel.group.ChannelGroup;
@@ -28,29 +28,29 @@ public abstract class XioModule extends AbstractModule {
   }
 
   public XioModule useDefaultNettyServerConfig() {
-    withNettyServerConfig(new Provider<NettyServerConfig>() {
+    withNettyServerConfig(new Provider<XioServerConfig>() {
       @Override
-      public NettyServerConfig get() {
-        return NettyServerConfig.newBuilder().build();
+      public XioServerConfig get() {
+        return XioServerConfig.newBuilder().build();
       }
     });
     return this;
   }
 
-  public XioModule withNettyServerConfig(Class<? extends Provider<NettyServerConfig>> providerClass) {
+  public XioModule withNettyServerConfig(Class<? extends Provider<XioServerConfig>> providerClass) {
     if (!configBound) {
-      binder().bind(NettyServerConfig.class).toProvider(providerClass);
+      binder().bind(XioServerConfig.class).toProvider(providerClass);
       configBound = true;
       return this;
     }
     throw iae();
   }
 
-  public XioModule withNettyServerConfig(Provider<NettyServerConfig> provider) {
+  public XioModule withNettyServerConfig(Provider<XioServerConfig> provider) {
     if (!configBound) {
       // workaround for guice issue # 487
-      com.google.inject.Provider<NettyServerConfig> guiceProvider = Providers.guicify(provider);
-      binder().bind(NettyServerConfig.class).toProvider(guiceProvider);
+      com.google.inject.Provider<XioServerConfig> guiceProvider = Providers.guicify(provider);
+      binder().bind(XioServerConfig.class).toProvider(guiceProvider);
       configBound = true;
       return this;
     }
@@ -74,45 +74,45 @@ public abstract class XioModule extends AbstractModule {
     public XioBuilder() {
     }
 
-    public void toInstance(HttpServerDef def) {
-      Multibinder.newSetBinder(binder(), HttpServerDef.class)
+    public void toInstance(XioServerDef def) {
+      Multibinder.newSetBinder(binder(), XioServerDef.class)
           .addBinding().toInstance(def);
     }
 
-    public void toProvider(Class<? extends Provider<HttpServerDef>> provider) {
-      Multibinder.newSetBinder(binder(), HttpServerDef.class)
+    public void toProvider(Class<? extends Provider<XioServerDef>> provider) {
+      Multibinder.newSetBinder(binder(), XioServerDef.class)
           .addBinding().toProvider(provider).asEagerSingleton();
     }
 
-    public void toProvider(Provider<? extends HttpServerDef> provider) {
+    public void toProvider(Provider<? extends XioServerDef> provider) {
       // workaround for guice issue # 487
-      com.google.inject.Provider<? extends HttpServerDef> guiceProvider = Providers.guicify(provider);
-      Multibinder.newSetBinder(binder(), HttpServerDef.class)
+      com.google.inject.Provider<? extends XioServerDef> guiceProvider = Providers.guicify(provider);
+      Multibinder.newSetBinder(binder(), XioServerDef.class)
           .addBinding().toProvider(guiceProvider).asEagerSingleton();
     }
 
-    public void toProvider(TypeLiteral<? extends javax.inject.Provider<? extends HttpServerDef>> typeLiteral) {
-      Multibinder.newSetBinder(binder(), HttpServerDef.class)
+    public void toProvider(TypeLiteral<? extends javax.inject.Provider<? extends XioServerDef>> typeLiteral) {
+      Multibinder.newSetBinder(binder(), XioServerDef.class)
           .addBinding().toProvider(typeLiteral).asEagerSingleton();
     }
 
-    public void toProvider(com.google.inject.Key<? extends javax.inject.Provider<? extends HttpServerDef>> key) {
-      Multibinder.newSetBinder(binder(), HttpServerDef.class)
+    public void toProvider(com.google.inject.Key<? extends javax.inject.Provider<? extends XioServerDef>> key) {
+      Multibinder.newSetBinder(binder(), XioServerDef.class)
           .addBinding().toProvider(key).asEagerSingleton();
     }
 
-    public void to(Class<? extends HttpServerDef> clazz) {
-      Multibinder.newSetBinder(binder(), HttpServerDef.class)
+    public void to(Class<? extends XioServerDef> clazz) {
+      Multibinder.newSetBinder(binder(), XioServerDef.class)
           .addBinding().to(clazz).asEagerSingleton();
     }
 
-    public void to(TypeLiteral<? extends HttpServerDef> typeLiteral) {
-      Multibinder.newSetBinder(binder(), HttpServerDef.class)
+    public void to(TypeLiteral<? extends XioServerDef> typeLiteral) {
+      Multibinder.newSetBinder(binder(), XioServerDef.class)
           .addBinding().to(typeLiteral).asEagerSingleton();
     }
 
-    public void to(com.google.inject.Key<? extends HttpServerDef> key) {
-      Multibinder.newSetBinder(binder(), HttpServerDef.class)
+    public void to(com.google.inject.Key<? extends XioServerDef> key) {
+      Multibinder.newSetBinder(binder(), XioServerDef.class)
           .addBinding().to(key).asEagerSingleton();
     }
   }

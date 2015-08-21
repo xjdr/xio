@@ -2,9 +2,9 @@ package com.xjeffrose.xio.guice;
 
 import com.google.inject.Guice;
 import com.google.inject.Stage;
-import com.xjeffrose.xio.core.HttpServerDef;
-import com.xjeffrose.xio.core.HttpServerDefBuilder;
-import com.xjeffrose.xio.core.XioBootstrap;
+import com.xjeffrose.xio.server.XioServerDef;
+import com.xjeffrose.xio.server.XioServerDefBuilder;
+import com.xjeffrose.xio.server.XioBootstrap;
 import org.junit.Test;
 
 public class XioModuleTest {
@@ -24,7 +24,7 @@ public class XioModuleTest {
 //              TProcessor processor = new MyService.Processor<>(serviceInterface);
 //
 //              // Build the server definition
-            HttpServerDef serverDef = new HttpServerDefBuilder()
+            XioServerDef serverDef = new XioServerDefBuilder()
                 .build();
 
             // Bind the definition

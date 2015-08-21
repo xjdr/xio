@@ -1,5 +1,6 @@
-package com.xjeffrose.xio.core;
+package com.xjeffrose.xio.server;
 
+import com.xjeffrose.xio.core.ConnectionContext;
 import java.util.Iterator;
 import java.util.Map;
 

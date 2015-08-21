@@ -1,8 +1,10 @@
-package com.xjeffrose.xio.core;
+package com.xjeffrose.xio.server;
 
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.xjeffrose.xio.core.ConnectionContext;
+import com.xjeffrose.xio.core.ConnectionContexts;
 import com.xjeffrose.xio.processor.XioProcessorFactory;
 import java.util.HashMap;
 import java.util.Map;
@@ -33,7 +35,7 @@ public class XioDispatcher extends SimpleChannelUpstreamHandler {
   private final AtomicInteger dispatcherSequenceId = new AtomicInteger(0);
   private final AtomicInteger lastResponseWrittenId = new AtomicInteger(0);
 
-  public XioDispatcher(HttpServerDef def, Timer timer) {
+  public XioDispatcher(XioServerDef def, Timer timer) {
     this.processorFactory = def.getProcessorFactory();
     this.queuedResponseLimit = def.getQueuedResponseLimit();
     this.exe = def.getExecutor();

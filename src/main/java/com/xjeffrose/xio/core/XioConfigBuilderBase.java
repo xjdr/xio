@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import org.jboss.netty.util.Timer;
 
-public abstract class NettyConfigBuilderBase<T extends NettyConfigBuilderBase<T>> {
+public abstract class XioConfigBuilderBase<T extends XioConfigBuilderBase<T>> {
   // These constants come directly from Netty but are private in Netty.
   public static final int DEFAULT_BOSS_THREAD_COUNT = 1;
   public static final int DEFAULT_WORKER_THREAD_COUNT = Runtime.getRuntime().availableProcessors() * 2;

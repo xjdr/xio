@@ -1,10 +1,13 @@
-package com.xjeffrose.xio.core;
+package com.xjeffrose.xio.server;
 
 
 import com.google.common.util.concurrent.ListenableFuture;
+import com.xjeffrose.xio.core.XioNoOpSecurityFactory;
+import com.xjeffrose.xio.core.XioSecurityFactory;
 import com.xjeffrose.xio.processor.XioProcessor;
 import com.xjeffrose.xio.processor.XioProcessorFactory;
 import io.airlift.units.Duration;
+import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -14,7 +17,7 @@ import org.jboss.netty.handler.codec.http.HttpRequest;
 
 import static com.google.common.base.Preconditions.checkState;
 
-public abstract class HttpServerDefBuilderBase<T extends HttpServerDefBuilderBase<T>> {
+public abstract class XioServerDefBuilderBase<T extends XioServerDefBuilderBase<T>> {
   private static final AtomicInteger ID = new AtomicInteger(1);
   /**
    * The default maximum allowable size for a single incoming Http request or outgoing Http
@@ -34,9 +37,11 @@ public abstract class HttpServerDefBuilderBase<T extends HttpServerDefBuilderBas
   private Duration clientIdleTimeout;
   private Duration taskTimeout;
   private XioSecurityFactory securityFactory;
+  private InetSocketAddress hostAddress;
 
-  public HttpServerDefBuilderBase() {
+  public XioServerDefBuilderBase() {
     this.serverPort = 8080;
+    this.hostAddress = new InetSocketAddress("0.0.0.0", serverPort);
     this.maxFrameSize = MAX_FRAME_SIZE;
     this.maxConnections = 0;
     this.queuedResponseLimit = 16;
@@ -58,6 +63,11 @@ public abstract class HttpServerDefBuilderBase<T extends HttpServerDefBuilderBas
 
   public T listen(int serverPort) {
     this.serverPort = serverPort;
+    return (T) this;
+  }
+
+  public T listen(InetSocketAddress addr) {
+    this.hostAddress = addr;
     return (T) this;
   }
 
@@ -101,7 +111,7 @@ public abstract class HttpServerDefBuilderBase<T extends HttpServerDefBuilderBas
     return (T) this;
   }
 
-  public HttpServerDef build() {
+  public XioServerDef build() {
 //    checkState(xioProcessorFactory != null || HttpProcessorFactory != null, "Processor not defined!");
 //    checkState(xioProcessorFactory == null || HttpProcessorFactory == null, "TProcessors will be automatically adapted to XioProcessors, don't specify both");
 //    checkState(maxConnections >= 0, "maxConnections should be 0 (for unlimited) or positive");
@@ -121,9 +131,10 @@ public abstract class HttpServerDefBuilderBase<T extends HttpServerDefBuilderBas
       };
     }
 
-    return new HttpServerDef(
+    return new XioServerDef(
         name,
         serverPort,
+        hostAddress,
         maxFrameSize,
         queuedResponseLimit,
         maxConnections,

@@ -1,8 +1,10 @@
-package com.xjeffrose.xio.core;
+package com.xjeffrose.xio.server;
 
 import com.google.common.base.Strings;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.Inject;
+import com.xjeffrose.xio.core.XioConfigBuilderBase;
+import com.xjeffrose.xio.core.XioTimer;
 import java.lang.reflect.Proxy;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;
@@ -12,7 +14,7 @@ import org.jboss.netty.util.Timer;
 
 import static java.util.concurrent.Executors.newCachedThreadPool;
 
-public class NettyServerConfigBuilder extends NettyConfigBuilderBase<NettyServerConfigBuilder> {
+public class XioServerConfigBuilder extends XioConfigBuilderBase<XioServerConfigBuilder> {
   private final NioSocketChannelConfig socketChannelConfig = (NioSocketChannelConfig) Proxy.newProxyInstance(
       getClass().getClassLoader(),
       new Class<?>[]{NioSocketChannelConfig.class},
@@ -24,7 +26,7 @@ public class NettyServerConfigBuilder extends NettyConfigBuilderBase<NettyServer
       new Magic(""));
 
   @Inject
-  public NettyServerConfigBuilder() {
+  public XioServerConfigBuilder() {
     getSocketChannelConfig().setTcpNoDelay(true);
   }
 
@@ -36,14 +38,14 @@ public class NettyServerConfigBuilder extends NettyConfigBuilderBase<NettyServer
     return serverSocketChannelConfig;
   }
 
-  public NettyServerConfig build() {
+  public XioServerConfig build() {
     Timer timer = getTimer();
     ExecutorService bossExecutor = getBossExecutor();
     int bossThreadCount = getBossThreadCount();
     ExecutorService workerExecutor = getWorkerExecutor();
     int workerThreadCount = getWorkerThreadCount();
 
-    return new NettyServerConfig(
+    return new XioServerConfig(
         getBootstrapOptions(),
         timer != null ? timer : new XioTimer(threadNamePattern("")),
         bossExecutor != null ? bossExecutor : buildDefaultBossExecutor(),
@@ -62,8 +64,8 @@ public class NettyServerConfigBuilder extends NettyConfigBuilderBase<NettyServer
   }
 
   private String threadNamePattern(String suffix) {
-    String XioName = getXioName();
-    return "Xio-server" + (Strings.isNullOrEmpty(XioName) ? "" : "-" + XioName) + suffix;
+    String xioName = getXioName();
+    return "xio-server" + (Strings.isNullOrEmpty(xioName) ? "" : "-" + xioName) + suffix;
   }
 
   private ThreadFactory renamingThreadFactory(String nameFormat) {

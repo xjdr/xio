@@ -1,4 +1,4 @@
-package com.xjeffrose.xio.core;
+package com.xjeffrose.xio.server;
 
 public class RequestContexts {
   private static ThreadLocal<RequestContext> threadLocalContext = new ThreadLocal<>();

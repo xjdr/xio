@@ -1,4 +1,4 @@
-package com.xjeffrose.xio.core;
+package com.xjeffrose.xio.server;
 
 
 import com.google.inject.ProvidedBy;
@@ -6,8 +6,8 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import org.jboss.netty.util.Timer;
 
-@ProvidedBy(DefaultNettyServerConfigProvider.class)
-public class NettyServerConfig {
+@ProvidedBy(DefaultXioServerConfigProvider.class)
+public class XioServerConfig {
   private final Map<String, Object> bootstrapOptions;
   private final Timer timer;
   private final ExecutorService bossExecutor;
@@ -15,12 +15,12 @@ public class NettyServerConfig {
   private final ExecutorService workerExecutor;
   private final int workerThreadCount;
 
-  public NettyServerConfig(Map<String, Object> bootstrapOptions,
-                           Timer timer,
-                           ExecutorService bossExecutor,
-                           int bossThreadCount,
-                           ExecutorService workerExecutor,
-                           int workerThreadCount) {
+  public XioServerConfig(Map<String, Object> bootstrapOptions,
+                         Timer timer,
+                         ExecutorService bossExecutor,
+                         int bossThreadCount,
+                         ExecutorService workerExecutor,
+                         int workerThreadCount) {
     this.bootstrapOptions = bootstrapOptions;
     this.timer = timer;
     this.bossExecutor = bossExecutor;
@@ -29,8 +29,8 @@ public class NettyServerConfig {
     this.workerThreadCount = workerThreadCount;
   }
 
-  public static NettyServerConfigBuilder newBuilder() {
-    return new NettyServerConfigBuilder();
+  public static XioServerConfigBuilder newBuilder() {
+    return new XioServerConfigBuilder();
   }
 
   public Timer getTimer() {

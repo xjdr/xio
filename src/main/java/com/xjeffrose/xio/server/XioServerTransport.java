@@ -1,6 +1,12 @@
-package com.xjeffrose.xio.core;
+package com.xjeffrose.xio.server;
 
 import com.google.common.base.Preconditions;
+import com.xjeffrose.xio.core.ChannelStatistics;
+import com.xjeffrose.xio.core.ConnectionContextHandler;
+import com.xjeffrose.xio.core.ShutdownUtil;
+import com.xjeffrose.xio.core.XioExceptionLogger;
+import com.xjeffrose.xio.core.XioMetrics;
+import com.xjeffrose.xio.core.XioSecurityHandlers;
 import io.airlift.log.Logger;
 import java.net.InetSocketAddress;
 import java.util.concurrent.CountDownLatch;
@@ -23,15 +29,16 @@ import org.jboss.netty.util.ExternalResourceReleasable;
 import org.jboss.netty.util.ThreadNameDeterminer;
 
 
-public class NettyServerTransport implements ExternalResourceReleasable {
-  private static final Logger log = Logger.get(NettyServerTransport.class);
+public class XioServerTransport implements ExternalResourceReleasable {
+  private static final Logger log = Logger.get(XioServerTransport.class);
   private static final int NO_WRITER_IDLE_TIMEOUT = 0;
   private static final int NO_ALL_IDLE_TIMEOUT = 0;
   private final int requestedPort;
+  private final InetSocketAddress hostAddr;
   private final ChannelPipelineFactory pipelineFactory;
   private final ChannelGroup allChannels;
-  private final HttpServerDef def;
-  private final NettyServerConfig nettyServerConfig;
+  private final XioServerDef def;
+  private final XioServerConfig xioServerConfig;
   private final ChannelStatistics channelStatistics;
   private int actualPort;
   private ServerBootstrap bootstrap;
@@ -40,18 +47,19 @@ public class NettyServerTransport implements ExternalResourceReleasable {
   private ServerChannelFactory channelFactory;
   private Channel serverChannel;
 
-  public NettyServerTransport(final HttpServerDef def) {
-    this(def, NettyServerConfig.newBuilder().build(), new DefaultChannelGroup());
+  public XioServerTransport(final XioServerDef def) {
+    this(def, XioServerConfig.newBuilder().build(), new DefaultChannelGroup());
   }
 
   @Inject
-  public NettyServerTransport(
-      final HttpServerDef def,
-      final NettyServerConfig nettyServerConfig,
+  public XioServerTransport(
+      final XioServerDef def,
+      final XioServerConfig xioServerConfig,
       final ChannelGroup allChannels) {
     this.def = def;
-    this.nettyServerConfig = nettyServerConfig;
+    this.xioServerConfig = xioServerConfig;
     this.requestedPort = def.getServerPort();
+    this.hostAddr = def.getHostAddress();
     this.allChannels = allChannels;
     // connectionLimiter must be instantiated exactly once (and thus outside the pipeline factory)
     final ConnectionLimiter connectionLimiter = new ConnectionLimiter(def.getMaxConnections());
@@ -64,14 +72,14 @@ public class NettyServerTransport implements ExternalResourceReleasable {
       public ChannelPipeline getPipeline()
           throws Exception {
         ChannelPipeline cp = Channels.pipeline();
-        XioSecurityHandlers securityHandlers = def.getSecurityFactory().getSecurityHandlers(def, nettyServerConfig);
+        XioSecurityHandlers securityHandlers = def.getSecurityFactory().getSecurityHandlers(def, xioServerConfig);
         cp.addLast("connectionContext", new ConnectionContextHandler());
         cp.addLast("connectionLimiter", connectionLimiter);
         cp.addLast(ChannelStatistics.NAME, channelStatistics);
         cp.addLast("encryptionHandler", securityHandlers.getEncryptionHandler());
         cp.addLast("httpCodec", new HttpServerCodec());
         if (def.getClientIdleTimeout() != null) {
-          cp.addLast("idleTimeoutHandler", new IdleStateHandler(nettyServerConfig.getTimer(),
+          cp.addLast("idleTimeoutHandler", new IdleStateHandler(xioServerConfig.getTimer(),
               def.getClientIdleTimeout().toMillis(),
               NO_WRITER_IDLE_TIMEOUT,
               NO_ALL_IDLE_TIMEOUT,
@@ -80,7 +88,7 @@ public class NettyServerTransport implements ExternalResourceReleasable {
         }
 
         cp.addLast("authHandler", securityHandlers.getAuthenticationHandler());
-        cp.addLast("dispatcher", new XioDispatcher(def, nettyServerConfig.getTimer()));
+        cp.addLast("dispatcher", new XioDispatcher(def, xioServerConfig.getTimer()));
         cp.addLast("exceptionLogger", new XioExceptionLogger());
         return cp;
       }
@@ -88,10 +96,10 @@ public class NettyServerTransport implements ExternalResourceReleasable {
   }
 
   public void start() {
-    bossExecutor = nettyServerConfig.getBossExecutor();
-    int bossThreadCount = nettyServerConfig.getBossThreadCount();
-    ioWorkerExecutor = nettyServerConfig.getWorkerExecutor();
-    int ioWorkerThreadCount = nettyServerConfig.getWorkerThreadCount();
+    bossExecutor = xioServerConfig.getBossExecutor();
+    int bossThreadCount = xioServerConfig.getBossThreadCount();
+    ioWorkerExecutor = xioServerConfig.getWorkerExecutor();
+    int ioWorkerThreadCount = xioServerConfig.getWorkerThreadCount();
 
     channelFactory = new NioServerSocketChannelFactory(new NioServerBossPool(bossExecutor, bossThreadCount, ThreadNameDeterminer.CURRENT),
         new NioWorkerPool(ioWorkerExecutor, ioWorkerThreadCount, ThreadNameDeterminer.CURRENT));
@@ -100,9 +108,9 @@ public class NettyServerTransport implements ExternalResourceReleasable {
 
   public void start(ServerChannelFactory serverChannelFactory) {
     bootstrap = new ServerBootstrap(serverChannelFactory);
-    bootstrap.setOptions(nettyServerConfig.getBootstrapOptions());
+    bootstrap.setOptions(xioServerConfig.getBootstrapOptions());
     bootstrap.setPipelineFactory(pipelineFactory);
-    serverChannel = bootstrap.bind(new InetSocketAddress(requestedPort));
+    serverChannel = bootstrap.bind(hostAddr);
     InetSocketAddress actualSocket = (InetSocketAddress) serverChannel.getLocalAddress();
     actualPort = actualSocket.getPort();
     Preconditions.checkState(actualPort != 0 && (actualPort == requestedPort || requestedPort == 0));
