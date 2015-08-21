@@ -9,9 +9,6 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import org.jboss.netty.util.Timer;
 
-/*
- * Hooks for configuring various parts of Netty.
- */
 public abstract class NettyConfigBuilderBase<T extends NettyConfigBuilderBase<T>> {
   // These constants come directly from Netty but are private in Netty.
   public static final int DEFAULT_BOSS_THREAD_COUNT = 1;
@@ -94,6 +91,7 @@ public abstract class NettyConfigBuilderBase<T extends NettyConfigBuilderBase<T>
   // A ChannelConfig impl in netty is also tied with a socket, but since all
   // these configs are interfaces we can do a bit of magic hacking here.
 
+  // I still honestly don't understand this at all - jr
   protected class Magic implements InvocationHandler {
     private final String prefix;
 

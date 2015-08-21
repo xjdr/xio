@@ -12,9 +12,6 @@ import org.jboss.netty.util.Timer;
 
 import static java.util.concurrent.Executors.newCachedThreadPool;
 
-/*
- * Hooks for configuring various parts of Netty.
- */
 public class NettyServerConfigBuilder extends NettyConfigBuilderBase<NettyServerConfigBuilder> {
   private final NioSocketChannelConfig socketChannelConfig = (NioSocketChannelConfig) Proxy.newProxyInstance(
       getClass().getClassLoader(),
@@ -28,30 +25,13 @@ public class NettyServerConfigBuilder extends NettyConfigBuilderBase<NettyServer
 
   @Inject
   public NettyServerConfigBuilder() {
-    // Http turns TCP_NODELAY by default, and turning it off can have latency implications
-    // so let's turn it on by default as well. It can still be switched off by explicitly
-    // calling setTcpNodelay(false) after construction.
     getSocketChannelConfig().setTcpNoDelay(true);
   }
 
-  /**
-   * Returns an implementation of {@link NioSocketChannelConfig} which will be applied to all {@link
-   * org.jboss.netty.channel.socket.nio.NioSocketChannel} instances created to manage connections
-   * accepted by the server.
-   *
-   * @return A mutable {@link NioSocketChannelConfig}
-   */
   public NioSocketChannelConfig getSocketChannelConfig() {
     return socketChannelConfig;
   }
 
-  /**
-   * Returns an implementation of {@link ServerSocketChannelConfig} which will be applied to the
-   * {@link org.jboss.netty.channel.socket.ServerSocketChannel} the server will use to accept
-   * connections.
-   *
-   * @return A mutable {@link ServerSocketChannelConfig}
-   */
   public ServerSocketChannelConfig getServerSocketChannelConfig() {
     return serverSocketChannelConfig;
   }

@@ -9,14 +9,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.inject.Inject;
 import org.jboss.netty.bootstrap.ServerBootstrap;
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelFuture;
-import org.jboss.netty.channel.ChannelFutureListener;
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.ChannelPipeline;
-import org.jboss.netty.channel.ChannelPipelineFactory;
-import org.jboss.netty.channel.ChannelStateEvent;
-import org.jboss.netty.channel.Channels;
+import org.jboss.netty.channel.*;
 import org.jboss.netty.channel.ServerChannelFactory;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 import org.jboss.netty.channel.group.ChannelGroup;
@@ -24,19 +17,13 @@ import org.jboss.netty.channel.group.DefaultChannelGroup;
 import org.jboss.netty.channel.socket.nio.NioServerBossPool;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 import org.jboss.netty.channel.socket.nio.NioWorkerPool;
-
 import org.jboss.netty.handler.codec.http.HttpServerCodec;
 import org.jboss.netty.handler.timeout.IdleStateHandler;
 import org.jboss.netty.util.ExternalResourceReleasable;
 import org.jboss.netty.util.ThreadNameDeterminer;
 
-/**
- * A core channel the decode framed Http message, dispatches to the TProcessor given
- * and then encode message back to Http frame.
- */
 
-public class NettyServerTransport implements ExternalResourceReleasable
-{
+public class NettyServerTransport implements ExternalResourceReleasable {
   private static final Logger log = Logger.get(NettyServerTransport.class);
   private static final int NO_WRITER_IDLE_TIMEOUT = 0;
   private static final int NO_ALL_IDLE_TIMEOUT = 0;
@@ -71,23 +58,19 @@ public class NettyServerTransport implements ExternalResourceReleasable
 
     this.channelStatistics = new ChannelStatistics(allChannels);
 
+    //TODO: This is an ugly mess, clean this up
     this.pipelineFactory = new ChannelPipelineFactory() {
       @Override
       public ChannelPipeline getPipeline()
           throws Exception {
         ChannelPipeline cp = Channels.pipeline();
-//        TProtocolFactory inputProtocolFactory = def.getDuplexProtocolFactory().getInputProtocolFactory();
         XioSecurityHandlers securityHandlers = def.getSecurityFactory().getSecurityHandlers(def, nettyServerConfig);
         cp.addLast("connectionContext", new ConnectionContextHandler());
         cp.addLast("connectionLimiter", connectionLimiter);
         cp.addLast(ChannelStatistics.NAME, channelStatistics);
-        //For testing
-//        cp.addLast("ssl", new SslHandler(new SSLEngineFactory().getEngine()));
         cp.addLast("encryptionHandler", securityHandlers.getEncryptionHandler());
         cp.addLast("httpCodec", new HttpServerCodec());
-//        cp.addLast("frameCodec", def.getHttpFrameCodecFactory().create(def.getMaxFrameSize(),inputProtocolFactory));
         if (def.getClientIdleTimeout() != null) {
-          // Add handlers to detect idle client connections and disconnect them
           cp.addLast("idleTimeoutHandler", new IdleStateHandler(nettyServerConfig.getTimer(),
               def.getClientIdleTimeout().toMillis(),
               NO_WRITER_IDLE_TIMEOUT,
@@ -190,7 +173,6 @@ public class NettyServerTransport implements ExternalResourceReleasable
     }
 
     @Override
-    @SuppressWarnings("PMD.CollapsibleIfStatements")
     public void channelOpen(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
       if (maxConnections > 0) {
         if (numConnections.incrementAndGet() > maxConnections) {
@@ -203,7 +185,6 @@ public class NettyServerTransport implements ExternalResourceReleasable
     }
 
     @Override
-    @SuppressWarnings("PMD.CollapsibleIfStatements")
     public void channelClosed(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
       if (maxConnections > 0) {
         if (numConnections.decrementAndGet() < 0) {

@@ -22,34 +22,23 @@ import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.jboss.netty.util.Timeout;
 import org.jboss.netty.util.Timer;
 
-import static com.google.common.base.Preconditions.checkState;
 
-/**
- * Dispatch XioTransport to the Processor and write output back.
- *
- * Note that all current async Http clients are capable of sending multiple requests at once but not
- * capable of handling out-of-order responses to those requests, so this dispatcher sends the
- * requests in order. (Eventually this will be conditional on a flag in the Http message header for
- * future async clients that can handle out-of-order responses).
- */
 public class XioDispatcher extends SimpleChannelUpstreamHandler {
   private final XioProcessorFactory processorFactory;
   private final Executor exe;
-  private final long taskTimeoutMillis;
-  private final Timer taskTimeoutTimer;
+//  private final long taskTimeoutMillis;
+//  private final Timer taskTimeoutTimer;
   private final int queuedResponseLimit;
   private final Map<Integer, HttpMessage> responseMap = new HashMap<>();
   private final AtomicInteger dispatcherSequenceId = new AtomicInteger(0);
   private final AtomicInteger lastResponseWrittenId = new AtomicInteger(0);
-//  private final TDuplexProtocolFactory duplexProtocolFactory;
 
   public XioDispatcher(HttpServerDef def, Timer timer) {
     this.processorFactory = def.getProcessorFactory();
-//    this.duplexProtocolFactory = def.getDuplexProtocolFactory();
     this.queuedResponseLimit = def.getQueuedResponseLimit();
     this.exe = def.getExecutor();
-    this.taskTimeoutMillis = (def.getTaskTimeout() == null ? 0 : def.getTaskTimeout().toMillis());
-    this.taskTimeoutTimer = (def.getTaskTimeout() == null ? null : timer);
+//    this.taskTimeoutMillis = (def.getTaskTimeout() == null ? 0 : def.getTaskTimeout().toMillis());
+//    this.taskTimeoutTimer = (def.getTaskTimeout() == null ? null : timer);
   }
 
   @Override
@@ -57,28 +46,10 @@ public class XioDispatcher extends SimpleChannelUpstreamHandler {
       throws Exception {
     if (e.getMessage() instanceof HttpMessage) {
       HttpMessage message = (HttpMessage) e.getMessage();
-      checkResponseOrderingRequirements(ctx, message);
 
       processRequest(ctx, message);
-
     } else {
       ctx.sendUpstream(e);
-    }
-  }
-
-  private void checkResponseOrderingRequirements(ChannelHandlerContext ctx, HttpMessage message) {
-//    boolean messageRequiresOrderedResponses = message.isOrderedResponsesRequired();
-    boolean messageRequiresOrderedResponses = false;
-    if (!DispatcherContext.isResponseOrderingRequirementInitialized(ctx)) {
-      // This is the first request. This message will decide whether all responses on the
-      // channel must be strictly ordered, or whether out-of-order is allowed.
-      DispatcherContext.setResponseOrderingRequired(ctx, messageRequiresOrderedResponses);
-    } else {
-      // This is not the first request. Verify that the ordering requirement on this message
-      // is consistent with the requirement on the channel itself.
-      checkState(
-          messageRequiresOrderedResponses == DispatcherContext.isResponseOrderingRequired(ctx),
-          "Every message on a single channel must specify the same requirement for response ordering");
     }
   }
 
@@ -86,8 +57,6 @@ public class XioDispatcher extends SimpleChannelUpstreamHandler {
       final ChannelHandlerContext ctx,
       final HttpMessage message) {
 
-    // Remember the ordering of requests as they arrive, used to enforce an order on the
-    // responses.
     final int requestSequenceId = dispatcherSequenceId.incrementAndGet();
 
     synchronized (responseMap) {
@@ -114,7 +83,7 @@ public class XioDispatcher extends SimpleChannelUpstreamHandler {
           // actually do any atomic operations.
           final AtomicReference<Timeout> expireTimeout = new AtomicReference<>(null);
 
-          // TODO: Impliment a timeout
+          // TODO: Impliment a timeout [Not ready to tackle this yet
           try {
             try {
 //              long timeRemaining = 0;
@@ -134,7 +103,7 @@ public class XioDispatcher extends SimpleChannelUpstreamHandler {
 //                  timeRemaining = taskTimeoutMillis - timeElapsed;
 //                }
 //              }
-
+//
 //              if (timeRemaining > 0) {
 //                expireTimeout.set(taskTimeoutTimer.newTimeout(new TimerTask() {
 //                  @Override
@@ -189,8 +158,9 @@ public class XioDispatcher extends SimpleChannelUpstreamHandler {
                       // Only write response if the client is still there and the task timeout
                       // hasn't expired.
                       if (ctx.getChannel().isConnected() && responseSent.compareAndSet(false, true)) {
+                        //TODO: This is where the real magic happens
                         HttpMessage response = responseMap.get(1);
-                        writeResponse(ctx, response, requestSequenceId, DispatcherContext.isResponseOrderingRequired(ctx));
+                        writeResponse(ctx, response, requestSequenceId);
                       }
                     } catch (Throwable t) {
                       onDispatchException(ctx, t);
@@ -231,15 +201,10 @@ public class XioDispatcher extends SimpleChannelUpstreamHandler {
 
   private void writeResponse(ChannelHandlerContext ctx,
                              HttpMessage response,
-                             int responseSequenceId,
-                             boolean isOrderedResponsesRequired) {
-    if (isOrderedResponsesRequired) {
-      writeResponseInOrder(ctx, response, responseSequenceId);
-    } else {
-      // No ordering required, just write the response immediately
-      Channels.write(ctx.getChannel(), response);
-      lastResponseWrittenId.incrementAndGet();
-    }
+                             int responseSequenceId) {
+
+    Channels.write(ctx.getChannel(), response);
+    lastResponseWrittenId.incrementAndGet();
   }
 
   private void writeResponseInOrder(ChannelHandlerContext ctx,
@@ -300,8 +265,6 @@ public class XioDispatcher extends SimpleChannelUpstreamHandler {
 
   private static class DispatcherContext {
     private ReadBlockedState readBlockedState = ReadBlockedState.NOT_BLOCKED;
-    private boolean responseOrderingRequired = false;
-    private boolean responseOrderingRequirementInitialized = false;
 
     public static boolean isChannelReadBlocked(ChannelHandlerContext ctx) {
       return getDispatcherContext(ctx).readBlockedState == ReadBlockedState.BLOCKED;
@@ -324,20 +287,6 @@ public class XioDispatcher extends SimpleChannelUpstreamHandler {
       // Remember that reads are unblocked (there is no Channel.getReadable())
       getDispatcherContext(ctx).readBlockedState = ReadBlockedState.NOT_BLOCKED;
       ctx.getChannel().setReadable(true);
-    }
-
-    public static void setResponseOrderingRequired(ChannelHandlerContext ctx, boolean required) {
-      DispatcherContext dispatcherContext = getDispatcherContext(ctx);
-      dispatcherContext.responseOrderingRequirementInitialized = true;
-      dispatcherContext.responseOrderingRequired = required;
-    }
-
-    public static boolean isResponseOrderingRequired(ChannelHandlerContext ctx) {
-      return getDispatcherContext(ctx).responseOrderingRequired;
-    }
-
-    public static boolean isResponseOrderingRequirementInitialized(ChannelHandlerContext ctx) {
-      return getDispatcherContext(ctx).responseOrderingRequirementInitialized;
     }
 
     private static DispatcherContext getDispatcherContext(ChannelHandlerContext ctx) {

@@ -24,29 +24,22 @@ public abstract class HttpServerDefBuilderBase<T extends HttpServerDefBuilderBas
    * conscious decision (something you must manually configure).
    */
   private static final int MAX_FRAME_SIZE = 64 * 1024 * 1024;
-  //  private HttpFrameCodecFactory HttpFrameCodecFactory;
   private int serverPort;
   private int maxFrameSize;
   private int maxConnections;
   private int queuedResponseLimit;
   private XioProcessorFactory xioProcessorFactory;
-  //  private TProcessorFactory HttpProcessorFactory;
-//  private TDuplexProtocolFactory duplexProtocolFactory;
   private Executor executor;
   private String name = "Xio-" + ID.getAndIncrement();
   private Duration clientIdleTimeout;
   private Duration taskTimeout;
   private XioSecurityFactory securityFactory;
 
-  /**
-   * Create a HttpServerDefBuilder with common defaults
-   */
   public HttpServerDefBuilderBase() {
     this.serverPort = 8080;
     this.maxFrameSize = MAX_FRAME_SIZE;
     this.maxConnections = 0;
     this.queuedResponseLimit = 16;
-//    this.duplexProtocolFactory = TDuplexProtocolFactory.fromSingleFactory(new TBinaryProtocol.Factory(true, true));
     this.executor = new Executor() {
       @Override
       public void execute(Runnable runnable) {
@@ -55,7 +48,6 @@ public abstract class HttpServerDefBuilderBase<T extends HttpServerDefBuilderBas
     };
     this.clientIdleTimeout = null;
     this.taskTimeout = null;
-//    this.HttpFrameCodecFactory = new DefaultHttpFrameCodecFactory();
     this.securityFactory = new XioNoOpSecurityFactory();
   }
 
@@ -69,53 +61,10 @@ public abstract class HttpServerDefBuilderBase<T extends HttpServerDefBuilderBas
     return (T) this;
   }
 
-//  public T protocol(TDuplexProtocolFactory tProtocolFactory)
-//  {
-//    this.duplexProtocolFactory = tProtocolFactory;
-//    return (T) this;
-//  }
-//
-//  public T protocol(TProtocolFactory tProtocolFactory)
-//  {
-//    this.duplexProtocolFactory = TDuplexProtocolFactory.fromSingleFactory(tProtocolFactory);
-//    return (T) this;
-//  }
-
-//  /**
-//   * Specify the TProcessor.
-//   */
-//  public T withProcessor(final XioProcessor processor)
-//  {
-//    this.XioProcessorFactory = new XioProcessorFactory() {
-//      @Override
-//      public XioProcessor getProcessor(TTransport transport)
-//      {
-//        return processor;
-//      }
-//    };
-//    return (T) this;
-//  }
-//
-//  public T withProcessor(TProcessor processor)
-//  {
-//    this.HttpProcessorFactory = new TProcessorFactory(processor);
-//    return (T) this;
-//  }
-//
-
   public T withProcessorFactory(XioProcessorFactory processorFactory) {
     this.xioProcessorFactory = processorFactory;
     return (T) this;
   }
-//
-//  /**
-//   * Anohter way to specify the TProcessor.
-//   */
-//  public T withProcessorFactory(TProcessorFactory processorFactory)
-//  {
-//    this.HttpProcessorFactory = processorFactory;
-//    return (T) this;
-//  }
 
   public T limitFrameSizeTo(int maxFrameSize) {
     this.maxFrameSize = maxFrameSize;
@@ -142,12 +91,6 @@ public abstract class HttpServerDefBuilderBase<T extends HttpServerDefBuilderBas
     return (T) this;
   }
 
-//  public T HttpFrameCodecFactory(HttpFrameCodecFactory HttpFrameCodecFactory)
-//  {
-//    this.HttpFrameCodecFactory = HttpFrameCodecFactory;
-//    return (T) this;
-//  }
-
   public T using(Executor exe) {
     this.executor = exe;
     return (T) this;
@@ -158,14 +101,12 @@ public abstract class HttpServerDefBuilderBase<T extends HttpServerDefBuilderBas
     return (T) this;
   }
 
-  /**
-   * Build the HttpServerDef
-   */
   public HttpServerDef build() {
 //    checkState(xioProcessorFactory != null || HttpProcessorFactory != null, "Processor not defined!");
 //    checkState(xioProcessorFactory == null || HttpProcessorFactory == null, "TProcessors will be automatically adapted to XioProcessors, don't specify both");
 //    checkState(maxConnections >= 0, "maxConnections should be 0 (for unlimited) or positive");
 
+    //TODO: Need a substantially more sane solution
     if (xioProcessorFactory == null) {
       xioProcessorFactory = new XioProcessorFactory() {
         @Override
@@ -187,10 +128,8 @@ public abstract class HttpServerDefBuilderBase<T extends HttpServerDefBuilderBas
         queuedResponseLimit,
         maxConnections,
         xioProcessorFactory,
-//        duplexProtocolFactory,
         clientIdleTimeout,
         taskTimeout,
-//        HttpFrameCodecFactory,
         executor,
         securityFactory);
   }

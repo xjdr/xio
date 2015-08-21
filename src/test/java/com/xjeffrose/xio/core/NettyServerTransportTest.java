@@ -24,7 +24,7 @@ import static org.junit.Assert.*;
 public class NettyServerTransportTest {
 
   @Test
-  public void testStart() throws Exception {
+  public void testComplexServerConfiguration() throws Exception {
     HttpServerDef serverDef = new HttpServerDefBuilder()
         .clientIdleTimeout(new Duration((double) 200, TimeUnit.MILLISECONDS))
         .limitConnectionsTo(200)
@@ -73,6 +73,9 @@ public class NettyServerTransportTest {
 
     // Start the server
     server.start();
+
+    // For Integration Testing (LEAVE OUT!!!!)
+    Thread.sleep(20000000);
 
     // Arrange to stop the server at shutdown
     Runtime.getRuntime().addShutdownHook(new Thread() {
