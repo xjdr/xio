@@ -1,3 +1,0 @@
-#!/bin/bash
-
-javac -XDignore.symbol.file src/main/java/com/xjeffrose/*/*.java
