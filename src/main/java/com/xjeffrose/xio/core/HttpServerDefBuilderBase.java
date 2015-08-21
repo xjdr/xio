@@ -14,12 +14,6 @@ import org.jboss.netty.handler.codec.http.HttpRequest;
 
 import static com.google.common.base.Preconditions.checkState;
 
-/**
- * Builder for the Http Server descriptor. Example : <code> new HttpServerDefBuilder()
- * .listen(config.getServerPort()) .limitFrameSizeTo(config.getMaxFrameSize()) .withProcessor(new
- * FacebookService.Processor(new MyFacebookBase())) .using(Executors.newFixedThreadPool(5))
- * .build(); </code> You can then pass HttpServerDef to guice via a multibinder.
- */
 public abstract class HttpServerDefBuilderBase<T extends HttpServerDefBuilderBase<T>> {
   private static final AtomicInteger ID = new AtomicInteger(1);
   /**
@@ -65,25 +59,16 @@ public abstract class HttpServerDefBuilderBase<T extends HttpServerDefBuilderBas
     this.securityFactory = new XioNoOpSecurityFactory();
   }
 
-  /**
-   * Give the endpoint a more meaningful name.
-   */
   public T name(String name) {
     this.name = name;
     return (T) this;
   }
 
-  /**
-   * Listen to this port.
-   */
   public T listen(int serverPort) {
     this.serverPort = serverPort;
     return (T) this;
   }
 
-  /**
-   * Specify protocolFactory for both input and output
-   */
 //  public T protocol(TDuplexProtocolFactory tProtocolFactory)
 //  {
 //    this.duplexProtocolFactory = tProtocolFactory;
@@ -118,9 +103,6 @@ public abstract class HttpServerDefBuilderBase<T extends HttpServerDefBuilderBas
 //  }
 //
 
-  /**
-   * Anohter way to specify the TProcessor.
-   */
   public T withProcessorFactory(XioProcessorFactory processorFactory) {
     this.xioProcessorFactory = processorFactory;
     return (T) this;
@@ -135,44 +117,26 @@ public abstract class HttpServerDefBuilderBase<T extends HttpServerDefBuilderBas
 //    return (T) this;
 //  }
 
-  /**
-   * Set frame size limit.  Default is MAX_FRAME_SIZE
-   */
   public T limitFrameSizeTo(int maxFrameSize) {
     this.maxFrameSize = maxFrameSize;
     return (T) this;
   }
 
-  /**
-   * Set maximum number of connections. Default is 0 (unlimited)
-   */
   public T limitConnectionsTo(int maxConnections) {
     this.maxConnections = maxConnections;
     return (T) this;
   }
 
-  /**
-   * Limit number of queued responses per connection, before pausing reads to catch up.
-   */
   public T limitQueuedResponsesPerConnection(int queuedResponseLimit) {
     this.queuedResponseLimit = queuedResponseLimit;
     return (T) this;
   }
 
-  /**
-   * Specify timeout during which if connected client doesn't send a message, server will disconnect
-   * the client
-   */
   public T clientIdleTimeout(Duration clientIdleTimeout) {
     this.clientIdleTimeout = clientIdleTimeout;
     return (T) this;
   }
 
-  /**
-   * Specify timeout during which: 1. if a task remains on the executor queue, server will cancel
-   * the task when it is dispatched. 2. if a task is scheduled but does not finish processing,
-   * server will send timeout exception back.
-   */
   public T taskTimeout(Duration taskTimeout) {
     this.taskTimeout = taskTimeout;
     return (T) this;
@@ -184,10 +148,6 @@ public abstract class HttpServerDefBuilderBase<T extends HttpServerDefBuilderBas
 //    return (T) this;
 //  }
 
-  /**
-   * Specify an executor for Http processor invocations ( i.e. = THaHsServer ) By default invocation
-   * happens in Netty single thread ( i.e. = TNonBlockingServer )
-   */
   public T using(Executor exe) {
     this.executor = exe;
     return (T) this;

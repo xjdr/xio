@@ -1,8 +1,5 @@
-package com.xjeffrose.xio;
+package com.xjeffrose.xio.SSL;
 
-import com.xjeffrose.xio.KeyStoreFactory;
-import com.xjeffrose.xio.SelfSignedX509CertGenerator;
-import com.xjeffrose.xio.X509CertificateGenerator;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.KeyManagementException;
@@ -16,7 +13,6 @@ import java.security.cert.CertificateException;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
-import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLParameters;
 
 public class SSLEngineFactory {

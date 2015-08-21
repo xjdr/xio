@@ -15,7 +15,7 @@
  *
  */
 
-package com.xjeffrose.xio;
+package com.xjeffrose.xio.SSL;
 
 import java.security.PrivateKey;
 import java.util.Date;

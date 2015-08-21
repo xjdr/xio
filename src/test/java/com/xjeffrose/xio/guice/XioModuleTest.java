@@ -1,4 +1,4 @@
-package com.xjeffrose.xio.core.guice;
+package com.xjeffrose.xio.guice;
 
 import com.google.inject.Guice;
 import com.google.inject.Stage;
@@ -6,8 +6,6 @@ import com.xjeffrose.xio.core.HttpServerDef;
 import com.xjeffrose.xio.core.HttpServerDefBuilder;
 import com.xjeffrose.xio.core.XioBootstrap;
 import org.junit.Test;
-
-import static org.junit.Assert.*;
 
 public class XioModuleTest {
 

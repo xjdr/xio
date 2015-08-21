@@ -1,7 +1,6 @@
 package com.xjeffrose.xio.core;
 
 import com.google.common.base.Preconditions;
-import com.xjeffrose.xio.SSLEngineFactory;
 import io.airlift.log.Logger;
 import java.net.InetSocketAddress;
 import java.util.concurrent.CountDownLatch;
@@ -27,7 +26,6 @@ import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 import org.jboss.netty.channel.socket.nio.NioWorkerPool;
 
 import org.jboss.netty.handler.codec.http.HttpServerCodec;
-import org.jboss.netty.handler.ssl.SslHandler;
 import org.jboss.netty.handler.timeout.IdleStateHandler;
 import org.jboss.netty.util.ExternalResourceReleasable;
 import org.jboss.netty.util.ThreadNameDeterminer;

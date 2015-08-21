@@ -10,9 +10,6 @@ import javax.annotation.PreDestroy;
 import org.jboss.netty.channel.group.ChannelGroup;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 
-/**
- * A lifecycle object that manages starting up and shutting down multiple core channels.
- */
 public class XioBootstrap {
   private final ChannelGroup allChannels;
   private final NettyServerConfig nettyServerConfig;
@@ -21,9 +18,6 @@ public class XioBootstrap {
   private ExecutorService workerExecutor;
   private NioServerSocketChannelFactory serverChannelFactory;
 
-  /**
-   * This takes a Set of HttpServerDef. Use Guice Multibinder to inject.
-   */
   @Inject
   public XioBootstrap(
       Set<HttpServerDef> HttpServerDefs,

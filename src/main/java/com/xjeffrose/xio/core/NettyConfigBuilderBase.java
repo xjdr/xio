@@ -33,10 +33,6 @@ public abstract class NettyConfigBuilderBase<T extends NettyConfigBuilderBase<T>
     return timer;
   }
 
-  /**
-   * Sets a netty {@link Timer} that will be used to trigger read, write, and connection timeouts.
-   * Defaults to creating a new {@link org.jboss.netty.util.HashedWheelTimer}
-   */
   public T setTimer(Timer timer) {
     this.timer = timer;
     return (T) this;
@@ -46,9 +42,6 @@ public abstract class NettyConfigBuilderBase<T extends NettyConfigBuilderBase<T>
     return XioName;
   }
 
-  /**
-   * Sets an identifier which will be added to all thread created by the boss and worker executors.
-   */
   protected T setXioName(String XioName) {
     Preconditions.checkNotNull(XioName, "XioName cannot be null");
     this.XioName = XioName;
@@ -68,9 +61,6 @@ public abstract class NettyConfigBuilderBase<T extends NettyConfigBuilderBase<T>
     return bossThreadCount;
   }
 
-  /**
-   * Sets the number of threads that will be used to manage
-   */
   public T setBossThreadCount(int bossThreadCount) {
     this.bossThreadCount = bossThreadCount;
     return (T) this;

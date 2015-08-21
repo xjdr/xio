@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  */
-package com.xjeffrose.xio;
+package com.xjeffrose.xio.SSL;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;

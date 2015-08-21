@@ -1,4 +1,4 @@
-package com.xjeffrose.xio;
+package com.xjeffrose.xio.log;
 
 /*
  *  Copyright (C) 2015 Jeff Rose

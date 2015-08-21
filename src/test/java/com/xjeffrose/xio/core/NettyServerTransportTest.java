@@ -1,10 +1,8 @@
 package com.xjeffrose.xio.core;
 
 import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.ListenableFutureTask;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import com.xjeffrose.xio.processor.XioProcessor;
 import com.xjeffrose.xio.processor.XioProcessorFactory;
 import io.airlift.units.Duration;
@@ -32,7 +30,7 @@ public class NettyServerTransportTest {
         .limitConnectionsTo(200)
         .limitFrameSizeTo(1024)
         .limitQueuedResponsesPerConnection(50)
-        .listen(8080)
+        .listen(8082)
         .name("Xio Test Server")
         .taskTimeout(new Duration((double) 20000, TimeUnit.MILLISECONDS))
         .using(Executors.newCachedThreadPool())
@@ -75,8 +73,6 @@ public class NettyServerTransportTest {
 
     // Start the server
     server.start();
-
-    Thread.sleep(20000000);
 
     // Arrange to stop the server at shutdown
     Runtime.getRuntime().addShutdownHook(new Thread() {

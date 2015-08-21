@@ -1,4 +1,4 @@
-package com.xjeffrose.xio.core.guice;
+package com.xjeffrose.xio.guice;
 
 
 import com.google.inject.AbstractModule;
