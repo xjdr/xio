@@ -67,6 +67,7 @@ public abstract class XioServerDefBuilderBase<T extends XioServerDefBuilderBase<
   }
 
   public T listen(InetSocketAddress addr) {
+    this.serverPort = addr.getPort();
     this.hostAddress = addr;
     return (T) this;
   }
@@ -125,6 +126,11 @@ public abstract class XioServerDefBuilderBase<T extends XioServerDefBuilderBase<
             @Override
             public ListenableFuture<Boolean> process(ChannelHandlerContext ctx, HttpRequest in, RequestContext out, Map<Integer, HttpMessage> responseMap) {
               return null;
+            }
+
+            @Override
+            public void executeInIoThread(Runnable runnable) {
+
             }
           };
         }

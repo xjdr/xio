@@ -113,6 +113,8 @@ public class XioServerTransport implements ExternalResourceReleasable {
     serverChannel = bootstrap.bind(hostAddr);
     InetSocketAddress actualSocket = (InetSocketAddress) serverChannel.getLocalAddress();
     actualPort = actualSocket.getPort();
+    log.info(""+actualPort);
+    log.info(""+requestedPort);
     Preconditions.checkState(actualPort != 0 && (actualPort == requestedPort || requestedPort == 0));
     log.info("started transport %s:%s", def.getName(), actualPort);
   }

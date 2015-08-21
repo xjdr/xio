@@ -35,6 +35,9 @@ public class XioModuleTest {
     // Start the server
     bootstrap.start();
 
+    //For testing only (LEAVE OUT)
+//    Thread.sleep(200000000);
+
     // Arrange to stop the server at shutdown
     Runtime.getRuntime().addShutdownHook(new Thread() {
       @Override
