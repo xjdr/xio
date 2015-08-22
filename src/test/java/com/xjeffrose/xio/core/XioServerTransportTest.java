@@ -45,13 +45,14 @@ public class XioServerTransportTest {
           @Override
           public XioProcessor getProcessor() {
             return new XioProcessor() {
+
               @Override
-              public ListenableFuture<Boolean> process(ChannelHandlerContext ctx, HttpRequest req, RequestContext respCtx, Map<Integer, HttpMessage> responseMap) {
+              public ListenableFuture<Boolean> process(ChannelHandlerContext ctx, HttpRequest req, RequestContext respCtx) {
                 ListeningExecutorService service = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(10));
                 ListenableFuture<Boolean> httpResponseFuture = service.submit(new Callable<Boolean>() {
                   public Boolean call() {
 
-                    responseMap.put(1, new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK));
+                  respCtx.setContextData(respCtx.getConnectionId(), new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK));
 
                     return true;
                   }

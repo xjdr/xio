@@ -9,7 +9,7 @@ import org.jboss.netty.handler.codec.http.HttpMessage;
 import org.jboss.netty.handler.codec.http.HttpRequest;
 
 public interface XioProcessor {
-  ListenableFuture<Boolean> process(ChannelHandlerContext ctx, HttpRequest req, RequestContext respCtx, Map<Integer, HttpMessage> responseMap);
+  ListenableFuture<Boolean> process(ChannelHandlerContext ctx, HttpRequest req, RequestContext respCtx);
 
   // NioSocketChannel nioSocketChannel = (NioSocketChannel) ctx.getChannel();
   // nioSocketChannel.getWorker().executeInIoThread(runnable, true);

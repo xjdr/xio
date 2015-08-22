@@ -1,6 +1,5 @@
 package com.xjeffrose.xio.server;
 
-
 import com.xjeffrose.xio.core.XioSecurityFactory;
 import com.xjeffrose.xio.processor.XioProcessorFactory;
 import io.airlift.units.Duration;

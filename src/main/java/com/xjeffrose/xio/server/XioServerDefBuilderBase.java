@@ -113,9 +113,9 @@ public abstract class XioServerDefBuilderBase<T extends XioServerDefBuilderBase<
   }
 
   public XioServerDef build() {
-//    checkState(xioProcessorFactory != null || HttpProcessorFactory != null, "Processor not defined!");
-//    checkState(xioProcessorFactory == null || HttpProcessorFactory == null, "TProcessors will be automatically adapted to XioProcessors, don't specify both");
-//    checkState(maxConnections >= 0, "maxConnections should be 0 (for unlimited) or positive");
+    checkState(xioProcessorFactory != null, "Processor not defined!");
+//    checkState(xioProcessorFactory == null, "Processors will be automatically adapted to XioProcessors, don't specify both");
+    checkState(maxConnections >= 0, "maxConnections should be 0 (for unlimited) or positive");
 
     //TODO: Need a substantially more sane solution
     if (xioProcessorFactory == null) {
@@ -123,8 +123,9 @@ public abstract class XioServerDefBuilderBase<T extends XioServerDefBuilderBase<
         @Override
         public XioProcessor getProcessor() {
           return new XioProcessor() {
+
             @Override
-            public ListenableFuture<Boolean> process(ChannelHandlerContext ctx, HttpRequest in, RequestContext out, Map<Integer, HttpMessage> responseMap) {
+            public ListenableFuture<Boolean> process(ChannelHandlerContext ctx, HttpRequest req, RequestContext respCtx) {
               return null;
             }
 

@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import org.jboss.netty.util.Timer;
 
-@ProvidedBy(DefaultXioServerConfigProvider.class)
+@ProvidedBy(XioServerConfigProvider.class)
 public class XioServerConfig {
   private final Map<String, Object> bootstrapOptions;
   private final Timer timer;

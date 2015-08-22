@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -19,28 +20,37 @@ import org.jboss.netty.channel.Channels;
 import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
+import org.jboss.netty.handler.codec.http.DefaultHttpResponse;
 import org.jboss.netty.handler.codec.http.HttpMessage;
 import org.jboss.netty.handler.codec.http.HttpRequest;
+import org.jboss.netty.handler.codec.http.HttpResponseStatus;
+import org.jboss.netty.handler.codec.http.HttpVersion;
 import org.jboss.netty.util.Timeout;
 import org.jboss.netty.util.Timer;
+import org.jboss.netty.util.TimerTask;
 
 
 public class XioDispatcher extends SimpleChannelUpstreamHandler {
   private final XioProcessorFactory processorFactory;
   private final Executor exe;
-//  private final long taskTimeoutMillis;
-//  private final Timer taskTimeoutTimer;
+  private final long taskTimeoutMillis;
+  private final Timer taskTimeoutTimer;
   private final int queuedResponseLimit;
-  private final Map<Integer, HttpMessage> responseMap = new HashMap<>();
+  private final Map<Integer, Object> responseMap = new HashMap<>();
   private final AtomicInteger dispatcherSequenceId = new AtomicInteger(0);
   private final AtomicInteger lastResponseWrittenId = new AtomicInteger(0);
+  private final long requestStart;
+
+  private RequestContext requestContext;
+  private boolean isOrderedResponsesRequired = false;
 
   public XioDispatcher(XioServerDef def, Timer timer) {
     this.processorFactory = def.getProcessorFactory();
     this.queuedResponseLimit = def.getQueuedResponseLimit();
     this.exe = def.getExecutor();
-//    this.taskTimeoutMillis = (def.getTaskTimeout() == null ? 0 : def.getTaskTimeout().toMillis());
-//    this.taskTimeoutTimer = (def.getTaskTimeout() == null ? null : timer);
+    this.taskTimeoutMillis = (def.getTaskTimeout() == null ? 0 : def.getTaskTimeout().toMillis());
+    this.taskTimeoutTimer = (def.getTaskTimeout() == null ? null : timer);
+    this.requestStart = System.currentTimeMillis();
   }
 
   @Override
@@ -85,62 +95,37 @@ public class XioDispatcher extends SimpleChannelUpstreamHandler {
           // actually do any atomic operations.
           final AtomicReference<Timeout> expireTimeout = new AtomicReference<>(null);
 
-          // TODO: Impliment a timeout [Not ready to tackle this yet
           try {
             try {
-//              long timeRemaining = 0;
-//              if (taskTimeoutMillis > 0) {
-//                long timeElapsed = System.currentTimeMillis() - message.getProcessStartTimeMillis();
-//                if (timeElapsed >= taskTimeoutMillis) {
-//                  TApplicationException taskTimeoutException = new TApplicationException(
-//                      TApplicationException.INTERNAL_ERROR,
-//                      "Task stayed on the queue for " + timeElapsed +
-//                          " milliseconds, exceeding configured task timeout of " + taskTimeoutMillis +
-//                          " milliseconds."
-//                  );
-//                  sendTApplicationException(taskTimeoutException, ctx, message, requestSequenceId, messageTransport,
-//                      inProtocol, outProtocol);
-//                  return;
-//                } else {
-//                  timeRemaining = taskTimeoutMillis - timeElapsed;
-//                }
-//              }
-//
-//              if (timeRemaining > 0) {
-//                expireTimeout.set(taskTimeoutTimer.newTimeout(new TimerTask() {
-//                  @Override
-//                  public void run(Timeout timeout) throws Exception {
-//                    // The immediateFuture returned by processors isn't cancellable, cancel() and
-//                    // isCanceled() always return false. Use a flag to detect task expiration.
-//                    if (responseSent.compareAndSet(false, true)) {
-//                      TApplicationException ex = new TApplicationException(
-//                          TApplicationException.INTERNAL_ERROR,
-//                          "Task timed out while executing."
-//                      );
-//                      // Create a temporary transport to send the exception
-//                      ChannelBuffer duplicateBuffer = message.getBuffer().duplicate();
-//                      duplicateBuffer.resetReaderIndex();
-//                      TXioTransport temporaryTransport = new TXioTransport(
-//                          ctx.getChannel(),
-//                          duplicateBuffer,
-//                          message.getTransportType());
-//                      TProtocolPair protocolPair = duplexProtocolFactory.getProtocolPair(
-//                          TTransportPair.fromSingleTransport(temporaryTransport));
-//                      sendTApplicationException(ex, ctx, message,
-//                          requestSequenceId,
-//                          temporaryTransport,
-//                          protocolPair.getInputProtocol(),
-//                          protocolPair.getOutputProtocol());
-//                    }
-//                  }
-//                }, timeRemaining, TimeUnit.MILLISECONDS));
-//              }
+              long timeRemaining = 0;
+              if (taskTimeoutMillis > 0) {
+                long timeElapsed = System.currentTimeMillis() - requestStart;
+                if (timeElapsed >= taskTimeoutMillis) {
+                  // TODO: Send (Throw?) timeout exception
+                  sendApplicationException(HttpResponseStatus.REQUEST_TIMEOUT, ctx);
+                  return;
+                } else {
+                  timeRemaining = taskTimeoutMillis - timeElapsed;
+                }
+              }
+
+              if (timeRemaining > 0) {
+                expireTimeout.set(taskTimeoutTimer.newTimeout(new TimerTask() {
+                  @Override
+                  public void run(Timeout timeout) throws Exception {
+                    if (responseSent.compareAndSet(false, true)) {
+                      sendApplicationException(HttpResponseStatus.REQUEST_TIMEOUT, ctx);
+                      // TODO: Send (Throw?) timeout exception
+                    }
+                  }
+                }, timeRemaining, TimeUnit.MILLISECONDS));
+              }
 
               ConnectionContext connectionContext = ConnectionContexts.getContext(ctx.getChannel());
-              RequestContext requestContext = new XioRequestContext(connectionContext);
+              requestContext = new XioRequestContext(connectionContext);
               RequestContexts.setCurrentContext(requestContext);
 
-              processFuture = processorFactory.getProcessor().process(ctx, (HttpRequest) message, requestContext, responseMap);
+              processFuture = processorFactory.getProcessor().process(ctx, (HttpRequest) message, requestContext);
             } finally {
               // RequestContext does NOT stay set while we are waiting for the process
               // future to complete. This is by design because we'll might move on to the
@@ -160,9 +145,7 @@ public class XioDispatcher extends SimpleChannelUpstreamHandler {
                       // Only write response if the client is still there and the task timeout
                       // hasn't expired.
                       if (ctx.getChannel().isConnected() && responseSent.compareAndSet(false, true)) {
-                        //TODO: This is where the real magic happens
-                        HttpMessage response = responseMap.get(1);
-                        writeResponse(ctx, response, requestSequenceId);
+                        writeResponse(ctx, requestContext.getContextData(requestContext.getConnectionId()), requestSequenceId);
                       }
                     } catch (Throwable t) {
                       onDispatchException(ctx, t);
@@ -182,10 +165,7 @@ public class XioDispatcher extends SimpleChannelUpstreamHandler {
         }
       });
     } catch (RejectedExecutionException ex) {
-      //TODO: Make default bad response
-//      TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR,
-//          "Server overloaded");
-//      sendTApplicationException(x, ctx, message, requestSequenceId, messageTransport, inProtocol, outProtocol);
+      sendApplicationException(HttpResponseStatus.INTERNAL_SERVER_ERROR, ctx);
     }
   }
 
@@ -196,21 +176,34 @@ public class XioDispatcher extends SimpleChannelUpstreamHandler {
     timeout.cancel();
   }
 
+  private void sendApplicationException(HttpResponseStatus status, ChannelHandlerContext ctx) {
+    RequestContext reqCtx = new XioRequestContext(new XioConnectionContext());
+    reqCtx.setContextData(reqCtx.getConnectionId(), new DefaultHttpResponse(HttpVersion.HTTP_1_1, status));
+    writeResponse(ctx, reqCtx.getContextData(reqCtx.getConnectionId()), dispatcherSequenceId.get());
+
+  }
+
   private void onDispatchException(ChannelHandlerContext ctx, Throwable t) {
     Channels.fireExceptionCaught(ctx, t);
     closeChannel(ctx);
   }
 
   private void writeResponse(ChannelHandlerContext ctx,
-                             HttpMessage response,
+                             Object response,
                              int responseSequenceId) {
 
-    Channels.write(ctx.getChannel(), response);
-    lastResponseWrittenId.incrementAndGet();
+    if (isOrderedResponsesRequired) {
+      writeResponseInOrder(ctx, response, responseSequenceId);
+    }
+    else {
+      // No ordering required, just write the response immediately
+      Channels.write(ctx.getChannel(), response);
+      lastResponseWrittenId.incrementAndGet();
+    }
   }
 
   private void writeResponseInOrder(ChannelHandlerContext ctx,
-                                    HttpMessage response,
+                                    Object response,
                                     int responseSequenceId) {
     // Ensure responses to requests are written in the same order the requests
     // were received.
