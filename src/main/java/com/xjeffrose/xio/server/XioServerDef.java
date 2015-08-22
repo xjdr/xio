@@ -1,10 +1,12 @@
 package com.xjeffrose.xio.server;
 
+import com.xjeffrose.xio.core.XioCodecFactory;
 import com.xjeffrose.xio.core.XioSecurityFactory;
 import com.xjeffrose.xio.processor.XioProcessorFactory;
 import io.airlift.units.Duration;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executor;
+import org.jboss.netty.channel.ChannelHandler;
 
 public class XioServerDef {
   private final int serverPort;
@@ -20,6 +22,7 @@ public class XioServerDef {
   private final Executor executor;
   private final String name;
   private final XioSecurityFactory securityFactory;
+  private final XioCodecFactory codecFactory;
 
   public XioServerDef(
       String name,
@@ -32,7 +35,8 @@ public class XioServerDef {
       Duration clientIdleTimeout,
       Duration taskTimeout,
       Executor executor,
-      XioSecurityFactory securityFactory) {
+      XioSecurityFactory securityFactory,
+      XioCodecFactory codecFactory) {
 
     this.name = name;
     this.serverPort = serverPort;
@@ -45,6 +49,7 @@ public class XioServerDef {
     this.taskTimeout = taskTimeout;
     this.executor = executor;
     this.securityFactory = securityFactory;
+    this.codecFactory = codecFactory;
   }
 
   public static XioServerDefBuilder newBuilder() {
@@ -93,5 +98,9 @@ public class XioServerDef {
 
   public XioSecurityFactory getSecurityFactory() {
     return securityFactory;
+  }
+
+  public XioCodecFactory getCodecFactory() {
+    return codecFactory;
   }
 }

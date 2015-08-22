@@ -17,12 +17,14 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import org.jboss.netty.channel.ChannelHandler;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.group.DefaultChannelGroup;
 import org.jboss.netty.handler.codec.http.DefaultHttpResponse;
 import org.jboss.netty.handler.codec.http.HttpMessage;
 import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
+import org.jboss.netty.handler.codec.http.HttpServerCodec;
 import org.jboss.netty.handler.codec.http.HttpVersion;
 import org.junit.Test;
 
@@ -52,7 +54,7 @@ public class XioServerTransportTest {
                 ListenableFuture<Boolean> httpResponseFuture = service.submit(new Callable<Boolean>() {
                   public Boolean call() {
 
-                  respCtx.setContextData(respCtx.getConnectionId(), new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK));
+                    respCtx.setContextData(respCtx.getConnectionId(), new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK));
 
                     return true;
                   }
@@ -65,6 +67,12 @@ public class XioServerTransportTest {
 
               }
             };
+          }
+        })
+        .withCodecFactory(new XioCodecFactory() {
+          @Override
+          public ChannelHandler getCodec() {
+            return new HttpServerCodec();
           }
         })
         .build();
@@ -87,7 +95,7 @@ public class XioServerTransportTest {
     server.start();
 
     // For Integration Testing (LEAVE OUT!!!!)
-//    Thread.sleep(20000000);
+    Thread.sleep(20000000);
 
     // Arrange to stop the server at shutdown
     Runtime.getRuntime().addShutdownHook(new Thread() {

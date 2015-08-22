@@ -77,7 +77,7 @@ public class XioServerTransport implements ExternalResourceReleasable {
         cp.addLast("connectionLimiter", connectionLimiter);
         cp.addLast(ChannelStatistics.NAME, channelStatistics);
         cp.addLast("encryptionHandler", securityHandlers.getEncryptionHandler());
-        cp.addLast("httpCodec", new HttpServerCodec());
+        cp.addLast("codec", def.getCodecFactory().getCodec());
         if (def.getClientIdleTimeout() != null) {
           cp.addLast("idleTimeoutHandler", new IdleStateHandler(xioServerConfig.getTimer(),
               def.getClientIdleTimeout().toMillis(),

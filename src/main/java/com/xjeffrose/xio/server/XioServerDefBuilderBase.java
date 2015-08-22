@@ -2,17 +2,17 @@ package com.xjeffrose.xio.server;
 
 
 import com.google.common.util.concurrent.ListenableFuture;
+import com.xjeffrose.xio.core.XioCodecFactory;
 import com.xjeffrose.xio.core.XioNoOpSecurityFactory;
 import com.xjeffrose.xio.core.XioSecurityFactory;
 import com.xjeffrose.xio.processor.XioProcessor;
 import com.xjeffrose.xio.processor.XioProcessorFactory;
 import io.airlift.units.Duration;
 import java.net.InetSocketAddress;
-import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.jboss.netty.channel.ChannelHandler;
 import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.handler.codec.http.HttpMessage;
 import org.jboss.netty.handler.codec.http.HttpRequest;
 
 import static com.google.common.base.Preconditions.checkState;
@@ -38,6 +38,7 @@ public abstract class XioServerDefBuilderBase<T extends XioServerDefBuilderBase<
   private Duration taskTimeout;
   private XioSecurityFactory securityFactory;
   private InetSocketAddress hostAddress;
+  private XioCodecFactory codecFactory;
 
   public XioServerDefBuilderBase() {
     this.serverPort = 8080;
@@ -54,6 +55,7 @@ public abstract class XioServerDefBuilderBase<T extends XioServerDefBuilderBase<
     this.clientIdleTimeout = null;
     this.taskTimeout = null;
     this.securityFactory = new XioNoOpSecurityFactory();
+    this.codecFactory = null;
   }
 
   public T name(String name) {
@@ -112,31 +114,16 @@ public abstract class XioServerDefBuilderBase<T extends XioServerDefBuilderBase<
     return (T) this;
   }
 
+  public T withCodecFactory(XioCodecFactory codec) {
+    this.codecFactory = codec;
+    return (T) this;
+  }
+
   public XioServerDef build() {
     checkState(xioProcessorFactory != null, "Processor not defined!");
+    checkState(codecFactory != null, "Codec not defined!");
 //    checkState(xioProcessorFactory == null, "Processors will be automatically adapted to XioProcessors, don't specify both");
     checkState(maxConnections >= 0, "maxConnections should be 0 (for unlimited) or positive");
-
-    //TODO: Need a substantially more sane solution
-    if (xioProcessorFactory == null) {
-      xioProcessorFactory = new XioProcessorFactory() {
-        @Override
-        public XioProcessor getProcessor() {
-          return new XioProcessor() {
-
-            @Override
-            public ListenableFuture<Boolean> process(ChannelHandlerContext ctx, HttpRequest req, RequestContext respCtx) {
-              return null;
-            }
-
-            @Override
-            public void executeInIoThread(Runnable runnable) {
-
-            }
-          };
-        }
-      };
-    }
 
     return new XioServerDef(
         name,
@@ -149,6 +136,7 @@ public abstract class XioServerDefBuilderBase<T extends XioServerDefBuilderBase<
         clientIdleTimeout,
         taskTimeout,
         executor,
-        securityFactory);
+        securityFactory,
+        codecFactory);
   }
 }

@@ -11,8 +11,9 @@ public class XioClientTest {
 
   @Test
   public void testConnect() throws Exception {
+    HttpClientConnector httpClientConnector = new HttpClientConnector(URI.create("www.google.com"));
     XioClient xioClient = new XioClient();
-    ListenableFuture<XioClientChannel> responseFuture = xioClient.connect(new URI("https://google.com"));
+//    ListenableFuture<XioClientChannel> responseFuture = xioClient.connectAsync(httpClientConnector);
   }
 
   @Test

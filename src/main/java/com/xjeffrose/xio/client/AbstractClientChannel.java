@@ -1,14 +1,15 @@
 package com.xjeffrose.xio.client;
 
+
 import io.airlift.log.Logger;
 import io.airlift.units.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
+import javax.annotation.Nullable;
+import javax.annotation.concurrent.NotThreadSafe;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFuture;
@@ -20,31 +21,31 @@ import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelHandler;
 import org.jboss.netty.channel.socket.nio.NioSocketChannel;
-import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.jboss.netty.handler.timeout.ReadTimeoutException;
 import org.jboss.netty.handler.timeout.WriteTimeoutException;
 import org.jboss.netty.util.Timeout;
 import org.jboss.netty.util.Timer;
 import org.jboss.netty.util.TimerTask;
 
-public class XioClientChannelImpl extends SimpleChannelHandler implements XioClientChannel {
-  private static final Logger LOGGER = Logger.get(XioClientChannelImpl.class);
+@NotThreadSafe
+public abstract class AbstractClientChannel extends SimpleChannelHandler implements XioClientChannel {
+  private static final Logger LOGGER = Logger.get(AbstractClientChannel.class);
 
   private final Channel nettyChannel;
   private final Map<Integer, Request> requestMap = new HashMap<>();
-  //  private volatile TException channelError;
   private final Timer timer;
+  private final XioProtocolFactory protocolFactory;
   private Duration sendTimeout = null;
   // Timeout until the whole request must be received.
   private Duration receiveTimeout = null;
   // Timeout for not receiving any data from the server
   private Duration readTimeout = null;
-//  private final TDuplexProtocolFactory protocolFactory;
-  private AtomicInteger sequenceId = new AtomicInteger();
+  private volatile XioException channelError;
 
-  protected XioClientChannelImpl(Channel nettyChannel, Timer timer) {
+  protected AbstractClientChannel(Channel nettyChannel, Timer timer, XioProtocolFactory protocolFactory) {
     this.nettyChannel = nettyChannel;
     this.timer = timer;
+    this.protocolFactory = protocolFactory;
   }
 
   @Override
@@ -52,14 +53,29 @@ public class XioClientChannelImpl extends SimpleChannelHandler implements XioCli
     return nettyChannel;
   }
 
-  protected ChannelBuffer extractResponse(Object message) {
-
-    return null;
+  @Override
+  public XioProtocolFactory getProtocolFactory() {
+    return protocolFactory;
   }
 
-  protected ChannelFuture writeRequest(Object request) {
-    return getNettyChannel().write(request);
+  protected abstract ChannelBuffer extractResponse(Object message) throws XioTransportException;
+
+  protected int extractSequenceId(ChannelBuffer messageBuffer) throws XioTransportException {
+    try {
+//      messageBuffer.markReaderIndex();
+//      TTransport inputTransport = new TChannelBufferInputTransport(messageBuffer);
+//      TProtocol inputProtocol = getProtocolFactory().getInputProtocolFactory().getProtocol(inputTransport);
+//      TMessage message = inputProtocol.readMessageBegin();
+//      messageBuffer.resetReaderIndex();
+//      return message.seqid;
+      //TODO: REMOVE THIS
+      return 1;
+    } catch (Throwable t) {
+      throw new XioTransportException("Could not find sequenceId in Thrift message");
+    }
   }
+
+  protected abstract ChannelFuture writeRequest(ChannelBuffer request);
 
   public void close() {
     getNettyChannel().close();
@@ -71,14 +87,9 @@ public class XioClientChannelImpl extends SimpleChannelHandler implements XioCli
   }
 
   @Override
-  public void setSendTimeoutDuration(Duration sendTimeout) {
-
+  public void setSendTimeout(@Nullable Duration sendTimeout) {
+    this.sendTimeout = sendTimeout;
   }
-
-//  @Override
-//  public void setSendTimeout(Duration sendTimeout) {
-//    this.sendTimeout = sendTimeout;
-//  }
 
   @Override
   public Duration getReceiveTimeout() {
@@ -86,7 +97,7 @@ public class XioClientChannelImpl extends SimpleChannelHandler implements XioCli
   }
 
   @Override
-  public void setReceiveTimeout(Duration receiveTimeout) {
+  public void setReceiveTimeout(@Nullable Duration receiveTimeout) {
     this.receiveTimeout = receiveTimeout;
   }
 
@@ -96,16 +107,19 @@ public class XioClientChannelImpl extends SimpleChannelHandler implements XioCli
   }
 
   @Override
-  public void setReadTimeout(Duration readTimeout) {
+  public void setReadTimeout(@Nullable Duration readTimeout) {
     this.readTimeout = readTimeout;
   }
 
   @Override
   public boolean hasError() {
-//    return channelError != null;
-    return false;
+    return channelError != null;
   }
 
+  @Override
+  public XioException getError() {
+    return channelError;
+  }
 
   @Override
   public void executeInIoThread(Runnable runnable) {
@@ -114,27 +128,27 @@ public class XioClientChannelImpl extends SimpleChannelHandler implements XioCli
   }
 
   @Override
-  public void sendAsynchronousRequest(final HttpRequest message,
+  public void sendAsynchronousRequest(final ChannelBuffer message,
                                       final boolean oneway,
-                                      final Listener listener) {
-//    final int sequenceId = extractSequenceId(message);
+                                      final Listener listener) throws XioException {
+    final int sequenceId = extractSequenceId(message);
 
     // Ensure channel listeners are always called on the channel's I/O thread
     executeInIoThread(new Runnable() {
       @Override
       public void run() {
         try {
-          final Request request = makeRequest(sequenceId.getAndIncrement(), listener);
+          final Request request = makeRequest(sequenceId, listener);
 
           if (!nettyChannel.isConnected()) {
-            fireChannelErrorCallback(listener, new XioClientException("Channel closed"));
+            fireChannelErrorCallback(listener, new XioTransportException("Channel closed")); //NOT_OPEN
             return;
           }
 
           if (hasError()) {
             fireChannelErrorCallback(
                 listener,
-                new XioClientException("Channel is in a bad state due to failing a previous request"));
+                new XioTransportException("Channel is in a bad state due to failing a previous request")); //UNKNOWN
             return;
           }
 
@@ -152,7 +166,7 @@ public class XioClientChannelImpl extends SimpleChannelHandler implements XioCli
           // may not be registered yet. So we try to remove it (to make sure we don't call
           // the callback twice) and then manually make the callback for this request
           // listener.
-//          requestMap.remove(sequenceId);
+          requestMap.remove(sequenceId);
           fireChannelErrorCallback(listener, t);
 
           onError(t);
@@ -172,10 +186,10 @@ public class XioClientChannelImpl extends SimpleChannelHandler implements XioCli
           queueReceiveAndReadTimeout(request);
         }
       } else {
-//        TTransportException transportException =
-//            new TTransportException("Sending request failed",
-                future.getCause();
-//        onError(transportException);
+        XioTransportException transportException =
+            new XioTransportException("Sending request failed",
+                future.getCause());
+        onError(transportException);
       }
     } catch (Throwable t) {
       onError(t);
@@ -188,7 +202,8 @@ public class XioClientChannelImpl extends SimpleChannelHandler implements XioCli
       ChannelBuffer response = extractResponse(e.getMessage());
 
       if (response != null) {
-        onResponseReceived(sequenceId.get(), response);
+        int sequenceId = extractSequenceId(response);
+        onResponseReceived(sequenceId, response);
       } else {
         ctx.sendUpstream(e);
       }
@@ -240,7 +255,7 @@ public class XioClientChannelImpl extends SimpleChannelHandler implements XioCli
   private void onResponseReceived(int sequenceId, ChannelBuffer response) {
     Request request = requestMap.remove(sequenceId);
     if (request == null) {
-      onError(new XioClientException("Bad sequence id in response: " + sequenceId));
+      onError(new XioTransportException("Bad sequence id in response: " + sequenceId));
     } else {
       retireRequest(request);
       fireResponseReceivedCallback(request.getListener(), response);
@@ -250,16 +265,16 @@ public class XioClientChannelImpl extends SimpleChannelHandler implements XioCli
   @Override
   public void channelDisconnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
     if (!requestMap.isEmpty()) {
-      onError(new XioClientException("Client was disconnected by server"));
+      onError(new XioTransportException("Client was disconnected by server"));
     }
   }
 
   protected void onError(Throwable t) {
-//    Exception wrappedException = wrapException(t);
-//
-//    if (channelError == null) {
-//      channelError = wrappedException;
-//    }
+    XioException wrappedException = wrapException(t);
+
+    if (channelError == null) {
+      channelError = wrappedException;
+    }
 
     cancelAllTimeouts();
 
@@ -267,12 +282,20 @@ public class XioClientChannelImpl extends SimpleChannelHandler implements XioCli
     requests.addAll(requestMap.values());
     requestMap.clear();
     for (Request request : requests) {
-      fireChannelErrorCallback(request.getListener(), t);
+      fireChannelErrorCallback(request.getListener(), wrappedException);
     }
 
     Channel channel = getNettyChannel();
     if (nettyChannel.isOpen()) {
       channel.close();
+    }
+  }
+
+  protected XioException wrapException(Throwable t) {
+    if (t instanceof XioException) {
+      return (XioException) t;
+    } else {
+      return new XioTransportException(t);
     }
   }
 
@@ -292,7 +315,7 @@ public class XioClientChannelImpl extends SimpleChannelHandler implements XioCli
     }
   }
 
-  private void fireChannelErrorCallback(Listener listener, Exception exception) {
+  private void fireChannelErrorCallback(Listener listener, XioException exception) {
     try {
       listener.onChannelError(exception);
     } catch (Throwable t) {
@@ -301,29 +324,29 @@ public class XioClientChannelImpl extends SimpleChannelHandler implements XioCli
   }
 
   private void fireChannelErrorCallback(Listener listener, Throwable throwable) {
-    fireChannelErrorCallback(listener,throwable);
+    fireChannelErrorCallback(listener, wrapException(throwable));
   }
 
   private void onSendTimeoutFired(Request request) {
     cancelAllTimeouts();
     WriteTimeoutException timeoutException = new WriteTimeoutException("Timed out waiting " + getSendTimeout() + " to send data to server");
-    fireChannelErrorCallback(request.getListener(), new XioClientException("", timeoutException));
+    fireChannelErrorCallback(request.getListener(), new XioTransportException("Timed out", timeoutException)); //TIMED_OUT
   }
 
   private void onReceiveTimeoutFired(Request request) {
     cancelAllTimeouts();
     ReadTimeoutException timeoutException = new ReadTimeoutException("Timed out waiting " + getReceiveTimeout() + " to receive response");
-    fireChannelErrorCallback(request.getListener(), new XioClientException("", timeoutException));
+    fireChannelErrorCallback(request.getListener(), new XioTransportException("Timed out", timeoutException)); //TIMED_OUT
   }
 
   private void onReadTimeoutFired(Request request) {
     cancelAllTimeouts();
     ReadTimeoutException timeoutException = new ReadTimeoutException("Timed out waiting " + getReadTimeout() + " to read data from server");
-    fireChannelErrorCallback(request.getListener(), new XioClientException("", timeoutException));
+    fireChannelErrorCallback(request.getListener(), new XioTransportException("Timed out", timeoutException)); //TIMED_OUT
   }
 
 
-  private void queueSendTimeout(final Request request) throws XioClientException {
+  private void queueSendTimeout(final Request request) throws XioTransportException {
     if (this.sendTimeout != null) {
       long sendTimeoutMs = this.sendTimeout.toMillis();
       if (sendTimeoutMs > 0) {
@@ -338,14 +361,14 @@ public class XioClientChannelImpl extends SimpleChannelHandler implements XioCli
         try {
           sendTimeout = timer.newTimeout(sendTimeoutTask, sendTimeoutMs, TimeUnit.MILLISECONDS);
         } catch (IllegalStateException e) {
-          throw new XioClientException("Unable to schedule send timeout");
+          throw new XioTransportException("Unable to schedule send timeout");
         }
         request.setSendTimeout(sendTimeout);
       }
     }
   }
 
-  private void queueReceiveAndReadTimeout(final Request request) throws XioClientException {
+  private void queueReceiveAndReadTimeout(final Request request) throws XioTransportException {
     if (this.receiveTimeout != null) {
       long receiveTimeoutMs = this.receiveTimeout.toMillis();
       if (receiveTimeoutMs > 0) {
@@ -360,7 +383,7 @@ public class XioClientChannelImpl extends SimpleChannelHandler implements XioCli
         try {
           timeout = timer.newTimeout(receiveTimeoutTask, receiveTimeoutMs, TimeUnit.MILLISECONDS);
         } catch (IllegalStateException e) {
-          throw new XioClientException("Unable to schedule request timeout");
+          throw new XioTransportException("Unable to schedule request timeout");
         }
         request.setReceiveTimeout(timeout);
       }
@@ -369,15 +392,15 @@ public class XioClientChannelImpl extends SimpleChannelHandler implements XioCli
     if (this.readTimeout != null) {
       long readTimeoutNanos = this.readTimeout.roundTo(TimeUnit.NANOSECONDS);
       if (readTimeoutNanos > 0) {
-//        TimerTask readTimeoutTask = new IoThreadBoundTimerTask(this, new ReadTimeoutTask(readTimeoutNanos, request));
+        TimerTask readTimeoutTask = new IoThreadBoundTimerTask(this, new ReadTimeoutTask(readTimeoutNanos, request));
 
-//        Timeout timeout;
+        Timeout timeout;
         try {
-//          timeout = timer.newTimeout(readTimeoutTask, readTimeoutNanos, TimeUnit.NANOSECONDS);
+          timeout = timer.newTimeout(readTimeoutTask, readTimeoutNanos, TimeUnit.NANOSECONDS);
         } catch (IllegalStateException e) {
-          throw new XioClientException("Unable to schedule read timeout");
+          throw new XioTransportException("Unable to schedule read timeout");
         }
-//        request.setReadTimeout(timeout);
+        request.setReadTimeout(timeout);
       }
     }
   }
@@ -455,42 +478,40 @@ public class XioClientChannelImpl extends SimpleChannelHandler implements XioCli
     }
   }
 
-//  private final class ReadTimeoutTask implements TimerTask {
-//    private final TimeoutHandler timeoutHandler;
-//    private final long timeoutNanos;
-//    private final Request request;
-//
-//    ReadTimeoutTask(long timeoutNanos, Request request) {
-//      this.timeoutHandler = TimeoutHandler.findTimeoutHandler(getNettyChannel().getPipeline());
-//      this.timeoutNanos = timeoutNanos;
-//      this.request = request;
-//    }
-//
-//    public void run(Timeout timeout) throws Exception {
-//      if (timeoutHandler == null) {
-//        return;
-//      }
-//
-//      if (timeout.isCancelled()) {
-//        return;
-//      }
-//
-//      if (!getNettyChannel().isOpen()) {
-//        return;
-//      }
-//
-//      long currentTimeNanos = System.nanoTime();
-//
-//      long timePassed = currentTimeNanos - timeoutHandler.getLastMessageReceivedNanos();
-//      long nextDelayNanos = timeoutNanos - timePassed;
-//
-//      if (nextDelayNanos <= 0) {
-//        onReadTimeoutFired(request);
-//      } else {
-//        request.setReadTimeout(timer.newTimeout(this, nextDelayNanos, TimeUnit.NANOSECONDS));
-//      }
-//    }
-//  }
+  private final class ReadTimeoutTask implements TimerTask {
+    private final TimeoutHandler timeoutHandler;
+    private final long timeoutNanos;
+    private final Request request;
 
+    ReadTimeoutTask(long timeoutNanos, Request request) {
+      this.timeoutHandler = TimeoutHandler.findTimeoutHandler(getNettyChannel().getPipeline());
+      this.timeoutNanos = timeoutNanos;
+      this.request = request;
+    }
 
+    public void run(Timeout timeout) throws Exception {
+      if (timeoutHandler == null) {
+        return;
+      }
+
+      if (timeout.isCancelled()) {
+        return;
+      }
+
+      if (!getNettyChannel().isOpen()) {
+        return;
+      }
+
+      long currentTimeNanos = System.nanoTime();
+
+      long timePassed = currentTimeNanos - timeoutHandler.getLastMessageReceivedNanos();
+      long nextDelayNanos = timeoutNanos - timePassed;
+
+      if (nextDelayNanos <= 0) {
+        onReadTimeoutFired(request);
+      } else {
+        request.setReadTimeout(timer.newTimeout(this, nextDelayNanos, TimeUnit.NANOSECONDS));
+      }
+    }
+  }
 }
