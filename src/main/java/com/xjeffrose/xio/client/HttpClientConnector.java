@@ -15,6 +15,7 @@ import org.jboss.netty.handler.codec.http.HttpClientCodec;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 
 public class HttpClientConnector extends AbstractClientConnector<HttpClientChannel> {
   private final URI endpointUri;
@@ -49,6 +50,7 @@ public class HttpClientConnector extends AbstractClientConnector<HttpClientChann
 
   private static int getPortFromURI(URI uri) {
     URI uriNN = checkNotNull(uri);
+    checkState(uri.getScheme() != null, "The entered URL is not valid");
     if (uri.getScheme().toLowerCase().equals("http")) {
       return uriNN.getPort() == -1 ? 80 : uriNN.getPort();
     } else if (uri.getScheme().toLowerCase().equals("https")) {

@@ -1,14 +1,12 @@
 package com.xjeffrose.xio.client;
 
-    import com.google.common.net.HostAndPort;
-    import com.xjeffrose.xio.core.XioSecurityFactory;
-    import org.jboss.netty.util.Timer;
+import com.google.common.net.HostAndPort;
+import com.xjeffrose.xio.core.XioSecurityFactory;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import org.jboss.netty.util.Timer;
 
-    import java.util.Map;
-    import java.util.concurrent.ExecutorService;
-
-public class XioClientConfig
-{
+public class XioClientConfig {
   private final Map<String, Object> bootstrapOptions;
   private final HostAndPort defaultSocksProxyAddress;
   private final Timer timer;
@@ -19,13 +17,13 @@ public class XioClientConfig
   private final XioSecurityFactory securityFactory;
 
   public XioClientConfig(Map<String, Object> bootstrapOptions,
-                           HostAndPort defaultSocksProxyAddress,
-                           Timer timer,
-                           ExecutorService bossExecutor,
-                           int bossThreadCount,
-                           ExecutorService workerExecutor,
-                           int workerThreadCount,
-                           XioSecurityFactory securityFactory) {
+                         HostAndPort defaultSocksProxyAddress,
+                         Timer timer,
+                         ExecutorService bossExecutor,
+                         int bossThreadCount,
+                         ExecutorService workerExecutor,
+                         int workerThreadCount,
+                         XioSecurityFactory securityFactory) {
 
     this.bootstrapOptions = bootstrapOptions;
     this.defaultSocksProxyAddress = defaultSocksProxyAddress;
@@ -37,44 +35,36 @@ public class XioClientConfig
     this.securityFactory = securityFactory;
   }
 
-  public Map<String, Object> getBootstrapOptions()
-  {
+  public static XioClientConfigBuilder newBuilder() {
+    return new XioClientConfigBuilder();
+  }
+
+  public Map<String, Object> getBootstrapOptions() {
     return bootstrapOptions;
   }
 
-  public ExecutorService getBossExecutor()
-  {
+  public ExecutorService getBossExecutor() {
     return bossExecutor;
   }
 
-  public int getBossThreadCount()
-  {
+  public int getBossThreadCount() {
     return bossThreadCount;
   }
 
-  public HostAndPort getDefaultSocksProxyAddress()
-  {
+  public HostAndPort getDefaultSocksProxyAddress() {
     return defaultSocksProxyAddress;
   }
 
-  public Timer getTimer()
-  {
+  public Timer getTimer() {
     return timer;
   }
 
-  public ExecutorService getWorkerExecutor()
-  {
+  public ExecutorService getWorkerExecutor() {
     return workerExecutor;
   }
 
-  public int getWorkerThreadCount()
-  {
+  public int getWorkerThreadCount() {
     return workerThreadCount;
-  }
-
-  public static XioClientConfigBuilder newBuilder()
-  {
-    return new XioClientConfigBuilder();
   }
 
   public XioSecurityFactory getSecurityFactory() {

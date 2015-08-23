@@ -21,6 +21,8 @@ import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelHandler;
 import org.jboss.netty.channel.socket.nio.NioSocketChannel;
+import org.jboss.netty.handler.codec.http.HttpResponse;
+import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.jboss.netty.handler.timeout.ReadTimeoutException;
 import org.jboss.netty.handler.timeout.WriteTimeoutException;
 import org.jboss.netty.util.Timeout;
@@ -58,22 +60,39 @@ public abstract class AbstractClientChannel extends SimpleChannelHandler impleme
     return protocolFactory;
   }
 
-  protected abstract ChannelBuffer extractResponse(Object message) throws XioTransportException;
+//  protected abstract ChannelBuffer extractResponse(Object message) throws XioTransportException;
 
   protected int extractSequenceId(ChannelBuffer messageBuffer) throws XioTransportException {
     try {
-//      messageBuffer.markReaderIndex();
-//      TTransport inputTransport = new TChannelBufferInputTransport(messageBuffer);
-//      TProtocol inputProtocol = getProtocolFactory().getInputProtocolFactory().getProtocol(inputTransport);
-//      TMessage message = inputProtocol.readMessageBegin();
-//      messageBuffer.resetReaderIndex();
-//      return message.seqid;
       //TODO: REMOVE THIS
       return 1;
     } catch (Throwable t) {
-      throw new XioTransportException("Could not find sequenceId in Thrift message");
+      throw new XioTransportException("Could not find sequenceId in message");
     }
   }
+
+  protected ChannelBuffer extractResponse(Object message) throws XioTransportException {
+    if (!(message instanceof HttpResponse)) {
+      return null;
+    }
+
+    HttpResponse httpResponse = (HttpResponse) message;
+//    System.out.println(message.toString());
+
+    if (!httpResponse.getStatus().equals(HttpResponseStatus.OK)) {
+      throw new XioTransportException("HTTP response had non-OK status: " + httpResponse
+          .getStatus().toString());
+    }
+
+    ChannelBuffer content = httpResponse.getContent();
+
+    if (!content.readable()) {
+      return null;
+    }
+
+    return content;
+  }
+
 
   protected abstract ChannelFuture writeRequest(ChannelBuffer request);
 

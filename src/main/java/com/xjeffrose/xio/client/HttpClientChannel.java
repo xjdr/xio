@@ -16,7 +16,7 @@ import org.jboss.netty.handler.codec.http.HttpVersion;
 import org.jboss.netty.util.Timer;
 
 @NotThreadSafe
-public class HttpClientChannel extends AbstractClientChannel implements XioClientChannel {
+public class HttpClientChannel extends AbstractClientChannel {
   private final Channel underlyingNettyChannel;
   private final String hostName;
   private final String endpointUri;
@@ -39,6 +39,32 @@ public class HttpClientChannel extends AbstractClientChannel implements XioClien
     return underlyingNettyChannel;
   }
 
+  public void setHeaders(Map<String, String> headers) {
+    this.headerDictionary = headers;
+  }
+
+  @Override
+  protected ChannelFuture writeRequest(ChannelBuffer request) {
+    HttpRequest httpRequest = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET,
+        endpointUri);
+
+    httpRequest.setHeader(HttpHeaders.HOST, hostName);
+    httpRequest.setHeader(HttpHeaders.CONTENT_LENGTH, request.readableBytes());
+    httpRequest.setHeader(HttpHeaders.CONTENT_TYPE, "application/text");
+    httpRequest.setHeader(HttpHeaders.ACCEPT, "text/html");
+    httpRequest.setHeader(HttpHeaders.USER_AGENT, "Xio");
+
+    if (headerDictionary != null) {
+      for (Map.Entry<String, String> entry : headerDictionary.entrySet()) {
+        httpRequest.setHeader(entry.getKey(), entry.getValue());
+      }
+    }
+
+    httpRequest.setContent(request);
+
+    return underlyingNettyChannel.write(httpRequest);
+  }
+
   @Override
   protected ChannelBuffer extractResponse(Object message) throws XioTransportException {
     if (!(message instanceof HttpResponse)) {
@@ -59,32 +85,6 @@ public class HttpClientChannel extends AbstractClientChannel implements XioClien
     }
 
     return content;
-  }
-
-  @Override
-  protected ChannelFuture writeRequest(ChannelBuffer request) {
-    HttpRequest httpRequest = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST,
-        endpointUri);
-
-    httpRequest.setHeader(HttpHeaders.HOST, hostName);
-    httpRequest.setHeader(HttpHeaders.CONTENT_LENGTH, request.readableBytes());
-    httpRequest.setHeader(HttpHeaders.CONTENT_TYPE, "application/x-thrift");
-    httpRequest.setHeader(HttpHeaders.ACCEPT, "application/x-thrift");
-    httpRequest.setHeader(HttpHeaders.USER_AGENT, "Java/Swift-HttpThriftClientChannel");
-
-    if (headerDictionary != null) {
-      for (Map.Entry<String, String> entry : headerDictionary.entrySet()) {
-        httpRequest.setHeader(entry.getKey(), entry.getValue());
-      }
-    }
-
-    httpRequest.setContent(request);
-
-    return underlyingNettyChannel.write(httpRequest);
-  }
-
-  public void setHeaders(Map<String, String> headers) {
-    this.headerDictionary = headers;
   }
 
 }
