@@ -11,9 +11,10 @@ public class XioClientTest {
 
   @Test
   public void testConnect() throws Exception {
-    HttpClientConnector httpClientConnector = new HttpClientConnector(URI.create("www.google.com"));
+    HttpClientConnector httpClientConnector = new HttpClientConnector(URI.create("http://www.google.com"));
     XioClient xioClient = new XioClient();
-//    ListenableFuture<XioClientChannel> responseFuture = xioClient.connectAsync(httpClientConnector);
+    ListenableFuture<XioClientChannel> responseFuture = xioClient.connectAsync(httpClientConnector);
+    XioClientChannel xioClientChannel = responseFuture.get();
   }
 
   @Test

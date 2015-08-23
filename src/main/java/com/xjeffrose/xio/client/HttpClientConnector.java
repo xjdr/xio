@@ -2,6 +2,7 @@ package com.xjeffrose.xio.client;
 
 
 import com.google.common.net.HostAndPort;
+import com.xjeffrose.xio.core.XioSecurityHandlers;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -77,6 +78,8 @@ public class HttpClientConnector extends AbstractClientConnector<HttpClientChann
       public ChannelPipeline getPipeline()
           throws Exception {
         ChannelPipeline cp = Channels.pipeline();
+        XioSecurityHandlers securityHandlers = clientConfig.getSecurityFactory().getSecurityHandlers(clientConfig);
+        cp.addLast("encryptionHandler", securityHandlers.getEncryptionHandler());
         cp.addLast("httpClientCodec", new HttpClientCodec());
         cp.addLast("chunkAggregator", new HttpChunkAggregator(maxFrameSize));
         return cp;

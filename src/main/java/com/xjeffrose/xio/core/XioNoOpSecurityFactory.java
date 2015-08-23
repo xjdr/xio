@@ -1,5 +1,6 @@
 package com.xjeffrose.xio.core;
 
+import com.xjeffrose.xio.client.XioClientConfig;
 import com.xjeffrose.xio.server.XioServerConfig;
 import com.xjeffrose.xio.server.XioServerDef;
 import org.jboss.netty.channel.ChannelHandler;
@@ -19,6 +20,21 @@ public class XioNoOpSecurityFactory implements XioSecurityFactory {
 
   @Override
   public XioSecurityHandlers getSecurityHandlers(XioServerDef def, XioServerConfig serverConfig) {
+    return new XioSecurityHandlers() {
+      @Override
+      public ChannelHandler getAuthenticationHandler() {
+        return noOpHandler;
+      }
+
+      @Override
+      public ChannelHandler getEncryptionHandler() {
+        return noOpHandler;
+      }
+    };
+  }
+
+  @Override
+  public XioSecurityHandlers getSecurityHandlers(XioClientConfig clientConfig) {
     return new XioSecurityHandlers() {
       @Override
       public ChannelHandler getAuthenticationHandler() {

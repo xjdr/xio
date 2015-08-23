@@ -1,6 +1,7 @@
 package com.xjeffrose.xio.client;
 
     import com.google.common.net.HostAndPort;
+    import com.xjeffrose.xio.core.XioSecurityFactory;
     import org.jboss.netty.util.Timer;
 
     import java.util.Map;
@@ -15,6 +16,7 @@ public class XioClientConfig
   private final int bossThreadCount;
   private final ExecutorService workerExecutor;
   private final int workerThreadCount;
+  private final XioSecurityFactory securityFactory;
 
   public XioClientConfig(Map<String, Object> bootstrapOptions,
                            HostAndPort defaultSocksProxyAddress,
@@ -22,9 +24,9 @@ public class XioClientConfig
                            ExecutorService bossExecutor,
                            int bossThreadCount,
                            ExecutorService workerExecutor,
-                           int workerThreadCount)
+                           int workerThreadCount,
+                           XioSecurityFactory securityFactory) {
 
-  {
     this.bootstrapOptions = bootstrapOptions;
     this.defaultSocksProxyAddress = defaultSocksProxyAddress;
     this.timer = timer;
@@ -32,6 +34,7 @@ public class XioClientConfig
     this.bossThreadCount = bossThreadCount;
     this.workerExecutor = workerExecutor;
     this.workerThreadCount = workerThreadCount;
+    this.securityFactory = securityFactory;
   }
 
   public Map<String, Object> getBootstrapOptions()
@@ -72,5 +75,9 @@ public class XioClientConfig
   public static XioClientConfigBuilder newBuilder()
   {
     return new XioClientConfigBuilder();
+  }
+
+  public XioSecurityFactory getSecurityFactory() {
+    return securityFactory;
   }
 }
