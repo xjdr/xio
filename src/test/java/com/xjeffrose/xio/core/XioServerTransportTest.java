@@ -95,7 +95,7 @@ public class XioServerTransportTest {
     server.start();
 
     // For Integration Testing (LEAVE OUT!!!!)
-    Thread.sleep(20000000);
+//    Thread.sleep(20000000);
 
     // Arrange to stop the server at shutdown
     Runtime.getRuntime().addShutdownHook(new Thread() {
