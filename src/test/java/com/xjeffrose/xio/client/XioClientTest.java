@@ -2,22 +2,11 @@ package com.xjeffrose.xio.client;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import java.lang.Thread;
-import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.charset.Charset;
-import org.eclipse.jetty.http.HttpStatus;
 import org.jboss.netty.buffer.ChannelBuffer;
-import org.jboss.netty.buffer.ChannelBufferFactory;
 import org.jboss.netty.buffer.ChannelBuffers;
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.handler.codec.http.DefaultHttpRequest;
-import org.jboss.netty.handler.codec.http.HttpHeaders;
-import org.jboss.netty.handler.codec.http.HttpMethod;
-import org.jboss.netty.handler.codec.http.HttpRequest;
-import org.jboss.netty.handler.codec.http.HttpResponse;
-import org.jboss.netty.handler.codec.http.HttpVersion;
 import org.junit.Test;
-import sun.jvm.hotspot.runtime.*;
 
 import static org.junit.Assert.*;
 
