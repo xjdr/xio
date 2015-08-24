@@ -73,6 +73,8 @@ public class HttpClientChannel extends AbstractClientChannel {
 
     HttpResponse httpResponse = (HttpResponse) message;
 
+//    System.out.println(message.toString());
+
     if (!httpResponse.getStatus().equals(HttpResponseStatus.OK)) {
       throw new XioTransportException("HTTP response had non-OK status: " + httpResponse
           .getStatus().toString());

@@ -26,12 +26,12 @@ public class XioClientTest {
   @Test
   public void testConnect() throws Exception {
     XioClient xioClient = new XioClient();
-    ListenableFuture<XioClientChannel> responseFuture = xioClient.connectAsync(new HttpClientConnector(new URI("http://www.paypal.com")));
+    ListenableFuture<XioClientChannel> responseFuture = xioClient.connectAsync(new HttpClientConnector(new URI("http://www.google.com/")));
       XioClientChannel xioClientChannel = responseFuture.get();
     HttpClientChannel httpClientChannel = (HttpClientChannel) xioClientChannel;
 
     RequestChannel.Listener listener = new RequestChannel.Listener() {
-      private ChannelBuffer response;
+      private ChannelBuffer xxx;
 
       @Override
       public void onRequestSent() {
@@ -41,8 +41,8 @@ public class XioClientTest {
       @Override
       public void onResponseReceived(ChannelBuffer message) {
         System.out.println("Response Recieved");
-        System.out.println(message.toString(Charset.defaultCharset()));
-        response = message;
+//        System.out.println(message.toString(Charset.defaultCharset()));
+        xxx = message;
       }
 
       @Override
@@ -53,7 +53,7 @@ public class XioClientTest {
 
       @Override
       public ChannelBuffer getResponse() {
-        return response;
+        return xxx;
       }
     };
 
@@ -61,20 +61,7 @@ public class XioClientTest {
 
     Thread.sleep(1000);
 
-//    System.out.println(listener.getResponse().toString(Charset.defaultCharset()));
-
+    System.out.println("Content: " + listener.getResponse().toString(Charset.defaultCharset()));
 
   }
-//
-//  @Test
-//  public void testConnectSync() throws Exception {
-//    XioClient xioClient = new XioClient();
-//    XioClientTransport clientTransport = xioClient.connectSync(new InetSocketAddress("google.com", 80));
-//  }
-//
-//  @Test
-//  public void testConnectAsync() throws Exception {
-//    XioClient xioClient = new XioClient();
-//    XioClientTransport clientTransport = xioClient.connectSync(new HttpClientConnector(URI.create("http://www.google.com/")));
-//  }
 }

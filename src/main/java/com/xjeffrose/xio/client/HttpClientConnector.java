@@ -81,6 +81,7 @@ public class HttpClientConnector extends AbstractClientConnector<HttpClientChann
           throws Exception {
         ChannelPipeline cp = Channels.pipeline();
         XioSecurityHandlers securityHandlers = clientConfig.getSecurityFactory().getSecurityHandlers(clientConfig);
+        TimeoutHandler.addToPipeline(cp);
         cp.addLast("encryptionHandler", securityHandlers.getEncryptionHandler());
         cp.addLast("httpClientCodec", new HttpClientCodec());
         cp.addLast("chunkAggregator", new HttpChunkAggregator(maxFrameSize));

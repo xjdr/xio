@@ -68,6 +68,7 @@ public class XioClient implements Closeable {
     return (hostAndPort == null) ? null : new InetSocketAddress(hostAndPort.getHostText(), hostAndPort.getPort());
   }
 
+  @SuppressWarnings("unchecked")
   public <T extends XioClientChannel> ListenableFuture<T> connectAsync(XioClientConnector clientChannelConnector) {
 
     return connectAsync(clientChannelConnector,
@@ -131,106 +132,6 @@ public class XioClient implements Closeable {
         nettyChannelFuture,
         xioClientConfig);
   }
-//
-// public <T extends XioClientChannel> ListenableFuture<T> connectAsync(
-//      XioClientConnector<T> clientChannelConnector,
-//      @Nullable Duration connectTimeout,
-//      @Nullable Duration receiveTimeout,
-//      @Nullable Duration readTimeout,
-//      @Nullable Duration sendTimeout,
-//      int maxFrameSize,
-//      @Nullable HostAndPort socksProxyAddress) {
-//    checkNotNull(clientChannelConnector, "clientChannelConnector is null");
-//
-//    ClientBootstrap bootstrap = createClientBootstrap(socksProxyAddress);
-//    bootstrap.setOptions(xioClientConfig.getBootstrapOptions());
-//
-//    if (connectTimeout != null) {
-//      bootstrap.setOption("connectTimeoutMillis", connectTimeout.toMillis());
-//    }
-//
-//    bootstrap.setPipelineFactory(clientChannelConnector.newChannelPipelineFactory(maxFrameSize, xioClientConfig));
-//    ChannelFuture nettyChannelFuture = clientChannelConnector.connect(bootstrap);
-//    nettyChannelFuture.addListener(new ChannelFutureListener() {
-//      @Override
-//      public void operationComplete(ChannelFuture future) throws Exception {
-//        Channel channel = future.getChannel();
-//        if (channel != null && channel.isOpen()) {
-//          allChannels.add(channel);
-//        }
-//      }
-//    });
-//    return new XioFuture<>(clientChannelConnector,
-//        receiveTimeout,
-//        readTimeout,
-//        sendTimeout,
-//        nettyChannelFuture,
-//        xioClientConfig);
-//  }
-
-//  public XioClientTransport connectSync(InetSocketAddress addr)
-//      throws XioTransportException, InterruptedException {
-//    return connectSync(addr, DEFAULT_CONNECT_TIMEOUT, DEFAULT_RECEIVE_TIMEOUT, DEFAULT_SEND_TIMEOUT, DEFAULT_MAX_FRAME_SIZE);
-//  }
-//
-//  public XioClientTransport connectSync(
-//      InetSocketAddress addr,
-//      @Nullable Duration connectTimeout,
-//      @Nullable Duration receiveTimeout,
-//      @Nullable Duration sendTimeout,
-//      int maxFrameSize)
-//      throws XioTransportException, InterruptedException {
-//    return connectSync(addr, connectTimeout, receiveTimeout, sendTimeout, maxFrameSize, defaultSocksProxyAddress);
-//  }
-//
-//  public XioClientTransport connectSync(
-//      InetSocketAddress addr,
-//      @Nullable Duration connectTimeout,
-//      @Nullable Duration receiveTimeout,
-//      @Nullable Duration sendTimeout,
-//      int maxFrameSize,
-//      @Nullable HostAndPort socksProxyAddress)
-//      throws XioTransportException, InterruptedException {
-//    // TODO: implement send timeout for sync client
-//    ClientBootstrap bootstrap = createClientBootstrap(socksProxyAddress);
-//    bootstrap.setOptions(xioClientConfig.getBootstrapOptions());
-//
-//    if (connectTimeout != null) {
-//      bootstrap.setOption("connectTimeoutMillis", connectTimeout.toMillis());
-//    }
-//
-//    bootstrap.setPipelineFactory(new XioClientChannelPipelineFactory(maxFrameSize));
-//    ChannelFuture f = bootstrap.connect(addr);
-////    f.await();
-//    f.await().awaitUninterruptibly().getChannel();
-//    Channel channel = f.getChannel();
-//    if (f.getCause() != null) {
-//      String message = String.format("unable to connect to %s:%d %s",
-//          addr.getHostName(),
-//          addr.getPort(),
-//          socksProxyAddress == null ? "" : "via socks proxy at " + socksProxyAddress);
-//      throw new XioTransportException(message, f.getCause());
-//    }
-//
-//    if (f.isSuccess() && channel != null) {
-//      if (channel.isOpen()) {
-//        allChannels.add(channel);
-//      }
-//
-//      XioClientTransport transport = new XioClientTransport(channel, receiveTimeout);
-//      channel.getPipeline().addLast("xio client", transport);
-//      transport.sendRequest(channel);
-//
-//      return transport;
-//    }
-//
-//    throw new XioTransportException(String.format(
-//        "unknown error connecting to %s:%d %s",
-//        addr.getHostName(),
-//        addr.getPort(),
-//        socksProxyAddress == null ? "" : "via socks proxy at " + socksProxyAddress
-//    ));
-//  }
 
   @Override
   public void close() {
@@ -243,8 +144,4 @@ public class XioClient implements Closeable {
         workerExecutor,
         allChannels);
   }
-//
-//  private ClientBootstrap createClientBootstrap(@Nullable HostAndPort socksProxyAddress) {
-//    return new ClientBootstrap(channelFactory);
-//  }
 }
