@@ -16,15 +16,4 @@ public interface RequestChannel {
   XioException getError();
 
   XioProtocolFactory getProtocolFactory();
-
-  public interface Listener {
-
-    void onRequestSent();
-
-    void onResponseReceived(ChannelBuffer message);
-
-    void onChannelError(XioException requestException);
-
-    ChannelBuffer getResponse();
-  }
 }

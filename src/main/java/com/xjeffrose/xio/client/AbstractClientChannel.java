@@ -21,8 +21,6 @@ import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelHandler;
 import org.jboss.netty.channel.socket.nio.NioSocketChannel;
-import org.jboss.netty.handler.codec.http.HttpResponse;
-import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.jboss.netty.handler.timeout.ReadTimeoutException;
 import org.jboss.netty.handler.timeout.WriteTimeoutException;
 import org.jboss.netty.util.Timeout;
@@ -60,8 +58,6 @@ public abstract class AbstractClientChannel extends SimpleChannelHandler impleme
     return protocolFactory;
   }
 
-//  protected abstract ChannelBuffer extractResponse(Object message) throws XioTransportException;
-
   protected int extractSequenceId(ChannelBuffer messageBuffer) throws XioTransportException {
     try {
       //TODO: REMOVE THIS
@@ -72,26 +68,11 @@ public abstract class AbstractClientChannel extends SimpleChannelHandler impleme
   }
 
   protected ChannelBuffer extractResponse(Object message) throws XioTransportException {
-    if (!(message instanceof HttpResponse)) {
-      return null;
+    if (message == null) {
+      throw new XioTransportException("Response was null");
     }
-
-    HttpResponse httpResponse = (HttpResponse) message;
-
-    if (!httpResponse.getStatus().equals(HttpResponseStatus.OK)) {
-      throw new XioTransportException("HTTP response had non-OK status: " + httpResponse
-          .getStatus().toString());
-    }
-
-    ChannelBuffer content = httpResponse.getContent();
-
-    if (!content.readable()) {
-      return null;
-    }
-
-    return content;
+    return (ChannelBuffer) message;
   }
-
 
   protected abstract ChannelFuture writeRequest(ChannelBuffer request);
 
@@ -171,7 +152,7 @@ public abstract class AbstractClientChannel extends SimpleChannelHandler impleme
           }
 
           ChannelFuture sendFuture = writeRequest(message);
-          queueSendTimeout(request);
+//          queueSendTimeout(request);
 
           sendFuture.addListener(new ChannelFutureListener() {
             @Override

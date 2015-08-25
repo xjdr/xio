@@ -10,6 +10,7 @@ import com.xjeffrose.xio.core.XioNoOpSecurityFactory;
 import com.xjeffrose.xio.processor.XioProcessor;
 import com.xjeffrose.xio.processor.XioProcessorFactory;
 import com.xjeffrose.xio.server.RequestContext;
+import com.xjeffrose.xio.server.XioServerConfig;
 import com.xjeffrose.xio.server.XioServerDef;
 import com.xjeffrose.xio.server.XioServerDefBuilder;
 import com.xjeffrose.xio.server.XioBootstrap;
@@ -59,9 +60,8 @@ public class XioModuleTest {
                   @Override
                   public XioProcessor getProcessor() {
                     return new XioProcessor() {
-
                       @Override
-                      public ListenableFuture<Boolean> process(ChannelHandlerContext ctx, HttpRequest req, RequestContext respCtx) {
+                      public ListenableFuture<Boolean> process(ChannelHandlerContext ctx, XioServerConfig config, HttpRequest req, RequestContext respCtx) {
                         ListeningExecutorService service = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(10));
                         ListenableFuture<Boolean> httpResponseFuture = service.submit(new Callable<Boolean>() {
                           public Boolean call() {
@@ -75,7 +75,7 @@ public class XioModuleTest {
                       }
 
                       @Override
-                      public void executeInIoThread(Runnable runnable) {
+                      public void executeInIoThread(ChannelHandlerContext ctx, Runnable runnable) {
 
                       }
                     };

@@ -20,7 +20,6 @@ public abstract class AbstractClientConnector<T extends XioClientChannel> implem
   }
 
   protected static XioProtocolFactory defaultProtocolFactory() {
-//    return XioProtocolFactory.fromSingleFactory(new TBinaryProtocol.Factory());
     return new XioProtocolFactory();
   }
 
