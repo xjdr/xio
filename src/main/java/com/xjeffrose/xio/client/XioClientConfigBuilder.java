@@ -59,6 +59,11 @@ public class XioClientConfigBuilder extends XioConfigBuilderBase<XioClientConfig
     return this;
   }
 
+  public XioClientConfigBuilder setSecurityFactory(XioSecurityFactory xioSecurityFactory) {
+    this.securityFactory = xioSecurityFactory;
+    return this;
+  }
+
   public XioClientConfig build() {
     Timer timer = getTimer();
     ExecutorService bossExecutor = getBossExecutor();
