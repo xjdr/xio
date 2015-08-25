@@ -26,7 +26,8 @@ public class XioClientConfigBuilder extends XioConfigBuilderBase<XioClientConfig
       new Class<?>[]{NioSocketChannelConfig.class},
       new XioConfigBuilderBase.Magic("")
   );
-  private XioSecurityFactory securityFactory;
+
+  private XioSecurityFactory securityFactory = null;
   private HostAndPort defaultSocksProxyAddress = null;
 
   @Inject
@@ -64,12 +65,17 @@ public class XioClientConfigBuilder extends XioConfigBuilderBase<XioClientConfig
     return this;
   }
 
+  public XioSecurityFactory getSecurityFactory() {
+    return securityFactory;
+  }
+
   public XioClientConfig build() {
     Timer timer = getTimer();
     ExecutorService bossExecutor = getBossExecutor();
     int bossThreadCount = getBossThreadCount();
     ExecutorService workerExecutor = getWorkerExecutor();
     int workerThreadCount = getWorkerThreadCount();
+    XioSecurityFactory securityFactory = getSecurityFactory();
 
     return new XioClientConfig(
         getBootstrapOptions(),
