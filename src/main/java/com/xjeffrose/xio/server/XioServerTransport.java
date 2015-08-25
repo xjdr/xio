@@ -88,7 +88,7 @@ public class XioServerTransport implements ExternalResourceReleasable {
         }
 
         cp.addLast("authHandler", securityHandlers.getAuthenticationHandler());
-        cp.addLast("dispatcher", new XioDispatcher(def, xioServerConfig.getTimer()));
+        cp.addLast("dispatcher", new XioDispatcher(def, xioServerConfig));
         cp.addLast("exceptionLogger", new XioExceptionLogger());
         return cp;
       }

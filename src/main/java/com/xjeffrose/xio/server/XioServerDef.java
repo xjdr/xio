@@ -6,23 +6,20 @@ import com.xjeffrose.xio.processor.XioProcessorFactory;
 import io.airlift.units.Duration;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executor;
-import org.jboss.netty.channel.ChannelHandler;
 
 public class XioServerDef {
   private final int serverPort;
-  private InetSocketAddress hostAddress;
   private final int maxFrameSize;
   private final int maxConnections;
   private final int queuedResponseLimit;
   private final XioProcessorFactory processorFactory;
-
   private final Duration clientIdleTimeout;
   private final Duration taskTimeout;
-
   private final Executor executor;
   private final String name;
   private final XioSecurityFactory securityFactory;
   private final XioCodecFactory codecFactory;
+  private InetSocketAddress hostAddress;
 
   public XioServerDef(
       String name,
