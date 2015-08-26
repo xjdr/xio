@@ -24,7 +24,7 @@ class XioFuture<T extends XioClientChannel> extends AbstractFuture<T> {
             channel.setReceiveTimeout(receiveTimeout);
             channel.setReadTimeout(readTimeout);
             channel.setSendTimeout(sendTimeout);
-            set(channel);
+            XioFuture.this.set(channel);
 
           } else if (future.isCancelled()) {
             if (!cancel(true)) {

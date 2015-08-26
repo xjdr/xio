@@ -9,11 +9,14 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.SignatureException;
 import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateException;
+import java.security.cert.*;
+import java.security.cert.X509Certificate;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLParameters;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 public class SSLEngineFactory {
 
@@ -50,11 +53,29 @@ public class SSLEngineFactory {
     this.client = false;
   }
 
+  private TrustManager[] trustAnyone() {
+    return new TrustManager[] {
+        new X509TrustManager() {
+          @Override
+          public void checkClientTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException {
+          }
+
+          @Override
+          public void checkServerTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException {
+          }
+
+          @Override
+          public X509Certificate[] getAcceptedIssuers() {
+            return null;
+          }
+        }
+    };
+  }
   public SSLEngine getEngine() {
     try {
       if (client) {
         sslCtx = SSLContext.getInstance("TLSv1.2");
-        sslCtx.init(null, null, null);
+        sslCtx.init(null, trustAnyone(), null);
 
         params = new SSLParameters();
         params.setProtocols(new String[]{"TLSv1.2"});

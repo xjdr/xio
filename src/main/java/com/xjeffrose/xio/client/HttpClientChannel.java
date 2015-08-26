@@ -69,8 +69,8 @@ public class HttpClientChannel extends AbstractClientChannel {
     httpRequest.headers().add(HttpHeaders.HOST, hostName);
     httpRequest.headers().add(HttpHeaders.CONTENT_LENGTH, request.readableBytes());
     httpRequest.headers().add(HttpHeaders.CONTENT_TYPE, "application/text");
-    httpRequest.headers().add(HttpHeaders.ACCEPT, "text/html");
-    httpRequest.headers().add(HttpHeaders.USER_AGENT, "xio");
+    httpRequest.headers().add(HttpHeaders.ACCEPT_ENCODING, "gzip");
+    httpRequest.headers().add(HttpHeaders.USER_AGENT, "xio/0.4.0");
 
     if (headerDictionary != null) {
       for (Map.Entry<String, String> entry : headerDictionary.entrySet()) {
