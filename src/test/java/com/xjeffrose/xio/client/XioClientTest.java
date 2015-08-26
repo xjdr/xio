@@ -116,8 +116,7 @@ public class XioClientTest {
     };
 
     XioClient xioClient = new XioClient(xioClientConfig);
-//    ListenableFuture<XioClientChannel> responseFuture = xioClient.connectAsync(new HttpClientConnector(new URI("https://www.google.com/")));
-    ListenableFuture<XioClientChannel> responseFuture = xioClient.connectAsync(new HttpClientConnector(new URI("https://localhost:4443/")));
+    ListenableFuture<XioClientChannel> responseFuture = xioClient.connectAsync(new HttpClientConnector(new URI("https://www.google.com/")));
     XioClientChannel xioClientChannel = responseFuture.get();
     HttpClientChannel httpClientChannel = (HttpClientChannel) xioClientChannel;
     httpClientChannel.sendAsynchronousRequest(ChannelBuffers.EMPTY_BUFFER, false, listener);

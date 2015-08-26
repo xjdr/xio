@@ -2,9 +2,12 @@ package com.xjeffrose.xio.client;
 
 
 import com.google.common.net.HttpHeaders;
+import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.util.Map;
 import javax.annotation.concurrent.NotThreadSafe;
 import org.jboss.netty.buffer.ChannelBuffer;
+import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.handler.codec.http.DefaultHttpRequest;
@@ -46,7 +49,7 @@ public class HttpClientChannel extends AbstractClientChannel {
 
     HttpResponse httpResponse = (HttpResponse) message;
 
-    System.out.println(httpResponse.toString());
+    //System.out.println(httpResponse.toString());
 
     if (!httpResponse.getStatus().equals(HttpResponseStatus.OK)) {
       throw new XioTransportException("HTTP response had non-OK status: " + httpResponse
@@ -59,7 +62,31 @@ public class HttpClientChannel extends AbstractClientChannel {
       return null;
     }
 
-    return content;
+    String CRLF = "\r\n";
+    StringBuilder responseHeader = new StringBuilder();
+    responseHeader
+        .append(httpResponse.getProtocolVersion())
+        .append(' ')
+        .append(httpResponse.getStatus())
+        .append(CRLF)
+    ;
+    httpResponse.headers().entries().forEach(xs -> {
+      responseHeader
+          .append(xs.getKey())
+          .append(": ")
+          .append(xs.getValue())
+          .append(CRLF)
+      ;
+    });
+    responseHeader.append(CRLF);
+
+    int capacity = responseHeader.toString().length() + content.readableBytes();
+    ByteBuffer headerAndBody = ByteBuffer.allocateDirect(capacity);
+
+    headerAndBody.put(responseHeader.toString().getBytes(Charset.defaultCharset()));
+    headerAndBody.put(content.toByteBuffer());
+    headerAndBody.flip();
+    return ChannelBuffers.wrappedBuffer(headerAndBody);
   }
 
   @Override
