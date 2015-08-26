@@ -17,21 +17,29 @@ import javax.net.ssl.SSLParameters;
 
 public class SSLEngineFactory {
 
-  private String PRIVATE_KEY;
-  private String X509_CERT;
-  private String password;
+  private final String PRIVATE_KEY;
+  private final String X509_CERT;
+  private final String password;
+  private final boolean client;
+
+  private KeyStore ks = null;
+  private KeyStore ts = null;
+  private SSLContext sslCtx;
+  private SSLParameters params;
 
   public SSLEngineFactory() {
+    this(false);
+  }
+
+  public SSLEngineFactory(boolean client) {
     this.PRIVATE_KEY = null;
     this.X509_CERT = null;
     this.password = null;
+    this.client = client;
   }
 
   public SSLEngineFactory(String PRIVATE_KEY, String X509_CERT) {
-
-    this.PRIVATE_KEY = PRIVATE_KEY;
-    this.X509_CERT = X509_CERT;
-    this.password = "passwordsAreGood";
+    this(PRIVATE_KEY, X509_CERT, "passwordsAreGood");
   }
 
   public SSLEngineFactory(String PRIVATE_KEY, String X509_CERT, String password) {
@@ -39,36 +47,44 @@ public class SSLEngineFactory {
     this.PRIVATE_KEY = PRIVATE_KEY;
     this.X509_CERT = X509_CERT;
     this.password = password;
+    this.client = false;
   }
 
   public SSLEngine getEngine() {
     try {
-    // Configure SSL.
-    KeyStore ks;
-    if (PRIVATE_KEY == null) {
-      ks = KeyStoreFactory.Generate(SelfSignedX509CertGenerator.generate("example.com"), "passwordsAreGood");
-    } else {
-      ks = KeyStoreFactory.Generate(X509CertificateGenerator.generate(PRIVATE_KEY, X509_CERT), password);
-    }
-    KeyManagerFactory kmf;
+      if (client) {
+        sslCtx = SSLContext.getInstance("TLSv1.2");
+        sslCtx.init(null, null, null);
 
-      kmf = KeyManagerFactory.getInstance("SunX509");
-      kmf.init(ks, "passwordsAreGood".toCharArray());
-      SSLContext sslCtx = SSLContext.getInstance("TLSv1.2");
-      sslCtx.init(kmf.getKeyManagers(), null, null);
+        params = new SSLParameters();
+        params.setProtocols(new String[]{"TLSv1.2"});
+      } else {
+        // Configure SSL.
+        if (PRIVATE_KEY == null) {
+          ks = KeyStoreFactory.Generate(SelfSignedX509CertGenerator.generate("example.com"), "passwordsAreGood");
+        } else {
+          ks = KeyStoreFactory.Generate(X509CertificateGenerator.generate(PRIVATE_KEY, X509_CERT), password);
+        }
+        KeyManagerFactory kmf;
 
-      SSLParameters params = new SSLParameters();
-      params.setProtocols(new String[]{"TLSv1.2"});
+        kmf = KeyManagerFactory.getInstance("SunX509");
+        kmf.init(ks, "passwordsAreGood".toCharArray());
+        sslCtx = SSLContext.getInstance("TLSv1.2");
+        sslCtx.init(kmf.getKeyManagers(), null, null);
+
+        params = new SSLParameters();
+        params.setProtocols(new String[]{"TLSv1.2"});
+      }
 
       final SSLEngine engine = sslCtx.createSSLEngine();
       engine.setSSLParameters(params);
       engine.setNeedClientAuth(false);
-      engine.setUseClientMode(false);
+      engine.setUseClientMode(client);
 
       return engine;
     } catch (NoSuchAlgorithmException | UnrecoverableKeyException | KeyStoreException | KeyManagementException |
         CertificateException |IOException | SignatureException | NoSuchProviderException | InvalidKeyException e) {
-//      log.severe("Unable to configure the Application Router");
+//      log.severe("Unable to configure the SSLEngine");
       System.exit(-1);
       throw new RuntimeException(e);
     }

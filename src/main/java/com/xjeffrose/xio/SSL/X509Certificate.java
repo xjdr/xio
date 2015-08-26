@@ -18,20 +18,16 @@
 package com.xjeffrose.xio.SSL;
 
 import java.security.PrivateKey;
-import java.util.Date;
 import org.apache.log4j.Logger;
 import sun.security.x509.X509CertImpl;
 
 public final class X509Certificate {
-  static final Date NOT_BEFORE = new Date(System.currentTimeMillis() - 86400000L * 365);
-  static final Date NOT_AFTER = new Date(253402300799000L);
   private static final Logger log = Logger.getLogger(X509Certificate.class.getName());
-  private final String fqdn;
 
-//  private final File certificate;
-//  private final File privateKey;
+  private final String fqdn;
   private final PrivateKey key;
   private final X509CertImpl cert;
+
   public X509Certificate(String fqdn, PrivateKey key, X509CertImpl cert) {
 
     this.fqdn = fqdn;

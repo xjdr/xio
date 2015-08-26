@@ -8,11 +8,9 @@ import com.xjeffrose.xio.server.XioServerConfig;
 import com.xjeffrose.xio.server.XioServerDef;
 import java.net.URI;
 import java.nio.charset.Charset;
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import javax.net.ssl.SSLEngine;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
@@ -26,6 +24,9 @@ public class XioClientTest {
 
   @Test
   public void testConnectHttp() throws Exception {
+
+    final Lock lock = new ReentrantLock();
+    final Condition waitForFinish = lock.newCondition();
 
     XioClient xioClient = new XioClient();
     ListenableFuture<XioClientChannel> responseFuture = xioClient.connectAsync(new HttpClientConnector(new URI("http://www.google.com/")));
@@ -42,6 +43,9 @@ public class XioClientTest {
       public void onResponseReceived(ChannelBuffer message) {
         System.out.println("Response Recieved");
         System.out.println(message.toString(Charset.defaultCharset()));
+        lock.lock();
+        waitForFinish.signalAll();
+        lock.unlock();
       }
 
       @Override
@@ -49,11 +53,13 @@ public class XioClientTest {
         System.out.println("Request Error");
         requestException.printStackTrace();
       }
-    };
+   };
 
     httpClientChannel.sendAsynchronousRequest(ChannelBuffers.EMPTY_BUFFER, false, listener);
 
-    Thread.sleep(1000);
+    lock.lock();
+    waitForFinish.await();
+    lock.unlock();
   }
 
   @Test
@@ -75,8 +81,7 @@ public class XioClientTest {
 
               @Override
               public ChannelHandler getEncryptionHandler() {
-                SSLEngine engine = new SSLEngineFactory("src/test/resources/privateKey.pem", "src/test/resources/cert.pem").getEngine();
-                engine.setUseClientMode(true);
+                SSLEngine engine = new SSLEngineFactory(true).getEngine();
                 SslHandler handler = new SslHandler(engine);
                 return handler;
               }

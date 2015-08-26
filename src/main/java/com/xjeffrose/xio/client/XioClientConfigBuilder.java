@@ -32,29 +32,13 @@ public class XioClientConfigBuilder extends XioConfigBuilderBase<XioClientConfig
 
   @Inject
   public XioClientConfigBuilder() {
-    // Thrift turns TCP_NODELAY by default, and turning it off can have latency implications
-    // so let's turn it on by default as well. It can still be switched off by explicitly
-    // calling setTcpNodelay(false) after construction.
     getSocketChannelConfig().setTcpNoDelay(true);
   }
 
-  /**
-   * Returns an implementation of {@link NioSocketChannelConfig} which will be applied to all {@link
-   * org.jboss.netty.channel.socket.nio.NioSocketChannel} instances created for client connections.
-   *
-   * @return A mutable {@link NioSocketChannelConfig}
-   */
   public NioSocketChannelConfig getSocketChannelConfig() {
     return socketChannelConfig;
   }
 
-  /**
-   * A default SOCKS proxy address for client connections. Defaults to {@code null} if not
-   * supplied.
-   *
-   * @param defaultSocksProxyAddress The address of the SOCKS proxy server
-   * @return This builder
-   */
   public XioClientConfigBuilder setDefaultSocksProxyAddress(HostAndPort defaultSocksProxyAddress) {
     this.defaultSocksProxyAddress = defaultSocksProxyAddress;
     return this;

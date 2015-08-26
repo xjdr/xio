@@ -66,15 +66,15 @@ public class HttpClientChannel extends AbstractClientChannel {
   protected ChannelFuture writeRequest(ChannelBuffer request) {
     HttpRequest httpRequest = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, endpointUri);
 
-    httpRequest.setHeader(HttpHeaders.HOST, hostName);
-    httpRequest.setHeader(HttpHeaders.CONTENT_LENGTH, request.readableBytes());
-    httpRequest.setHeader(HttpHeaders.CONTENT_TYPE, "application/text");
-    httpRequest.setHeader(HttpHeaders.ACCEPT, "text/html");
-    httpRequest.setHeader(HttpHeaders.USER_AGENT, "xio");
+    httpRequest.headers().add(HttpHeaders.HOST, hostName);
+    httpRequest.headers().add(HttpHeaders.CONTENT_LENGTH, request.readableBytes());
+    httpRequest.headers().add(HttpHeaders.CONTENT_TYPE, "application/text");
+    httpRequest.headers().add(HttpHeaders.ACCEPT, "text/html");
+    httpRequest.headers().add(HttpHeaders.USER_AGENT, "xio");
 
     if (headerDictionary != null) {
       for (Map.Entry<String, String> entry : headerDictionary.entrySet()) {
-        httpRequest.setHeader(entry.getKey(), entry.getValue());
+        httpRequest.headers().add(entry.getKey(), entry.getValue());
       }
     }
 
