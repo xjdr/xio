@@ -3,6 +3,17 @@ package com.xjeffrose.xio.client;
 
 import io.airlift.log.Logger;
 import io.airlift.units.Duration;
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.handler.timeout.ReadTimeoutException;
+import io.netty.handler.timeout.WriteTimeoutException;
+import io.netty.util.Timeout;
+import io.netty.util.Timer;
+import io.netty.util.TimerTask;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -10,25 +21,9 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.NotThreadSafe;
-import org.jboss.netty.buffer.ChannelBuffer;
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelFuture;
-import org.jboss.netty.channel.ChannelFutureListener;
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.ChannelStateEvent;
-import org.jboss.netty.channel.Channels;
-import org.jboss.netty.channel.ExceptionEvent;
-import org.jboss.netty.channel.MessageEvent;
-import org.jboss.netty.channel.SimpleChannelHandler;
-import org.jboss.netty.channel.socket.nio.NioSocketChannel;
-import org.jboss.netty.handler.timeout.ReadTimeoutException;
-import org.jboss.netty.handler.timeout.WriteTimeoutException;
-import org.jboss.netty.util.Timeout;
-import org.jboss.netty.util.Timer;
-import org.jboss.netty.util.TimerTask;
 
 @NotThreadSafe
-public abstract class AbstractClientChannel extends SimpleChannelHandler implements XioClientChannel {
+public abstract class AbstractClientChannel extends SimpleChannelInboundHandler<Object> implements XioClientChannel {
   private static final Logger LOGGER = Logger.get(AbstractClientChannel.class);
 
   private final Channel nettyChannel;
@@ -58,7 +53,7 @@ public abstract class AbstractClientChannel extends SimpleChannelHandler impleme
     return protocolFactory;
   }
 
-  protected int extractSequenceId(ChannelBuffer messageBuffer) throws XioTransportException {
+  protected int extractSequenceId(ByteBuf messageBuffer) throws XioTransportException {
     try {
       //TODO: REMOVE THIS
       return 1;
@@ -67,14 +62,14 @@ public abstract class AbstractClientChannel extends SimpleChannelHandler impleme
     }
   }
 
-  protected ChannelBuffer extractResponse(Object message) throws XioTransportException {
+  protected ByteBuf extractResponse(Object message) throws XioTransportException {
     if (message == null) {
       throw new XioTransportException("Response was null");
     }
-    return (ChannelBuffer) message;
+    return (ByteBuf) message;
   }
 
-  protected abstract ChannelFuture writeRequest(ChannelBuffer request);
+  protected abstract ChannelFuture writeRequest(ByteBuf request);
 
   public void close() {
     getNettyChannel().close();
@@ -122,12 +117,11 @@ public abstract class AbstractClientChannel extends SimpleChannelHandler impleme
 
   @Override
   public void executeInIoThread(Runnable runnable) {
-    NioSocketChannel nioSocketChannel = (NioSocketChannel) getNettyChannel();
-    nioSocketChannel.getWorker().executeInIoThread(runnable, true);
+    getNettyChannel().eventLoop().execute(runnable);
   }
 
   @Override
-  public void sendAsynchronousRequest(final ChannelBuffer message,
+  public void sendAsynchronousRequest(final ByteBuf message,
                                       final boolean oneway,
                                       final Listener listener) throws XioException {
     final int sequenceId = extractSequenceId(message);
@@ -139,7 +133,7 @@ public abstract class AbstractClientChannel extends SimpleChannelHandler impleme
         try {
           final Request request = makeRequest(sequenceId, listener);
 
-          if (!nettyChannel.isConnected()) {
+          if (!nettyChannel.isActive()) {
             fireChannelErrorCallback(listener, new XioTransportException("Channel closed")); //NOT_OPEN
             return;
           }
@@ -187,7 +181,7 @@ public abstract class AbstractClientChannel extends SimpleChannelHandler impleme
       } else {
         XioTransportException transportException =
             new XioTransportException("Sending request failed",
-                future.getCause());
+                future.cause());
         onError(transportException);
       }
     } catch (Throwable t) {
@@ -196,9 +190,9 @@ public abstract class AbstractClientChannel extends SimpleChannelHandler impleme
   }
 
   @Override
-  public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) {
+  public void messageReceived(ChannelHandlerContext ctx, Object o) {
     try {
-      ChannelBuffer response = extractResponse(e.getMessage());
+      ByteBuf response = extractResponse(o);
 
       if (response != null) {
         int sequenceId = extractSequenceId(response);
@@ -214,7 +208,7 @@ public abstract class AbstractClientChannel extends SimpleChannelHandler impleme
   @Override
   public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent event)
       throws Exception {
-    Throwable t = event.getCause();
+    Throwable t = event.cause();
     onError(t);
   }
 
@@ -251,7 +245,7 @@ public abstract class AbstractClientChannel extends SimpleChannelHandler impleme
     }
   }
 
-  private void onResponseReceived(int sequenceId, ChannelBuffer response) {
+  private void onResponseReceived(int sequenceId, ByteBuf response) {
     Request request = requestMap.remove(sequenceId);
     if (request == null) {
       onError(new XioTransportException("Bad sequence id in response: " + sequenceId));
@@ -306,7 +300,7 @@ public abstract class AbstractClientChannel extends SimpleChannelHandler impleme
     }
   }
 
-  private void fireResponseReceivedCallback(Listener listener, ChannelBuffer response) {
+  private void fireResponseReceivedCallback(Listener listener, ByteBuf response) {
     try {
       listener.onResponseReceived(response);
     } catch (Throwable t) {
@@ -483,7 +477,7 @@ public abstract class AbstractClientChannel extends SimpleChannelHandler impleme
     private final Request request;
 
     ReadTimeoutTask(long timeoutNanos, Request request) {
-      this.timeoutHandler = TimeoutHandler.findTimeoutHandler(getNettyChannel().getPipeline());
+      this.timeoutHandler = TimeoutHandler.findTimeoutHandler(getNettyChannel().pipeline());
       this.timeoutNanos = timeoutNanos;
       this.request = request;
     }

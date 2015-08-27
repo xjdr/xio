@@ -80,10 +80,16 @@
             <version>18.0</version>
         </dependency>
 
+        <!--<dependency>-->
+            <!--<groupId>io.netty</groupId>-->
+            <!--<artifactId>netty</artifactId>-->
+            <!--<version>3.10.1.Final</version>-->
+        <!--</dependency>-->
+
         <dependency>
             <groupId>io.netty</groupId>
-            <artifactId>netty</artifactId>
-            <version>3.10.1.Final</version>
+            <artifactId>netty-all</artifactId>
+            <version>4.0.30.Final</version>
         </dependency>
 
         <dependency>
@@ -128,7 +134,7 @@
             <scope>test</scope>
         </dependency>
 
-        <!--Only used to compile the Glog Formatter, not a dependency for xio2-->
+        <!--Only used to compile the Glog Formatter, not a dependency for xio-->
         <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>

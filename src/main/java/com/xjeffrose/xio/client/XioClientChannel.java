@@ -2,8 +2,8 @@ package com.xjeffrose.xio.client;
 
 
 import io.airlift.units.Duration;
+import io.netty.channel.Channel;
 import javax.annotation.Nullable;
-import org.jboss.netty.channel.Channel;
 
 public interface XioClientChannel extends RequestChannel {
 

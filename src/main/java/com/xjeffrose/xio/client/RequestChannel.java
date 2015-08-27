@@ -1,11 +1,11 @@
 package com.xjeffrose.xio.client;
 
+import io.netty.buffer.ByteBuf;
 import java.io.Closeable;
-import org.jboss.netty.buffer.ChannelBuffer;
 
 public interface RequestChannel extends Closeable {
 
-  void sendAsynchronousRequest(final ChannelBuffer request,
+  void sendAsynchronousRequest(final ByteBuf request,
                                final boolean oneway,
                                final Listener listener)
       throws XioException;
