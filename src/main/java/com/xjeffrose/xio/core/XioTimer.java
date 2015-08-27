@@ -1,10 +1,10 @@
 package com.xjeffrose.xio.core;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import io.netty.util.HashedWheelTimer;
 import java.io.Closeable;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.PreDestroy;
-import org.jboss.netty.util.HashedWheelTimer;
 
 public final class XioTimer extends HashedWheelTimer implements Closeable {
   public XioTimer(String prefix, long tickDuration, TimeUnit unit, int ticksPerWheel) {

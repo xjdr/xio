@@ -2,12 +2,13 @@ package com.xjeffrose.xio.client;
 
 import com.google.common.net.HostAndPort;
 import com.xjeffrose.xio.core.XioSecurityFactory;
+import io.netty.channel.ChannelOption;
+import io.netty.util.Timer;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
-import org.jboss.netty.util.Timer;
 
 public class XioClientConfig {
-  private final Map<String, Object> bootstrapOptions;
+  private final Map<ChannelOption<Object>, Object> bootstrapOptions;
   private final HostAndPort defaultSocksProxyAddress;
   private final Timer timer;
   private final ExecutorService bossExecutor;
@@ -16,7 +17,7 @@ public class XioClientConfig {
   private final int workerThreadCount;
   private final XioSecurityFactory securityFactory;
 
-  public XioClientConfig(Map<String, Object> bootstrapOptions,
+  public XioClientConfig(Map<ChannelOption<Object>, Object> bootstrapOptions,
                          HostAndPort defaultSocksProxyAddress,
                          Timer timer,
                          ExecutorService bossExecutor,
@@ -39,7 +40,7 @@ public class XioClientConfig {
     return new XioClientConfigBuilder();
   }
 
-  public Map<String, Object> getBootstrapOptions() {
+  public Map<ChannelOption<Object>, Object> getBootstrapOptions() {
     return bootstrapOptions;
   }
 

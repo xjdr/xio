@@ -2,10 +2,11 @@ package com.xjeffrose.xio.client;
 
 import com.google.common.util.concurrent.AbstractFuture;
 import io.airlift.units.Duration;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import javax.annotation.Nullable;
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelFuture;
-import org.jboss.netty.channel.ChannelFutureListener;
+
 
 class XioFuture<T extends XioClientChannel> extends AbstractFuture<T> {
   protected XioFuture(final XioClientConnector<T> clientChannelConnector,
@@ -19,7 +20,7 @@ class XioFuture<T extends XioClientChannel> extends AbstractFuture<T> {
       public void operationComplete(ChannelFuture future) throws Exception {
         try {
           if (future.isSuccess()) {
-            Channel nettyChannel = future.getChannel();
+            Channel nettyChannel = future.channel();
             T channel = clientChannelConnector.newClientChannel(nettyChannel, xioClientConfig);
             channel.setReceiveTimeout(receiveTimeout);
             channel.setReadTimeout(readTimeout);
@@ -31,7 +32,7 @@ class XioFuture<T extends XioClientChannel> extends AbstractFuture<T> {
               setException(new XioTransportException("Unable to cancel client channel connection"));
             }
           } else {
-            throw future.getCause();
+            throw future.cause();
           }
         } catch (Throwable t) {
           setException(new XioTransportException("Failed to connect client channel", t));

@@ -1,9 +1,10 @@
 package com.xjeffrose.xio.core;
 
-import org.jboss.netty.channel.ChannelHandler;
+
+import io.netty.channel.ChannelHandler;
 
 public interface XioCodecFactory {
 
-  public ChannelHandler getCodec();
+  ChannelHandler getCodec();
 
 }

@@ -1,20 +1,21 @@
-package com.xjeffrose.xio.core;
+package com.xjeffrose.xio.server;
 
 import com.google.common.base.Preconditions;
+import io.netty.channel.ChannelOption;
+import io.netty.util.Timer;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
-import org.jboss.netty.util.Timer;
 
 public abstract class XioConfigBuilderBase<T extends XioConfigBuilderBase<T>> {
   // These constants come directly from Netty but are private in Netty.
   public static final int DEFAULT_BOSS_THREAD_COUNT = 1;
   public static final int DEFAULT_WORKER_THREAD_COUNT = Runtime.getRuntime().availableProcessors() * 2;
 
-  private final Map<String, Object> options = new HashMap<>();
+  private final Map<ChannelOption<Object>, Object> options = new HashMap<>();
   private String XioName;
   private int bossThreadCount = DEFAULT_BOSS_THREAD_COUNT;
   private int workerThreadCount = DEFAULT_WORKER_THREAD_COUNT;
@@ -22,7 +23,7 @@ public abstract class XioConfigBuilderBase<T extends XioConfigBuilderBase<T>> {
   private ExecutorService workerThreadExecutor;
   private Timer timer;
 
-  public Map<String, Object> getBootstrapOptions() {
+  public Map<ChannelOption<Object>, Object> getBootstrapOptions() {
     return Collections.unmodifiableMap(options);
   }
 
@@ -112,16 +113,17 @@ public abstract class XioConfigBuilderBase<T extends XioConfigBuilderBase<T>> {
           return 0;
         }
       }
-      // we don't support multi-arg setters
-      if (method.getName().startsWith("set") && args.length == 1) {
-        String attributeName = method.getName().substring(3);
-        // camelCase it
-        attributeName = attributeName.substring(0, 1).toLowerCase() + attributeName.substring(1);
-        // now this is our key
-        options.put(prefix + attributeName, args[0]);
-        return null;
-      }
-      throw new UnsupportedOperationException();
+//      // we don't support multi-arg setters
+//      if (method.getName().startsWith("set") && args.length == 1) {
+//        String attributeName = method.getName().substring(3);
+//        // camelCase it
+//        attributeName = attributeName.substring(0, 1).toLowerCase() + attributeName.substring(1);
+//        // now this is our key
+//        options.put(ChannelOption.newInstance(prefix + attributeName), args[0]);
+//        return null;
+//      }
+//      throw new UnsupportedOperationException();
+      return null;
     }
   }
 }

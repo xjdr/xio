@@ -2,26 +2,21 @@ package com.xjeffrose.xio.server;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
-import com.xjeffrose.xio.core.ShutdownUtil;
 import com.xjeffrose.xio.core.XioMetrics;
-import com.xjeffrose.xio.server.XioServerConfig;
-import com.xjeffrose.xio.server.XioServerDef;
-import com.xjeffrose.xio.server.XioServerTransport;
+import io.netty.channel.group.ChannelGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
-import org.jboss.netty.channel.group.ChannelGroup;
-import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
+
 
 public class XioBootstrap {
   private final ChannelGroup allChannels;
   private final XioServerConfig xioServerConfig;
   private final Map<XioServerDef, XioServerTransport> transports;
-  private ExecutorService bossExecutor;
-  private ExecutorService workerExecutor;
-  private NioServerSocketChannelFactory serverChannelFactory;
+  private NioEventLoopGroup bossGroup;
+  private NioEventLoopGroup workerGroup;
 
   @Inject
   public XioBootstrap(
@@ -41,11 +36,11 @@ public class XioBootstrap {
 
   @PostConstruct
   public void start() {
-    bossExecutor = xioServerConfig.getBossExecutor();
-    workerExecutor = xioServerConfig.getWorkerExecutor();
-    serverChannelFactory = new NioServerSocketChannelFactory(bossExecutor, workerExecutor);
+    bossGroup = new NioEventLoopGroup(xioServerConfig.getBossThreadCount());
+    workerGroup = new NioEventLoopGroup(xioServerConfig.getWorkerThreadCount());
+//    serverChannelFactory = new NioServerSocketChannelFactory(bossExecutor, workerExecutor);
     for (XioServerTransport transport : transports.values()) {
-      transport.start(serverChannelFactory);
+      transport.start(bossGroup, workerGroup);
     }
   }
 
@@ -59,7 +54,10 @@ public class XioBootstrap {
       }
     }
 
-    ShutdownUtil.shutdownChannelFactory(serverChannelFactory, bossExecutor, workerExecutor, allChannels);
+    bossGroup.shutdownGracefully();
+    workerGroup.shutdownGracefully();
+
+//    ShutdownUtil.shutdownChannelFactory(serverChannelFactory, bossExecutor, workerExecutor, allChannels);
   }
 
   public Map<XioServerDef, Integer> getBoundPorts() {

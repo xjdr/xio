@@ -36,6 +36,7 @@ public abstract class AbstractClientChannel extends SimpleChannelInboundHandler<
   // Timeout for not receiving any data from the server
   private Duration readTimeout = null;
   private volatile XioException channelError;
+  private ChannelHandlerContext ctx;
 
   protected AbstractClientChannel(Channel nettyChannel, Timer timer, XioProtocolFactory protocolFactory) {
     this.nettyChannel = nettyChannel;
@@ -44,8 +45,13 @@ public abstract class AbstractClientChannel extends SimpleChannelInboundHandler<
   }
 
   @Override
-  public Channel getNettyChannel() {
+     public Channel getNettyChannel() {
     return nettyChannel;
+  }
+
+  @Override
+  public ChannelHandlerContext getCtx() {
+    return ctx;
   }
 
   @Override
@@ -146,7 +152,7 @@ public abstract class AbstractClientChannel extends SimpleChannelInboundHandler<
           }
 
           ChannelFuture sendFuture = writeRequest(message);
-//          queueSendTimeout(request);
+          queueSendTimeout(request);
 
           sendFuture.addListener(new ChannelFutureListener() {
             @Override
@@ -190,15 +196,17 @@ public abstract class AbstractClientChannel extends SimpleChannelInboundHandler<
   }
 
   @Override
-  public void messageReceived(ChannelHandlerContext ctx, Object o) {
+  protected void channelRead0(ChannelHandlerContext ctx, Object msg) {
+    this.ctx = ctx;
+
     try {
-      ByteBuf response = extractResponse(o);
+      ByteBuf response = extractResponse(msg);
 
       if (response != null) {
         int sequenceId = extractSequenceId(response);
         onResponseReceived(sequenceId, response);
       } else {
-        ctx.sendUpstream(e);
+        ctx.fireChannelRead(msg);
       }
     } catch (Throwable t) {
       onError(t);
@@ -206,10 +214,8 @@ public abstract class AbstractClientChannel extends SimpleChannelInboundHandler<
   }
 
   @Override
-  public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent event)
-      throws Exception {
-    Throwable t = event.cause();
-    onError(t);
+  public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+    onError(cause);
   }
 
   private Request makeRequest(int sequenceId, Listener listener) {
@@ -256,7 +262,7 @@ public abstract class AbstractClientChannel extends SimpleChannelInboundHandler<
   }
 
   @Override
-  public void channelDisconnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
+  public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
     if (!requestMap.isEmpty()) {
       onError(new XioTransportException("Client was disconnected by server"));
     }
@@ -280,6 +286,7 @@ public abstract class AbstractClientChannel extends SimpleChannelInboundHandler<
 
     Channel channel = getNettyChannel();
     if (nettyChannel.isOpen()) {
+      ctx.close();
       channel.close();
     }
   }
@@ -322,19 +329,22 @@ public abstract class AbstractClientChannel extends SimpleChannelInboundHandler<
 
   private void onSendTimeoutFired(Request request) {
     cancelAllTimeouts();
-    WriteTimeoutException timeoutException = new WriteTimeoutException("Timed out waiting " + getSendTimeout() + " to send data to server");
+//    WriteTimeoutException timeoutException = new WriteTimeoutException("Timed out waiting " + getSendTimeout() + " to send data to server");
+    WriteTimeoutException timeoutException = WriteTimeoutException.INSTANCE;
     fireChannelErrorCallback(request.getListener(), new XioTransportException("Timed out", timeoutException)); //TIMED_OUT
   }
 
   private void onReceiveTimeoutFired(Request request) {
     cancelAllTimeouts();
-    ReadTimeoutException timeoutException = new ReadTimeoutException("Timed out waiting " + getReceiveTimeout() + " to receive response");
+//    ReadTimeoutException timeoutException = new ReadTimeoutException("Timed out waiting " + getReceiveTimeout() + " to receive response");
+    ReadTimeoutException timeoutException = ReadTimeoutException.INSTANCE;
     fireChannelErrorCallback(request.getListener(), new XioTransportException("Timed out", timeoutException)); //TIMED_OUT
   }
 
   private void onReadTimeoutFired(Request request) {
     cancelAllTimeouts();
-    ReadTimeoutException timeoutException = new ReadTimeoutException("Timed out waiting " + getReadTimeout() + " to read data from server");
+//    ReadTimeoutException timeoutException = new ReadTimeoutException("Timed out waiting " + getReadTimeout() + " to read data from server");
+    ReadTimeoutException timeoutException = ReadTimeoutException.INSTANCE;
     fireChannelErrorCallback(request.getListener(), new XioTransportException("Timed out", timeoutException)); //TIMED_OUT
   }
 
@@ -420,7 +430,7 @@ public abstract class AbstractClientChannel extends SimpleChannelInboundHandler<
           try {
             timerTask.run(timeout);
           } catch (Exception e) {
-            Channels.fireExceptionCaught(channel.getNettyChannel(), e);
+            channel.getCtx().fireExceptionCaught(e);
           }
         }
       });

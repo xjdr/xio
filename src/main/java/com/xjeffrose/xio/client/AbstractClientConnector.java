@@ -1,10 +1,11 @@
 package com.xjeffrose.xio.client;
 
 import com.google.common.net.HostAndPort;
+import io.netty.bootstrap.Bootstrap;
+import io.netty.channel.ChannelFuture;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import org.jboss.netty.bootstrap.ClientBootstrap;
-import org.jboss.netty.channel.ChannelFuture;
+
 
 public abstract class AbstractClientConnector<T extends XioClientChannel> implements XioClientConnector<T> {
   private final SocketAddress address;
@@ -24,7 +25,7 @@ public abstract class AbstractClientConnector<T extends XioClientChannel> implem
   }
 
   @Override
-  public ChannelFuture connect(ClientBootstrap bootstrap) {
+  public ChannelFuture connect(Bootstrap bootstrap) {
     return bootstrap.connect(address);
   }
 

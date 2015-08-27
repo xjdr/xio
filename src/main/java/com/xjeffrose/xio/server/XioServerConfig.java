@@ -2,20 +2,21 @@ package com.xjeffrose.xio.server;
 
 
 import com.google.inject.ProvidedBy;
+import io.netty.channel.ChannelOption;
+import io.netty.util.Timer;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
-import org.jboss.netty.util.Timer;
 
 @ProvidedBy(XioServerConfigProvider.class)
 public class XioServerConfig {
-  private final Map<String, Object> bootstrapOptions;
+  private final Map<ChannelOption<Object>, Object> bootstrapOptions;
   private final Timer timer;
   private final ExecutorService bossExecutor;
   private final int bossThreadCount;
   private final ExecutorService workerExecutor;
   private final int workerThreadCount;
 
-  public XioServerConfig(Map<String, Object> bootstrapOptions,
+  public XioServerConfig(Map<ChannelOption<Object>, Object> bootstrapOptions,
                          Timer timer,
                          ExecutorService bossExecutor,
                          int bossThreadCount,
@@ -41,7 +42,7 @@ public class XioServerConfig {
     return bossExecutor;
   }
 
-  public Map<String, Object> getBootstrapOptions() {
+  public Map<ChannelOption<Object>, Object> getBootstrapOptions() {
     return bootstrapOptions;
   }
 

@@ -1,15 +1,16 @@
 package com.xjeffrose.xio.client;
 
 
-import org.jboss.netty.bootstrap.ClientBootstrap;
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelFuture;
-import org.jboss.netty.channel.ChannelPipelineFactory;
+import io.netty.bootstrap.Bootstrap;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.socket.SocketChannel;
 
 public interface XioClientConnector<T extends RequestChannel> {
-  ChannelFuture connect(ClientBootstrap bootstrap);
+  ChannelFuture connect(Bootstrap bootstrap);
 
   T newClientChannel(Channel channel, XioClientConfig clientConfig);
 
-  ChannelPipelineFactory newChannelPipelineFactory(int maxFrameSize, XioClientConfig clientConfig);
+  ChannelInitializer<SocketChannel> newChannelPipelineFactory(int maxFrameSize, XioClientConfig clientConfig);
 }

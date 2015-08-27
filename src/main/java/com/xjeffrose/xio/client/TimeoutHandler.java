@@ -1,22 +1,26 @@
 package com.xjeffrose.xio.client;
 
 
-import org.jboss.netty.channel.ChannelDownstreamHandler;
-import org.jboss.netty.channel.ChannelEvent;
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.ChannelPipeline;
-import org.jboss.netty.channel.ChannelUpstreamHandler;
-import org.jboss.netty.channel.MessageEvent;
+import io.netty.channel.ChannelDuplexHandler;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelPipeline;
+import io.netty.channel.SimpleChannelInboundHandler;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public final class TimeoutHandler implements ChannelUpstreamHandler, ChannelDownstreamHandler {
+public final class TimeoutHandler extends ChannelDuplexHandler {
   private static final String NAME = "_TIMEOUT_HANDLER";
 
   private volatile long lastMessageReceivedNanos = 0L;
   private volatile long lastMessageSentNanos = 0L;
 
   private TimeoutHandler() {
+  }
+
+  @Override
+  public void channelRead(ChannelHandlerContext ctx, Object o) throws Exception {
+    lastMessageReceivedNanos = System.nanoTime();
+    ctx.fireChannelRead(o);
   }
 
   public static synchronized void addToPipeline(ChannelPipeline cp) {
@@ -31,21 +35,14 @@ public final class TimeoutHandler implements ChannelUpstreamHandler, ChannelDown
   }
 
   @Override
-  public void handleUpstream(ChannelHandlerContext ctx, ChannelEvent e)
-      throws Exception {
-    if (e instanceof MessageEvent) {
-      lastMessageReceivedNanos = System.nanoTime();
-    }
-    ctx.sendUpstream(e);
+  public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
+    ctx.fireChannelReadComplete();
   }
 
   @Override
-  public void handleDownstream(ChannelHandlerContext ctx, ChannelEvent e)
-      throws Exception {
-    if (e instanceof MessageEvent) {
-      lastMessageSentNanos = System.nanoTime();
-    }
-    ctx.sendDownstream(e);
+  public void channelWritabilityChanged(ChannelHandlerContext ctx) throws Exception {
+    lastMessageSentNanos = System.nanoTime();
+    ctx.fireChannelWritabilityChanged();
   }
 
   public long getLastMessageReceivedNanos() {

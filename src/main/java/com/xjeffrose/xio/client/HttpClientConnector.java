@@ -2,18 +2,20 @@ package com.xjeffrose.xio.client;
 
 
 import com.google.common.net.HostAndPort;
+import com.xjeffrose.xio.core.XioExceptionLogger;
 import com.xjeffrose.xio.core.XioSecurityHandlers;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelPipeline;
+import io.netty.channel.socket.SocketChannel;
+import io.netty.handler.codec.http.HttpClientCodec;
+import io.netty.handler.codec.http.HttpContentDecompressor;
+import io.netty.handler.codec.http.HttpObjectAggregator;
+import io.netty.handler.ssl.SslContextBuilder;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelPipeline;
-import org.jboss.netty.channel.ChannelPipelineFactory;
-import org.jboss.netty.channel.Channels;
-import org.jboss.netty.handler.codec.http.HttpChunkAggregator;
-import org.jboss.netty.handler.codec.http.HttpClientCodec;
-import org.jboss.netty.handler.codec.http.HttpContentCompressor;
-import org.jboss.netty.handler.codec.http.HttpContentDecompressor;
+
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -71,24 +73,25 @@ public class HttpClientConnector extends AbstractClientConnector<HttpClientChann
             getProtocolFactory(),
             endpointUri.getHost(),
             endpointUri.getPath());
-    channel.getNettyChannel().getPipeline().addLast("Xio Client Handler", channel);
+    channel.getNettyChannel().pipeline().addLast("Xio Client Handler", channel);
     return channel;
   }
 
   @Override
-  public ChannelPipelineFactory newChannelPipelineFactory(final int maxFrameSize, XioClientConfig clientConfig) {
-    return new ChannelPipelineFactory() {
+  public ChannelInitializer<SocketChannel> newChannelPipelineFactory(final int maxFrameSize, XioClientConfig clientConfig) {
+
+    return new ChannelInitializer<SocketChannel>() {
       @Override
-      public ChannelPipeline getPipeline()
-          throws Exception {
-        ChannelPipeline cp = Channels.pipeline();
-        XioSecurityHandlers securityHandlers = clientConfig.getSecurityFactory().getSecurityHandlers(clientConfig);
+      protected void initChannel(SocketChannel channel) throws Exception {
+        ChannelPipeline cp = channel.pipeline();
         TimeoutHandler.addToPipeline(cp);
+        XioSecurityHandlers securityHandlers = clientConfig.getSecurityFactory().getSecurityHandlers(clientConfig);
         cp.addLast("encryptionHandler", securityHandlers.getEncryptionHandler());
         cp.addLast("httpClientCodec", new HttpClientCodec());
-        cp.addLast("chunkAggregator", new HttpChunkAggregator(maxFrameSize));
-        cp.addLast("defaltor", new HttpContentDecompressor());
-        return cp;
+        cp.addLast("chunkAggregator", new HttpObjectAggregator(maxFrameSize));
+//        cp.addLast("defaltor", new HttpContentDecompressor());
+        cp.addLast("exceptionLogger", new XioExceptionLogger());
+
       }
     };
   }

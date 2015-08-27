@@ -6,6 +6,17 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.xjeffrose.xio.core.ConnectionContext;
 import com.xjeffrose.xio.core.ConnectionContexts;
 import com.xjeffrose.xio.processor.XioProcessorFactory;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.handler.codec.http.DefaultHttpResponse;
+import io.netty.handler.codec.http.HttpMessage;
+import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpVersion;
+import io.netty.util.AttributeKey;
+import io.netty.util.Timeout;
+import io.netty.util.Timer;
+import io.netty.util.TimerTask;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executor;
@@ -14,23 +25,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.ChannelStateEvent;
-import org.jboss.netty.channel.Channels;
-import org.jboss.netty.channel.ExceptionEvent;
-import org.jboss.netty.channel.MessageEvent;
-import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
-import org.jboss.netty.handler.codec.http.DefaultHttpResponse;
-import org.jboss.netty.handler.codec.http.HttpMessage;
-import org.jboss.netty.handler.codec.http.HttpRequest;
-import org.jboss.netty.handler.codec.http.HttpResponseStatus;
-import org.jboss.netty.handler.codec.http.HttpVersion;
-import org.jboss.netty.util.Timeout;
-import org.jboss.netty.util.Timer;
-import org.jboss.netty.util.TimerTask;
 
 
-public class XioDispatcher extends SimpleChannelUpstreamHandler {
+public class XioDispatcher extends SimpleChannelInboundHandler<Object> {
   private final XioProcessorFactory processorFactory;
   private final Executor exe;
   private final long taskTimeoutMillis;
@@ -56,16 +53,16 @@ public class XioDispatcher extends SimpleChannelUpstreamHandler {
   }
 
   @Override
-  public void messageReceived(ChannelHandlerContext ctx, MessageEvent e)
-      throws Exception {
-    if (e.getMessage() instanceof HttpMessage) {
-      HttpMessage message = (HttpMessage) e.getMessage();
+  protected void channelRead0(ChannelHandlerContext ctx, Object o) throws Exception {
+    if (o instanceof HttpMessage) {
+      HttpMessage message = (HttpMessage) o;
 
       processRequest(ctx, message);
     } else {
-      ctx.sendUpstream(e);
+      ctx.fireChannelRead(o);
     }
   }
+
 
   private void processRequest(
       final ChannelHandlerContext ctx,
@@ -123,7 +120,7 @@ public class XioDispatcher extends SimpleChannelUpstreamHandler {
                 }, timeRemaining, TimeUnit.MILLISECONDS));
               }
 
-              ConnectionContext connectionContext = ConnectionContexts.getContext(ctx.getChannel());
+              ConnectionContext connectionContext = ConnectionContexts.getContext(ctx.channel());
               requestContext = new XioRequestContext(connectionContext);
               RequestContexts.setCurrentContext(requestContext);
 
@@ -146,7 +143,7 @@ public class XioDispatcher extends SimpleChannelUpstreamHandler {
                     try {
                       // Only write response if the client is still there and the task timeout
                       // hasn't expired.
-                      if (ctx.getChannel().isConnected() && responseSent.compareAndSet(false, true)) {
+                      if (ctx.channel().isActive() && responseSent.compareAndSet(false, true)) {
                         writeResponse(ctx, requestContext.getContextData(requestContext.getConnectionId()), requestSequenceId);
                       }
                     } catch (Throwable t) {
@@ -186,7 +183,7 @@ public class XioDispatcher extends SimpleChannelUpstreamHandler {
   }
 
   private void onDispatchException(ChannelHandlerContext ctx, Throwable t) {
-    Channels.fireExceptionCaught(ctx, t);
+    ctx.fireExceptionCaught(t);
     closeChannel(ctx);
   }
 
@@ -199,7 +196,7 @@ public class XioDispatcher extends SimpleChannelUpstreamHandler {
     }
     else {
       // No ordering required, just write the response immediately
-      Channels.write(ctx.getChannel(), response);
+      ctx.writeAndFlush(response);
       lastResponseWrittenId.incrementAndGet();
     }
   }
@@ -220,7 +217,7 @@ public class XioDispatcher extends SimpleChannelUpstreamHandler {
         // This response was next in line, write this response now, and see if
         // there are others next in line that should be sent now as well.
         do {
-          Channels.write(ctx.getChannel(), response);
+          ctx.write(response);
           lastResponseWrittenId.incrementAndGet();
           ++currentResponseId;
           response = responseMap.remove(currentResponseId);
@@ -238,27 +235,28 @@ public class XioDispatcher extends SimpleChannelUpstreamHandler {
   }
 
   @Override
-  public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e)
-      throws Exception {
+  public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
     // Any out of band exception are caught here and we tear down the socket
     closeChannel(ctx);
 
     // Send for logging
-    ctx.sendUpstream(e);
+    ctx.fireChannelRead(ctx);
   }
 
   private void closeChannel(ChannelHandlerContext ctx) {
-    if (ctx.getChannel().isOpen()) {
-      ctx.getChannel().close();
+    if (ctx.channel().isOpen()) {
+      ctx.channel().close();
     }
   }
 
   @Override
-  public void channelOpen(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
+  public void channelActive(ChannelHandlerContext ctx) throws Exception {
     // Reads always start out unblocked
     DispatcherContext.unblockChannelReads(ctx);
-    super.channelOpen(ctx, e);
+    super.channelActive(ctx);
   }
+
+
 
   private static class DispatcherContext {
     private ReadBlockedState readBlockedState = ReadBlockedState.NOT_BLOCKED;
@@ -277,23 +275,25 @@ public class XioDispatcher extends SimpleChannelUpstreamHandler {
       // from the socket before this ran may still be decoded and arrive at this handler. Thus
       // the limit on queued messages before we block reads is more of a guidance than a hard
       // limit.
-      ctx.getChannel().setReadable(false);
+      ctx.channel().config().setAutoRead(false);
     }
 
     public static void unblockChannelReads(ChannelHandlerContext ctx) {
       // Remember that reads are unblocked (there is no Channel.getReadable())
       getDispatcherContext(ctx).readBlockedState = ReadBlockedState.NOT_BLOCKED;
-      ctx.getChannel().setReadable(true);
+      ctx.channel().config().setAutoRead(true);
     }
 
     private static DispatcherContext getDispatcherContext(ChannelHandlerContext ctx) {
+      final AttributeKey<DispatcherContext> DISPATCHER_CONTEXT = AttributeKey.valueOf("DispatcherContext");
+
       DispatcherContext dispatcherContext;
-      Object attachment = ctx.getAttachment();
+      Object attachment = ctx.attr(DISPATCHER_CONTEXT).get();
 
       if (attachment == null) {
         // No context was added yet, add one
         dispatcherContext = new DispatcherContext();
-        ctx.setAttachment(dispatcherContext);
+        ctx.attr(DISPATCHER_CONTEXT).set(dispatcherContext);
       } else if (!(attachment instanceof DispatcherContext)) {
         // There was a context, but it was the wrong type. This should never happen.
         throw new IllegalStateException("XioDispatcher handler context should be of type XioDispatcher.DispatcherContext");

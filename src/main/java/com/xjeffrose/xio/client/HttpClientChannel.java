@@ -2,21 +2,22 @@ package com.xjeffrose.xio.client;
 
 
 import com.google.common.net.HttpHeaders;
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.handler.codec.http.DefaultFullHttpRequest;
+import io.netty.handler.codec.http.HttpContent;
+import io.netty.handler.codec.http.HttpMethod;
+import io.netty.handler.codec.http.HttpObject;
+import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.HttpResponse;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpVersion;
+import io.netty.util.Timer;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.Map;
 import javax.annotation.concurrent.NotThreadSafe;
-import org.jboss.netty.buffer.ChannelBuffer;
-import org.jboss.netty.buffer.ChannelBuffers;
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelFuture;
-import org.jboss.netty.handler.codec.http.DefaultHttpRequest;
-import org.jboss.netty.handler.codec.http.HttpMethod;
-import org.jboss.netty.handler.codec.http.HttpRequest;
-import org.jboss.netty.handler.codec.http.HttpResponse;
-import org.jboss.netty.handler.codec.http.HttpResponseStatus;
-import org.jboss.netty.handler.codec.http.HttpVersion;
-import org.jboss.netty.util.Timer;
 
 @NotThreadSafe
 public class HttpClientChannel extends AbstractClientChannel {
@@ -42,56 +43,57 @@ public class HttpClientChannel extends AbstractClientChannel {
   }
 
   @Override
-  protected ChannelBuffer extractResponse(Object message) throws XioTransportException {
-    if (!(message instanceof HttpResponse)) {
+  protected ByteBuf extractResponse(Object message) throws XioTransportException {
+    if (!(message instanceof HttpObject)) {
       return null;
     }
 
-    HttpResponse httpResponse = (HttpResponse) message;
+    if (message instanceof HttpResponse) {
 
-    //System.out.println(httpResponse.toString());
+      HttpResponse httpResponse = (HttpResponse) message;
 
-    if (!httpResponse.getStatus().equals(HttpResponseStatus.OK)) {
-      throw new XioTransportException("HTTP response had non-OK status: " + httpResponse
-          .getStatus().toString());
-    }
+      if (!httpResponse.getStatus().equals(HttpResponseStatus.OK)) {
+        throw new XioTransportException("HTTP response had non-OK status: " + httpResponse
+            .getStatus().toString());
+      }
 
-    ChannelBuffer content = httpResponse.getContent();
+      HttpContent httpContent = (HttpContent) httpResponse;
+      ByteBuf content = httpContent.content();
 
-    if (!content.readable()) {
-      return null;
-    }
+      if (!content.isReadable()) {
+        System.out.println("NOT READDDABBLLLRRR");
+        return null;
+      }
 
-    String CRLF = "\r\n";
-    StringBuilder responseHeader = new StringBuilder();
-    responseHeader
-        .append(httpResponse.getProtocolVersion())
-        .append(' ')
-        .append(httpResponse.getStatus())
-        .append(CRLF)
-    ;
-    httpResponse.headers().entries().forEach(xs -> {
+      String CRLF = "\r\n";
+      StringBuilder responseHeader = new StringBuilder();
       responseHeader
-          .append(xs.getKey())
-          .append(": ")
-          .append(xs.getValue())
+          .append(httpResponse.getProtocolVersion())
+          .append(' ')
+          .append(httpResponse.getStatus())
           .append(CRLF)
       ;
-    });
-    responseHeader.append(CRLF);
+      httpResponse.headers().entries().forEach(xs -> {
+        responseHeader
+            .append(xs.getKey())
+            .append(": ")
+            .append(xs.getValue())
+            .append(CRLF)
+        ;
+      });
+      responseHeader.append(CRLF);
 
-    int capacity = responseHeader.toString().length() + content.readableBytes();
-    ByteBuffer headerAndBody = ByteBuffer.allocateDirect(capacity);
-
-    headerAndBody.put(responseHeader.toString().getBytes(Charset.defaultCharset()));
-    headerAndBody.put(content.toByteBuffer());
-    headerAndBody.flip();
-    return ChannelBuffers.wrappedBuffer(headerAndBody);
+      ByteBuf headerAndBody = getCtx().alloc().buffer();
+      headerAndBody.writeBytes(responseHeader.toString().getBytes(Charset.defaultCharset()));
+//      headerAndBody.writeBytes(content);
+      return headerAndBody;
+    }
+    return null;
   }
 
   @Override
-  protected ChannelFuture writeRequest(ChannelBuffer request) {
-    HttpRequest httpRequest = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, endpointUri);
+  protected ChannelFuture writeRequest(ByteBuf request) {
+    HttpRequest httpRequest = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, endpointUri, request);
 
     httpRequest.headers().add(HttpHeaders.HOST, hostName);
     httpRequest.headers().add(HttpHeaders.CONTENT_LENGTH, request.readableBytes());
@@ -105,9 +107,7 @@ public class HttpClientChannel extends AbstractClientChannel {
       }
     }
 
-    httpRequest.setContent(request);
-
-    return underlyingNettyChannel.write(httpRequest);
+    return underlyingNettyChannel.writeAndFlush(httpRequest);
   }
 
 }

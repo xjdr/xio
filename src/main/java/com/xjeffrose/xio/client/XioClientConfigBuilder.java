@@ -5,15 +5,16 @@ import com.google.common.base.Strings;
 import com.google.common.net.HostAndPort;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.Inject;
-import com.xjeffrose.xio.core.XioConfigBuilderBase;
+import com.xjeffrose.xio.server.XioConfigBuilderBase;
 import com.xjeffrose.xio.core.XioNoOpSecurityFactory;
 import com.xjeffrose.xio.core.XioSecurityFactory;
 import com.xjeffrose.xio.core.XioTimer;
+import io.netty.channel.ChannelConfig;
+import io.netty.util.Timer;
 import java.lang.reflect.Proxy;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;
-import org.jboss.netty.channel.socket.nio.NioSocketChannelConfig;
-import org.jboss.netty.util.Timer;
+
 
 import static java.util.concurrent.Executors.newCachedThreadPool;
 
@@ -21,9 +22,9 @@ import static java.util.concurrent.Executors.newCachedThreadPool;
  * Hooks for configuring various parts of Netty.
  */
 public class XioClientConfigBuilder extends XioConfigBuilderBase<XioClientConfigBuilder> {
-  private final NioSocketChannelConfig socketChannelConfig = (NioSocketChannelConfig) Proxy.newProxyInstance(
+  private final ChannelConfig socketChannelConfig = (ChannelConfig) Proxy.newProxyInstance(
       getClass().getClassLoader(),
-      new Class<?>[]{NioSocketChannelConfig.class},
+      new Class<?>[]{ChannelConfig.class},
       new XioConfigBuilderBase.Magic("")
   );
 
@@ -32,10 +33,10 @@ public class XioClientConfigBuilder extends XioConfigBuilderBase<XioClientConfig
 
   @Inject
   public XioClientConfigBuilder() {
-    getSocketChannelConfig().setTcpNoDelay(true);
+//    getSocketChannelConfig().setOption(ChannelOption.TCP_NODELAY, true);
   }
 
-  public NioSocketChannelConfig getSocketChannelConfig() {
+  public ChannelConfig getSocketChannelConfig() {
     return socketChannelConfig;
   }
 

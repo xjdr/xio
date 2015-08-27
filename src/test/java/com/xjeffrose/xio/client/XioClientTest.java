@@ -6,16 +6,18 @@ import com.xjeffrose.xio.core.XioSecurityFactory;
 import com.xjeffrose.xio.core.XioSecurityHandlers;
 import com.xjeffrose.xio.server.XioServerConfig;
 import com.xjeffrose.xio.server.XioServerDef;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import io.netty.channel.ChannelHandler;
+import io.netty.handler.ssl.SslHandler;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import javax.net.ssl.SSLEngine;
-import org.jboss.netty.buffer.ChannelBuffer;
-import org.jboss.netty.buffer.ChannelBuffers;
-import org.jboss.netty.channel.ChannelHandler;
-import org.jboss.netty.handler.ssl.SslHandler;
+
+import javax.net.ssl.SSLException;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -40,7 +42,7 @@ public class XioClientTest {
       }
 
       @Override
-      public void onResponseReceived(ChannelBuffer message) {
+      public void onResponseReceived(ByteBuf message) {
         System.out.println("Response Recieved");
         System.out.println(message.toString(Charset.defaultCharset()));
         lock.lock();
@@ -55,7 +57,7 @@ public class XioClientTest {
       }
    };
 
-    httpClientChannel.sendAsynchronousRequest(ChannelBuffers.EMPTY_BUFFER, false, listener);
+    httpClientChannel.sendAsynchronousRequest(Unpooled.EMPTY_BUFFER, false, listener);
 
     lock.lock();
     waitForFinish.await();
@@ -82,8 +84,12 @@ public class XioClientTest {
               @Override
               public ChannelHandler getEncryptionHandler() {
                 SSLEngine engine = new SSLEngineFactory(true).getEngine();
-                SslHandler handler = new SslHandler(engine);
-                return handler;
+                try {
+                  engine.beginHandshake();
+                } catch (SSLException e) {
+                  e.printStackTrace();
+                }
+                return new SslHandler(engine, false);
               }
             };
           }
@@ -100,7 +106,7 @@ public class XioClientTest {
       }
 
       @Override
-      public void onResponseReceived(ChannelBuffer message) {
+      public void onResponseReceived(ByteBuf message) {
         System.out.println("Response Recieved");
         System.out.println(message.toString(Charset.defaultCharset()));
         lock.lock();
@@ -119,7 +125,7 @@ public class XioClientTest {
     ListenableFuture<XioClientChannel> responseFuture = xioClient.connectAsync(new HttpClientConnector(new URI("https://www.google.com/")));
     XioClientChannel xioClientChannel = responseFuture.get();
     HttpClientChannel httpClientChannel = (HttpClientChannel) xioClientChannel;
-    httpClientChannel.sendAsynchronousRequest(ChannelBuffers.EMPTY_BUFFER, false, listener);
+    httpClientChannel.sendAsynchronousRequest(Unpooled.EMPTY_BUFFER, false, listener);
 
     lock.lock();
     waitForFinish.await();

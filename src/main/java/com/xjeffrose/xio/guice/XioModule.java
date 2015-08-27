@@ -8,10 +8,11 @@ import com.google.inject.multibindings.Multibinder;
 import com.google.inject.util.Providers;
 import com.xjeffrose.xio.server.XioServerDef;
 import com.xjeffrose.xio.server.XioServerConfig;
+import io.netty.channel.group.ChannelGroup;
+import io.netty.channel.group.DefaultChannelGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
 import javax.inject.Provider;
 import javax.inject.Singleton;
-import org.jboss.netty.channel.group.ChannelGroup;
-import org.jboss.netty.channel.group.DefaultChannelGroup;
 
 public abstract class XioModule extends AbstractModule {
   private boolean configBound = false;
@@ -24,7 +25,7 @@ public abstract class XioModule extends AbstractModule {
   @Provides
   @Singleton
   public ChannelGroup getChannelGroup() {
-    return new DefaultChannelGroup();
+    return new DefaultChannelGroup(new NioEventLoopGroup().next());
   }
 
   public XioModule useDefaultNettyServerConfig() {

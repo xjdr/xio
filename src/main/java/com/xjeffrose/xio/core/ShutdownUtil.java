@@ -2,15 +2,16 @@ package com.xjeffrose.xio.core;
 
 
 import io.airlift.log.Logger;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.group.ChannelGroup;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
-import org.jboss.netty.channel.ChannelFactory;
-import org.jboss.netty.channel.group.ChannelGroup;
+
 
 public class ShutdownUtil {
   private static final Logger log = Logger.get(ShutdownUtil.class);
 
-  public static void shutdownChannelFactory(ChannelFactory channelFactory,
+  public static void shutdownChannelFactory(EventLoopGroup group,
                                             ExecutorService bossExecutor,
                                             ExecutorService workerExecutor,
                                             ChannelGroup allChannels) {
@@ -20,8 +21,8 @@ public class ShutdownUtil {
     }
 
     // Shutdown the channel factory
-    if (channelFactory != null) {
-      channelFactory.shutdown();
+    if (group != null) {
+      group.shutdownGracefully();
     }
 
     // Stop boss threads
@@ -34,9 +35,10 @@ public class ShutdownUtil {
       shutdownExecutor(workerExecutor, "workerExecutor");
     }
 
-    // Release any other resources netty might be holding onto via this channelFactory
-    if (channelFactory != null) {
-      channelFactory.releaseExternalResources();
+    // Release any other resources netty might be holding onto via this group
+    if (group != null) {
+      //TODO: Find netty4 equivalent (may not be nessisary with shutdown gracefully)
+//      group.releaseExternalResources();
     }
   }
 
