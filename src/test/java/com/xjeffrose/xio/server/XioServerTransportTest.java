@@ -167,7 +167,7 @@ public class XioServerTransportTest {
         .limitConnectionsTo(200)
         .limitFrameSizeTo(1024)
         .limitQueuedResponsesPerConnection(50)
-        .listen(new InetSocketAddress(8083))
+        .listen(new InetSocketAddress(8082))
 //        .listen(new InetSocketAddress("127.0.0.1", 8082))
         .name("Xio Test Server")
         .taskTimeout(new Duration((double) 20000, TimeUnit.MILLISECONDS))
