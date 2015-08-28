@@ -6,6 +6,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.xjeffrose.xio.core.ShutdownUtil;
 import io.airlift.units.Duration;
 import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
@@ -123,6 +124,13 @@ public class XioClient implements Closeable {
     if (connectTimeout != null) {
       bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, (int) connectTimeout.toMillis());
     }
+
+    // Set some sane defaults
+    bootstrap
+        .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
+        .option(ChannelOption.WRITE_BUFFER_HIGH_WATER_MARK, 32 * 1024)
+        .option(ChannelOption.WRITE_BUFFER_LOW_WATER_MARK, 8 * 1024)
+        .option(ChannelOption.TCP_NODELAY, true);
 
     ChannelFuture nettyChannelFuture = clientChannelConnector.connect(bootstrap);
     nettyChannelFuture.addListener(new ChannelFutureListener() {

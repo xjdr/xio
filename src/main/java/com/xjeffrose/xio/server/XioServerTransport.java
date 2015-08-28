@@ -9,6 +9,7 @@ import com.xjeffrose.xio.core.XioMetrics;
 import com.xjeffrose.xio.core.XioSecurityHandlers;
 import io.airlift.log.Logger;
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelFuture;
@@ -16,6 +17,7 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
@@ -124,6 +126,13 @@ public class XioServerTransport {
     xioServerConfig.getBootstrapOptions().entrySet().forEach(xs -> {
       bootstrap.option(xs.getKey(), xs.getValue());
     });
+
+    //Set some sane defaults
+    bootstrap
+        .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
+        .option(ChannelOption.WRITE_BUFFER_HIGH_WATER_MARK, 32 * 1024)
+        .option(ChannelOption.WRITE_BUFFER_LOW_WATER_MARK, 8 * 1024)
+        .option(ChannelOption.TCP_NODELAY, true);
 
     try {
       serverChannel = bootstrap.bind(hostAddr).sync().channel();

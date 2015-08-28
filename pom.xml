@@ -10,7 +10,7 @@
 
     <groupId>com.xjeffrose</groupId>
     <artifactId>xio</artifactId>
-    <version>0.5.0-SNAPSHOT</version>
+    <version>0.5.1-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>xio</name>
     <description>High Performance HTTP Server based on Netty and Xio</description>
@@ -82,9 +82,24 @@
 
         <dependency>
             <groupId>io.netty</groupId>
-            <artifactId>netty-codec-http</artifactId>
+            <artifactId>netty-all</artifactId>
             <version>4.0.30.Final</version>
         </dependency>
+
+        <!--Mac for Testing, please use linux for production-->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-tcnative</artifactId>
+            <version>1.1.33.Fork6</version>
+            <classifier>osx-x86_64</classifier>
+        </dependency>
+
+        <!--<dependency>-->
+            <!--<groupId>io.netty</groupId>-->
+            <!--<artifactId>netty-tcnative</artifactId>-->
+            <!--<version>1.1.33.Fork6</version>-->
+            <!--<classifier>linux-x86_64</classifier>-->
+        <!--</dependency>-->
 
         <dependency>
             <groupId>io.airlift</groupId>

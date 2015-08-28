@@ -14,6 +14,7 @@ import com.xjeffrose.xio.core.XioTimer;
 import com.xjeffrose.xio.processor.XioProcessor;
 import com.xjeffrose.xio.processor.XioProcessorFactory;
 import io.airlift.units.Duration;
+import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -24,9 +25,16 @@ import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpServerCodec;
+import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslHandler;
+import io.netty.handler.ssl.SslProvider;
+import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
+import io.netty.handler.ssl.util.SelfSignedCertificate;
 import io.netty.util.CharsetUtil;
+import java.io.File;
 import java.net.InetSocketAddress;
+import java.nio.file.Paths;
+import java.security.cert.CertificateException;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
@@ -94,10 +102,9 @@ public class XioServerTransportTest {
                         Unpooled.copiedBuffer(buf.toString(), CharsetUtil.UTF_8));
 
                     response.headers().set(CONTENT_TYPE, "text/plain; charset=UTF-8");
+                    response.headers().set(CONTENT_LENGTH, response.content().readableBytes());
 
                     if (keepAlive) {
-                      // Add 'Content-Length' header only for a keep-alive connection.
-                      response.headers().set(CONTENT_LENGTH, response.content().readableBytes());
                       // Add keep alive header as per:
                       // - http://www.w3.org/Protocols/HTTP/1.1/draft-ietf-http-v11-spec-01.html#Connection
                       response.headers().set(CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
@@ -183,13 +190,20 @@ public class XioServerTransportTest {
 
               @Override
               public ChannelHandler getEncryptionHandler() {
-                SSLEngine engine = new SSLEngineFactory("src/test/resources/privateKey.pem", "src/test/resources/cert.pem").getEngine();
                 try {
-                  engine.beginHandshake();
-                } catch (SSLException e) {
+                  SelfSignedCertificate ssc = new SelfSignedCertificate();
+                  SslContext sslCtx = SslContext.newServerContext(SslContext.defaultServerProvider(), ssc.certificate(), ssc.privateKey());
+
+//                SSLEngine engine = new SSLEngineFactory("src/test/resources/privateKey.pem", "src/test/resources/cert.pem").getEngine();
+//                engine.beginHandshake();
+
+                  return sslCtx.newHandler(new PooledByteBufAllocator());
+
+                } catch (SSLException | CertificateException e) {
                   e.printStackTrace();
                 }
-                return new SslHandler(engine);
+//                return new SslHandler(engine);
+                return null;
               }
             };
           }
@@ -236,10 +250,9 @@ public class XioServerTransportTest {
                         Unpooled.copiedBuffer(buf.toString(), CharsetUtil.UTF_8));
 
                     response.headers().set(CONTENT_TYPE, "text/plain; charset=UTF-8");
+                    response.headers().set(CONTENT_LENGTH, response.content().readableBytes());
 
                     if (keepAlive) {
-                      // Add 'Content-Length' header only for a keep-alive connection.
-                      response.headers().set(CONTENT_LENGTH, response.content().readableBytes());
                       // Add keep alive header as per:
                       // - http://www.w3.org/Protocols/HTTP/1.1/draft-ietf-http-v11-spec-01.html#Connection
                       response.headers().set(CONNECTION, HttpHeaders.Values.KEEP_ALIVE);

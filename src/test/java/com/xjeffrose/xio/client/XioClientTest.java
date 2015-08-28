@@ -7,9 +7,13 @@ import com.xjeffrose.xio.core.XioSecurityHandlers;
 import com.xjeffrose.xio.server.XioServerConfig;
 import com.xjeffrose.xio.server.XioServerDef;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandler;
+import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslHandler;
+import io.netty.handler.ssl.SslProvider;
+import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.concurrent.locks.Condition;
@@ -18,6 +22,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import javax.net.ssl.SSLEngine;
 
 import javax.net.ssl.SSLException;
+import javax.net.ssl.TrustManagerFactory;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -83,13 +88,17 @@ public class XioClientTest {
 
               @Override
               public ChannelHandler getEncryptionHandler() {
-                SSLEngine engine = new SSLEngineFactory(true).getEngine();
+                SSLEngine engine = null;
                 try {
-                  engine.beginHandshake();
+                  SslContext sslCtx = SslContext.newClientContext(SslContext.defaultClientProvider(), InsecureTrustManagerFactory.INSTANCE);
+//                  SSLEngine engine = new SSLEngineFactory(true).getEngine();
+//                  engine.beginHandshake();
+                  return sslCtx.newHandler(new PooledByteBufAllocator());
                 } catch (SSLException e) {
                   e.printStackTrace();
                 }
-                return new SslHandler(engine, false);
+                return null;
+//                return new SslHandler(engine, false);
               }
             };
           }
