@@ -61,7 +61,6 @@ public class HttpClientChannel extends AbstractClientChannel {
       ByteBuf content = httpContent.content();
 
       if (!content.isReadable()) {
-        System.out.println("NOT READDDABBLLLRRR");
         return null;
       }
 
@@ -85,7 +84,9 @@ public class HttpClientChannel extends AbstractClientChannel {
 
       ByteBuf headerAndBody = getCtx().alloc().buffer();
       headerAndBody.writeBytes(responseHeader.toString().getBytes(Charset.defaultCharset()));
-//      headerAndBody.writeBytes(content);
+      content.retain();
+      content.retain();
+      headerAndBody.writeBytes(content);
       return headerAndBody;
     }
     return null;
@@ -98,7 +99,7 @@ public class HttpClientChannel extends AbstractClientChannel {
     httpRequest.headers().add(HttpHeaders.HOST, hostName);
     httpRequest.headers().add(HttpHeaders.CONTENT_LENGTH, request.readableBytes());
     httpRequest.headers().add(HttpHeaders.CONTENT_TYPE, "application/text");
-    httpRequest.headers().add(HttpHeaders.ACCEPT_ENCODING, "gzip");
+//    httpRequest.headers().add(HttpHeaders.ACCEPT_ENCODING, "gzip");
     httpRequest.headers().add(HttpHeaders.USER_AGENT, "xio/0.4.0");
 
     if (headerDictionary != null) {

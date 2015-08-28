@@ -89,7 +89,7 @@ public class HttpClientConnector extends AbstractClientConnector<HttpClientChann
         cp.addLast("encryptionHandler", securityHandlers.getEncryptionHandler());
         cp.addLast("httpClientCodec", new HttpClientCodec());
         cp.addLast("chunkAggregator", new HttpObjectAggregator(maxFrameSize));
-//        cp.addLast("defaltor", new HttpContentDecompressor());
+        cp.addLast("defaltor", new HttpContentDecompressor());
         cp.addLast("exceptionLogger", new XioExceptionLogger());
 
       }
