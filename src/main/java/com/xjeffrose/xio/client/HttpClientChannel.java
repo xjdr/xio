@@ -59,6 +59,7 @@ public class HttpClientChannel extends AbstractClientChannel {
 
       HttpContent httpContent = (HttpContent) httpResponse;
       ByteBuf content = httpContent.content();
+      content.retain();
 
       if (!content.isReadable()) {
         return null;
@@ -70,21 +71,20 @@ public class HttpClientChannel extends AbstractClientChannel {
           .append(httpResponse.getProtocolVersion())
           .append(' ')
           .append(httpResponse.getStatus())
-          .append(CRLF)
-      ;
+          .append(CRLF);
+
       httpResponse.headers().entries().forEach(xs -> {
         responseHeader
             .append(xs.getKey())
             .append(": ")
             .append(xs.getValue())
-            .append(CRLF)
-        ;
+            .append(CRLF);
       });
+
       responseHeader.append(CRLF);
 
       ByteBuf headerAndBody = getCtx().alloc().buffer();
       headerAndBody.writeBytes(responseHeader.toString().getBytes(Charset.defaultCharset()));
-      content.retain();
       content.retain();
       headerAndBody.writeBytes(content);
       return headerAndBody;

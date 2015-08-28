@@ -39,12 +39,6 @@ public class XioModuleTest {
         new XioModule() {
           @Override
           protected void configureXio() {
-//              // Create the handler
-//              MyService.Iface serviceInterface = new MyServiceHandler();
-//
-//              // Create the processor
-//              TProcessor processor = new MyService.Processor<>(serviceInterface);
-//
 //              // Build the server definition
             XioServerDef serverDef = new XioServerDefBuilder()
                 .clientIdleTimeout(new Duration((double) 200, TimeUnit.MILLISECONDS))
