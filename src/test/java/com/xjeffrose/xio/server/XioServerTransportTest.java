@@ -3,7 +3,6 @@ package com.xjeffrose.xio.server;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
-import com.xjeffrose.xio.SSL.SSLEngineFactory;
 import com.xjeffrose.xio.client.XioClientConfig;
 import com.xjeffrose.xio.core.XioCodecFactory;
 import com.xjeffrose.xio.core.XioNoOpHandler;
@@ -26,20 +25,14 @@ import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.ssl.SslContext;
-import io.netty.handler.ssl.SslHandler;
-import io.netty.handler.ssl.SslProvider;
-import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
 import io.netty.util.CharsetUtil;
-import java.io.File;
 import java.net.InetSocketAddress;
-import java.nio.file.Paths;
 import java.security.cert.CertificateException;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLException;
 import org.junit.Test;
 
@@ -72,7 +65,7 @@ public class XioServerTransportTest {
 
               @Override
               public ListenableFuture<Boolean> process(ChannelHandlerContext ctx, XioServerConfig config, HttpRequest request, RequestContext respCtx) {
-                ListeningExecutorService service = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(10));
+                ListeningExecutorService service = MoreExecutors.listeningDecorator(ctx.executor());
                 ListenableFuture<Boolean> httpResponseFuture = service.submit(new Callable<Boolean>() {
                   public Boolean call() {
                     final StringBuilder buf = new StringBuilder();
@@ -220,7 +213,7 @@ public class XioServerTransportTest {
 
               @Override
               public ListenableFuture<Boolean> process(ChannelHandlerContext ctx, XioServerConfig config, HttpRequest request, RequestContext respCtx) {
-                ListeningExecutorService service = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(10));
+                ListeningExecutorService service = MoreExecutors.listeningDecorator(ctx.executor());
                 ListenableFuture<Boolean> httpResponseFuture = service.submit(new Callable<Boolean>() {
                   public Boolean call() {
                     final StringBuilder buf = new StringBuilder();
@@ -315,13 +308,6 @@ public class XioServerTransportTest {
     });
 
   }
-
-
-
-
-
-
-
 
 
 }

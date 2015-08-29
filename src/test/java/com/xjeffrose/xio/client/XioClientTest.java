@@ -88,7 +88,7 @@ public class XioClientTest {
 
               @Override
               public ChannelHandler getEncryptionHandler() {
-                SSLEngine engine = null;
+//                SSLEngine engine = null;
                 try {
                   SslContext sslCtx = SslContext.newClientContext(SslContext.defaultClientProvider(), InsecureTrustManagerFactory.INSTANCE);
 //                  SSLEngine engine = new SSLEngineFactory(true).getEngine();

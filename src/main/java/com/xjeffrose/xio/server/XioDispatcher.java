@@ -19,7 +19,6 @@ import io.netty.util.Timer;
 import io.netty.util.TimerTask;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -29,7 +28,6 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class XioDispatcher extends SimpleChannelInboundHandler<Object> {
   private final XioProcessorFactory processorFactory;
-  private final Executor exe;
   private final long taskTimeoutMillis;
   private final Timer taskTimeoutTimer;
   private final int queuedResponseLimit;
@@ -46,7 +44,6 @@ public class XioDispatcher extends SimpleChannelInboundHandler<Object> {
     this.config = config;
     this.processorFactory = def.getProcessorFactory();
     this.queuedResponseLimit = def.getQueuedResponseLimit();
-    this.exe = def.getExecutor();
     this.taskTimeoutMillis = (def.getTaskTimeout() == null ? 0 : def.getTaskTimeout().toMillis());
     this.taskTimeoutTimer = (def.getTaskTimeout() == null ? null : config.getTimer());
     this.requestStart = System.currentTimeMillis();
@@ -84,7 +81,7 @@ public class XioDispatcher extends SimpleChannelInboundHandler<Object> {
     }
 
     try {
-      exe.execute(new Runnable() {
+      ctx.executor().execute(new Runnable() {
         @Override
         public void run() {
           ListenableFuture<Boolean> processFuture;
@@ -193,8 +190,7 @@ public class XioDispatcher extends SimpleChannelInboundHandler<Object> {
 
     if (isOrderedResponsesRequired) {
       writeResponseInOrder(ctx, response, responseSequenceId);
-    }
-    else {
+    } else {
       // No ordering required, just write the response immediately
       ctx.writeAndFlush(response);
       lastResponseWrittenId.incrementAndGet();
@@ -217,7 +213,7 @@ public class XioDispatcher extends SimpleChannelInboundHandler<Object> {
         // This response was next in line, write this response now, and see if
         // there are others next in line that should be sent now as well.
         do {
-          ctx.write(response);
+          ctx.writeAndFlush(response);
           lastResponseWrittenId.incrementAndGet();
           ++currentResponseId;
           response = responseMap.remove(currentResponseId);
@@ -255,7 +251,6 @@ public class XioDispatcher extends SimpleChannelInboundHandler<Object> {
     DispatcherContext.unblockChannelReads(ctx);
     super.channelActive(ctx);
   }
-
 
 
   private static class DispatcherContext {
