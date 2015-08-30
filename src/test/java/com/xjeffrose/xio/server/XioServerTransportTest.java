@@ -64,7 +64,7 @@ public class XioServerTransportTest {
             return new XioProcessor() {
 
               @Override
-              public ListenableFuture<Boolean> process(ChannelHandlerContext ctx, XioServerConfig config, HttpRequest request, RequestContext respCtx) {
+              public ListenableFuture<Boolean> process(ChannelHandlerContext ctx, HttpRequest request, RequestContext respCtx) {
                 ListeningExecutorService service = MoreExecutors.listeningDecorator(ctx.executor());
                 ListenableFuture<Boolean> httpResponseFuture = service.submit(new Callable<Boolean>() {
                   public Boolean call() {
@@ -110,12 +110,6 @@ public class XioServerTransportTest {
                 });
                 return httpResponseFuture;
               }
-
-              @Override
-              public void executeInIoThread(ChannelHandlerContext ctx, Runnable runnable) {
-
-              }
-
             };
           }
         })
@@ -212,7 +206,7 @@ public class XioServerTransportTest {
             return new XioProcessor() {
 
               @Override
-              public ListenableFuture<Boolean> process(ChannelHandlerContext ctx, XioServerConfig config, HttpRequest request, RequestContext respCtx) {
+              public ListenableFuture<Boolean> process(ChannelHandlerContext ctx, HttpRequest request, RequestContext respCtx) {
                 ListeningExecutorService service = MoreExecutors.listeningDecorator(ctx.executor());
                 ListenableFuture<Boolean> httpResponseFuture = service.submit(new Callable<Boolean>() {
                   public Boolean call() {
@@ -258,12 +252,6 @@ public class XioServerTransportTest {
                 });
                 return httpResponseFuture;
               }
-
-              @Override
-              public void executeInIoThread(ChannelHandlerContext ctx, Runnable runnable) {
-
-              }
-
             };
           }
         })
@@ -293,7 +281,7 @@ public class XioServerTransportTest {
     server.start();
 
     // For Integration Testing (LEAVE OUT!!!!)
-//    Thread.sleep(20000000);
+    Thread.sleep(20000000);
 
     // Arrange to stop the server at shutdown
     Runtime.getRuntime().addShutdownHook(new Thread() {

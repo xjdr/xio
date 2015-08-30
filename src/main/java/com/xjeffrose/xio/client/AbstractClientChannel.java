@@ -45,7 +45,7 @@ public abstract class AbstractClientChannel extends SimpleChannelInboundHandler<
   }
 
   @Override
-     public Channel getNettyChannel() {
+  public Channel getNettyChannel() {
     return nettyChannel;
   }
 

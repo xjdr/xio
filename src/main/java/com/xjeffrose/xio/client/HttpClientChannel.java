@@ -14,9 +14,11 @@ import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.util.Timer;
-import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.Map;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import javax.annotation.concurrent.NotThreadSafe;
 
 @NotThreadSafe
@@ -40,6 +42,44 @@ public class HttpClientChannel extends AbstractClientChannel {
 
   public void setHeaders(Map<String, String> headers) {
     this.headerDictionary = headers;
+  }
+
+  public ByteBuf sendProxyRequest(final ByteBuf message) throws XioException {
+    final ByteBuf[] response = new ByteBuf[1];
+    final Lock lock = new ReentrantLock();
+    final Condition waitForFinish = lock.newCondition();
+
+    Listener listener = new Listener() {
+      @Override
+      public void onRequestSent() {
+
+      }
+
+      @Override
+      public void onResponseReceived(ByteBuf message) {
+        response[0] = message;
+        lock.lock();
+        waitForFinish.signalAll();
+        lock.unlock();
+      }
+
+      @Override
+      public void onChannelError(XioException requestException) {
+
+      }
+    };
+
+    sendAsynchronousRequest(message, false, listener);
+
+    try {
+      lock.lock();
+      waitForFinish.await();
+      lock.unlock();
+
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+    return response[0];
   }
 
   @Override

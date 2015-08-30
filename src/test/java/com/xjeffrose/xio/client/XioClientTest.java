@@ -4,12 +4,14 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.xjeffrose.xio.SSL.SSLEngineFactory;
 import com.xjeffrose.xio.core.XioSecurityFactory;
 import com.xjeffrose.xio.core.XioSecurityHandlers;
+import com.xjeffrose.xio.fixtures.SimpleTestServer;
 import com.xjeffrose.xio.server.XioServerConfig;
 import com.xjeffrose.xio.server.XioServerDef;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandler;
+import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.ssl.SslProvider;
@@ -30,7 +32,26 @@ import static org.junit.Assert.*;
 public class XioClientTest {
 
   @Test
-  public void testConnectHttp() throws Exception {
+  public void testHttp() throws Exception {
+
+    SimpleTestServer testServer = new SimpleTestServer(8082);
+    testServer.run();
+
+    XioClient xioClient = new XioClient();
+    ListenableFuture<XioClientChannel> responseFuture = xioClient.connectAsync(new HttpClientConnector(new URI("http://localhost:8082")));
+    XioClientChannel xioClientChannel = responseFuture.get();
+    HttpClientChannel httpClientChannel = (HttpClientChannel) xioClientChannel;
+
+    ByteBuf resp = httpClientChannel.sendProxyRequest(Unpooled.EMPTY_BUFFER);
+
+    System.out.println(resp.toString(Charset.defaultCharset()));
+
+    testServer.stop();
+
+  }
+
+  @Test
+  public void testAsyncHttp() throws Exception {
 
     final Lock lock = new ReentrantLock();
     final Condition waitForFinish = lock.newCondition();
@@ -70,7 +91,7 @@ public class XioClientTest {
   }
 
   @Test
-  public void testConnectHttps() throws Exception {
+  public void testAsyncHttps() throws Exception {
     XioClientConfig xioClientConfig = XioClientConfig.newBuilder()
         .setSecurityFactory(new XioSecurityFactory() {
           @Override

@@ -121,7 +121,7 @@ public class XioDispatcher extends SimpleChannelInboundHandler<Object> {
               requestContext = new XioRequestContext(connectionContext);
               RequestContexts.setCurrentContext(requestContext);
 
-              processFuture = processorFactory.getProcessor().process(ctx, config, (HttpRequest) message, requestContext);
+              processFuture = processorFactory.getProcessor().process(ctx, (HttpRequest) message, requestContext);
             } finally {
               // RequestContext does NOT stay set while we are waiting for the process
               // future to complete. This is by design because we'll might move on to the

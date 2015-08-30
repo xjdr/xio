@@ -56,7 +56,7 @@ public class XioModuleTest {
                   public XioProcessor getProcessor() {
                     return new XioProcessor() {
                       @Override
-                      public ListenableFuture<Boolean> process(ChannelHandlerContext ctx, XioServerConfig config, HttpRequest req, RequestContext respCtx) {
+                      public ListenableFuture<Boolean> process(ChannelHandlerContext ctx, HttpRequest req, RequestContext respCtx) {
                         ListeningExecutorService service = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(10));
                         ListenableFuture<Boolean> httpResponseFuture = service.submit(new Callable<Boolean>() {
                           public Boolean call() {
@@ -67,11 +67,6 @@ public class XioModuleTest {
                           }
                         });
                         return httpResponseFuture;
-                      }
-
-                      @Override
-                      public void executeInIoThread(ChannelHandlerContext ctx, Runnable runnable) {
-
                       }
                     };
                   }
