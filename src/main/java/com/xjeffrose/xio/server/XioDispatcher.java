@@ -51,19 +51,21 @@ public class XioDispatcher extends SimpleChannelInboundHandler<Object> {
 
   @Override
   protected void channelRead0(ChannelHandlerContext ctx, Object o) throws Exception {
-    if (o instanceof HttpMessage) {
-      HttpMessage message = (HttpMessage) o;
+//    if (o instanceof HttpMessage) {
+//      HttpMessage message = (HttpMessage) o;
+//
+//      processRequest(ctx, message);
+//    } else {
+//      ctx.fireChannelRead(o);
+//    }
 
-      processRequest(ctx, message);
-    } else {
-      ctx.fireChannelRead(o);
-    }
+    processRequest(ctx, o);
   }
 
 
   private void processRequest(
       final ChannelHandlerContext ctx,
-      final HttpMessage message) {
+      final Object message) {
 
     final int requestSequenceId = dispatcherSequenceId.incrementAndGet();
 
@@ -121,7 +123,7 @@ public class XioDispatcher extends SimpleChannelInboundHandler<Object> {
               requestContext = new XioRequestContext(connectionContext);
               RequestContexts.setCurrentContext(requestContext);
 
-              processFuture = processorFactory.getProcessor().process(ctx, (HttpRequest) message, requestContext);
+              processFuture = processorFactory.getProcessor().process(ctx, message, requestContext);
             } finally {
               // RequestContext does NOT stay set while we are waiting for the process
               // future to complete. This is by design because we'll might move on to the

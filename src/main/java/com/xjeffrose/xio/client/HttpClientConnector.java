@@ -11,6 +11,7 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.http.HttpClientCodec;
 import io.netty.handler.codec.http.HttpContentDecompressor;
 import io.netty.handler.codec.http.HttpObjectAggregator;
+import io.netty.handler.codec.http.HttpResponseDecoder;
 import io.netty.handler.ssl.SslContextBuilder;
 import java.net.InetSocketAddress;
 import java.net.URI;

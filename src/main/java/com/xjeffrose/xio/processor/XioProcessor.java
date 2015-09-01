@@ -7,6 +7,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpRequest;
 
 public interface XioProcessor {
-  ListenableFuture<Boolean> process(ChannelHandlerContext ctx, HttpRequest request, RequestContext reqCtx);
+  ListenableFuture<Boolean> process(ChannelHandlerContext ctx, Object request, RequestContext reqCtx);
 }
 

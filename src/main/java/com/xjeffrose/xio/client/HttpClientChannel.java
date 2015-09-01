@@ -58,6 +58,8 @@ public class HttpClientChannel extends AbstractClientChannel {
       @Override
       public void onResponseReceived(ByteBuf message) {
         response[0] = message;
+        message.retain();
+
         lock.lock();
         waitForFinish.signalAll();
         lock.unlock();
@@ -79,6 +81,7 @@ public class HttpClientChannel extends AbstractClientChannel {
     } catch (InterruptedException e) {
       e.printStackTrace();
     }
+
     return response[0];
   }
 
