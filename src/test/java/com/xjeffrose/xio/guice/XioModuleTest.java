@@ -15,8 +15,10 @@ import com.xjeffrose.xio.server.XioServerDef;
 import com.xjeffrose.xio.server.XioServerDefBuilder;
 import com.xjeffrose.xio.server.XioBootstrap;
 import io.airlift.units.Duration;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.DefaultHttpResponse;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -45,7 +47,7 @@ public class XioModuleTest {
                 .limitConnectionsTo(200)
                 .limitFrameSizeTo(1024)
                 .limitQueuedResponsesPerConnection(50)
-                .listen(new InetSocketAddress(8084))
+                .listen(new InetSocketAddress(8086))
 //        .listen(new InetSocketAddress("127.0.0.1", 8082))
                 .name("Xio Test Server")
                 .taskTimeout(new Duration((double) 20000, TimeUnit.MILLISECONDS))
@@ -65,7 +67,7 @@ public class XioModuleTest {
                         ListenableFuture<Boolean> httpResponseFuture = service.submit(new Callable<Boolean>() {
                           public Boolean call() {
 
-                            respCtx.setContextData(respCtx.getConnectionId(), new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK));
+                            respCtx.setContextData(respCtx.getConnectionId(), new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK));
 
                             return true;
                           }

@@ -29,9 +29,12 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpMessage;
+import io.netty.handler.codec.http.HttpObject;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpRequestDecoder;
 import io.netty.handler.codec.http.HttpServerCodec;
+import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
 import io.netty.util.CharsetUtil;
@@ -75,15 +78,17 @@ public class XioServerTransportTest {
             return new XioProcessor() {
 
               @Override
-              public ListenableFuture<Boolean> process(ChannelHandlerContext ctx, Object _request, RequestContext respCtx) {
-
+              public ListenableFuture<Boolean> process(ChannelHandlerContext ctx, Object msg, RequestContext respCtx) {
                 ListeningExecutorService service = MoreExecutors.listeningDecorator(ctx.executor());
+
                 ListenableFuture<Boolean> httpResponseFuture = service.submit(new Callable<Boolean>() {
                   public Boolean call() {
+                    HttpMessage httpMessage = null;
                     HttpRequest request = null;
 
-                    if (_request instanceof HttpRequest) {
-                      request = (HttpRequest) _request;
+                    if (msg instanceof HttpMessage) {
+                      httpMessage = (HttpMessage) msg;
+                      request = (HttpRequest) httpMessage;
                     }
 
                     final StringBuilder buf = new StringBuilder();
@@ -119,6 +124,10 @@ public class XioServerTransportTest {
                       // Add keep alive header as per:
                       // - http://www.w3.org/Protocols/HTTP/1.1/draft-ietf-http-v11-spec-01.html#Connection
                       response.headers().set(CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
+                    }
+
+                    if (msg instanceof LastHttpContent) {
+                      buf.append("END OF CONTENT\r\n");
                     }
 
                     respCtx.setContextData(respCtx.getConnectionId(), response);
@@ -179,7 +188,7 @@ public class XioServerTransportTest {
         .limitConnectionsTo(200)
         .limitFrameSizeTo(1024)
         .limitQueuedResponsesPerConnection(50)
-        .listen(new InetSocketAddress(8082))
+        .listen(new InetSocketAddress(8087))
 //        .listen(new InetSocketAddress("127.0.0.1", 8082))
         .name("Xio Test Server")
         .taskTimeout(new Duration((double) 20000, TimeUnit.MILLISECONDS))
@@ -305,7 +314,7 @@ public class XioServerTransportTest {
     server.start();
 
     // For Integration Testing (LEAVE OUT!!!!)
-    Thread.sleep(20000000);
+//    Thread.sleep(20000000);
 
     // Arrange to stop the server at shutdown
     Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -437,7 +446,7 @@ public class XioServerTransportTest {
     server.start();
 
     // For Integration Testing (LEAVE OUT!!!!)
-    Thread.sleep(20000000);
+//    Thread.sleep(20000000);
 
     // Arrange to stop the server at shutdown
     Runtime.getRuntime().addShutdownHook(new Thread() {

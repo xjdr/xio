@@ -3,18 +3,19 @@ package com.xjeffrose.xio.server;
 import com.xjeffrose.xio.core.ConnectionContext;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.UUID;
 
 public interface RequestContext {
 
   ConnectionContext getConnectionContext();
 
-  void setContextData(String key, Object val);
+  void setContextData(UUID key, Object val);
 
-  Object getContextData(String key);
+  Object getContextData(UUID key);
 
-  void clearContextData(String key);
+  void clearContextData(UUID key);
 
-  Iterator<Map.Entry<String, Object>> contextDataIterator();
+  Iterator<Map.Entry<UUID, Object>> contextDataIterator();
 
-  String getConnectionId();
+  UUID getConnectionId();
 }

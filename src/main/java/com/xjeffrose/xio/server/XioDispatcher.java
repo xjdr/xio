@@ -9,10 +9,9 @@ import com.xjeffrose.xio.processor.XioProcessorFactory;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.DefaultHttpResponse;
-import io.netty.handler.codec.http.HttpMessage;
-import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
+import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.util.AttributeKey;
 import io.netty.util.Timeout;
 import io.netty.util.Timer;
@@ -58,8 +57,15 @@ public class XioDispatcher extends SimpleChannelInboundHandler<Object> {
 //    } else {
 //      ctx.fireChannelRead(o);
 //    }
+    if (o instanceof LastHttpContent) {
+      LastHttpContent lastHttpContent = (LastHttpContent) o;
+      if (lastHttpContent.toString().equals("EmptyLastHttpContent")) {
+        ctx.fireChannelRead(o);
+      }
+    } else {
+      processRequest(ctx, o);
 
-    processRequest(ctx, o);
+    }
   }
 
 
@@ -130,7 +136,7 @@ public class XioDispatcher extends SimpleChannelInboundHandler<Object> {
               // next request using this thread before this one is completed. If you need
               // the context throughout an asynchronous handler, you need to read and store
               // it before returning a future.
-              RequestContexts.clearCurrentContext();
+//              RequestContexts.clearCurrentContext();
             }
 
             Futures.addCallback(
