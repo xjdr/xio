@@ -1,4 +1,4 @@
-package com.xjeffrose.xio.client;
+package com.xjeffrose.xio.clientBak;
 
 
 import com.google.common.base.Strings;
@@ -9,9 +9,7 @@ import com.xjeffrose.xio.server.XioConfigBuilderBase;
 import com.xjeffrose.xio.core.XioNoOpSecurityFactory;
 import com.xjeffrose.xio.core.XioSecurityFactory;
 import com.xjeffrose.xio.core.XioTimer;
-import io.netty.channel.ChannelConfig;
 import io.netty.util.Timer;
-import java.lang.reflect.Proxy;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;
 

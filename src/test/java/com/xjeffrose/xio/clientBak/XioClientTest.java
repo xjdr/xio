@@ -1,7 +1,6 @@
-package com.xjeffrose.xio.client;
+package com.xjeffrose.xio.clientBak;
 
 import com.google.common.util.concurrent.ListenableFuture;
-import com.xjeffrose.xio.SSL.SSLEngineFactory;
 import com.xjeffrose.xio.core.XioSecurityFactory;
 import com.xjeffrose.xio.core.XioSecurityHandlers;
 import com.xjeffrose.xio.fixtures.SimpleTestServer;
@@ -11,23 +10,16 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandler;
-import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.ssl.SslContext;
-import io.netty.handler.ssl.SslHandler;
-import io.netty.handler.ssl.SslProvider;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import javax.net.ssl.SSLEngine;
 
 import javax.net.ssl.SSLException;
-import javax.net.ssl.TrustManagerFactory;
 import org.junit.Test;
-
-import static org.junit.Assert.*;
 
 public class XioClientTest {
 

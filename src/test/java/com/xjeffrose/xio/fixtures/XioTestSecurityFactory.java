@@ -1,6 +1,6 @@
 package com.xjeffrose.xio.fixtures;
 
-import com.xjeffrose.xio.client.XioClientConfig;
+import com.xjeffrose.xio.clientBak.XioClientConfig;
 import com.xjeffrose.xio.core.XioNoOpHandler;
 import com.xjeffrose.xio.core.XioSecurityFactory;
 import com.xjeffrose.xio.core.XioSecurityHandlers;
