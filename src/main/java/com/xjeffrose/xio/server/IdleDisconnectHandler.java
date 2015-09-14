@@ -13,8 +13,4 @@ public class IdleDisconnectHandler extends IdleStateHandler {
   protected void channelIdle(ChannelHandlerContext ctx, IdleStateEvent evt) throws Exception {
     ctx.channel().close();
   }
-
-//    public void channelIdle(ChannelHandlerContext ctx, IdleStateEvent e) throws Exception {
-//    ctx.getChannel().close();
-//  }
 }

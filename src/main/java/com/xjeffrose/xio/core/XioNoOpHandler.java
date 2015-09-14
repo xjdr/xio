@@ -9,6 +9,7 @@ public class XioNoOpHandler extends ChannelDuplexHandler {
   @Override
   public void channelActive(ChannelHandlerContext ctx) throws Exception {
     ctx.pipeline().remove(this);
+    ctx.fireChannelActive();
     super.channelActive(ctx);
   }
 }

@@ -4,7 +4,6 @@ import io.airlift.log.Logger;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.logging.LoggingHandler;
 
-
 public class XioExceptionLogger extends LoggingHandler {
   private static final Logger log = Logger.get(XioExceptionLogger.class);
 

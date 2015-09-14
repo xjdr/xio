@@ -6,7 +6,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-public class XioServerTransportTest {
+public class XioBootstrapTest {
 
   @Before
   public void setUp() throws Exception {
@@ -24,27 +24,17 @@ public class XioServerTransportTest {
   }
 
   @Test
-  public void testStart1() throws Exception {
-
-  }
-
-  @Test
   public void testStop() throws Exception {
 
   }
 
   @Test
-  public void testGetServerChannel() throws Exception {
+  public void testGetBoundPorts() throws Exception {
 
   }
 
   @Test
-  public void testGetPort() throws Exception {
-
-  }
-
-  @Test
-  public void testGetMetrics() throws Exception {
+  public void testGetXioMetrics() throws Exception {
 
   }
 }

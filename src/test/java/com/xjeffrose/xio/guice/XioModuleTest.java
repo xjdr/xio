@@ -1,40 +1,31 @@
 package com.xjeffrose.xio.guice;
 
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.ListeningExecutorService;
-import com.google.common.util.concurrent.MoreExecutors;
 import com.google.inject.Guice;
 import com.google.inject.Stage;
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
+import com.squareup.okhttp.Response;
 import com.xjeffrose.xio.core.XioCodecFactory;
 import com.xjeffrose.xio.core.XioNoOpSecurityFactory;
-import com.xjeffrose.xio.processor.XioProcessor;
-import com.xjeffrose.xio.processor.XioProcessorFactory;
-import com.xjeffrose.xio.server.RequestContext;
-import com.xjeffrose.xio.server.XioServerConfig;
+import com.xjeffrose.xio.fixtures.XioTestProcessorFactory;
+import com.xjeffrose.xio.server.XioBootstrap;
 import com.xjeffrose.xio.server.XioServerDef;
 import com.xjeffrose.xio.server.XioServerDefBuilder;
-import com.xjeffrose.xio.server.XioBootstrap;
 import io.airlift.units.Duration;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandler;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.DefaultHttpResponse;
-import io.netty.handler.codec.http.HttpRequest;
-import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpServerCodec;
-import io.netty.handler.codec.http.HttpVersion;
 import java.net.InetSocketAddress;
-import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class XioModuleTest {
 
   @Test
-  public void testBind() throws Exception {
+  public void testGuice() throws Exception {
 
     final XioBootstrap bootstrap = Guice.createInjector(
         Stage.PRODUCTION,
@@ -53,30 +44,7 @@ public class XioModuleTest {
                 .taskTimeout(new Duration((double) 20000, TimeUnit.MILLISECONDS))
                 .using(Executors.newCachedThreadPool())
                 .withSecurityFactory(new XioNoOpSecurityFactory())
-                .withProcessorFactory(new XioProcessorFactory() {
-                  @Override
-                  public XioProcessor getProcessor() {
-                    return new XioProcessor() {
-                      @Override
-                      public ListenableFuture<Boolean> process(ChannelHandlerContext ctx, Object _request, RequestContext respCtx) {
-                        if (_request instanceof HttpRequest) {
-                          HttpRequest req = (HttpRequest) _request;
-                        }
-
-                        ListeningExecutorService service = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(10));
-                        ListenableFuture<Boolean> httpResponseFuture = service.submit(new Callable<Boolean>() {
-                          public Boolean call() {
-
-                            respCtx.setContextData(respCtx.getConnectionId(), new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK));
-
-                            return true;
-                          }
-                        });
-                        return httpResponseFuture;
-                      }
-                    };
-                  }
-                })
+                .withProcessorFactory(new XioTestProcessorFactory())
                 .withCodecFactory(new XioCodecFactory() {
                   @Override
                   public ChannelHandler getCodec() {
@@ -92,6 +60,29 @@ public class XioModuleTest {
 
     // Start the server
     bootstrap.start();
+
+    // Use 3rd party client to test proper operation
+    Request request = new Request.Builder()
+        .url("http://127.0.0.1:8086/")
+        .build();
+
+    OkHttpClient client = new OkHttpClient();
+    Response response = client.newCall(request).execute();
+
+    String expectedResponse = "WELCOME TO THE WILD WILD WEB SERVER\r\n" +
+        "===================================\r\n" +
+        "VERSION: HTTP/1.1\r\n" +
+        "HOSTNAME: 127.0.0.1:8086\r\n" +
+        "REQUEST_URI: /\r\n" +
+        "\r\n" +
+        "HEADER: Host = 127.0.0.1:8086\r\n" +
+        "HEADER: Connection = Keep-Alive\r\n" +
+        "HEADER: Accept-Encoding = gzip\r\n" +
+        "HEADER: User-Agent = okhttp/2.4.0\r\n\r\n";
+
+    assertTrue(response.isSuccessful());
+    assertEquals(200, response.code());
+    assertEquals(expectedResponse, response.body().string());
 
     //For testing only (LEAVE OUT)
 //    Thread.sleep(200000000);

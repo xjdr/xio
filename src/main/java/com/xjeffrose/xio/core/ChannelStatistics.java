@@ -24,12 +24,14 @@ public class ChannelStatistics extends ChannelDuplexHandler implements XioMetric
   public void channelActive(ChannelHandlerContext ctx) throws Exception {
     channelCount.incrementAndGet();
     allChannels.add(ctx.channel());
+    ctx.fireChannelActive();
   }
 
   @Override
   public void channelInactive(ChannelHandlerContext ctx) throws Exception {
     channelCount.decrementAndGet();
     allChannels.remove(ctx.channel());
+    ctx.fireChannelInactive();
   }
   //TODO: Properly implement
 //    public void handleUpstream(ChannelHandlerContext ctx, ChannelEvent e)

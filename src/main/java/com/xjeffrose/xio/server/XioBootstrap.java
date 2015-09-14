@@ -12,7 +12,6 @@ import javax.annotation.PreDestroy;
 
 
 public class XioBootstrap {
-  private final ChannelGroup allChannels;
   private final XioServerConfig xioServerConfig;
   private final Map<XioServerDef, XioServerTransport> transports;
   private NioEventLoopGroup bossGroup;
@@ -23,7 +22,6 @@ public class XioBootstrap {
       Set<XioServerDef> xioServerDefs,
       XioServerConfig xioServerConfig,
       ChannelGroup allChannels) {
-    this.allChannels = allChannels;
     ImmutableMap.Builder<XioServerDef, XioServerTransport> builder = new ImmutableMap.Builder<>();
     this.xioServerConfig = xioServerConfig;
     for (XioServerDef XioServerDef : xioServerDefs) {
@@ -38,7 +36,6 @@ public class XioBootstrap {
   public void start() {
     bossGroup = new NioEventLoopGroup(xioServerConfig.getBossThreadCount());
     workerGroup = new NioEventLoopGroup(xioServerConfig.getWorkerThreadCount());
-//    serverChannelFactory = new NioServerSocketChannelFactory(bossExecutor, workerExecutor);
     for (XioServerTransport transport : transports.values()) {
       transport.start(bossGroup, workerGroup);
     }
@@ -56,8 +53,6 @@ public class XioBootstrap {
 
     bossGroup.shutdownGracefully();
     workerGroup.shutdownGracefully();
-
-//    ShutdownUtil.shutdownChannelFactory(serverChannelFactory, bossExecutor, workerExecutor, allChannels);
   }
 
   public Map<XioServerDef, Integer> getBoundPorts() {

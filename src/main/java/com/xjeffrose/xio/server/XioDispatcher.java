@@ -50,13 +50,6 @@ public class XioDispatcher extends SimpleChannelInboundHandler<Object> {
 
   @Override
   protected void channelRead0(ChannelHandlerContext ctx, Object o) throws Exception {
-//    if (o instanceof HttpMessage) {
-//      HttpMessage message = (HttpMessage) o;
-//
-//      processRequest(ctx, message);
-//    } else {
-//      ctx.fireChannelRead(o);
-//    }
     if (o instanceof LastHttpContent) {
       LastHttpContent lastHttpContent = (LastHttpContent) o;
       if (lastHttpContent.toString().equals("EmptyLastHttpContent")) {
@@ -64,7 +57,6 @@ public class XioDispatcher extends SimpleChannelInboundHandler<Object> {
       }
     } else {
       processRequest(ctx, o);
-
     }
   }
 
@@ -136,7 +128,7 @@ public class XioDispatcher extends SimpleChannelInboundHandler<Object> {
               // next request using this thread before this one is completed. If you need
               // the context throughout an asynchronous handler, you need to read and store
               // it before returning a future.
-//              RequestContexts.clearCurrentContext();
+              RequestContexts.clearCurrentContext();
             }
 
             Futures.addCallback(

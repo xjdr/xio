@@ -48,7 +48,6 @@ public class XioServerTransport {
   private ServerBootstrap bootstrap;
   private ExecutorService bossExecutor;
   private ExecutorService ioWorkerExecutor;
-  //  private ServerChannelFactory channelFactory;
   private Channel serverChannel;
   private NioEventLoopGroup bossGroup;
   private NioEventLoopGroup workerGroup;
@@ -106,9 +105,6 @@ public class XioServerTransport {
     int bossThreadCount = xioServerConfig.getBossThreadCount();
     ioWorkerExecutor = xioServerConfig.getWorkerExecutor();
     int ioWorkerThreadCount = xioServerConfig.getWorkerThreadCount();
-
-//    channelFactory = new NioServerSocketChannelFactory(new NioServerBossPool(bossExecutor, bossThreadCount, ThreadNameDeterminer.CURRENT),
-//        new NioWorkerPool(ioWorkerExecutor, ioWorkerThreadCount, ThreadNameDeterminer.CURRENT));
 
     bossGroup = new NioEventLoopGroup(bossThreadCount);
     workerGroup = new NioEventLoopGroup(ioWorkerThreadCount);
@@ -198,11 +194,6 @@ public class XioServerTransport {
     }
   }
 
-//  @Override
-//  public void releaseExternalResources() {
-//    bootstrap.releaseExternalResources();
-//  }
-
   public XioMetrics getMetrics() {
     return channelStatistics;
   }
@@ -226,6 +217,7 @@ public class XioServerTransport {
           log.info("Accepted connection above limit (%s). Dropping.", maxConnections);
         }
       }
+      ctx.fireChannelActive();
       super.channelActive(ctx);
     }
 
@@ -236,6 +228,7 @@ public class XioServerTransport {
           log.error("BUG in ConnectionLimiter");
         }
       }
+      ctx.fireChannelInactive();
       super.channelInactive(ctx);
     }
 

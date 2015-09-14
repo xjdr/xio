@@ -22,11 +22,11 @@ import static java.util.concurrent.Executors.newCachedThreadPool;
  * Hooks for configuring various parts of Netty.
  */
 public class XioClientConfigBuilder extends XioConfigBuilderBase<XioClientConfigBuilder> {
-  private final ChannelConfig socketChannelConfig = (ChannelConfig) Proxy.newProxyInstance(
-      getClass().getClassLoader(),
-      new Class<?>[]{ChannelConfig.class},
-      new XioConfigBuilderBase.Magic("")
-  );
+//  private final ChannelConfig socketChannelConfig = (ChannelConfig) Proxy.newProxyInstance(
+//      getClass().getClassLoader(),
+//      new Class<?>[]{ChannelConfig.class},
+//      new XioConfigBuilderBase.Magic("")
+//  );
 
   private XioSecurityFactory securityFactory = null;
   private HostAndPort defaultSocksProxyAddress = null;
@@ -36,9 +36,9 @@ public class XioClientConfigBuilder extends XioConfigBuilderBase<XioClientConfig
 //    getSocketChannelConfig().setOption(ChannelOption.TCP_NODELAY, true);
   }
 
-  public ChannelConfig getSocketChannelConfig() {
-    return socketChannelConfig;
-  }
+//  public ChannelConfig getSocketChannelConfig() {
+//    return socketChannelConfig;
+//  }
 
   public XioClientConfigBuilder setDefaultSocksProxyAddress(HostAndPort defaultSocksProxyAddress) {
     this.defaultSocksProxyAddress = defaultSocksProxyAddress;
