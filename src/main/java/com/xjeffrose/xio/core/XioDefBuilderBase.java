@@ -1,10 +1,8 @@
-package com.xjeffrose.xio.server;
+package com.xjeffrose.xio.core;
 
 
-import com.xjeffrose.xio.core.XioCodecFactory;
-import com.xjeffrose.xio.core.XioNoOpSecurityFactory;
-import com.xjeffrose.xio.core.XioSecurityFactory;
 import com.xjeffrose.xio.processor.XioProcessorFactory;
+import com.xjeffrose.xio.server.XioServerDef;
 import io.airlift.units.Duration;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executor;
@@ -13,7 +11,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.google.common.base.Preconditions.checkState;
 
-public abstract class XioServerDefBuilderBase<T extends XioServerDefBuilderBase<T>> {
+public abstract class XioDefBuilderBase<T extends XioDefBuilderBase<T>> {
   private static final AtomicInteger ID = new AtomicInteger(1);
   /**
    * The default maximum allowable size for a single incoming Http request or outgoing Http
@@ -36,7 +34,7 @@ public abstract class XioServerDefBuilderBase<T extends XioServerDefBuilderBase<
   private InetSocketAddress hostAddress;
   private XioCodecFactory codecFactory;
 
-  public XioServerDefBuilderBase() {
+  public XioDefBuilderBase() {
     this.serverPort = 8080;
     this.hostAddress = new InetSocketAddress("0.0.0.0", serverPort);
     this.maxFrameSize = MAX_FRAME_SIZE;

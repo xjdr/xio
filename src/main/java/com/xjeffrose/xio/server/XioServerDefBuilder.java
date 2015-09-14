@@ -1,4 +1,6 @@
 package com.xjeffrose.xio.server;
 
-public class XioServerDefBuilder extends XioServerDefBuilderBase<XioServerDefBuilder> {
+import com.xjeffrose.xio.core.XioDefBuilderBase;
+
+public class XioServerDefBuilder extends XioDefBuilderBase<XioServerDefBuilder> {
 }
