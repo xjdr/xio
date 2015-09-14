@@ -10,7 +10,7 @@
 
     <groupId>com.xjeffrose</groupId>
     <artifactId>xio</artifactId>
-    <version>0.7.2-SNAPSHOT</version>
+    <version>0.7.1-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>xio</name>
     <description>High Performance HTTP Server based on Netty and Xio</description>
@@ -172,17 +172,6 @@
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                  <artifactId>maven-release-plugin</artifactId>
-                    <version>2.5</version>
-                      <configuration>
-                            <autoVersionSubmodules>true</autoVersionSubmodules>
-                                <useReleaseProfile>false</useReleaseProfile>
-                                    <releaseProfiles>release</releaseProfiles>
-                                        <goals>deploy</goals>
-                                          </configuration>
-                                        </plugin>
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
