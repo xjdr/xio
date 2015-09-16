@@ -1,4 +1,4 @@
-package com.xjeffrose.xio.clientBak;
+package com.xjeffrose.xio.client;
 
 import com.google.common.net.HostAndPort;
 import io.netty.bootstrap.Bootstrap;

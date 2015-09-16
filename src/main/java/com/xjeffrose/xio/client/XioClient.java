@@ -1,91 +1,166 @@
 package com.xjeffrose.xio.client;
 
-import com.xjeffrose.xio.core.ChannelStatistics;
-import com.xjeffrose.xio.core.ConnectionContextHandler;
-import com.xjeffrose.xio.core.XioExceptionLogger;
+
+import com.google.common.net.HostAndPort;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.xjeffrose.xio.core.ShutdownUtil;
+import com.xjeffrose.xio.core.XioException;
+import com.xjeffrose.xio.core.XioNoOpHandler;
+import com.xjeffrose.xio.core.XioSecurityFactory;
 import com.xjeffrose.xio.core.XioSecurityHandlers;
+import com.xjeffrose.xio.server.XioServerConfig;
+import com.xjeffrose.xio.server.XioServerDef;
+import io.airlift.units.Duration;
 import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.ByteBuf;
 import io.netty.buffer.PooledByteBufAllocator;
+import io.netty.buffer.Unpooled;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
-import io.netty.channel.ChannelPipeline;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.group.ChannelGroup;
+import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpVersion;
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
+import io.netty.util.Timer;
+import java.io.Closeable;
+import java.net.InetSocketAddress;
+import java.net.URI;
+import java.nio.charset.Charset;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+import javax.annotation.Nullable;
+import javax.net.ssl.SSLException;
 
-public class XioClient {
-  private static final int NO_WRITER_IDLE_TIMEOUT = 0;
-  private static final int NO_ALL_IDLE_TIMEOUT = 0;
+import static com.google.common.base.Preconditions.checkNotNull;
 
-  private final ChannelHandlerContext ctx;
-  private final XioClientDef def;
-  private ChannelInitializer<SocketChannel> pipelineFactory;
-  private TimeUnit connectTimeout = null;
+public class XioClient implements Closeable {
+  public static final Duration DEFAULT_CONNECT_TIMEOUT = new Duration(2, TimeUnit.SECONDS);
+  public static final Duration DEFAULT_RECEIVE_TIMEOUT = new Duration(2, TimeUnit.SECONDS);
+  public static final Duration DEFAULT_READ_TIMEOUT = new Duration(2, TimeUnit.SECONDS);
+  private static final Duration DEFAULT_SEND_TIMEOUT = new Duration(2, TimeUnit.SECONDS);
 
-  public XioClient(XioClientDef def) {
+  private static final int DEFAULT_MAX_FRAME_SIZE = 16777216;
 
-    this(null, def);
+  private final XioClientConfig xioClientConfig;
+  private final ExecutorService bossExecutor;
+  private final ExecutorService workerExecutor;
+  private final EventLoopGroup group;
+  private final HostAndPort defaultSocksProxyAddress;
+  private final ChannelGroup allChannels;
+  private final Timer timer;
+//  private final EventLoopGroup bossGroup;
+//  private final EventLoopGroup workerGroup;
+
+  /**
+   * Creates a new XioClient with defaults: cachedThreadPool for bossExecutor and workerExecutor
+   */
+  public XioClient() {
+    this(XioClientConfig.newBuilder().build());
   }
 
-  public XioClient(ChannelHandlerContext ctx, XioClientDef def) {
+  public XioClient(XioClientConfig xioClientConfig) {
+    this.xioClientConfig = xioClientConfig;
 
-    this.ctx = ctx;
-    this.def = def;
+    this.timer = xioClientConfig.getTimer();
+    this.bossExecutor = xioClientConfig.getBossExecutor();
+    this.workerExecutor = xioClientConfig.getWorkerExecutor();
+    this.defaultSocksProxyAddress = xioClientConfig.getDefaultSocksProxyAddress();
 
-//    this.channelStatistics = new ChannelStatistics(allChannels);
-
-    //TODO: This is an ugly mess, clean this up
-    this.pipelineFactory = new ChannelInitializer<SocketChannel>() {
-      @Override
-      protected void initChannel(SocketChannel channel) throws Exception {
-        ChannelPipeline cp = channel.pipeline();
-        XioSecurityHandlers securityHandlers = def.getSecurityFactory().getSecurityHandlers(def, xioServerConfig);
-        cp.addLast("connectionContext", new ConnectionContextHandler());
-        cp.addLast("connectionLimiter", connectionLimiter);
-        cp.addLast(ChannelStatistics.NAME, channelStatistics);
-        cp.addLast("encryptionHandler", securityHandlers.getEncryptionHandler());
-        cp.addLast("codec", def.getCodecFactory().getCodec());
-//        if (def.getClientIdleTimeout() != null) {
-//          cp.addLast("idleTimeoutHandler", new IdleStateHandler(
-//              def.getClientIdleTimeout().toMillis(),
-//              NO_WRITER_IDLE_TIMEOUT,
-//              NO_ALL_IDLE_TIMEOUT,
-//              TimeUnit.MILLISECONDS));
-//          cp.addLast("idleDisconnectHandler", new IdleDisconnectHandler(
-//              (int) def.getClientIdleTimeout().toMillis(),
-//              NO_WRITER_IDLE_TIMEOUT,
-//              NO_ALL_IDLE_TIMEOUT));
-//        }
-
-        cp.addLast("authHandler", securityHandlers.getAuthenticationHandler());
-//        cp.addLast("dispatcher", new XioDispatcher(def, xioServerConfig));
-        cp.addLast("exceptionLogger", new XioExceptionLogger());
-      }
-    };
+    int bossThreadCount = xioClientConfig.getBossThreadCount();
+    int workerThreadCount = xioClientConfig.getWorkerThreadCount();
+//    this.bossGroup = new NioEventLoopGroup(bossThreadCount);
+//    this.workerGroup = new NioEventLoopGroup(workerThreadCount);
+    this.group = new NioEventLoopGroup(1);
+    this.allChannels = new DefaultChannelGroup(this.group.next());
   }
 
-  public void execute() {
-
+  private static InetSocketAddress toInetAddress(HostAndPort hostAndPort) {
+    return (hostAndPort == null) ? null : new InetSocketAddress(hostAndPort.getHostText(), hostAndPort.getPort());
   }
 
-  private void connect() {
+  @SuppressWarnings("unchecked")
+  public <T extends XioClientChannel> ListenableFuture<T> connectAsync(XioClientConnector clientChannelConnector) {
+
+    return connectAsync(//null,
+        clientChannelConnector,
+        DEFAULT_CONNECT_TIMEOUT,
+        DEFAULT_RECEIVE_TIMEOUT,
+        DEFAULT_READ_TIMEOUT,
+        DEFAULT_SEND_TIMEOUT,
+        DEFAULT_MAX_FRAME_SIZE,
+        defaultSocksProxyAddress);
+  }
+
+  public <T extends XioClientChannel> ListenableFuture<T> connectAsync(ChannelHandlerContext ctx, XioClientConnector clientChannelConnector) {
+
+    return connectAsync(//ctx,
+        clientChannelConnector,
+        DEFAULT_CONNECT_TIMEOUT,
+        DEFAULT_RECEIVE_TIMEOUT,
+        DEFAULT_READ_TIMEOUT,
+        DEFAULT_SEND_TIMEOUT,
+        DEFAULT_MAX_FRAME_SIZE,
+        defaultSocksProxyAddress);
+  }
+
+  public <T extends XioClientChannel> ListenableFuture<T> connectAsync(
+      //ChannelHandlerContext ctx,
+      XioClientConnector<T> clientChannelConnector,
+      @Nullable Duration connectTimeout,
+      @Nullable Duration receiveTimeout,
+      @Nullable Duration readTimeout,
+      @Nullable Duration sendTimeout,
+      int maxFrameSize) {
+
+    return connectAsync(//ctx,
+        clientChannelConnector,
+        connectTimeout,
+        receiveTimeout,
+        readTimeout,
+        sendTimeout,
+        maxFrameSize,
+        defaultSocksProxyAddress);
+  }
+
+  public <T extends XioClientChannel> ListenableFuture<T> connectAsync(
+      //ChannelHandlerContext ctx,
+      XioClientConnector<T> clientChannelConnector,
+      @Nullable Duration connectTimeout,
+      @Nullable Duration receiveTimeout,
+      @Nullable Duration readTimeout,
+      @Nullable Duration sendTimeout,
+      int maxFrameSize,
+      @Nullable HostAndPort socksProxyAddress) {
+    checkNotNull(clientChannelConnector, "clientChannelConnector is null");
+
     Bootstrap bootstrap = new Bootstrap();
 
-    if (ctx != null) {
-      bootstrap
-          .group(ctx.channel().eventLoop());
-    } else {
-      bootstrap
-          .group(new NioEventLoopGroup());
-    }
+//    if (ctx != null) {
+//      bootstrap.group(ctx.channel().eventLoop());
+//    } else {
+    bootstrap.group(group);
+//    }
 
     bootstrap
         .channel(NioSocketChannel.class)
-        .handler(pipelineFactory);
+        .handler(clientChannelConnector.newChannelPipelineFactory(maxFrameSize, xioClientConfig));
+
+    xioClientConfig.getBootstrapOptions().entrySet().forEach(xs -> {
+      bootstrap.option(xs.getKey(), xs.getValue());
+    });
 
     if (connectTimeout != null) {
       bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, (int) connectTimeout.toMillis());
@@ -98,17 +173,128 @@ public class XioClient {
         .option(ChannelOption.WRITE_BUFFER_LOW_WATER_MARK, 8 * 1024)
         .option(ChannelOption.TCP_NODELAY, true);
 
-    ChannelFuture nettyChannelFuture = bootstrap.connect(host, port);
-
+    ChannelFuture nettyChannelFuture = clientChannelConnector.connect(bootstrap);
     nettyChannelFuture.addListener(new ChannelFutureListener() {
       @Override
-      public void operationComplete(ChannelFuture future) {
-        if (future.isSuccess()) {
-          // do something
-        } else {
-          // do something
+      public void operationComplete(ChannelFuture future) throws Exception {
+        Channel channel = future.channel();
+        if (channel != null && channel.isOpen()) {
+          allChannels.add(channel);
         }
       }
     });
+    return new XioFuture<>(clientChannelConnector,
+        receiveTimeout,
+        readTimeout,
+        sendTimeout,
+        nettyChannelFuture,
+        xioClientConfig);
+  }
+
+  public static DefaultFullHttpResponse call(URI uri) throws Exception{
+    return call(null, uri, null);
+  }
+
+  public static DefaultFullHttpResponse call(URI uri, ByteBuf req) throws Exception {
+    return call(null, uri, req);
+  }
+
+  public static DefaultFullHttpResponse call(@Nullable XioClientConfig config, URI uri) throws Exception {
+    return call(config, uri, null);
+  }
+
+  private static void onError(XioException e) throws XioException {
+    throw e;
+  }
+
+  public static DefaultFullHttpResponse call(@Nullable XioClientConfig config, URI uri, @Nullable ByteBuf req) throws Exception {
+    final Lock lock = new ReentrantLock();
+    final Condition waitForFinish = lock.newCondition();
+    final XioClient xioClient;
+    if (config != null) {
+      final XioClientConfig xioClientConfig = config;
+      xioClient = new XioClient(xioClientConfig);
+    } else {
+      xioClient = new XioClient();
+    }
+
+    ListenableFuture<XioClientChannel> responseFuture = null;
+
+    responseFuture = xioClient.connectAsync(new HttpClientConnector(uri));
+
+    XioClientChannel xioClientChannel = null;
+
+    if (!responseFuture.isCancelled()) {
+      xioClientChannel = responseFuture.get((long) 2000, TimeUnit.MILLISECONDS);
+    }
+
+    HttpClientChannel httpClientChannel = (HttpClientChannel) xioClientChannel;
+
+    Listener listener = new Listener() {
+      ByteBuf response;
+
+      @Override
+      public void onRequestSent() {
+//                        System.out.println("Request Sent");
+      }
+
+      @Override
+      public void onResponseReceived(ByteBuf message) {
+        response = message;
+        lock.lock();
+        waitForFinish.signalAll();
+        lock.unlock();
+      }
+
+      @Override
+      public void onChannelError(XioException requestException) {
+        xioClient.close();
+      }
+
+      @Override
+      public ByteBuf getResponse() {
+        return response;
+      }
+
+    };
+
+    httpClientChannel.sendAsynchronousRequest(req, false, listener);
+
+    lock.lock();
+    waitForFinish.await();
+    lock.unlock();
+
+
+    // Lets make a HTTP parser cause apparently that's a good idea...
+    ByteBuf response = listener.getResponse();
+    String[] headerBody = response.toString(Charset.defaultCharset()).split("\r\n\r\n");
+    String[] headers = headerBody[0].split("\r\n");
+    String[] firstLine = headers[0].split("\\s");
+
+    // Lets make a HTTP Response object now
+    DefaultFullHttpResponse httpResponse = new DefaultFullHttpResponse(
+        HttpVersion.valueOf(firstLine[0]),
+        new HttpResponseStatus(Integer.parseInt(firstLine[1]), firstLine[2]),
+        httpClientChannel.getCtx().alloc().buffer().writeBytes(headerBody[1].getBytes()));
+
+    for (int i = 1; i < headers.length; i++) {
+      String[] xs = headers[i].split(":");
+      httpResponse.headers().add(xs[0].trim(), xs[1].trim());
+    }
+
+    return httpResponse;
+  }
+
+  @Override
+  public void close() {
+    // Stop the timer thread first, so no timeouts can fire during the rest of the
+    // shutdown process
+    timer.stop();
+
+    ShutdownUtil.shutdownChannelFactory(
+        group,
+        null,
+        null,
+        allChannels);
   }
 }

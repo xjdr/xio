@@ -1,19 +1,27 @@
-package com.xjeffrose.xio.clientBak;
+package com.xjeffrose.xio.client;
 
 
 import com.google.common.net.HostAndPort;
+import com.xjeffrose.xio.core.ChannelStatistics;
+import com.xjeffrose.xio.core.ConnectionContextHandler;
 import com.xjeffrose.xio.core.XioExceptionLogger;
 import com.xjeffrose.xio.core.XioSecurityHandlers;
+import com.xjeffrose.xio.server.IdleDisconnectHandler;
+import io.airlift.units.Duration;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
+import io.netty.channel.group.DefaultChannelGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.http.HttpClientCodec;
 import io.netty.handler.codec.http.HttpContentDecompressor;
 import io.netty.handler.codec.http.HttpObjectAggregator;
+import io.netty.handler.timeout.IdleStateHandler;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.concurrent.TimeUnit;
 
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -21,7 +29,11 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
 public class HttpClientConnector extends AbstractClientConnector<HttpClientChannel> {
+  private static final int NO_WRITER_IDLE_TIMEOUT = 2;
+  private static final int NO_ALL_IDLE_TIMEOUT = 2;
+
   private final URI endpointUri;
+  private final ChannelStatistics channelStatistics = new ChannelStatistics(new DefaultChannelGroup(new NioEventLoopGroup().next()));
 
   public HttpClientConnector(String hostNameAndPort, String servicePath)
       throws URISyntaxException {
@@ -83,14 +95,29 @@ public class HttpClientConnector extends AbstractClientConnector<HttpClientChann
       @Override
       protected void initChannel(SocketChannel channel) throws Exception {
         ChannelPipeline cp = channel.pipeline();
+
         TimeoutHandler.addToPipeline(cp);
-        XioSecurityHandlers securityHandlers = clientConfig.getSecurityFactory().getSecurityHandlers(clientConfig);
+        XioSecurityHandlers securityHandlers = clientConfig.getSecurityFactory().getSecurityHandlers();
         cp.addLast("encryptionHandler", securityHandlers.getEncryptionHandler());
+        cp.addLast("connectionContext", new ConnectionContextHandler());
+        cp.addLast(ChannelStatistics.NAME, channelStatistics);
         cp.addLast("httpClientCodec", new HttpClientCodec());
         cp.addLast("chunkAggregator", new HttpObjectAggregator(maxFrameSize));
         cp.addLast("defaltor", new HttpContentDecompressor());
-        cp.addLast("exceptionLogger", new XioExceptionLogger());
+//        if (def.getIdleTimeout() != null) {
+          cp.addLast("idleTimeoutHandler", new IdleStateHandler(
+             2000,
+              NO_WRITER_IDLE_TIMEOUT,
+              NO_ALL_IDLE_TIMEOUT,
+              TimeUnit.MILLISECONDS));
+          cp.addLast("idleDisconnectHandler", new IdleDisconnectHandler(
+              2000,
+              NO_WRITER_IDLE_TIMEOUT,
+              NO_ALL_IDLE_TIMEOUT));
+//        }
 
+        cp.addLast("authHandler", securityHandlers.getAuthenticationHandler());
+        cp.addLast("exceptionLogger", new XioExceptionLogger());
       }
     };
   }

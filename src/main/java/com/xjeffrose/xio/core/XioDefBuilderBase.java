@@ -21,7 +21,7 @@ public abstract class XioDefBuilderBase<T extends XioDefBuilderBase<T>> {
    * conscious decision (something you must manually configure).
    */
   private static final int MAX_FRAME_SIZE = 64 * 1024 * 1024;
-  private int serverPort;
+  private int port;
   private int maxFrameSize;
   private int maxConnections;
   private int queuedResponseLimit;
@@ -35,8 +35,8 @@ public abstract class XioDefBuilderBase<T extends XioDefBuilderBase<T>> {
   private XioCodecFactory codecFactory;
 
   public XioDefBuilderBase() {
-    this.serverPort = 8080;
-    this.hostAddress = new InetSocketAddress("0.0.0.0", serverPort);
+    this.port = 8080;
+    this.hostAddress = new InetSocketAddress("0.0.0.0", port);
     this.maxFrameSize = MAX_FRAME_SIZE;
     this.maxConnections = 0;
     this.queuedResponseLimit = 16;
@@ -58,12 +58,12 @@ public abstract class XioDefBuilderBase<T extends XioDefBuilderBase<T>> {
   }
 
   public T listen(int serverPort) {
-    this.serverPort = serverPort;
+    this.port = serverPort;
     return (T) this;
   }
 
   public T listen(InetSocketAddress addr) {
-    this.serverPort = addr.getPort();
+    this.port = addr.getPort();
     this.hostAddress = addr;
     return (T) this;
   }
@@ -121,7 +121,7 @@ public abstract class XioDefBuilderBase<T extends XioDefBuilderBase<T>> {
 
     return new XioServerDef(
         name,
-        serverPort,
+        port,
         hostAddress,
         maxFrameSize,
         queuedResponseLimit,

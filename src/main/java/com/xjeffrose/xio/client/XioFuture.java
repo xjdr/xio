@@ -1,6 +1,7 @@
-package com.xjeffrose.xio.clientBak;
+package com.xjeffrose.xio.client;
 
 import com.google.common.util.concurrent.AbstractFuture;
+import com.xjeffrose.xio.core.XioTransportException;
 import io.airlift.units.Duration;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -25,7 +26,7 @@ class XioFuture<T extends XioClientChannel> extends AbstractFuture<T> {
             channel.setReceiveTimeout(receiveTimeout);
             channel.setReadTimeout(readTimeout);
             channel.setSendTimeout(sendTimeout);
-            XioFuture.this.set(channel);
+            set(channel);
 
           } else if (future.isCancelled()) {
             if (!cancel(true)) {

@@ -1,4 +1,4 @@
-package com.xjeffrose.xio.clientBak;
+package com.xjeffrose.xio.core;
 
 public class XioTransportException extends XioException {
 

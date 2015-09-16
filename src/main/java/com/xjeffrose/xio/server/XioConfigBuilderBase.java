@@ -12,7 +12,7 @@ import java.util.concurrent.ExecutorService;
 
 public abstract class XioConfigBuilderBase<T extends XioConfigBuilderBase<T>> {
   // These constants come directly from Netty but are private in Netty.
-  public static final int DEFAULT_BOSS_THREAD_COUNT = 1;
+  public static final int DEFAULT_BOSS_THREAD_COUNT = 4;
   public static final int DEFAULT_WORKER_THREAD_COUNT = Runtime.getRuntime().availableProcessors() * 2;
 
   private final Map<ChannelOption<Object>, Object> options = new HashMap<>();

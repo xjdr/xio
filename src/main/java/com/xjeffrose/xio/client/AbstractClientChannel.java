@@ -1,6 +1,8 @@
-package com.xjeffrose.xio.clientBak;
+package com.xjeffrose.xio.client;
 
 
+import com.xjeffrose.xio.core.XioException;
+import com.xjeffrose.xio.core.XioTransportException;
 import io.airlift.log.Logger;
 import io.airlift.units.Duration;
 import io.netty.buffer.ByteBuf;
@@ -68,7 +70,7 @@ public abstract class AbstractClientChannel extends SimpleChannelInboundHandler<
     }
   }
 
-  protected ByteBuf extractResponse(Object message) throws XioTransportException {
+  protected ByteBuf extractResponse(Object message) throws XioTransportException, XioException {
     if (message == null) {
       throw new XioTransportException("Response was null");
     }
@@ -289,12 +291,14 @@ public abstract class AbstractClientChannel extends SimpleChannelInboundHandler<
       ctx.close();
       channel.close();
     }
+
   }
 
   protected XioException wrapException(Throwable t) {
     if (t instanceof XioException) {
       return (XioException) t;
     } else {
+      getCtx().close();
       return new XioTransportException(t);
     }
   }

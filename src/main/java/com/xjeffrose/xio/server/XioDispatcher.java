@@ -6,6 +6,8 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.xjeffrose.xio.core.ConnectionContext;
 import com.xjeffrose.xio.core.ConnectionContexts;
 import com.xjeffrose.xio.processor.XioProcessorFactory;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.DefaultHttpResponse;
@@ -46,6 +48,11 @@ public class XioDispatcher extends SimpleChannelInboundHandler<Object> {
     this.taskTimeoutMillis = (def.getTaskTimeout() == null ? 0 : def.getTaskTimeout().toMillis());
     this.taskTimeoutTimer = (def.getTaskTimeout() == null ? null : config.getTimer());
     this.requestStart = System.currentTimeMillis();
+  }
+
+  @Override
+  public void channelReadComplete(ChannelHandlerContext ctx) {
+    ctx.flush();
   }
 
   @Override
@@ -192,7 +199,8 @@ public class XioDispatcher extends SimpleChannelInboundHandler<Object> {
       writeResponseInOrder(ctx, response, responseSequenceId);
     } else {
       // No ordering required, just write the response immediately
-      ctx.writeAndFlush(response);
+      ctx.write(response).addListener(ChannelFutureListener.CLOSE);
+      channelReadComplete(ctx);
       lastResponseWrittenId.incrementAndGet();
     }
   }
@@ -213,7 +221,9 @@ public class XioDispatcher extends SimpleChannelInboundHandler<Object> {
         // This response was next in line, write this response now, and see if
         // there are others next in line that should be sent now as well.
         do {
-          ctx.writeAndFlush(response);
+          ctx.write(response).addListener(ChannelFutureListener.CLOSE);
+          ctx.close();
+//          channelReadComplete(ctx);
           lastResponseWrittenId.incrementAndGet();
           ++currentResponseId;
           response = responseMap.remove(currentResponseId);
