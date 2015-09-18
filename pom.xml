@@ -10,8 +10,8 @@
 
     <groupId>com.xjeffrose</groupId>
     <artifactId>xio</artifactId>
-    <version>0.7.7</version>
-    <packaging>jar</packaging>
+    <version>0.7.8-SNAPSHOT</version>
+    <packaging>pom</packaging>
     <name>xio</name>
     <description>High Performance HTTP Server based on Netty and Xio</description>
     <url>https://github.com/xjdr/xio.git</url>
@@ -29,7 +29,7 @@
         <url>https://github.com/xjdr/xio/</url>
         <connection>scm:git:https://github.com/xjdr/xio.git</connection>
         <developerConnection>scm:git:git@github.com:xjdr/xio.git</developerConnection>
-        <tag>xio-0.7.7</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <issueManagement>
@@ -236,8 +236,6 @@
               <version>2.5</version>
               <configuration>
                 <autoVersionSubmodules>true</autoVersionSubmodules>
-                <useReleaseProfile>false</useReleaseProfile>
-                <releaseProfiles>release</releaseProfiles>
                 <goals>deploy</goals>
               </configuration>
             </plugin>
