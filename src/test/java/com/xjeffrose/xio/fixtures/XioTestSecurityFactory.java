@@ -8,6 +8,8 @@ import com.xjeffrose.xio.server.XioServerDef;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelHandler;
 import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
 import java.security.cert.CertificateException;
 import javax.net.ssl.SSLException;
@@ -25,17 +27,13 @@ public class XioTestSecurityFactory implements XioSecurityFactory {
       public ChannelHandler getEncryptionHandler() {
         try {
           SelfSignedCertificate ssc = new SelfSignedCertificate();
-          SslContext sslCtx = SslContext.newServerContext(SslContext.defaultServerProvider(), ssc.certificate(), ssc.privateKey());
-
-//                SSLEngine engine = new SSLEngineFactory("src/test/resources/privateKey.pem", "src/test/resources/cert.pem").getEngine();
-//                engine.beginHandshake();
+          SslContext sslCtx =  SslContextBuilder.forServer(ssc.certificate(), ssc.privateKey()).build();
 
           return sslCtx.newHandler(new PooledByteBufAllocator());
 
         } catch (SSLException | CertificateException e) {
           e.printStackTrace();
         }
-//                return new SslHandler(engine);
         return null;
       }
     };
@@ -53,7 +51,8 @@ public class XioTestSecurityFactory implements XioSecurityFactory {
       public ChannelHandler getEncryptionHandler() {
         try {
           SelfSignedCertificate ssc = new SelfSignedCertificate();
-          SslContext sslCtx = SslContext.newServerContext(SslContext.defaultServerProvider(), ssc.certificate(), ssc.privateKey());
+          SslContext sslCtx = SslContextBuilder.forClient()
+              .trustManager(InsecureTrustManagerFactory.INSTANCE).build();
 
 //                SSLEngine engine = new SSLEngineFactory("src/test/resources/privateKey.pem", "src/test/resources/cert.pem").getEngine();
 //                engine.beginHandshake();

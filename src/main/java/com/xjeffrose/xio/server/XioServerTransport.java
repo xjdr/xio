@@ -70,7 +70,7 @@ public class XioServerTransport {
     final ConnectionLimiter connectionLimiter = new ConnectionLimiter(def.getMaxConnections());
     this.channelStatistics = new ChannelStatistics(allChannels);
 
-    //TODO: This is an ugly mess, clean this up
+    //TODO(JR): This is an ugly mess, clean this up
     this.pipelineFactory = new ChannelInitializer<SocketChannel>() {
       @Override
       protected void initChannel(SocketChannel channel) throws Exception {

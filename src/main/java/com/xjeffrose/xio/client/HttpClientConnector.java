@@ -82,8 +82,7 @@ public class HttpClientConnector extends AbstractClientConnector<HttpClientChann
         new HttpClientChannel(nettyChannel,
             clientConfig.getTimer(),
             getProtocolFactory(),
-            endpointUri.getHost(),
-            endpointUri.getPath());
+            endpointUri);
     channel.getNettyChannel().pipeline().addLast("Xio Client Handler", channel);
     return channel;
   }

@@ -138,8 +138,9 @@ public class XioClientTest {
 
       @Override
       public void onChannelError(XioException requestException) {
-        System.out.println("Request Error");
+        System.out.println("Request Error Async Http");
 //        requestException.printStackTrace();
+        xioClient.close();
       }
 
       @Override
@@ -183,6 +184,7 @@ public class XioClientTest {
   public void testAsyncHttps() throws Exception {
     final Lock lock = new ReentrantLock();
     final Condition waitForFinish = lock.newCondition();
+    final XioClient xioClient = new XioClient(xioClientConfig);
 
     Listener listener = new Listener() {
       ByteBuf response;
@@ -203,8 +205,10 @@ public class XioClientTest {
 
       @Override
       public void onChannelError(XioException requestException) {
-        System.out.println("Request Error");
+        System.out.println("Request Error Async Https");
 //        requestException.printStackTrace();
+
+        xioClient.close();
       }
 
       @Override
@@ -213,7 +217,6 @@ public class XioClientTest {
       }
     };
 
-    XioClient xioClient = new XioClient(xioClientConfig);
     ListenableFuture<XioClientChannel> responseFuture = xioClient.connectAsync(new HttpClientConnector(new URI("https://www.paypal.com/home")));
     XioClientChannel xioClientChannel = responseFuture.get();
     HttpClientChannel httpClientChannel = (HttpClientChannel) xioClientChannel;

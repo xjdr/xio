@@ -17,6 +17,7 @@ import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.util.Timer;
+import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.Map;
 import javax.annotation.concurrent.NotThreadSafe;
@@ -24,20 +25,22 @@ import javax.annotation.concurrent.NotThreadSafe;
 @NotThreadSafe
 public class HttpClientChannel extends AbstractClientChannel {
   private final Channel underlyingNettyChannel;
-  private final String hostName;
-  private final String endpointUri;
+  private final Timer timer;
+  private final XioProtocolFactory protocolFactory;
+  private final URI uri;
+
   private Map<String, String> headerDictionary;
 
   protected HttpClientChannel(Channel channel,
                               Timer timer,
                               XioProtocolFactory protocolFactory,
-                              String hostName,
-                              String endpointUri) {
+                              URI uri) {
     super(channel, timer, protocolFactory);
 
     this.underlyingNettyChannel = channel;
-    this.hostName = hostName;
-    this.endpointUri = endpointUri;
+    this.timer = timer;
+    this.protocolFactory = protocolFactory;
+    this.uri = uri;
   }
 
   public void setHeaders(Map<String, String> headers) {
@@ -62,7 +65,6 @@ public class HttpClientChannel extends AbstractClientChannel {
 
       HttpContent httpContent = (HttpContent) httpResponse;
       ByteBuf content = httpContent.content();
-      content.retain();
 
       if (!content.isReadable()) {
         return null;
@@ -88,7 +90,6 @@ public class HttpClientChannel extends AbstractClientChannel {
 
       ByteBuf headerAndBody = getCtx().alloc().buffer();
       headerAndBody.writeBytes(responseHeader.toString().getBytes(Charset.defaultCharset()));
-      content.retain();
       headerAndBody.writeBytes(content);
       return headerAndBody;
     }
@@ -100,15 +101,15 @@ public class HttpClientChannel extends AbstractClientChannel {
     HttpRequest httpRequest;
 
     if (request == Unpooled.EMPTY_BUFFER || request == null) {
-      httpRequest = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, endpointUri);
+      httpRequest = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, uri.getPath());
       httpRequest.headers().add(HttpHeaders.CONTENT_LENGTH, "0");
     } else {
-      httpRequest = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, endpointUri, request);
+      httpRequest = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, uri.getPath(), request);
       httpRequest.headers().add(HttpHeaders.CONTENT_LENGTH, request.readableBytes());
     }
 
-    httpRequest.headers().add(HttpHeaders.HOST, hostName);
-    httpRequest.headers().add(HttpHeaders.USER_AGENT, "xio/0.4.0");
+    httpRequest.headers().add(HttpHeaders.HOST, uri.getHost());
+    httpRequest.headers().add(HttpHeaders.USER_AGENT, "xio/0.7.7");
 
     if (headerDictionary != null) {
       for (Map.Entry<String, String> entry : headerDictionary.entrySet()) {
