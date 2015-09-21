@@ -57,11 +57,25 @@ public class HttpClientChannel extends AbstractClientChannel {
 
       HttpResponse httpResponse = (HttpResponse) message;
 
-      //TODO: Handle 301
-      if (!httpResponse.getStatus().equals(HttpResponseStatus.OK)) {
-        throw wrapException(new XioTransportException("HTTP response had non-OK status: " + httpResponse
+      switch (httpResponse.getStatus().reasonPhrase()) {
+        case("Unknown Status"):
+          throw wrapException(new XioTransportException("HTTP response had non-OK status: " + httpResponse
             .getStatus().toString()));
+        case("Informational"):
+          break;
+        case("Successful"):
+          break;
+        case("Redirection"):
+          break;
+        case("Client Error"):
+          throw wrapException(new XioTransportException("HTTP response had non-OK status: " + httpResponse
+              .getStatus().toString()));
       }
+
+//      if (!httpResponse.getStatus().equals(HttpResponseStatus)) {
+//        throw wrapException(new XioTransportException("HTTP response had non-OK status: " + httpResponse
+//            .getStatus().toString()));
+//      }
 
       HttpContent httpContent = (HttpContent) httpResponse;
       ByteBuf content = httpContent.content();

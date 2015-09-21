@@ -79,6 +79,7 @@ public class XioClientTest {
   }
 
 //  @Test(expected = XioTransportException.class)
+//  @Test
 //  public void testBadCall() throws Exception {
 //
 //    DefaultFullHttpResponse httpResponse = XioClient.call(new URI("https://www.google.com/"));

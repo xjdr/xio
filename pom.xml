@@ -11,7 +11,7 @@
     <groupId>com.xjeffrose</groupId>
     <artifactId>xio</artifactId>
     <version>0.7.8-SNAPSHOT</version>
-    <packaging>pom</packaging>
+    <packaging>jar</packaging>
     <name>xio</name>
     <description>High Performance HTTP Server based on Netty and Xio</description>
     <url>https://github.com/xjdr/xio.git</url>

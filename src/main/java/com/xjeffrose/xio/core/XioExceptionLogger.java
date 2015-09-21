@@ -8,6 +8,6 @@ public class XioExceptionLogger extends LoggingHandler {
   private static final Logger log = Logger.get(XioExceptionLogger.class);
 
   private void logMessage(ChannelHandlerContext ctx, String eventName, Object msg) {
-        log.error(format(ctx, formatMessage(eventName, msg)));
+    log.error(format(ctx, formatMessage(eventName, msg)));
   }
 }
