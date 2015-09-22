@@ -287,18 +287,15 @@ public abstract class AbstractClientChannel extends SimpleChannelInboundHandler<
     }
 
     Channel channel = getNettyChannel();
-    if (nettyChannel.isOpen()) {
-      ctx.close();
+    if (channel.isOpen()) {
       channel.close();
     }
-
   }
 
   protected XioException wrapException(Throwable t) {
     if (t instanceof XioException) {
       return (XioException) t;
     } else {
-      getCtx().close();
       return new XioTransportException(t);
     }
   }

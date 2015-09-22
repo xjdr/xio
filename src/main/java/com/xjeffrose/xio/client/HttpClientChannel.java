@@ -122,14 +122,14 @@ public class HttpClientChannel extends AbstractClientChannel {
       httpRequest.headers().add(HttpHeaders.CONTENT_LENGTH, request.readableBytes());
     }
 
-    httpRequest.headers().add(HttpHeaders.HOST, uri.getHost());
-    httpRequest.headers().add(HttpHeaders.USER_AGENT, "xio/0.7.7");
-
     if (headerDictionary != null) {
       for (Map.Entry<String, String> entry : headerDictionary.entrySet()) {
         httpRequest.headers().add(entry.getKey(), entry.getValue());
       }
     }
+
+    //TODO(JR): Remove this
+    System.out.println(httpRequest.toString());
 
     return underlyingNettyChannel.writeAndFlush(httpRequest);
   }

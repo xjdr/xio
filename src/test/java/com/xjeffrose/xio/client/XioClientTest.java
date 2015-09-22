@@ -51,17 +51,13 @@ public class XioClientTest {
 
             @Override
             public ChannelHandler getEncryptionHandler() {
-//                SSLEngine engine = null;
               try {
                 SslContext sslCtx = SslContext.newClientContext(SslContext.defaultClientProvider(), InsecureTrustManagerFactory.INSTANCE);
-//                  SSLEngine engine = new SSLEngineFactory(true).getEngine();
-//                  engine.beginHandshake();
                 return sslCtx.newHandler(new PooledByteBufAllocator());
               } catch (SSLException e) {
                 e.printStackTrace();
               }
               return null;
-//                return new SslHandler(engine, false);
             }
           };
         }
@@ -79,16 +75,16 @@ public class XioClientTest {
   }
 
 //  @Test(expected = XioTransportException.class)
-//  @Test
-//  public void testBadCall() throws Exception {
-//
-//    DefaultFullHttpResponse httpResponse = XioClient.call(new URI("https://www.google.com/"));
-//
-//    assertEquals(HttpResponseStatus.OK, httpResponse.getStatus());
+  @Test
+  public void testBadCall() throws Exception {
+
+    DefaultFullHttpResponse httpResponse = XioClient.call(new URI("https://www.google.com/"));
+
+    assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, httpResponse.getStatus());
 //    assertEquals("gws", httpResponse.headers().get("Server"));
-//    assertTrue(httpResponse.content() != null);
-//
-//  }
+    assertTrue(httpResponse.content() != null);
+
+  }
 
   @Test
   public void testCall1() throws Exception {
@@ -126,6 +122,7 @@ public class XioClientTest {
 
       @Override
       public void onRequestSent() {
+        //For debug only
 //        System.out.println("Request Sent");
       }
 
@@ -139,9 +136,20 @@ public class XioClientTest {
 
       @Override
       public void onChannelError(XioException requestException) {
-        System.out.println("Request Error Async Http");
-//        requestException.printStackTrace();
-        xioClient.close();
+        StringBuilder sb = new StringBuilder();
+        sb.append(HttpVersion.HTTP_1_1)
+            .append(" ")
+            .append(HttpResponseStatus.INTERNAL_SERVER_ERROR)
+            .append("\r\n")
+            .append("\r\n\r\n")
+            .append(requestException.getMessage())
+            .append("\n");
+
+        response = Unpooled.wrappedBuffer(sb.toString().getBytes());
+
+        lock.lock();
+        waitForFinish.signalAll();
+        lock.unlock();
       }
 
       @Override
@@ -192,6 +200,7 @@ public class XioClientTest {
 
       @Override
       public void onRequestSent() {
+        //For debug only
 //        System.out.println("Request Sent");
       }
 
@@ -206,10 +215,20 @@ public class XioClientTest {
 
       @Override
       public void onChannelError(XioException requestException) {
-        System.out.println("Request Error Async Https");
-//        requestException.printStackTrace();
+        StringBuilder sb = new StringBuilder();
+        sb.append(HttpVersion.HTTP_1_1)
+            .append(" ")
+            .append(HttpResponseStatus.INTERNAL_SERVER_ERROR)
+            .append("\r\n")
+            .append("\r\n\r\n")
+            .append(requestException.getMessage())
+            .append("\n");
 
-        xioClient.close();
+        response = Unpooled.wrappedBuffer(sb.toString().getBytes());
+
+        lock.lock();
+        waitForFinish.signalAll();
+        lock.unlock();
       }
 
       @Override
@@ -222,6 +241,8 @@ public class XioClientTest {
     XioClientChannel xioClientChannel = responseFuture.get();
     HttpClientChannel httpClientChannel = (HttpClientChannel) xioClientChannel;
     Map<String, String> headerMap = ImmutableMap.of(
+        HttpHeaders.HOST, "www.paypal.com",
+        HttpHeaders.USER_AGENT, "xio/0.7.8",
         HttpHeaders.CONTENT_TYPE, "application/text",
         HttpHeaders.ACCEPT_ENCODING, "*/*"
     );

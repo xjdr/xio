@@ -1,5 +1,7 @@
 package com.xjeffrose.xio.server;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.net.HttpHeaders;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
@@ -43,6 +45,7 @@ import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.charset.Charset;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -257,6 +260,15 @@ public class XioServerFunctionalTest {
 
                     HttpClientChannel httpClientChannel = (HttpClientChannel) xioClientChannel;
 
+                    Map<String, String> headerMap = ImmutableMap.of(
+                        HttpHeaders.HOST, "localhost:8089",
+                        HttpHeaders.USER_AGENT, "xio/0.7.8",
+                        HttpHeaders.CONTENT_TYPE, "application/text",
+                        HttpHeaders.ACCEPT_ENCODING, "*/*"
+                    );
+
+                    httpClientChannel.setHeaders(headerMap);
+
                     Listener listener = new Listener() {
                       ByteBuf response;
 
@@ -275,8 +287,20 @@ public class XioServerFunctionalTest {
 
                       @Override
                       public void onChannelError(XioException requestException) {
-                        System.out.println("Request Error");
-                        requestException.printStackTrace();
+                        StringBuilder sb = new StringBuilder();
+                        sb.append(HttpVersion.HTTP_1_1)
+                            .append(" ")
+                            .append(HttpResponseStatus.INTERNAL_SERVER_ERROR)
+                            .append("\r\n")
+                            .append("\r\n\r\n")
+                            .append(requestException.getMessage())
+                            .append("\n");
+
+                        response = Unpooled.wrappedBuffer(sb.toString().getBytes());
+
+                        lock.lock();
+                        waitForFinish.signalAll();
+                        lock.unlock();
                       }
 
                       @Override
@@ -515,17 +539,13 @@ public class XioServerFunctionalTest {
 
                               @Override
                               public ChannelHandler getEncryptionHandler() {
-//                SSLEngine engine = null;
                                 try {
                                   SslContext sslCtx = SslContext.newClientContext(SslContext.defaultClientProvider(), InsecureTrustManagerFactory.INSTANCE);
-//                  SSLEngine engine = new SSLEngineFactory(true).getEngine();
-//                  engine.beginHandshake();
                                   return sslCtx.newHandler(new PooledByteBufAllocator());
                                 } catch (SSLException e) {
                                   e.printStackTrace();
                                 }
                                 return null;
-//                return new SslHandler(engine, false);
                               }
                             };
                           }
@@ -562,8 +582,20 @@ public class XioServerFunctionalTest {
 
                       @Override
                       public void onChannelError(XioException requestException) {
-                        System.out.println("Request Error");
-                        xioClient.close();
+                        StringBuilder sb = new StringBuilder();
+                        sb.append(HttpVersion.HTTP_1_1)
+                            .append(" ")
+                            .append(HttpResponseStatus.INTERNAL_SERVER_ERROR)
+                            .append("\r\n")
+                            .append("\r\n\r\n")
+                            .append(requestException.getMessage())
+                            .append("\n");
+
+                        response = Unpooled.wrappedBuffer(sb.toString().getBytes());
+
+                        lock.lock();
+                        waitForFinish.signalAll();
+                        lock.unlock();
                       }
 
                       @Override
@@ -704,17 +736,13 @@ public class XioServerFunctionalTest {
 
                               @Override
                               public ChannelHandler getEncryptionHandler() {
-//                SSLEngine engine = null;
                                 try {
                                   SslContext sslCtx = SslContext.newClientContext(SslContext.defaultClientProvider(), InsecureTrustManagerFactory.INSTANCE);
-//                  SSLEngine engine = new SSLEngineFactory(true).getEngine();
-//                  engine.beginHandshake();
                                   return sslCtx.newHandler(new PooledByteBufAllocator());
                                 } catch (SSLException e) {
                                   e.printStackTrace();
                                 }
                                 return null;
-//                return new SslHandler(engine, false);
                               }
                             };
                           }
