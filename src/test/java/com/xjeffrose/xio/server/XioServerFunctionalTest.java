@@ -250,7 +250,7 @@ public class XioServerFunctionalTest {
 
                     ListenableFuture<XioClientChannel> responseFuture = null;
 
-                    responseFuture = xioClient.connectAsync(ctx, new HttpClientConnector(new URI("http://localhost:8089")));
+                    responseFuture = xioClient.connectAsync(new HttpClientConnector(new URI("http://localhost:8089")));
 
                     XioClientChannel xioClientChannel = null;
 
@@ -552,7 +552,7 @@ public class XioServerFunctionalTest {
                         })
                         .build();
                     final XioClient xioClient = new XioClient(xioClientConfig);
-                    final ListenableFuture<XioClientChannel> responseFuture = xioClient.connectAsync(ctx, new HttpClientConnector(new URI("https://www.paypal.com/home")));
+                    final ListenableFuture<XioClientChannel> responseFuture = xioClient.connectAsync(new HttpClientConnector(new URI("https://www.paypal.com/home")));
 
                     XioClientChannel xioClientChannel;
 
@@ -563,6 +563,15 @@ public class XioServerFunctionalTest {
                     }
 
                     HttpClientChannel httpClientChannel = (HttpClientChannel) xioClientChannel;
+
+                    Map<String, String> headerMap = ImmutableMap.of(
+                        HttpHeaders.HOST, "www.paypal.com",
+                        HttpHeaders.USER_AGENT, "xio/0.7.8",
+                        HttpHeaders.CONTENT_TYPE, "application/text",
+                        HttpHeaders.ACCEPT_ENCODING, "*/*"
+                    );
+
+                    httpClientChannel.setHeaders(headerMap);
 
                     Listener listener = new Listener() {
                       ByteBuf response;

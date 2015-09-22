@@ -130,6 +130,7 @@ public class HttpClientChannel extends AbstractClientChannel {
 
     //TODO(JR): Remove this
     System.out.println(httpRequest.toString());
+    httpRequest.headers().forEach(xs -> System.out.println(xs.getKey() + ": " + xs.getValue()));
 
     return underlyingNettyChannel.writeAndFlush(httpRequest);
   }

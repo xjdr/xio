@@ -201,22 +201,22 @@ public class XioClient implements Closeable {
         DEFAULT_MAX_FRAME_SIZE,
         defaultSocksProxyAddress);
   }
-
-  public <T extends XioClientChannel> ListenableFuture<T> connectAsync(ChannelHandlerContext ctx, XioClientConnector clientChannelConnector) {
-
-    return connectAsync(//ctx,
-        clientChannelConnector,
-        DEFAULT_CONNECT_TIMEOUT,
-        DEFAULT_RECEIVE_TIMEOUT,
-        DEFAULT_READ_TIMEOUT,
-        DEFAULT_SEND_TIMEOUT,
-        DEFAULT_MAX_FRAME_SIZE,
-        defaultSocksProxyAddress);
-  }
+//
+//  public <T extends XioClientChannel> ListenableFuture<T> connectAsync(ChannelHandlerContext ctx, XioClientConnector clientChannelConnector) {
+//
+//    return connectAsync(//ctx,
+//        clientChannelConnector,
+//        DEFAULT_CONNECT_TIMEOUT,
+//        DEFAULT_RECEIVE_TIMEOUT,
+//        DEFAULT_READ_TIMEOUT,
+//        DEFAULT_SEND_TIMEOUT,
+//        DEFAULT_MAX_FRAME_SIZE,
+//        defaultSocksProxyAddress);
+//  }
 
   public <T extends XioClientChannel> ListenableFuture<T> connectAsync(
       //ChannelHandlerContext ctx,
-      XioClientConnector<T> clientChannelConnector,
+      XioClientConnector clientChannelConnector,
       @Nullable Duration connectTimeout,
       @Nullable Duration receiveTimeout,
       @Nullable Duration readTimeout,
@@ -235,7 +235,7 @@ public class XioClient implements Closeable {
 
   public <T extends XioClientChannel> ListenableFuture<T> connectAsync(
       //ChannelHandlerContext ctx,
-      XioClientConnector<T> clientChannelConnector,
+      XioClientConnector clientChannelConnector,
       @Nullable Duration connectTimeout,
       @Nullable Duration receiveTimeout,
       @Nullable Duration readTimeout,
