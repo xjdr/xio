@@ -34,7 +34,8 @@ import org.apache.log4j.Logger;
 
 
 public class XioServerTransport {
-  private static final Logger log = Logger.getLogger(XioServerTransport.class);
+  private static final Logger log = Logger.getLogger(XioServerTransport.class.getName());
+
   private static final int NO_WRITER_IDLE_TIMEOUT = 0;
   private static final int NO_ALL_IDLE_TIMEOUT = 0;
   private final int requestedPort;

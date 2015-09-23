@@ -21,9 +21,12 @@ import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.Map;
 import javax.annotation.concurrent.NotThreadSafe;
+import org.apache.log4j.Logger;
 
 @NotThreadSafe
 public class HttpClientChannel extends AbstractClientChannel {
+  private static final Logger log = Logger.getLogger(HttpClientChannel.class.getName());
+
   private final Channel underlyingNettyChannel;
   private final Timer timer;
   private final XioProtocolFactory protocolFactory;
@@ -123,6 +126,8 @@ public class HttpClientChannel extends AbstractClientChannel {
         httpRequest.headers().add(entry.getKey(), entry.getValue());
       }
     }
+
+    log.debug(httpRequest);
 
     return underlyingNettyChannel.writeAndFlush(httpRequest);
   }

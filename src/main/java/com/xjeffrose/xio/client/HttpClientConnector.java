@@ -29,8 +29,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
 public class HttpClientConnector extends AbstractClientConnector<HttpClientChannel> {
-  private static final int NO_WRITER_IDLE_TIMEOUT = 2;
-  private static final int NO_ALL_IDLE_TIMEOUT = 2;
+  private static final int NO_WRITER_IDLE_TIMEOUT = 20;
+  private static final int NO_ALL_IDLE_TIMEOUT = 20;
 
   private final URI endpointUri;
   private final ChannelStatistics channelStatistics = new ChannelStatistics(new DefaultChannelGroup(new NioEventLoopGroup().next()));
@@ -105,7 +105,7 @@ public class HttpClientConnector extends AbstractClientConnector<HttpClientChann
         cp.addLast("defaltor", new HttpContentDecompressor());
 //        if (def.getIdleTimeout() != null) {
           cp.addLast("idleTimeoutHandler", new IdleStateHandler(
-             2000,
+             20000,
               NO_WRITER_IDLE_TIMEOUT,
               NO_ALL_IDLE_TIMEOUT,
               TimeUnit.MILLISECONDS));

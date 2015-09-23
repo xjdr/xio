@@ -92,20 +92,8 @@
             <artifactId>netty-tcnative</artifactId>
             <version>1.1.33.Fork6</version>
             <classifier>osx-x86_64</classifier>
-        </dependency>
-
-        <!--<dependency>-->
-            <!--<groupId>io.netty</groupId>-->
-            <!--<artifactId>netty-tcnative</artifactId>-->
-            <!--<version>1.1.33.Fork6</version>-->
             <!--<classifier>linux-x86_64</classifier>-->
-        <!--</dependency>-->
-
-        <!--<dependency>-->
-            <!--<groupId>io.airlift</groupId>-->
-            <!--<artifactId>log</artifactId>-->
-            <!--<version>0.114</version>-->
-        <!--</dependency>-->
+        </dependency>
 
         <dependency>
             <groupId>io.airlift</groupId>
@@ -113,15 +101,7 @@
             <version>0.114</version>
         </dependency>
 
-        <dependency>
-            <groupId>org.codehaus.jackson</groupId>
-            <artifactId>jackson-mapper-asl</artifactId>
-            <version>1.9.13</version>
-        </dependency>
-
-
         <!-- Junit and okhttp are only required for development and testing -->
-
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
