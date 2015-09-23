@@ -57,24 +57,20 @@ public class HttpClientChannel extends AbstractClientChannel {
 
       HttpResponse httpResponse = (HttpResponse) message;
 
-      switch (httpResponse.getStatus().reasonPhrase()) {
-        case("Unknown Status"):
-          throw wrapException(new XioTransportException("HTTP response had non-OK status: " + httpResponse
-            .getStatus().toString()));
-        case("Informational"):
-          break;
-        case("Successful"):
-          break;
-        case("Redirection"):
-          break;
-        case("Client Error"):
-          throw wrapException(new XioTransportException("HTTP response had non-OK status: " + httpResponse
-              .getStatus().toString()));
-      }
-
-//      if (!httpResponse.getStatus().equals(HttpResponseStatus)) {
-//        throw wrapException(new XioTransportException("HTTP response had non-OK status: " + httpResponse
+      //TODO(JR): Leave out for testing, ADD BACK BEFORE DEPLOYMENT!!!!!
+//      switch (httpResponse.getStatus().reasonPhrase()) {
+//        case("Unknown Status"):
+//          throw wrapException(new XioTransportException("HTTP response had non-OK status: " + httpResponse
 //            .getStatus().toString()));
+//        case("Informational"):
+//          break;
+//        case("Successful"):
+//          break;
+//        case("Redirection"):
+//          break;
+//        case("Client Error"):
+//          throw wrapException(new XioTransportException("HTTP response had non-OK status: " + httpResponse
+//              .getStatus().toString()));
 //      }
 
       HttpContent httpContent = (HttpContent) httpResponse;
@@ -127,10 +123,6 @@ public class HttpClientChannel extends AbstractClientChannel {
         httpRequest.headers().add(entry.getKey(), entry.getValue());
       }
     }
-
-    //TODO(JR): Remove this
-    System.out.println(httpRequest.toString());
-    httpRequest.headers().forEach(xs -> System.out.println(xs.getKey() + ": " + xs.getValue()));
 
     return underlyingNettyChannel.writeAndFlush(httpRequest);
   }

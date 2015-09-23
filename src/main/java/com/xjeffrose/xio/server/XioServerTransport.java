@@ -7,7 +7,6 @@ import com.xjeffrose.xio.core.ShutdownUtil;
 import com.xjeffrose.xio.core.XioExceptionLogger;
 import com.xjeffrose.xio.core.XioMetrics;
 import com.xjeffrose.xio.core.XioSecurityHandlers;
-import io.airlift.log.Logger;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
@@ -31,10 +30,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.inject.Inject;
+import org.apache.log4j.Logger;
 
 
 public class XioServerTransport {
-  private static final Logger log = Logger.get(XioServerTransport.class);
+  private static final Logger log = Logger.getLogger(XioServerTransport.class);
   private static final int NO_WRITER_IDLE_TIMEOUT = 0;
   private static final int NO_ALL_IDLE_TIMEOUT = 0;
   private final int requestedPort;
@@ -139,13 +139,13 @@ public class XioServerTransport {
     InetSocketAddress actualSocket = (InetSocketAddress) serverChannel.localAddress();
     actualPort = actualSocket.getPort();
     Preconditions.checkState(actualPort != 0 && (actualPort == requestedPort || requestedPort == 0));
-    log.info("started transport %s:%s", def.getName(), actualPort);
+    log.info("started transport " + def.getName() + ":" + actualPort);
   }
 
   public void stop()
       throws InterruptedException {
     if (serverChannel != null) {
-      log.info("stopping transport %s:%s", def.getName(), actualPort);
+//      log.info("stopping transport %s:%s", def.getName(), actualPort);
       // first stop accepting
       final CountDownLatch latch = new CountDownLatch(1);
       serverChannel.close().addListener(new ChannelFutureListener() {
@@ -214,7 +214,7 @@ public class XioServerTransport {
         if (numConnections.incrementAndGet() > maxConnections) {
           ctx.channel().close();
           // numConnections will be decremented in channelClosed
-          log.info("Accepted connection above limit (%s). Dropping.", maxConnections);
+          log.info("Accepted connection above limit (" + maxConnections + "). Dropping.");
         }
       }
       ctx.fireChannelActive();

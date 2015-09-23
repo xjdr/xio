@@ -10,7 +10,7 @@
 
     <groupId>com.xjeffrose</groupId>
     <artifactId>xio</artifactId>
-    <version>0.8.1-SNAPSHOT</version>
+    <version>0.8.2-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>xio</name>
     <description>High Performance HTTP Server based on Netty and Xio</description>
@@ -101,11 +101,11 @@
             <!--<classifier>linux-x86_64</classifier>-->
         <!--</dependency>-->
 
-        <dependency>
-            <groupId>io.airlift</groupId>
-            <artifactId>log</artifactId>
-            <version>0.114</version>
-        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>io.airlift</groupId>-->
+            <!--<artifactId>log</artifactId>-->
+            <!--<version>0.114</version>-->
+        <!--</dependency>-->
 
         <dependency>
             <groupId>io.airlift</groupId>

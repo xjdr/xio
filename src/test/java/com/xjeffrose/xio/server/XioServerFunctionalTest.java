@@ -61,6 +61,8 @@ import static org.junit.Assert.assertTrue;
 
 public class XioServerFunctionalTest {
 
+  public static final XioTimer timer = new XioTimer("Test Timer", (long) 100, TimeUnit.MILLISECONDS, 100);
+
   @Test
   public void testComplexServerConfigurationHttp() throws Exception {
     XioServerDef serverDef = new XioServerDefBuilder()
@@ -88,7 +90,7 @@ public class XioServerFunctionalTest {
         .setBossThreadExecutor(Executors.newCachedThreadPool())
         .setWorkerThreadCount(20)
         .setWorkerThreadExecutor(Executors.newCachedThreadPool())
-        .setTimer(new XioTimer("Test Timer", (long) 100, TimeUnit.MILLISECONDS, 100))
+        .setTimer(timer)
         .setXioName("Xio Name Test")
         .build();
 
@@ -166,7 +168,7 @@ public class XioServerFunctionalTest {
         .setBossThreadExecutor(Executors.newCachedThreadPool())
         .setWorkerThreadCount(20)
         .setWorkerThreadExecutor(Executors.newCachedThreadPool())
-        .setTimer(new XioTimer("Test Timer", (long) 100, TimeUnit.MILLISECONDS, 100))
+        .setTimer(timer)
         .setXioName("Xio Name Test")
         .build();
 
@@ -361,7 +363,7 @@ public class XioServerFunctionalTest {
         .setBossThreadExecutor(Executors.newCachedThreadPool())
         .setWorkerThreadCount(20)
         .setWorkerThreadExecutor(Executors.newCachedThreadPool())
-        .setTimer(new XioTimer("Test Timer", (long) 100, TimeUnit.MILLISECONDS, 100))
+        .setTimer(timer)
         .setXioName("Xio Name Test")
         .build();
 
@@ -457,7 +459,7 @@ public class XioServerFunctionalTest {
         .setBossThreadExecutor(Executors.newCachedThreadPool())
         .setWorkerThreadCount(20)
         .setWorkerThreadExecutor(Executors.newCachedThreadPool())
-        .setTimer(new XioTimer("Test Timer", (long) 100, TimeUnit.MILLISECONDS, 100))
+        .setTimer(timer)
         .setXioName("Xio Name Test")
         .build();
 
@@ -665,7 +667,7 @@ public class XioServerFunctionalTest {
         .setBossThreadExecutor(Executors.newCachedThreadPool())
         .setWorkerThreadCount(20)
         .setWorkerThreadExecutor(Executors.newCachedThreadPool())
-        .setTimer(new XioTimer("Test Timer", (long) 100, TimeUnit.MILLISECONDS, 100))
+        .setTimer(timer)
         .setXioName("Xio Name Test")
         .build();
 
@@ -786,7 +788,7 @@ public class XioServerFunctionalTest {
         .setBossThreadExecutor(Executors.newCachedThreadPool())
         .setWorkerThreadCount(20)
         .setWorkerThreadExecutor(Executors.newCachedThreadPool())
-        .setTimer(new XioTimer("Test Timer", (long) 100, TimeUnit.MILLISECONDS, 100))
+        .setTimer(timer)
         .setXioName("Xio Name Test")
         .build();
 

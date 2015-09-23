@@ -7,6 +7,7 @@ import com.xjeffrose.xio.core.XioException;
 import com.xjeffrose.xio.core.XioNoOpHandler;
 import com.xjeffrose.xio.core.XioSecurityFactory;
 import com.xjeffrose.xio.core.XioSecurityHandlers;
+import com.xjeffrose.xio.core.XioTimer;
 import com.xjeffrose.xio.core.XioTransportException;
 import com.xjeffrose.xio.server.XioServerConfig;
 import com.xjeffrose.xio.server.XioServerDef;
@@ -22,6 +23,7 @@ import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -33,6 +35,7 @@ import static org.junit.Assert.assertTrue;
 
 
 public class XioClientTest {
+  public static final XioTimer timer = new XioTimer("Test Timer", (long) 100, TimeUnit.MILLISECONDS, 100);
 
   final XioClientConfig xioClientConfig = XioClientConfig.newBuilder()
       .setSecurityFactory(new XioSecurityFactory() {

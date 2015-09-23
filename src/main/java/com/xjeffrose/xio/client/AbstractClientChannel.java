@@ -3,7 +3,6 @@ package com.xjeffrose.xio.client;
 
 import com.xjeffrose.xio.core.XioException;
 import com.xjeffrose.xio.core.XioTransportException;
-import io.airlift.log.Logger;
 import io.airlift.units.Duration;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
@@ -23,10 +22,11 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.NotThreadSafe;
+import org.apache.log4j.Logger;
 
 @NotThreadSafe
 public abstract class AbstractClientChannel extends SimpleChannelInboundHandler<Object> implements XioClientChannel {
-  private static final Logger LOGGER = Logger.get(AbstractClientChannel.class);
+  private static final Logger LOG = Logger.getLogger(AbstractClientChannel.class);
 
   private final Channel nettyChannel;
   private final Map<Integer, Request> requestMap = new HashMap<>();
@@ -304,7 +304,7 @@ public abstract class AbstractClientChannel extends SimpleChannelInboundHandler<
     try {
       listener.onRequestSent();
     } catch (Throwable t) {
-      LOGGER.warn(t, "Request sent listener callback triggered an exception");
+      LOG.warn("Request sent listener callback triggered an exception", t);
     }
   }
 
@@ -312,7 +312,7 @@ public abstract class AbstractClientChannel extends SimpleChannelInboundHandler<
     try {
       listener.onResponseReceived(response);
     } catch (Throwable t) {
-      LOGGER.warn(t, "Response received listener callback triggered an exception");
+      LOG.warn("Response received listener callback triggered an exception", t);
     }
   }
 
@@ -320,7 +320,7 @@ public abstract class AbstractClientChannel extends SimpleChannelInboundHandler<
     try {
       listener.onChannelError(exception);
     } catch (Throwable t) {
-      LOGGER.warn(t, "Channel error listener callback triggered an exception");
+      LOG.warn("Channel error listener callback triggered an exception", t);
     }
   }
 
