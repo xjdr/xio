@@ -56,9 +56,18 @@ public class HttpClientChannel extends AbstractClientChannel {
       return null;
     }
 
-    if (message instanceof HttpResponse) {
+    HttpResponse httpResponse = null;
+    HttpContent httpContent = null;
+    
+    XioClientChannel xioClientChannel;
 
-      HttpResponse httpResponse = (HttpResponse) message;
+    if (message instanceof HttpResponse) {
+      httpResponse = (HttpResponse) message;
+    }
+
+    if (message instanceof HttpContent) {
+      httpContent = (HttpContent) message;
+    }
 
       //TODO(JR): Leave out for testing, ADD BACK BEFORE DEPLOYMENT!!!!!
 //      switch (httpResponse.getStatus().reasonPhrase()) {
@@ -76,10 +85,14 @@ public class HttpClientChannel extends AbstractClientChannel {
 //              .getStatus().toString()));
 //      }
 
-      HttpContent httpContent = (HttpContent) httpResponse;
-      ByteBuf content = httpContent.content();
+//      HttpContent httpContent = (HttpContent) httpResponse;
+    ByteBuf content = null;
 
-      if (!content.isReadable()) {
+    if (httpContent != null) {
+      content = httpContent.content();
+    }
+
+    if (!content.isReadable()) {
         return null;
       }
 
@@ -106,8 +119,6 @@ public class HttpClientChannel extends AbstractClientChannel {
       headerAndBody.writeBytes(content);
       return headerAndBody;
     }
-    return null;
-  }
 
   @Override
   protected ChannelFuture writeRequest(ByteBuf request) {

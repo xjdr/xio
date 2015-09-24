@@ -6,7 +6,6 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.xjeffrose.xio.core.ConnectionContext;
 import com.xjeffrose.xio.core.ConnectionContexts;
 import com.xjeffrose.xio.processor.XioProcessorFactory;
-import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
