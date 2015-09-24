@@ -60,6 +60,7 @@ public class XioDispatcher extends SimpleChannelInboundHandler<Object> {
     if (o instanceof LastHttpContent) {
       LastHttpContent lastHttpContent = (LastHttpContent) o;
       if (lastHttpContent.toString().equals("EmptyLastHttpContent")) {
+        ((LastHttpContent) o).release();
         ctx.fireChannelRead(o);
       }
     } else {
