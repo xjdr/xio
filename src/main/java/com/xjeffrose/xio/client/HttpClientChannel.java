@@ -130,8 +130,12 @@ public class HttpClientChannel extends AbstractClientChannel {
 
     ByteBuf headerAndBody = getCtx().alloc().buffer();
     headerAndBody.writeBytes(responseHeader.toString().getBytes(Charset.defaultCharset()));
-    headerAndBody.writeBytes(content);
-    headerAndBody.writeBytes("\r\n".getBytes());
+
+    if (content != null) {
+      headerAndBody.writeBytes(content);
+      headerAndBody.writeBytes("\r\n".getBytes());
+    }
+
     return headerAndBody;
   }
 
