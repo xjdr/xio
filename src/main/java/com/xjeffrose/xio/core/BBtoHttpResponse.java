@@ -31,15 +31,27 @@ public class BBtoHttpResponse {
 
     // Lets make a HTTP Response object now
     if (ctx == null) {
-      httpResponse = new DefaultFullHttpResponse(
-          HttpVersion.valueOf(firstLine[0]),
-          new HttpResponseStatus(Integer.parseInt(firstLine[1]), joiner.join(Arrays.copyOfRange(firstLine, 2, 5))),
-          Unpooled.wrappedBuffer(headerBody[1].getBytes()));
+      if (headerBody.length > 1) {
+        httpResponse = new DefaultFullHttpResponse(
+            HttpVersion.valueOf(firstLine[0]),
+            new HttpResponseStatus(Integer.parseInt(firstLine[1]), joiner.join(Arrays.copyOfRange(firstLine, 2, 5))),
+            Unpooled.wrappedBuffer(headerBody[1].getBytes()));
+      } else {
+        httpResponse = new DefaultFullHttpResponse(
+            HttpVersion.valueOf(firstLine[0]),
+            new HttpResponseStatus(Integer.parseInt(firstLine[1]), joiner.join(Arrays.copyOfRange(firstLine, 2, 5))));
+      }
     } else {
-      httpResponse = new DefaultFullHttpResponse(
-          HttpVersion.valueOf(firstLine[0]),
-          new HttpResponseStatus(Integer.parseInt(firstLine[1]), joiner.join(Arrays.copyOfRange(firstLine, 2 , 5))),
-          ctx.alloc().buffer().writeBytes(headerBody[1].getBytes()));
+      if (headerBody.length > 1) {
+        httpResponse = new DefaultFullHttpResponse(
+            HttpVersion.valueOf(firstLine[0]),
+            new HttpResponseStatus(Integer.parseInt(firstLine[1]), joiner.join(Arrays.copyOfRange(firstLine, 2, 5))),
+            ctx.alloc().buffer().writeBytes(headerBody[1].getBytes()));
+      } else {
+        httpResponse = new DefaultFullHttpResponse(
+            HttpVersion.valueOf(firstLine[0]),
+            new HttpResponseStatus(Integer.parseInt(firstLine[1]), joiner.join(Arrays.copyOfRange(firstLine, 2, 5))));
+      }
     }
 
     for (int i = 1; i < headers.length; i++) {
