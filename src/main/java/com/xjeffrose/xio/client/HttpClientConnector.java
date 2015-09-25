@@ -7,7 +7,6 @@ import com.xjeffrose.xio.core.ConnectionContextHandler;
 import com.xjeffrose.xio.core.XioExceptionLogger;
 import com.xjeffrose.xio.core.XioSecurityHandlers;
 import com.xjeffrose.xio.server.IdleDisconnectHandler;
-import io.airlift.units.Duration;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
@@ -22,7 +21,6 @@ import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.concurrent.TimeUnit;
-
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -103,18 +101,15 @@ public class HttpClientConnector extends AbstractClientConnector<HttpClientChann
         cp.addLast("httpClientCodec", new HttpClientCodec());
         cp.addLast("chunkAggregator", new HttpObjectAggregator(maxFrameSize));
         cp.addLast("defaltor", new HttpContentDecompressor());
-//        if (def.getIdleTimeout() != null) {
-          cp.addLast("idleTimeoutHandler", new IdleStateHandler(
-             20000,
-              NO_WRITER_IDLE_TIMEOUT,
-              NO_ALL_IDLE_TIMEOUT,
-              TimeUnit.MILLISECONDS));
-          cp.addLast("idleDisconnectHandler", new IdleDisconnectHandler(
-              2000,
-              NO_WRITER_IDLE_TIMEOUT,
-              NO_ALL_IDLE_TIMEOUT));
-//        }
-
+        cp.addLast("idleTimeoutHandler", new IdleStateHandler(
+            20000,
+            NO_WRITER_IDLE_TIMEOUT,
+            NO_ALL_IDLE_TIMEOUT,
+            TimeUnit.MILLISECONDS));
+        cp.addLast("idleDisconnectHandler", new IdleDisconnectHandler(
+            2000,
+            NO_WRITER_IDLE_TIMEOUT,
+            NO_ALL_IDLE_TIMEOUT));
         cp.addLast("authHandler", securityHandlers.getAuthenticationHandler());
         cp.addLast("exceptionLogger", new XioExceptionLogger());
       }

@@ -3,6 +3,7 @@ package com.xjeffrose.xio.client;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.net.HttpHeaders;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.xjeffrose.xio.core.BBtoHttpResponse;
 import com.xjeffrose.xio.core.XioException;
 import com.xjeffrose.xio.core.XioNoOpHandler;
 import com.xjeffrose.xio.core.XioSecurityFactory;
@@ -168,22 +169,7 @@ public class XioClientTest {
     waitForFinish.await();
     lock.unlock();
 
-    // Lets make a HTTP parser cause apparently that's a good idea...
-    ByteBuf response = listener.getResponse();
-    String[] headerBody = response.toString(Charset.defaultCharset()).split("\r\n\r\n");
-    String[] headers = headerBody[0].split("\r\n");
-    String[] firstLine = headers[0].split("\\s");
-
-    // Lets make a HTTP Response object now
-    DefaultFullHttpResponse httpResponse = new DefaultFullHttpResponse(
-        HttpVersion.valueOf(firstLine[0]),
-        new HttpResponseStatus(Integer.parseInt(firstLine[1]), firstLine[2]),
-        httpClientChannel.getCtx().alloc().buffer().writeBytes(headerBody[1].getBytes()));
-
-    for (int i = 1; i < headers.length; i++) {
-      String[] xs = headers[i].split(":");
-      httpResponse.headers().add(xs[0].trim(), xs[1].trim());
-    }
+    DefaultFullHttpResponse httpResponse = BBtoHttpResponse.getResponse(listener.getResponse());
 
     //Now we have something that we can actually test ...
     assertEquals(HttpResponseStatus.OK, httpResponse.getStatus());
@@ -257,23 +243,7 @@ public class XioClientTest {
     waitForFinish.await();
     lock.unlock();
 
-
-    // Lets make a HTTP parser cause apparently that's a good idea...
-    ByteBuf response = listener.getResponse();
-    String[] headerBody = response.toString(Charset.defaultCharset()).split("\r\n\r\n");
-    String[] headers = headerBody[0].split("\r\n");
-    String[] firstLine = headers[0].split("\\s");
-
-    // Lets make a HTTP Response object now
-    DefaultFullHttpResponse httpResponse = new DefaultFullHttpResponse(
-        HttpVersion.valueOf(firstLine[0]),
-        new HttpResponseStatus(Integer.parseInt(firstLine[1]), firstLine[2]),
-        httpClientChannel.getCtx().alloc().buffer().writeBytes(headerBody[1].getBytes()));
-
-    for (int i = 1; i < headers.length; i++) {
-      String[] xs = headers[i].split(":");
-      httpResponse.headers().add(xs[0].trim(), xs[1].trim());
-    }
+    DefaultFullHttpResponse httpResponse = BBtoHttpResponse.getResponse(listener.getResponse());
 
     //Now we have something that we can actually test ...
     assertEquals(HttpResponseStatus.OK, httpResponse.getStatus());
