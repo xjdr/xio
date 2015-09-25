@@ -14,6 +14,7 @@ import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpObject;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpVersion;
+import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.util.Timer;
 import java.net.URI;
 import java.nio.charset.Charset;
@@ -69,6 +70,13 @@ public class HttpClientChannel extends AbstractClientChannel {
       httpResponse = (HttpResponse) message;
     }
 
+    if (message instanceof LastHttpContent) {
+      LastHttpContent lastHttpContent = (LastHttpContent) message;
+      if (lastHttpContent.toString().equals("EmptyLastHttpContent")) {
+        ((LastHttpContent) message).release();
+      }
+    }
+
     if (message instanceof HttpContent) {
       httpContent = (HttpContent) message;
 
@@ -78,7 +86,7 @@ public class HttpClientChannel extends AbstractClientChannel {
 
       if (content != null) {
         if (!content.isReadable()) {
-          return null;
+          log.error("Message Delivered with Unreadable Content");
         }
       }
     }
