@@ -13,6 +13,7 @@ import com.xjeffrose.xio.server.XioServerDef;
 import com.xjeffrose.xio.server.XioServerDefBuilder;
 import io.airlift.units.Duration;
 import io.netty.channel.ChannelHandler;
+import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
@@ -51,6 +52,7 @@ public class XioModuleTest {
                     return new HttpServerCodec();
                   }
                 })
+                .withAggregator(new HttpObjectAggregator(16777216))
                 .build();
 
             // Bind the definition
@@ -78,7 +80,8 @@ public class XioModuleTest {
         "HEADER: Host = 127.0.0.1:8086\r\n" +
         "HEADER: Connection = Keep-Alive\r\n" +
         "HEADER: Accept-Encoding = gzip\r\n" +
-        "HEADER: User-Agent = okhttp/2.4.0\r\n\r\n";
+        "HEADER: User-Agent = okhttp/2.4.0\r\n" +
+        "HEADER: Content-Length = 0\r\n\r\n";
 
     assertTrue(response.isSuccessful());
     assertEquals(200, response.code());

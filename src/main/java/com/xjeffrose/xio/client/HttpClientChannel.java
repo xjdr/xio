@@ -9,6 +9,7 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.handler.codec.DecoderResult;
 import io.netty.handler.codec.http.DefaultFullHttpRequest;
+import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpObject;
@@ -60,36 +61,37 @@ public class HttpClientChannel extends AbstractClientChannel {
       return null;
     }
 
-    HttpResponse httpResponse = null;
-    HttpContent httpContent = null;
-    ByteBuf content = null;
+    FullHttpResponse httpResponse = null;
+//    HttpContent httpContent = null;
+//    ByteBuf content = null;
 
-    XioClientChannel xioClientChannel;
+//    XioClientChannel xioClientChannel;
 
-    if (message instanceof HttpResponse) {
-      httpResponse = (HttpResponse) message;
+    if (message instanceof FullHttpResponse) {
+      httpResponse = (FullHttpResponse) message;
+  //    content = httpResponse.content();
     }
 
-    if (message instanceof LastHttpContent) {
-      LastHttpContent lastHttpContent = (LastHttpContent) message;
-      if (lastHttpContent.toString().equals("EmptyLastHttpContent")) {
-        ((LastHttpContent) message).release();
-      }
-    }
+//    if (message instanceof LastHttpContent) {
+//      LastHttpContent lastHttpContent = (LastHttpContent) message;
+//      if (lastHttpContent.toString().equals("EmptyLastHttpContent")) {
+//        ((LastHttpContent) message).release();
+//      }
+//    }
 
-    if (message instanceof HttpContent) {
-      httpContent = (HttpContent) message;
-
-      if (httpContent.getDecoderResult() == DecoderResult.SUCCESS) {
-        content = httpContent.content();
-      }
-
-      if (content != null) {
-        if (!content.isReadable()) {
-          log.error("Message Delivered with Unreadable Content");
-        }
-      }
-    }
+//    if (message instanceof HttpContent) {
+//      httpContent = (HttpContent) message;
+//
+//      if (httpContent.getDecoderResult() == DecoderResult.SUCCESS) {
+//        content = httpContent.content();
+//      }
+//
+//      if (content != null) {
+//        if (!content.isReadable()) {
+//          log.error("Message Delivered with Unreadable Content");
+//        }
+//      }
+//    }
 
     //TODO(JR): Leave out for testing, ADD BACK BEFORE DEPLOYMENT!!!!!
 //      switch (httpResponse.getStatus().reasonPhrase()) {
@@ -131,8 +133,8 @@ public class HttpClientChannel extends AbstractClientChannel {
     ByteBuf headerAndBody = getCtx().alloc().buffer();
     headerAndBody.writeBytes(responseHeader.toString().getBytes(Charset.defaultCharset()));
 
-    if (content != null) {
-      headerAndBody.writeBytes(content);
+    if (httpResponse.content() != null) {
+      headerAndBody.writeBytes(httpResponse.content());
       headerAndBody.writeBytes("\r\n".getBytes());
     }
 
@@ -160,7 +162,7 @@ public class HttpClientChannel extends AbstractClientChannel {
     httpRequest.headers().set(HttpHeaders.CONNECTION, CLOSE);
 //    httpRequest.headers().set(HttpHeaders.ACCEPT_ENCODING, GZIP);
 
-    log.debug("HTTP Request from XIO:\n" + httpRequest);
+    log.debug("\nHTTP Request from XIO:\n" + httpRequest);
 
     return underlyingNettyChannel.writeAndFlush(httpRequest);
   }

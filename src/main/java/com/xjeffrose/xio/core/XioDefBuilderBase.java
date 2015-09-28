@@ -4,6 +4,7 @@ package com.xjeffrose.xio.core;
 import com.xjeffrose.xio.processor.XioProcessorFactory;
 import com.xjeffrose.xio.server.XioServerDef;
 import io.airlift.units.Duration;
+import io.netty.channel.ChannelHandler;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -33,6 +34,7 @@ public abstract class XioDefBuilderBase<T extends XioDefBuilderBase<T>> {
   private XioSecurityFactory securityFactory;
   private InetSocketAddress hostAddress;
   private XioCodecFactory codecFactory;
+  private ChannelHandler aggregator;
 
   public XioDefBuilderBase() {
     this.port = 8080;
@@ -50,6 +52,7 @@ public abstract class XioDefBuilderBase<T extends XioDefBuilderBase<T>> {
     this.taskTimeout = null;
     this.securityFactory = new XioNoOpSecurityFactory();
     this.codecFactory = null;
+    this.aggregator = null;
   }
 
   public T name(String name) {
@@ -113,9 +116,16 @@ public abstract class XioDefBuilderBase<T extends XioDefBuilderBase<T>> {
     return (T) this;
   }
 
+  public T withAggregator(ChannelHandler aggregator) {
+    this.aggregator = aggregator;
+    return (T) this;
+  }
+
   public XioServerDef build() {
     checkState(xioProcessorFactory != null, "Processor not defined!");
     checkState(codecFactory != null, "Codec not defined!");
+    checkState(aggregator != null, "Aggregator not defined!");
+
 //    checkState(xioProcessorFactory == null, "Processors will be automatically adapted to XioProcessors, don't specify both");
     checkState(maxConnections >= 0, "maxConnections should be 0 (for unlimited) or positive");
 
@@ -131,6 +141,7 @@ public abstract class XioDefBuilderBase<T extends XioDefBuilderBase<T>> {
         taskTimeout,
         executor,
         securityFactory,
-        codecFactory);
+        codecFactory,
+        aggregator);
   }
 }

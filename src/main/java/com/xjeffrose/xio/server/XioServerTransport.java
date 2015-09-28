@@ -23,6 +23,7 @@ import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.timeout.IdleStateHandler;
 import java.net.InetSocketAddress;
 import java.util.concurrent.CountDownLatch;
@@ -82,6 +83,7 @@ public class XioServerTransport {
         cp.addLast(ChannelStatistics.NAME, channelStatistics);
         cp.addLast("encryptionHandler", securityHandlers.getEncryptionHandler());
         cp.addLast("codec", def.getCodecFactory().getCodec());
+        cp.addLast("aggregator", def.getAggregator());
         if (def.getClientIdleTimeout() != null) {
           cp.addLast("idleTimeoutHandler", new IdleStateHandler(
               def.getClientIdleTimeout().toMillis(),
@@ -93,7 +95,6 @@ public class XioServerTransport {
               NO_WRITER_IDLE_TIMEOUT,
               NO_ALL_IDLE_TIMEOUT));
         }
-
         cp.addLast("authHandler", securityHandlers.getAuthenticationHandler());
         cp.addLast("dispatcher", new XioDispatcher(def, xioServerConfig));
         cp.addLast("exceptionLogger", new XioExceptionLogger());

@@ -4,6 +4,7 @@ import com.xjeffrose.xio.core.XioCodecFactory;
 import com.xjeffrose.xio.core.XioSecurityFactory;
 import com.xjeffrose.xio.processor.XioProcessorFactory;
 import io.airlift.units.Duration;
+import io.netty.channel.ChannelHandler;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executor;
 
@@ -19,7 +20,8 @@ public class XioServerDef {
   private final String name;
   private final XioSecurityFactory securityFactory;
   private final XioCodecFactory codecFactory;
-  private InetSocketAddress hostAddress;
+  private final ChannelHandler aggregator;
+  private final InetSocketAddress hostAddress;
 
   public XioServerDef(
       String name,
@@ -33,7 +35,8 @@ public class XioServerDef {
       Duration taskTimeout,
       Executor executor,
       XioSecurityFactory securityFactory,
-      XioCodecFactory codecFactory) {
+      XioCodecFactory codecFactory,
+      ChannelHandler aggregator) {
 
     this.name = name;
     this.serverPort = serverPort;
@@ -47,6 +50,7 @@ public class XioServerDef {
     this.executor = executor;
     this.securityFactory = securityFactory;
     this.codecFactory = codecFactory;
+    this.aggregator = aggregator;
   }
 
   public static XioServerDefBuilder newBuilder() {
@@ -100,4 +104,9 @@ public class XioServerDef {
   public XioCodecFactory getCodecFactory() {
     return codecFactory;
   }
+
+  public ChannelHandler getAggregator() {
+    return aggregator;
+  }
+
 }

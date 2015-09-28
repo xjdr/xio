@@ -38,6 +38,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.HttpVersion;
@@ -84,6 +85,7 @@ public class XioServerFunctionalTest {
             return new HttpServerCodec();
           }
         })
+        .withAggregator(new HttpObjectAggregator(16777216))
         .build();
 
     XioServerConfig serverConfig = new XioServerConfigBuilder()
@@ -120,7 +122,8 @@ public class XioServerFunctionalTest {
         "HEADER: Host = 127.0.0.1:8083\r\n" +
         "HEADER: Connection = Keep-Alive\r\n" +
         "HEADER: Accept-Encoding = gzip\r\n" +
-        "HEADER: User-Agent = okhttp/2.4.0\r\n\r\n";
+        "HEADER: User-Agent = okhttp/2.4.0\r\n" +
+        "HEADER: Content-Length = 0\r\n\r\n";
 
     assertTrue(response.isSuccessful());
     assertEquals(200, response.code());
@@ -162,6 +165,7 @@ public class XioServerFunctionalTest {
             return new HttpServerCodec();
           }
         })
+        .withAggregator(new HttpObjectAggregator(16777216))
         .build();
 
     XioServerConfig serverConfig = new XioServerConfigBuilder()
@@ -197,7 +201,8 @@ public class XioServerFunctionalTest {
         "HEADER: Host = 127.0.0.1:8087\r\n" +
         "HEADER: Connection = Keep-Alive\r\n" +
         "HEADER: Accept-Encoding = gzip\r\n" +
-        "HEADER: User-Agent = okhttp/2.4.0\r\n\r\n";
+        "HEADER: User-Agent = okhttp/2.4.0\r\n" +
+        "HEADER: Content-Length = 0\r\n\r\n";
 
     assertEquals(200, response.code());
     assertEquals(expectedResponse, response.body().string());
@@ -342,6 +347,7 @@ public class XioServerFunctionalTest {
             return new HttpServerCodec();
           }
         })
+        .withAggregator(new HttpObjectAggregator(16777216))
         .build();
 
     XioServerConfig serverConfig = new XioServerConfigBuilder()
@@ -438,6 +444,7 @@ public class XioServerFunctionalTest {
             return new HttpServerCodec();
           }
         })
+        .withAggregator(new HttpObjectAggregator(16777216))
         .build();
 
     XioServerConfig serverConfig = new XioServerConfigBuilder()
@@ -630,6 +637,7 @@ public class XioServerFunctionalTest {
             return new HttpServerCodec();
           }
         })
+        .withAggregator(new HttpObjectAggregator(16777216))
         .build();
 
     XioServerConfig serverConfig = new XioServerConfigBuilder()
@@ -751,6 +759,7 @@ public class XioServerFunctionalTest {
             return new HttpServerCodec();
           }
         })
+        .withAggregator(new HttpObjectAggregator(16777216))
         .build();
 
     XioServerConfig serverConfig = new XioServerConfigBuilder()

@@ -99,8 +99,8 @@ public class HttpClientConnector extends AbstractClientConnector<HttpClientChann
         cp.addLast("connectionContext", new ConnectionContextHandler());
         cp.addLast(ChannelStatistics.NAME, channelStatistics);
         cp.addLast("httpClientCodec", new HttpClientCodec());
+//        cp.addLast("defaltor", new HttpContentDecompressor());
         cp.addLast("chunkAggregator", new HttpObjectAggregator(maxFrameSize));
-        cp.addLast("defaltor", new HttpContentDecompressor());
         cp.addLast("idleTimeoutHandler", new IdleStateHandler(
             20000,
             NO_WRITER_IDLE_TIMEOUT,

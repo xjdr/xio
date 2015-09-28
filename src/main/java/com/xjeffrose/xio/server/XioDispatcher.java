@@ -59,15 +59,15 @@ public class XioDispatcher extends SimpleChannelInboundHandler<Object> {
 
   @Override
   protected void channelRead0(ChannelHandlerContext ctx, Object o) throws Exception {
-    if (o instanceof LastHttpContent) {
-      LastHttpContent lastHttpContent = (LastHttpContent) o;
-      if (lastHttpContent.toString().equals("EmptyLastHttpContent")) {
+//    if (o instanceof LastHttpContent) {
+//      LastHttpContent lastHttpContent = (LastHttpContent) o;
+//      if (lastHttpContent.toString().equals("EmptyLastHttpContent")) {
 //        ((LastHttpContent) o).release();
 //        ctx.fireChannelRead(o);
-      }
-    } else {
+//      }
+//    } else {
       processRequest(ctx, o);
-    }
+//    }
   }
 
 
