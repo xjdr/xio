@@ -83,7 +83,7 @@ public class XioServerTransport {
         cp.addLast(ChannelStatistics.NAME, channelStatistics);
         cp.addLast("encryptionHandler", securityHandlers.getEncryptionHandler());
         cp.addLast("codec", def.getCodecFactory().getCodec());
-        cp.addLast("aggregator", def.getAggregator());
+        cp.addLast("aggregator", def.getAggregatorFactory().getAggregator());
         if (def.getClientIdleTimeout() != null) {
           cp.addLast("idleTimeoutHandler", new IdleStateHandler(
               def.getClientIdleTimeout().toMillis(),

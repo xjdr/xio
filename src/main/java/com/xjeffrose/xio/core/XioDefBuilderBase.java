@@ -34,7 +34,7 @@ public abstract class XioDefBuilderBase<T extends XioDefBuilderBase<T>> {
   private XioSecurityFactory securityFactory;
   private InetSocketAddress hostAddress;
   private XioCodecFactory codecFactory;
-  private ChannelHandler aggregator;
+  private XioAggregatorFactory aggregatorFactory;
 
   public XioDefBuilderBase() {
     this.port = 8080;
@@ -52,7 +52,7 @@ public abstract class XioDefBuilderBase<T extends XioDefBuilderBase<T>> {
     this.taskTimeout = null;
     this.securityFactory = new XioNoOpSecurityFactory();
     this.codecFactory = null;
-    this.aggregator = null;
+    this.aggregatorFactory = null;
   }
 
   public T name(String name) {
@@ -116,15 +116,15 @@ public abstract class XioDefBuilderBase<T extends XioDefBuilderBase<T>> {
     return (T) this;
   }
 
-  public T withAggregator(ChannelHandler aggregator) {
-    this.aggregator = aggregator;
+  public T withAggregator(XioAggregatorFactory aggregator) {
+    this.aggregatorFactory = aggregator;
     return (T) this;
   }
 
   public XioServerDef build() {
     checkState(xioProcessorFactory != null, "Processor not defined!");
     checkState(codecFactory != null, "Codec not defined!");
-    checkState(aggregator != null, "Aggregator not defined!");
+    checkState(aggregatorFactory != null, "Aggregator not defined!");
 
 //    checkState(xioProcessorFactory == null, "Processors will be automatically adapted to XioProcessors, don't specify both");
     checkState(maxConnections >= 0, "maxConnections should be 0 (for unlimited) or positive");
@@ -142,6 +142,6 @@ public abstract class XioDefBuilderBase<T extends XioDefBuilderBase<T>> {
         executor,
         securityFactory,
         codecFactory,
-        aggregator);
+        aggregatorFactory);
   }
 }

@@ -5,6 +5,7 @@ import com.google.inject.Stage;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
+import com.xjeffrose.xio.core.XioAggregatorFactory;
 import com.xjeffrose.xio.core.XioCodecFactory;
 import com.xjeffrose.xio.core.XioNoOpSecurityFactory;
 import com.xjeffrose.xio.fixtures.XioTestProcessorFactory;
@@ -52,7 +53,12 @@ public class XioModuleTest {
                     return new HttpServerCodec();
                   }
                 })
-                .withAggregator(new HttpObjectAggregator(16777216))
+                .withAggregator(new XioAggregatorFactory() {
+                  @Override
+                  public ChannelHandler getAggregator() {
+                    return new HttpObjectAggregator(16777216);
+                  }
+                })
                 .build();
 
             // Bind the definition

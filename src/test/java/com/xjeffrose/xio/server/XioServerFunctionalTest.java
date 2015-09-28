@@ -15,6 +15,7 @@ import com.xjeffrose.xio.client.XioClient;
 import com.xjeffrose.xio.client.XioClientChannel;
 import com.xjeffrose.xio.client.XioClientConfig;
 import com.xjeffrose.xio.core.BBtoHttpResponse;
+import com.xjeffrose.xio.core.XioAggregatorFactory;
 import com.xjeffrose.xio.core.XioCodecFactory;
 import com.xjeffrose.xio.core.XioException;
 import com.xjeffrose.xio.core.XioNoOpHandler;
@@ -85,7 +86,12 @@ public class XioServerFunctionalTest {
             return new HttpServerCodec();
           }
         })
-        .withAggregator(new HttpObjectAggregator(16777216))
+        .withAggregator(new XioAggregatorFactory() {
+          @Override
+          public ChannelHandler getAggregator() {
+            return new HttpObjectAggregator(16777216);
+          }
+        })
         .build();
 
     XioServerConfig serverConfig = new XioServerConfigBuilder()
@@ -165,8 +171,10 @@ public class XioServerFunctionalTest {
             return new HttpServerCodec();
           }
         })
-        .withAggregator(new HttpObjectAggregator(16777216))
-        .build();
+        .withAggregator(new XioAggregatorFactory() {
+          @Override
+          public ChannelHandler getAggregator() {return new HttpObjectAggregator(16777216);}
+        })        .build();
 
     XioServerConfig serverConfig = new XioServerConfigBuilder()
         .setBossThreadCount(12)
@@ -347,7 +355,10 @@ public class XioServerFunctionalTest {
             return new HttpServerCodec();
           }
         })
-        .withAggregator(new HttpObjectAggregator(16777216))
+        .withAggregator(new XioAggregatorFactory() {
+          @Override
+          public ChannelHandler getAggregator() {return new HttpObjectAggregator(16777216);}
+        })
         .build();
 
     XioServerConfig serverConfig = new XioServerConfigBuilder()
@@ -444,7 +455,10 @@ public class XioServerFunctionalTest {
             return new HttpServerCodec();
           }
         })
-        .withAggregator(new HttpObjectAggregator(16777216))
+        .withAggregator(new XioAggregatorFactory() {
+          @Override
+          public ChannelHandler getAggregator() {return new HttpObjectAggregator(16777216);}
+        })
         .build();
 
     XioServerConfig serverConfig = new XioServerConfigBuilder()
@@ -637,7 +651,10 @@ public class XioServerFunctionalTest {
             return new HttpServerCodec();
           }
         })
-        .withAggregator(new HttpObjectAggregator(16777216))
+        .withAggregator(new XioAggregatorFactory() {
+          @Override
+          public ChannelHandler getAggregator() {return new HttpObjectAggregator(16777216);}
+        })
         .build();
 
     XioServerConfig serverConfig = new XioServerConfigBuilder()
@@ -759,7 +776,10 @@ public class XioServerFunctionalTest {
             return new HttpServerCodec();
           }
         })
-        .withAggregator(new HttpObjectAggregator(16777216))
+        .withAggregator(new XioAggregatorFactory() {
+          @Override
+          public ChannelHandler getAggregator() {return new HttpObjectAggregator(16777216);}
+        })
         .build();
 
     XioServerConfig serverConfig = new XioServerConfigBuilder()
@@ -803,6 +823,5 @@ public class XioServerFunctionalTest {
       }
     });
   }
-
 
 }

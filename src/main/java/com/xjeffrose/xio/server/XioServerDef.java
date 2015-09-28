@@ -1,5 +1,6 @@
 package com.xjeffrose.xio.server;
 
+import com.xjeffrose.xio.core.XioAggregatorFactory;
 import com.xjeffrose.xio.core.XioCodecFactory;
 import com.xjeffrose.xio.core.XioSecurityFactory;
 import com.xjeffrose.xio.processor.XioProcessorFactory;
@@ -20,7 +21,7 @@ public class XioServerDef {
   private final String name;
   private final XioSecurityFactory securityFactory;
   private final XioCodecFactory codecFactory;
-  private final ChannelHandler aggregator;
+  private final XioAggregatorFactory aggregatorFactory;
   private final InetSocketAddress hostAddress;
 
   public XioServerDef(
@@ -36,7 +37,7 @@ public class XioServerDef {
       Executor executor,
       XioSecurityFactory securityFactory,
       XioCodecFactory codecFactory,
-      ChannelHandler aggregator) {
+      XioAggregatorFactory aggregatorFactory) {
 
     this.name = name;
     this.serverPort = serverPort;
@@ -50,7 +51,7 @@ public class XioServerDef {
     this.executor = executor;
     this.securityFactory = securityFactory;
     this.codecFactory = codecFactory;
-    this.aggregator = aggregator;
+    this.aggregatorFactory = aggregatorFactory;
   }
 
   public static XioServerDefBuilder newBuilder() {
@@ -105,8 +106,8 @@ public class XioServerDef {
     return codecFactory;
   }
 
-  public ChannelHandler getAggregator() {
-    return aggregator;
+  public XioAggregatorFactory getAggregatorFactory() {
+    return aggregatorFactory;
   }
 
 }
