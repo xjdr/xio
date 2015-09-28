@@ -8,9 +8,11 @@ import com.xjeffrose.xio.server.RequestContext;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMessage;
+import io.netty.handler.codec.http.HttpObject;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.util.CharsetUtil;
@@ -32,56 +34,58 @@ public class XioTestProcessor implements XioProcessor {
 
     ListenableFuture<Boolean> httpResponseFuture = service.submit(new Callable<Boolean>() {
       public Boolean call() {
-        HttpMessage httpMessage = null;
-        HttpRequest request = null;
+        //HttpMessage httpMessage = null;
+        FullHttpRequest request = null;
 
-        if (msg instanceof HttpMessage) {
-          httpMessage = (HttpMessage) msg;
-          request = (HttpRequest) httpMessage;
-        }
+        if (msg instanceof FullHttpRequest) {
+//          httpMessage = (HttpMessage) msg;
+          request = (FullHttpRequest) msg;
 
-        final StringBuilder buf = new StringBuilder();
+          final StringBuilder buf = new StringBuilder();
 
-        buf.setLength(0);
-        buf.append("WELCOME TO THE WILD WILD WEB SERVER\r\n");
-        buf.append("===================================\r\n");
+          buf.setLength(0);
+          buf.append("WELCOME TO THE WILD WILD WEB SERVER\r\n");
+          buf.append("===================================\r\n");
 
-        buf.append("VERSION: ").append(request.getProtocolVersion()).append("\r\n");
-        buf.append("HOSTNAME: ").append(HttpHeaders.getHost(request, "unknown")).append("\r\n");
-        buf.append("REQUEST_URI: ").append(request.getUri()).append("\r\n\r\n");
+          buf.append("VERSION: ").append(request.getProtocolVersion()).append("\r\n");
+          buf.append("HOSTNAME: ").append(HttpHeaders.getHost(request, "unknown")).append("\r\n");
+          buf.append("REQUEST_URI: ").append(request.getUri()).append("\r\n\r\n");
 
-        HttpHeaders headers = request.headers();
-        if (!headers.isEmpty()) {
-          for (Map.Entry<String, String> h : headers) {
-            String key = h.getKey();
-            String value = h.getValue();
-            buf.append("HEADER: ").append(key).append(" = ").append(value).append("\r\n");
+          HttpHeaders headers = request.headers();
+          if (!headers.isEmpty()) {
+            for (Map.Entry<String, String> h : headers) {
+              String key = h.getKey();
+              String value = h.getValue();
+              buf.append("HEADER: ").append(key).append(" = ").append(value).append("\r\n");
+            }
+            buf.append("\r\n");
           }
-          buf.append("\r\n");
+
+          boolean keepAlive = HttpHeaders.isKeepAlive(request);
+          // Build the response object.
+          FullHttpResponse response = new DefaultFullHttpResponse(
+              HTTP_1_1, request.getDecoderResult().isSuccess() ? OK : BAD_REQUEST,
+              Unpooled.copiedBuffer(buf.toString(), CharsetUtil.UTF_8));
+
+          response.headers().set(CONTENT_TYPE, "text/plain; charset=UTF-8");
+          response.headers().set(CONTENT_LENGTH, response.content().readableBytes());
+
+          if (keepAlive) {
+            // Add keep alive header as per:
+            // - http://www.w3.org/Protocols/HTTP/1.1/draft-ietf-http-v11-spec-01.html#Connection
+            response.headers().set(CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
+          }
+
+          if (msg instanceof LastHttpContent) {
+            buf.append("END OF CONTENT\r\n");
+          }
+
+          respCtx.setContextData(respCtx.getConnectionId(), response);
+
+          return true;
+        } else {
+          return null;
         }
-
-        boolean keepAlive = HttpHeaders.isKeepAlive(request);
-        // Build the response object.
-        FullHttpResponse response = new DefaultFullHttpResponse(
-            HTTP_1_1, request.getDecoderResult().isSuccess() ? OK : BAD_REQUEST,
-            Unpooled.copiedBuffer(buf.toString(), CharsetUtil.UTF_8));
-
-        response.headers().set(CONTENT_TYPE, "text/plain; charset=UTF-8");
-        response.headers().set(CONTENT_LENGTH, response.content().readableBytes());
-
-        if (keepAlive) {
-          // Add keep alive header as per:
-          // - http://www.w3.org/Protocols/HTTP/1.1/draft-ietf-http-v11-spec-01.html#Connection
-          response.headers().set(CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
-        }
-
-        if (msg instanceof LastHttpContent) {
-          buf.append("END OF CONTENT\r\n");
-        }
-
-        respCtx.setContextData(respCtx.getConnectionId(), response);
-
-        return true;
       }
     });
     return httpResponseFuture;

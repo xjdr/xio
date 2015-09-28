@@ -12,6 +12,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.timeout.ReadTimeoutException;
 import io.netty.handler.timeout.WriteTimeoutException;
+import io.netty.util.ReferenceCountUtil;
 import io.netty.util.Timeout;
 import io.netty.util.Timer;
 import io.netty.util.TimerTask;
@@ -63,7 +64,7 @@ public abstract class AbstractClientChannel extends SimpleChannelInboundHandler<
 
   protected int extractSequenceId(ByteBuf messageBuffer) throws XioTransportException {
     try {
-      //TODO: REMOVE THIS
+      //TODO(JR): REMOVE THIS and determine more appropriate method for couting requests
       return 1;
     } catch (Throwable t) {
       throw new XioTransportException("Could not find sequenceId in message");
@@ -208,7 +209,9 @@ public abstract class AbstractClientChannel extends SimpleChannelInboundHandler<
         int sequenceId = extractSequenceId(response);
         onResponseReceived(sequenceId, response);
       } else {
-        ctx.fireChannelRead(msg);
+        //TODO(JR): Determine best course of action here
+        ReferenceCountUtil.release(msg);
+        //ctx.fireChannelRead(msg);
       }
     } catch (Throwable t) {
       onError(t);

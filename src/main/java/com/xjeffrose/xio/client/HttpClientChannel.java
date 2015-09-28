@@ -69,8 +69,7 @@ public class HttpClientChannel extends AbstractClientChannel {
 
     if (message instanceof FullHttpResponse) {
       httpResponse = (FullHttpResponse) message;
-  //    content = httpResponse.content();
-    }
+      //    content = httpResponse.content();
 
 //    if (message instanceof LastHttpContent) {
 //      LastHttpContent lastHttpContent = (LastHttpContent) message;
@@ -93,7 +92,7 @@ public class HttpClientChannel extends AbstractClientChannel {
 //      }
 //    }
 
-    //TODO(JR): Leave out for testing, ADD BACK BEFORE DEPLOYMENT!!!!!
+      //TODO(JR): Leave out for testing, ADD BACK BEFORE DEPLOYMENT!!!!!
 //      switch (httpResponse.getStatus().reasonPhrase()) {
 //        case("Unknown Status"):
 //          throw wrapException(new XioTransportException("HTTP response had non-OK status: " + httpResponse
@@ -112,33 +111,36 @@ public class HttpClientChannel extends AbstractClientChannel {
 //      HttpContent httpContent = (HttpContent) httpResponse;
 
 
-    String CRLF = "\r\n";
-    StringBuilder responseHeader = new StringBuilder();
-    responseHeader
-        .append(httpResponse.getProtocolVersion())
-        .append(' ')
-        .append(httpResponse.getStatus())
-        .append(CRLF);
-
-    httpResponse.headers().entries().forEach(xs -> {
+      String CRLF = "\r\n";
+      StringBuilder responseHeader = new StringBuilder();
       responseHeader
-          .append(xs.getKey())
-          .append(": ")
-          .append(xs.getValue())
+          .append(httpResponse.getProtocolVersion())
+          .append(' ')
+          .append(httpResponse.getStatus())
           .append(CRLF);
-    });
 
-    responseHeader.append(CRLF);
+      httpResponse.headers().entries().forEach(xs -> {
+        responseHeader
+            .append(xs.getKey())
+            .append(": ")
+            .append(xs.getValue())
+            .append(CRLF);
+      });
 
-    ByteBuf headerAndBody = getCtx().alloc().buffer();
-    headerAndBody.writeBytes(responseHeader.toString().getBytes(Charset.defaultCharset()));
+      responseHeader.append(CRLF);
 
-    if (httpResponse.content() != null) {
-      headerAndBody.writeBytes(httpResponse.content());
-      headerAndBody.writeBytes("\r\n".getBytes());
+      ByteBuf headerAndBody = getCtx().alloc().buffer();
+      headerAndBody.writeBytes(responseHeader.toString().getBytes(Charset.defaultCharset()));
+
+      if (httpResponse.content() != null) {
+        headerAndBody.writeBytes(httpResponse.content());
+        headerAndBody.writeBytes("\r\n".getBytes());
+      }
+
+      return headerAndBody;
+    } else {
+      return null;
     }
-
-    return headerAndBody;
   }
 
   @Override
@@ -162,7 +164,8 @@ public class HttpClientChannel extends AbstractClientChannel {
     httpRequest.headers().set(HttpHeaders.CONNECTION, CLOSE);
 //    httpRequest.headers().set(HttpHeaders.ACCEPT_ENCODING, GZIP);
 
-    log.debug("\nHTTP Request from XIO:\n" + httpRequest);
+    //TODO(JR): Remove logger before deployment
+    //log.debug("\nHTTP Request from XIO:\n" + httpRequest);
 
     return underlyingNettyChannel.writeAndFlush(httpRequest);
   }
