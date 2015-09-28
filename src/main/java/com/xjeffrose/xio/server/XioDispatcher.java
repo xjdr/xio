@@ -24,9 +24,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import org.apache.log4j.Logger;
 
 
 public class XioDispatcher extends SimpleChannelInboundHandler<Object> {
+  private static final Logger log = Logger.getLogger(XioServerTransport.class.getName());
+
   private final XioProcessorFactory processorFactory;
   private final long taskTimeoutMillis;
   private final Timer taskTimeoutTimer;
@@ -59,8 +62,8 @@ public class XioDispatcher extends SimpleChannelInboundHandler<Object> {
     if (o instanceof LastHttpContent) {
       LastHttpContent lastHttpContent = (LastHttpContent) o;
       if (lastHttpContent.toString().equals("EmptyLastHttpContent")) {
-        ((LastHttpContent) o).release();
-        ctx.fireChannelRead(o);
+//        ((LastHttpContent) o).release();
+//        ctx.fireChannelRead(o);
       }
     } else {
       processRequest(ctx, o);
@@ -199,9 +202,14 @@ public class XioDispatcher extends SimpleChannelInboundHandler<Object> {
       writeResponseInOrder(ctx, response, responseSequenceId);
     } else {
       // No ordering required, just write the response immediately
-      ctx.write(response).addListener(ChannelFutureListener.CLOSE);
-      channelReadComplete(ctx);
-      lastResponseWrittenId.incrementAndGet();
+      if (response != null) {
+        ctx.write(response).addListener(ChannelFutureListener.CLOSE);
+        channelReadComplete(ctx);
+        lastResponseWrittenId.incrementAndGet();
+      } else {
+        //TODO(JR): Do something
+        log.error("------------------Would have returned null response ------------------");
+      }
     }
   }
 
