@@ -9,7 +9,6 @@ import com.xjeffrose.xio.core.XioNoOpHandler;
 import com.xjeffrose.xio.core.XioSecurityFactory;
 import com.xjeffrose.xio.core.XioSecurityHandlers;
 import com.xjeffrose.xio.core.XioTimer;
-import com.xjeffrose.xio.fixtures.TcpClient;
 import com.xjeffrose.xio.fixtures.TcpServer;
 import com.xjeffrose.xio.server.XioServerConfig;
 import com.xjeffrose.xio.server.XioServerDef;
@@ -39,9 +38,8 @@ import static org.junit.Assert.assertTrue;
 
 
 public class XioClientTest {
-  private static final Logger log = Logger.getLogger(XioClientTest.class.getName());
   public static final XioTimer timer = new XioTimer("Test Timer", (long) 100, TimeUnit.MILLISECONDS, 100);
-
+  private static final Logger log = Logger.getLogger(XioClientTest.class.getName());
   final XioClientConfig xioClientConfig = XioClientConfig.newBuilder()
       .setSecurityFactory(new XioSecurityFactory() {
         @Override
@@ -250,14 +248,16 @@ public class XioClientTest {
 
   @Test
   public void testTcp() throws Exception {
-    TcpServer tcpServer = new TcpServer(12668);
+    TcpServer tcpServer = new TcpServer(8100);
     new Thread(tcpServer).start();
+
+    Thread.sleep(100);
 
     final Lock lock = new ReentrantLock();
     final Condition waitForFinish = lock.newCondition();
 
     XioClient xioClient = new XioClient();
-    ListenableFuture<XioClientChannel> responseFuture = xioClient.connectAsync(new TcpClientConnector("127.0.0.1", 12668));
+    ListenableFuture<XioClientChannel> responseFuture = xioClient.connectAsync(new TcpClientConnector("127.0.0.1", 8100));
     XioClientChannel xioClientChannel = responseFuture.get();
     TcpClientChannel tcpClientChannel = (TcpClientChannel) xioClientChannel;
 

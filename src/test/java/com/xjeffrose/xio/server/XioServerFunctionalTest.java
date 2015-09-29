@@ -41,22 +41,16 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.HttpVersion;
-import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
-import io.netty.util.CharsetUtil;
-import io.netty.util.ReferenceCountUtil;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -67,19 +61,13 @@ import javax.net.ssl.SSLException;
 import org.apache.log4j.Logger;
 import org.junit.Test;
 
-import static io.netty.handler.codec.http.HttpHeaders.Names.CONNECTION;
-import static io.netty.handler.codec.http.HttpHeaders.Names.CONTENT_LENGTH;
-import static io.netty.handler.codec.http.HttpHeaders.Names.CONTENT_TYPE;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
-import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 
 public class XioServerFunctionalTest {
-  private static final Logger log = Logger.getLogger(XioServerFunctionalTest.class.getName());
   public static final XioTimer timer = new XioTimer("Test Timer", (long) 100, TimeUnit.MILLISECONDS, 100);
+  private static final Logger log = Logger.getLogger(XioServerFunctionalTest.class.getName());
 
   @Test
   public void testComplexServerConfigurationTCP() throws Exception {
@@ -89,51 +77,27 @@ public class XioServerFunctionalTest {
         .limitFrameSizeTo(1024)
         .limitQueuedResponsesPerConnection(50)
         .listen(new InetSocketAddress(12665))
-//        .listen(new InetSocketAddress("127.0.0.1", 8082))
         .name("Xio Test Server")
         .taskTimeout(new Duration((double) 20000, TimeUnit.MILLISECONDS))
         .using(Executors.newCachedThreadPool())
         .withSecurityFactory(new XioNoOpSecurityFactory())
-        .withProcessorFactory(new XioProcessorFactory() {
-          @Override
-          public XioProcessor getProcessor() {
-            return new XioProcessor() {
-              @Override
-              public ListenableFuture<Boolean> process(ChannelHandlerContext ctx, Object request, RequestContext reqCtx) {
-                ListeningExecutorService service = MoreExecutors.listeningDecorator(ctx.executor());
+        .withProcessorFactory(() -> (ctx, request, reqCtx) -> {
+          ListeningExecutorService service = MoreExecutors.listeningDecorator(ctx.executor());
 
-                ListenableFuture<Boolean> tcpResponseFuture = service.submit(new Callable<Boolean>() {
-                  public Boolean call() {
-//                    ByteBuf response = ((ByteBuf) request).duplicate();
-//                    reqCtx.setContextData(reqCtx.getConnectionId(), response.retain());
-                    reqCtx.setContextData(reqCtx.getConnectionId(), request);
-                    return true;
-                  }
-                });
-                return tcpResponseFuture;
-              }
-            };
-          }
+          return service.submit(() -> {
+            reqCtx.setContextData(reqCtx.getConnectionId(), request);
+            return true;
+          });
         })
-        .withCodecFactory(new XioCodecFactory() {
+        .withCodecFactory(() -> new SimpleChannelInboundHandler<Object>() {
           @Override
-          public ChannelHandler getCodec() {
-            return new SimpleChannelInboundHandler<Object>() {
-              @Override
-              protected void channelRead0(ChannelHandlerContext ctx, Object o) throws Exception {
-                ByteBuf req = ((ByteBuf) o).retain();
-                //log.error(req.toString(Charset.defaultCharset()));
-                ctx.fireChannelRead(req.retain());
-              }
-            };
+          protected void channelRead0(ChannelHandlerContext ctx, Object o) throws Exception {
+            ByteBuf req = ((ByteBuf) o).retain();
+            //log.error(req.toString(Charset.defaultCharset()));
+            ctx.fireChannelRead(req.retain());
           }
         })
-        .withAggregator(new XioAggregatorFactory() {
-          @Override
-          public ChannelHandler getAggregator() {
-            return new XioNoOpHandler();
-          }
-        })
+        .withAggregator(XioNoOpHandler::new)
         .build();
 
     XioServerConfig serverConfig = new XioServerConfigBuilder()
@@ -154,14 +118,11 @@ public class XioServerFunctionalTest {
     server.start();
 
     // Use 3rd party client to test proper operation
-    //TODO(JR): Figure out why \n seems to get chomped off
+    //TODO(JR): Figure out why \n seems to get chopped off
     String expectedResponse = "Working TcpServer";
     String response = TcpClient.sendReq("127.0.0.1", 12665, expectedResponse);
 
     assertEquals(expectedResponse, response);
-
-    // For Integration Testing (LEAVE OUT!!!!)
-//    Thread.sleep(20000000);
 
     // Arrange to stop the server at shutdown
     Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -245,9 +206,6 @@ public class XioServerFunctionalTest {
     assertEquals(200, response.code());
     assertEquals(expectedResponse, response.body().string());
 
-    // For Integration Testing (LEAVE OUT!!!!)
-//    Thread.sleep(20000000);
-
     // Arrange to stop the server at shutdown
     Runtime.getRuntime().addShutdownHook(new Thread() {
       @Override
@@ -283,8 +241,10 @@ public class XioServerFunctionalTest {
         })
         .withAggregator(new XioAggregatorFactory() {
           @Override
-          public ChannelHandler getAggregator() {return new HttpObjectAggregator(16777216);}
-        })        .build();
+          public ChannelHandler getAggregator() {
+            return new HttpObjectAggregator(16777216);
+          }
+        }).build();
 
     XioServerConfig serverConfig = new XioServerConfigBuilder()
         .setBossThreadCount(12)
@@ -324,9 +284,6 @@ public class XioServerFunctionalTest {
 
     assertEquals(200, response.code());
     assertEquals(expectedResponse, response.body().string());
-
-    // For Integration Testing (LEAVE OUT!!!!)
-//    Thread.sleep(20000000);
 
     // Arrange to stop the server at shutdown
     Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -467,7 +424,9 @@ public class XioServerFunctionalTest {
         })
         .withAggregator(new XioAggregatorFactory() {
           @Override
-          public ChannelHandler getAggregator() {return new HttpObjectAggregator(16777216);}
+          public ChannelHandler getAggregator() {
+            return new HttpObjectAggregator(16777216);
+          }
         })
         .build();
 
@@ -496,9 +455,6 @@ public class XioServerFunctionalTest {
     Response response = OkHttpUnsafe.getUnsafeClient().newCall(request).execute();
     assertEquals(200, response.code());
     assertEquals("CONGRATS!\n", response.body().string());
-
-    // For Integration Testing (LEAVE OUT!!!!)
-//    Thread.sleep(20000000);
 
     // Arrange to stop the server at shutdown
     Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -567,7 +523,9 @@ public class XioServerFunctionalTest {
         })
         .withAggregator(new XioAggregatorFactory() {
           @Override
-          public ChannelHandler getAggregator() {return new HttpObjectAggregator(16777216);}
+          public ChannelHandler getAggregator() {
+            return new HttpObjectAggregator(16777216);
+          }
         })
         .build();
 
@@ -597,8 +555,6 @@ public class XioServerFunctionalTest {
     assertEquals(200, response.code());
     assertEquals("CONGRATS!\n", response.body().string());
 
-    // For Integration Testing (LEAVE OUT!!!!)
-//    Thread.sleep(20000000);
 
     // Arrange to stop the server at shutdown
     Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -763,7 +719,9 @@ public class XioServerFunctionalTest {
         })
         .withAggregator(new XioAggregatorFactory() {
           @Override
-          public ChannelHandler getAggregator() {return new HttpObjectAggregator(16777216);}
+          public ChannelHandler getAggregator() {
+            return new HttpObjectAggregator(16777216);
+          }
         })
         .build();
 
@@ -792,9 +750,6 @@ public class XioServerFunctionalTest {
     Response response = OkHttpUnsafe.getUnsafeClient().newCall(request).execute();
     assertEquals(200, response.code());
     assertTrue(!response.body().string().isEmpty());
-
-    // For Integration Testing (LEAVE OUT!!!!)
-//    Thread.sleep(20000000);
 
     // Arrange to stop the server at shutdown
     Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -888,7 +843,9 @@ public class XioServerFunctionalTest {
         })
         .withAggregator(new XioAggregatorFactory() {
           @Override
-          public ChannelHandler getAggregator() {return new HttpObjectAggregator(16777216);}
+          public ChannelHandler getAggregator() {
+            return new HttpObjectAggregator(16777216);
+          }
         })
         .build();
 
@@ -917,9 +874,6 @@ public class XioServerFunctionalTest {
     Response response = OkHttpUnsafe.getUnsafeClient().newCall(request).execute();
     assertEquals(200, response.code());
     assertTrue(!response.body().string().isEmpty());
-
-    // For Integration Testing (LEAVE OUT!!!!)
-//    Thread.sleep(20000000);
 
     // Arrange to stop the server at shutdown
     Runtime.getRuntime().addShutdownHook(new Thread() {
