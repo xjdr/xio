@@ -211,7 +211,7 @@ public abstract class AbstractClientChannel extends SimpleChannelInboundHandler<
       } else {
         //TODO(JR): Determine best course of action here
         ReferenceCountUtil.release(msg);
-        //ctx.fireChannelRead(msg);
+//        ctx.fireChannelRead(msg);
       }
     } catch (Throwable t) {
       onError(t);

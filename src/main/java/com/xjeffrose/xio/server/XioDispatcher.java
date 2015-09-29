@@ -12,7 +12,6 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.DefaultHttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
-import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.util.AttributeKey;
 import io.netty.util.Timeout;
 import io.netty.util.Timer;
@@ -59,15 +58,7 @@ public class XioDispatcher extends SimpleChannelInboundHandler<Object> {
 
   @Override
   protected void channelRead0(ChannelHandlerContext ctx, Object o) throws Exception {
-//    if (o instanceof LastHttpContent) {
-//      LastHttpContent lastHttpContent = (LastHttpContent) o;
-//      if (lastHttpContent.toString().equals("EmptyLastHttpContent")) {
-//        ((LastHttpContent) o).release();
-//        ctx.fireChannelRead(o);
-//      }
-//    } else {
-      processRequest(ctx, o);
-//    }
+    processRequest(ctx, o);
   }
 
 

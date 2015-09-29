@@ -9,7 +9,8 @@ import com.xjeffrose.xio.core.XioNoOpHandler;
 import com.xjeffrose.xio.core.XioSecurityFactory;
 import com.xjeffrose.xio.core.XioSecurityHandlers;
 import com.xjeffrose.xio.core.XioTimer;
-import com.xjeffrose.xio.core.XioTransportException;
+import com.xjeffrose.xio.fixtures.TcpClient;
+import com.xjeffrose.xio.fixtures.TcpServer;
 import com.xjeffrose.xio.server.XioServerConfig;
 import com.xjeffrose.xio.server.XioServerDef;
 import io.netty.buffer.ByteBuf;
@@ -30,6 +31,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import javax.net.ssl.SSLException;
+import org.apache.log4j.Logger;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -37,6 +39,7 @@ import static org.junit.Assert.assertTrue;
 
 
 public class XioClientTest {
+  private static final Logger log = Logger.getLogger(XioClientTest.class.getName());
   public static final XioTimer timer = new XioTimer("Test Timer", (long) 100, TimeUnit.MILLISECONDS, 100);
 
   final XioClientConfig xioClientConfig = XioClientConfig.newBuilder()
@@ -82,7 +85,7 @@ public class XioClientTest {
     assertTrue(httpResponse.content() != null);
   }
 
-//  @Test(expected = XioTransportException.class)
+  //  @Test(expected = XioTransportException.class)
   @Test
   public void testBadCall() throws Exception {
 
@@ -102,17 +105,6 @@ public class XioClientTest {
     assertEquals("nginx/1.6.0", httpResponse.headers().get("Server"));
     assertTrue(httpResponse.content() != null);
   }
-
-  @Test
-  public void testCall2() throws Exception {
-
-  }
-
-  @Test
-  public void testCall3() throws Exception {
-
-  }
-
 
   @Test
   public void testAsyncHttp() throws Exception {
@@ -254,5 +246,60 @@ public class XioClientTest {
     assertEquals("nginx/1.6.0", httpResponse.headers().get("Server"));
     assertTrue(httpResponse.content() != null);
 
+  }
+
+  @Test
+  public void testTcp() throws Exception {
+    TcpServer tcpServer = new TcpServer(12668);
+    new Thread(tcpServer).start();
+
+    final Lock lock = new ReentrantLock();
+    final Condition waitForFinish = lock.newCondition();
+
+    XioClient xioClient = new XioClient();
+    ListenableFuture<XioClientChannel> responseFuture = xioClient.connectAsync(new TcpClientConnector("127.0.0.1", 12668));
+    XioClientChannel xioClientChannel = responseFuture.get();
+    TcpClientChannel tcpClientChannel = (TcpClientChannel) xioClientChannel;
+
+    Listener listener = new Listener() {
+      ByteBuf response;
+
+      @Override
+      public void onRequestSent() {
+        //For debug only
+//        log.error("Request Sent");
+      }
+
+      @Override
+      public void onResponseReceived(ByteBuf message) {
+        response = message;
+        lock.lock();
+        waitForFinish.signalAll();
+        lock.unlock();
+      }
+
+      @Override
+      public void onChannelError(XioException requestException) {
+        log.error("Error", requestException);
+
+        lock.lock();
+        waitForFinish.signalAll();
+        lock.unlock();
+      }
+
+      @Override
+      public ByteBuf getResponse() {
+        return response;
+      }
+
+    };
+
+    tcpClientChannel.sendAsynchronousRequest(Unpooled.wrappedBuffer("Working Tcp Proxy\n".getBytes()), false, listener);
+
+    lock.lock();
+    waitForFinish.await();
+    lock.unlock();
+
+    assertEquals("Working Tcp Proxy\n", listener.getResponse().toString(Charset.defaultCharset()));
   }
 }
