@@ -147,12 +147,12 @@ public class HttpClientChannel extends AbstractClientChannel {
   protected ChannelFuture writeRequest(@Nullable ByteBuf request) {
     DefaultFullHttpRequest httpRequest;
 
-    if (request == Unpooled.EMPTY_BUFFER || request == null) {
+    if (request == Unpooled.EMPTY_BUFFER || request == null || request.readableBytes() == 0) {
       httpRequest = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, uri.getPath());
-      httpRequest.headers().add(HttpHeaders.CONTENT_LENGTH, "0");
+      //httpRequest.headers().add(HttpHeaders.CONTENT_LENGTH, "0");
     } else {
       httpRequest = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, uri.getPath(), request);
-      httpRequest.headers().add(HttpHeaders.CONTENT_LENGTH, request.readableBytes());
+//      httpRequest.headers().add(HttpHeaders.CONTENT_LENGTH, request.readableBytes());
     }
 
     if (headerDictionary != null) {

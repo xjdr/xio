@@ -21,7 +21,6 @@ public class TcpClientChannel extends AbstractClientChannel {
   private final Timer timer;
   private final XioProtocolFactory protocolFactory;
 
-
   protected TcpClientChannel(Channel channel,
                              Timer timer,
                              XioProtocolFactory protocolFactory) {
