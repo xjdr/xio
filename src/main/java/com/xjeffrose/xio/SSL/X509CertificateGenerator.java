@@ -34,7 +34,6 @@ import java.security.spec.RSAPrivateCrtKeySpec;
 import java.security.spec.RSAPublicKeySpec;
 import java.util.Base64;
 import org.apache.log4j.Logger;
-import org.apache.log4j.Priority;
 import sun.security.util.DerInputStream;
 import sun.security.util.DerValue;
 import sun.security.x509.X509CertImpl;
@@ -107,7 +106,6 @@ public final class X509CertificateGenerator {
     } catch (InvalidKeySpecException | NoSuchAlgorithmException e) {
       throw new RuntimeException(e);
     }
-
   }
 
   public static PublicKey parsePublicKeyFromPEM(String path) {
@@ -131,12 +129,12 @@ public final class X509CertificateGenerator {
 
       return new X509Certificate(cert.getIssuerX500Principal().getName(), privateKey, cert);
     } catch (FileNotFoundException | CertificateException e) {
-      log.log(Priority.ERROR, "Failed to import x509 cert", e);
+      log.error("Failed to import x509 cert", e);
       throw new RuntimeException(e);
     }
   }
 
-  static class DERKeySpec {
+  public static class DERKeySpec {
     public BigInteger version;
     public BigInteger modulus;
     public BigInteger publicExp;
