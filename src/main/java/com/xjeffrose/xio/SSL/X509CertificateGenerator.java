@@ -46,7 +46,7 @@ public final class X509CertificateGenerator {
 
   public static DERKeySpec parseDERKeySpec(String path) {
     try {
-      String rawKeyString = new String(Files.readAllBytes(Paths.get(path)));
+      String rawKeyString = new String(Files.readAllBytes(Paths.get(path).toAbsolutePath()));
 
       // Base64 decode the data
       Base64.Decoder b64decoder = Base64.getDecoder();
