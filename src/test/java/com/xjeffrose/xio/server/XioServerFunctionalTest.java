@@ -76,7 +76,7 @@ public class XioServerFunctionalTest {
         .limitConnectionsTo(200)
         .limitFrameSizeTo(1024)
         .limitQueuedResponsesPerConnection(50)
-        .listen(new InetSocketAddress(12665))
+        .listen(new InetSocketAddress(9001))
         .name("Xio Test Server")
         .taskTimeout(new Duration((double) 20000, TimeUnit.MILLISECONDS))
         .using(Executors.newCachedThreadPool())
@@ -120,7 +120,7 @@ public class XioServerFunctionalTest {
     // Use 3rd party client to test proper operation
     //TODO(JR): Figure out why \n seems to get chopped off
     String expectedResponse = "Working TcpServer";
-    String response = TcpClient.sendReq("127.0.0.1", 12665, expectedResponse);
+    String response = TcpClient.sendReq("127.0.0.1", 9001, expectedResponse);
 
     assertEquals(expectedResponse, response);
 
