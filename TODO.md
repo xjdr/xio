@@ -8,3 +8,8 @@ TODO
 * Add better testing around client failure modes
 
 * Add load balancing (Big topic that has many sub tasks)
+
+* Add retry with exponential back-off to client
+
+* Add full HttpParser for BBtoHttpResponse
+

@@ -132,7 +132,7 @@ public class XioClient implements Closeable {
 
       @Override
       public void onResponseReceived(ByteBuf message) {
-        response = message;
+        response = message.duplicate();
         lock.lock();
         waitForFinish.signalAll();
         lock.unlock();

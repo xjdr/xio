@@ -135,7 +135,7 @@ public class XioServerTransport {
     try {
       serverChannel = bootstrap.bind(hostAddr).sync().channel();
     } catch (InterruptedException e) {
-      //TODO: Do somefin here
+      //TODO(JR): Do somefin here
       e.printStackTrace();
     }
     InetSocketAddress actualSocket = (InetSocketAddress) serverChannel.localAddress();

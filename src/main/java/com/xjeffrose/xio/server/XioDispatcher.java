@@ -88,83 +88,80 @@ public class XioDispatcher extends SimpleChannelInboundHandler<Object> {
     }
 
     try {
-      ctx.executor().execute(new Runnable() {
-        @Override
-        public void run() {
-          ListenableFuture<Boolean> processFuture;
-          final AtomicBoolean responseSent = new AtomicBoolean(false);
-          // Use AtomicReference as a generic holder class to be able to mark it final
-          // and pass into inner classes. Since we only use .get() and .set(), we don't
-          // actually do any atomic operations.
-          final AtomicReference<Timeout> expireTimeout = new AtomicReference<>(null);
+      ctx.executor().execute(() -> {
+        ListenableFuture<Boolean> processFuture;
+        final AtomicBoolean responseSent = new AtomicBoolean(false);
+        // Use AtomicReference as a generic holder class to be able to mark it final
+        // and pass into inner classes. Since we only use .get() and .set(), we don't
+        // actually do any atomic operations.
+        final AtomicReference<Timeout> expireTimeout = new AtomicReference<>(null);
 
+        try {
           try {
-            try {
-              long timeRemaining = 0;
-              if (taskTimeoutMillis > 0) {
-                long timeElapsed = System.currentTimeMillis() - requestStart;
-                if (timeElapsed >= taskTimeoutMillis) {
-                  // TODO: Send (Throw?) timeout exception
-                  sendApplicationException(HttpResponseStatus.REQUEST_TIMEOUT, ctx);
-                  return;
-                } else {
-                  timeRemaining = taskTimeoutMillis - timeElapsed;
-                }
+            long timeRemaining = 0;
+            if (taskTimeoutMillis > 0) {
+              long timeElapsed = System.currentTimeMillis() - requestStart;
+              if (timeElapsed >= taskTimeoutMillis) {
+                // TODO(JR): Send (Throw?) timeout exception
+                sendApplicationException(HttpResponseStatus.REQUEST_TIMEOUT, ctx);
+                return;
+              } else {
+                timeRemaining = taskTimeoutMillis - timeElapsed;
               }
-
-              if (timeRemaining > 0) {
-                expireTimeout.set(taskTimeoutTimer.newTimeout(new TimerTask() {
-                  @Override
-                  public void run(Timeout timeout) throws Exception {
-                    if (responseSent.compareAndSet(false, true)) {
-                      sendApplicationException(HttpResponseStatus.REQUEST_TIMEOUT, ctx);
-                      // TODO: Send (Throw?) timeout exception
-                    }
-                  }
-                }, timeRemaining, TimeUnit.MILLISECONDS));
-              }
-
-              ConnectionContext connectionContext = ConnectionContexts.getContext(ctx.channel());
-              requestContext = new XioRequestContext(connectionContext);
-              RequestContexts.setCurrentContext(requestContext);
-
-              processFuture = processorFactory.getProcessor().process(ctx, message, requestContext);
-            } finally {
-              // RequestContext does NOT stay set while we are waiting for the process
-              // future to complete. This is by design because we'll might move on to the
-              // next request using this thread before this one is completed. If you need
-              // the context throughout an asynchronous handler, you need to read and store
-              // it before returning a future.
-              RequestContexts.clearCurrentContext();
             }
 
-            Futures.addCallback(
-                processFuture,
-                new FutureCallback<Boolean>() {
-                  @Override
-                  public void onSuccess(Boolean result) {
-                    deleteExpirationTimer(expireTimeout.get());
-                    try {
-                      // Only write response if the client is still there and the task timeout
-                      // hasn't expired.
-                      if (ctx.channel().isActive() && responseSent.compareAndSet(false, true)) {
-                        writeResponse(ctx, requestContext.getContextData(requestContext.getConnectionId()), requestSequenceId);
-                      }
-                    } catch (Throwable t) {
-                      onDispatchException(ctx, t);
-                    }
+            if (timeRemaining > 0) {
+              expireTimeout.set(taskTimeoutTimer.newTimeout(new TimerTask() {
+                @Override
+                public void run(Timeout timeout) throws Exception {
+                  if (responseSent.compareAndSet(false, true)) {
+                    sendApplicationException(HttpResponseStatus.REQUEST_TIMEOUT, ctx);
+                    // TODO(JR): Send (Throw?) timeout exception
                   }
+                }
+              }, timeRemaining, TimeUnit.MILLISECONDS));
+            }
 
-                  @Override
-                  public void onFailure(Throwable t) {
-                    deleteExpirationTimer(expireTimeout.get());
+            ConnectionContext connectionContext = ConnectionContexts.getContext(ctx.channel());
+            requestContext = new XioRequestContext(connectionContext);
+            RequestContexts.setCurrentContext(requestContext);
+
+            processFuture = processorFactory.getProcessor().process(ctx, message, requestContext);
+          } finally {
+            // RequestContext does NOT stay set while we are waiting for the process
+            // future to complete. This is by design because we'll might move on to the
+            // next request using this thread before this one is completed. If you need
+            // the context throughout an asynchronous handler, you need to read and store
+            // it before returning a future.
+            RequestContexts.clearCurrentContext();
+          }
+
+          Futures.addCallback(
+              processFuture,
+              new FutureCallback<Boolean>() {
+                @Override
+                public void onSuccess(Boolean result) {
+                  deleteExpirationTimer(expireTimeout.get());
+                  try {
+                    // Only write response if the client is still there and the task timeout
+                    // hasn't expired.
+                    if (ctx.channel().isActive() && responseSent.compareAndSet(false, true)) {
+                      writeResponse(ctx, requestContext.getContextData(requestContext.getConnectionId()), requestSequenceId);
+                    }
+                  } catch (Throwable t) {
                     onDispatchException(ctx, t);
                   }
                 }
-            );
-          } catch (Exception e) {
-            onDispatchException(ctx, e);
-          }
+
+                @Override
+                public void onFailure(Throwable t) {
+                  deleteExpirationTimer(expireTimeout.get());
+                  onDispatchException(ctx, t);
+                }
+              }
+          );
+        } catch (Exception e) {
+          onDispatchException(ctx, e);
         }
       });
     } catch (RejectedExecutionException ex) {

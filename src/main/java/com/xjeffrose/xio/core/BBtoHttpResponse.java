@@ -55,7 +55,7 @@ public class BBtoHttpResponse {
     }
 
     for (int i = 1; i < headers.length; i++) {
-      String[] xs = headers[i].split(":");
+      String[] xs = headers[i].split(":", 2);
       httpResponse.headers().add(xs[0].trim(), xs[1].trim());
     }
 
