@@ -10,6 +10,7 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.DefaultHttpResponse;
+import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.util.AttributeKey;
@@ -58,6 +59,11 @@ public class XioDispatcher extends SimpleChannelInboundHandler<Object> {
 
   @Override
   protected void channelRead0(ChannelHandlerContext ctx, Object o) throws Exception {
+    // retain the object so that it can be used in XioClient
+    // TODO: more logic if o can be of other types
+    if (o instanceof FullHttpRequest) {
+      ((FullHttpRequest) o).retain();
+    }
     processRequest(ctx, o);
   }
 
