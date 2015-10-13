@@ -248,7 +248,7 @@ public class XioDispatcher extends SimpleChannelInboundHandler<Object> {
     closeChannel(ctx);
 
     // Send for logging
-    ctx.fireChannelRead(ctx);
+    ctx.fireChannelRead(cause);
   }
 
   private void closeChannel(ChannelHandlerContext ctx) {
