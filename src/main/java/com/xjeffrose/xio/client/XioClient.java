@@ -11,6 +11,7 @@ import com.xjeffrose.xio.core.XioException;
 import io.airlift.units.Duration;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufHolder;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
@@ -29,7 +30,6 @@ import io.netty.util.Timer;
 import java.io.Closeable;
 import java.net.InetSocketAddress;
 import java.net.URI;
-import java.nio.charset.Charset;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
@@ -122,8 +122,8 @@ public class XioClient implements Closeable {
         HttpHeaders.HOST, uri.getHost(),
         HttpHeaders.USER_AGENT, "xio"));
 
-    Listener listener = new Listener() {
-      ByteBuf response;
+    Listener listener = new Listener<ByteBufHolder>() {
+      ByteBufHolder response;
 
       @Override
       public void onRequestSent() {
@@ -131,8 +131,9 @@ public class XioClient implements Closeable {
       }
 
       @Override
-      public void onResponseReceived(ByteBuf message) {
-        response = message.duplicate();
+      public void onResponseReceived(ByteBufHolder message) {
+        response = message;
+//        response = message.duplicate();
         lock.lock();
         waitForFinish.signalAll();
         lock.unlock();
@@ -149,7 +150,7 @@ public class XioClient implements Closeable {
             .append(requestException.getMessage())
             .append("\n");
 
-        response = Unpooled.wrappedBuffer(sb.toString().getBytes());
+        response = (ByteBufHolder) Unpooled.wrappedBuffer(sb.toString().getBytes());
 
         lock.lock();
         waitForFinish.signalAll();
@@ -157,7 +158,7 @@ public class XioClient implements Closeable {
       }
 
       @Override
-      public ByteBuf getResponse() {
+      public ByteBufHolder getResponse() {
         return response;
       }
 
@@ -170,7 +171,8 @@ public class XioClient implements Closeable {
     lock.unlock();
 
 
-    return BBtoHttpResponse.getResponse(listener.getResponse());
+//    return BBtoHttpResponse.getResponse(listener.getResponse());
+    return null;
   }
 
   @SuppressWarnings("unchecked")

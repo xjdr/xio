@@ -47,6 +47,7 @@ import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
+import io.netty.util.ReferenceCounted;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.charset.Charset;
@@ -92,9 +93,7 @@ public class XioServerFunctionalTest {
         .withCodecFactory(() -> new SimpleChannelInboundHandler<Object>() {
           @Override
           protected void channelRead0(ChannelHandlerContext ctx, Object o) throws Exception {
-            ByteBuf req = ((ByteBuf) o).retain();
-            //log.error(req.toString(Charset.defaultCharset()));
-            ctx.fireChannelRead(req.retain());
+            ctx.fireChannelRead(((ByteBuf) o).retain());
           }
         })
         .withAggregator(XioNoOpHandler::new)
@@ -352,8 +351,8 @@ public class XioServerFunctionalTest {
 
                     httpClientChannel.setHeaders(headerMap);
 
-                    Listener listener = new Listener() {
-                      ByteBuf response;
+                    Listener listener = new Listener<ReferenceCounted>() {
+                      ReferenceCounted response;
 
                       @Override
                       public void onRequestSent() {
@@ -361,7 +360,7 @@ public class XioServerFunctionalTest {
                       }
 
                       @Override
-                      public void onResponseReceived(ByteBuf message) {
+                      public void onResponseReceived(ReferenceCounted message) {
                         response = message;
                         lock.lock();
                         waitForFinish.signalAll();
@@ -648,7 +647,7 @@ public class XioServerFunctionalTest {
 
                     httpClientChannel.setHeaders(headerMap);
 
-                    Listener listener = new Listener() {
+                    Listener listener = new Listener<ByteBuf>() {
                       ByteBuf response;
 
                       @Override

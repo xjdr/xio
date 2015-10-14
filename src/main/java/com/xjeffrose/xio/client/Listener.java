@@ -1,15 +1,15 @@
 package com.xjeffrose.xio.client;
 
 import com.xjeffrose.xio.core.XioException;
-import io.netty.buffer.ByteBuf;
+import io.netty.util.ReferenceCounted;
 
-public interface Listener {
+public interface Listener<T extends ReferenceCounted> {
 
   void onRequestSent();
 
-  void onResponseReceived(ByteBuf message);
+  void onResponseReceived(T message);
 
   void onChannelError(XioException requestException);
 
-  ByteBuf getResponse();
+  T getResponse();
 }

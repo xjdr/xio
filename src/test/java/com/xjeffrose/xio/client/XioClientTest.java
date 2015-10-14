@@ -13,6 +13,7 @@ import com.xjeffrose.xio.fixtures.TcpServer;
 import com.xjeffrose.xio.server.XioServerConfig;
 import com.xjeffrose.xio.server.XioServerDef;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufHolder;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandler;
@@ -115,7 +116,7 @@ public class XioClientTest {
     XioClientChannel xioClientChannel = responseFuture.get();
     HttpClientChannel httpClientChannel = (HttpClientChannel) xioClientChannel;
 
-    Listener listener = new Listener() {
+    Listener listener = new Listener<ByteBuf>() {
       ByteBuf response;
 
       @Override
@@ -178,8 +179,8 @@ public class XioClientTest {
     final Condition waitForFinish = lock.newCondition();
     final XioClient xioClient = new XioClient(xioClientConfig);
 
-    Listener listener = new Listener() {
-      ByteBuf response;
+    Listener listener = new Listener<ByteBufHolder>() {
+      ByteBufHolder response;
 
       @Override
       public void onRequestSent() {
@@ -188,7 +189,7 @@ public class XioClientTest {
       }
 
       @Override
-      public void onResponseReceived(ByteBuf message) {
+      public void onResponseReceived(ByteBufHolder message) {
         response = message;
 
         lock.lock();
@@ -207,7 +208,7 @@ public class XioClientTest {
             .append(requestException.getMessage())
             .append("\n");
 
-        response = Unpooled.wrappedBuffer(sb.toString().getBytes());
+        response = (ByteBufHolder) Unpooled.wrappedBuffer(sb.toString().getBytes());
 
         lock.lock();
         waitForFinish.signalAll();
@@ -215,7 +216,7 @@ public class XioClientTest {
       }
 
       @Override
-      public ByteBuf getResponse() {
+      public ByteBufHolder getResponse() {
         return response;
       }
     };
@@ -271,7 +272,7 @@ public class XioClientTest {
       }
 
       @Override
-      public void onResponseReceived(ByteBuf message) {
+      public void onResponseReceived(Object message) {
         response = message;
         lock.lock();
         waitForFinish.signalAll();
