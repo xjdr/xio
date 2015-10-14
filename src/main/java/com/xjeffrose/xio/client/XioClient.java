@@ -26,6 +26,7 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
+import io.netty.util.ReferenceCounted;
 import io.netty.util.Timer;
 import java.io.Closeable;
 import java.net.InetSocketAddress;
@@ -122,8 +123,8 @@ public class XioClient implements Closeable {
         HttpHeaders.HOST, uri.getHost(),
         HttpHeaders.USER_AGENT, "xio"));
 
-    Listener listener = new Listener<ByteBufHolder>() {
-      ByteBufHolder response;
+    Listener<ReferenceCounted> listener = new Listener<ReferenceCounted>() {
+      ReferenceCounted response;
 
       @Override
       public void onRequestSent() {
@@ -131,7 +132,7 @@ public class XioClient implements Closeable {
       }
 
       @Override
-      public void onResponseReceived(ByteBufHolder message) {
+      public void onResponseReceived(ReferenceCounted message) {
         response = message;
 //        response = message.duplicate();
         lock.lock();
@@ -150,7 +151,7 @@ public class XioClient implements Closeable {
             .append(requestException.getMessage())
             .append("\n");
 
-        response = (ByteBufHolder) Unpooled.wrappedBuffer(sb.toString().getBytes());
+        response = Unpooled.wrappedBuffer(sb.toString().getBytes());
 
         lock.lock();
         waitForFinish.signalAll();
@@ -158,7 +159,7 @@ public class XioClient implements Closeable {
       }
 
       @Override
-      public ByteBufHolder getResponse() {
+      public ReferenceCounted getResponse() {
         return response;
       }
 
@@ -171,8 +172,7 @@ public class XioClient implements Closeable {
     lock.unlock();
 
 
-//    return BBtoHttpResponse.getResponse(listener.getResponse());
-    return null;
+    return BBtoHttpResponse.getResponse((ByteBuf)listener.getResponse());
   }
 
   @SuppressWarnings("unchecked")
