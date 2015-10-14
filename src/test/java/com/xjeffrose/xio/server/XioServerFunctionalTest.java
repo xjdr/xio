@@ -15,6 +15,8 @@ import com.xjeffrose.xio.client.XioClient;
 import com.xjeffrose.xio.client.XioClientChannel;
 import com.xjeffrose.xio.client.XioClientConfig;
 import com.xjeffrose.xio.core.BBtoHttpResponse;
+import com.xjeffrose.xio.core.TcpAggregator;
+import com.xjeffrose.xio.core.TcpCodec;
 import com.xjeffrose.xio.core.XioAggregatorFactory;
 import com.xjeffrose.xio.core.XioCodecFactory;
 import com.xjeffrose.xio.core.XioException;
@@ -351,8 +353,8 @@ public class XioServerFunctionalTest {
 
                     httpClientChannel.setHeaders(headerMap);
 
-                    Listener listener = new Listener<ReferenceCounted>() {
-                      ReferenceCounted response;
+                    Listener<ByteBuf> listener = new Listener<ByteBuf>() {
+                      ByteBuf response;
 
                       @Override
                       public void onRequestSent() {
@@ -360,7 +362,7 @@ public class XioServerFunctionalTest {
                       }
 
                       @Override
-                      public void onResponseReceived(ReferenceCounted message) {
+                      public void onResponseReceived(ByteBuf message) {
                         response = message;
                         lock.lock();
                         waitForFinish.signalAll();
@@ -647,7 +649,7 @@ public class XioServerFunctionalTest {
 
                     httpClientChannel.setHeaders(headerMap);
 
-                    Listener listener = new Listener<ByteBuf>() {
+                    Listener<ByteBuf> listener = new Listener<ByteBuf>() {
                       ByteBuf response;
 
                       @Override

@@ -116,7 +116,7 @@ public class XioClientTest {
     XioClientChannel xioClientChannel = responseFuture.get();
     HttpClientChannel httpClientChannel = (HttpClientChannel) xioClientChannel;
 
-    Listener listener = new Listener<ByteBuf>() {
+    Listener<ByteBuf> listener = new Listener<ByteBuf>() {
       ByteBuf response;
 
       @Override
@@ -179,8 +179,8 @@ public class XioClientTest {
     final Condition waitForFinish = lock.newCondition();
     final XioClient xioClient = new XioClient(xioClientConfig);
 
-    Listener listener = new Listener<ByteBufHolder>() {
-      ByteBufHolder response;
+    Listener<ByteBuf> listener = new Listener<ByteBuf>() {
+      ByteBuf response;
 
       @Override
       public void onRequestSent() {
@@ -189,7 +189,7 @@ public class XioClientTest {
       }
 
       @Override
-      public void onResponseReceived(ByteBufHolder message) {
+      public void onResponseReceived(ByteBuf message) {
         response = message;
 
         lock.lock();
@@ -208,7 +208,7 @@ public class XioClientTest {
             .append(requestException.getMessage())
             .append("\n");
 
-        response = (ByteBufHolder) Unpooled.wrappedBuffer(sb.toString().getBytes());
+        response = (ByteBuf) Unpooled.wrappedBuffer(sb.toString().getBytes());
 
         lock.lock();
         waitForFinish.signalAll();
@@ -216,7 +216,7 @@ public class XioClientTest {
       }
 
       @Override
-      public ByteBufHolder getResponse() {
+      public ByteBuf getResponse() {
         return response;
       }
     };
@@ -262,7 +262,7 @@ public class XioClientTest {
     XioClientChannel xioClientChannel = responseFuture.get();
     TcpClientChannel tcpClientChannel = (TcpClientChannel) xioClientChannel;
 
-    Listener listener = new Listener() {
+    Listener<ByteBuf> listener = new Listener<ByteBuf>() {
       ByteBuf response;
 
       @Override
@@ -272,7 +272,7 @@ public class XioClientTest {
       }
 
       @Override
-      public void onResponseReceived(Object message) {
+      public void onResponseReceived(ByteBuf message) {
         response = message;
         lock.lock();
         waitForFinish.signalAll();
