@@ -83,7 +83,7 @@
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
-            <version>4.0.30.Final</version>
+            <version>4.0.32.Final</version>
         </dependency>
 
         <!--Mac for Testing, please use linux for production-->
