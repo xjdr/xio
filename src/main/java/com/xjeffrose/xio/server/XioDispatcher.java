@@ -42,7 +42,7 @@ public class XioDispatcher extends SimpleChannelInboundHandler<Object> {
   private final XioProcessor processor;
 
   private RequestContext requestContext;
-  private boolean isOrderedResponsesRequired = false;
+  private boolean isOrderedResponsesRequired = true;
   private XioServerConfig config;
 
   public XioDispatcher(XioServerDef def, XioServerConfig config) {
@@ -218,8 +218,7 @@ public class XioDispatcher extends SimpleChannelInboundHandler<Object> {
         // This response was next in line, write this response now, and see if
         // there are others next in line that should be sent now as well.
         do {
-          ctx.write(response).addListener(ChannelFutureListener.CLOSE);
-          ctx.close();
+          ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
           lastResponseWrittenId.incrementAndGet();
           ++currentResponseId;
           response = responseMap.remove(currentResponseId);
