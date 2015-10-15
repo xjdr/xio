@@ -53,20 +53,13 @@ public class XioDispatcher extends SimpleChannelInboundHandler<Object> {
   }
 
   @Override
-  public void channelReadComplete(ChannelHandlerContext ctx) {
-    ctx.flush();
-  }
-
-  @Override
   protected void channelRead0(ChannelHandlerContext ctx, Object o) throws Exception {
     // retain the object so that it can be used in XioClient
-    // TODO: more logic if o can be of other types
     if (o instanceof ReferenceCounted) {
       ((ReferenceCounted) o).retain();
     }
     processRequest(ctx, o);
   }
-
 
   private void processRequest(
       final ChannelHandlerContext ctx,

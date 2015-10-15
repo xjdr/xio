@@ -5,36 +5,36 @@ import com.xjeffrose.xio.util.RNG;
 import com.xjeffrose.xio.util.Ring;
 import io.airlift.units.Duration;
 
-/**
- * The aperture load-band balancer balances load to the smallest
- * subset ("aperture") of services so that the concurrent load to each service,
- * measured over a window specified by `smoothWin`, stays within the
- * load band delimited by `lowLoad` and `highLoad`.
- *
- * Unavailable services are not counted--the aperture expands as
- * needed to cover those that are available.
- *
- * For example, if the load band is [0.5, 2], the aperture will be
- * adjusted so that no service inside the aperture has a load less
- * than 0.5 or more than 2, so long as offered load permits it.
- *
- * The default load band, [0.5, 2], matches closely the load distribution
- * given by least-loaded without any aperturing.
- *
- * Among the benefits of aperture balancing are:
- *
- *  1. A client uses resources commensurate to offered load. In particular,
- *     it does not have to open sessions with every service in a large cluster.
- *     This is especially important when offered load and cluster capacity
- *     are mismatched.
- *  2. It balances over fewer, and thus warmer, services. This enhances the
- *     efficacy of the fail-fast mechanisms, etc. This also means that clients pay
- *     the penalty of session establishment less frequently.
- *  3. It increases the efficacy of least-loaded balancing which, in order to
- *     work well, requires concurrent load. The load-band balancer effectively
- *     arranges load in a manner that ensures a higher level of per-service
- *     concurrency.
- */
+///**
+// * The aperture load-band balancer balances load to the smallest
+// * subset ("aperture") of services so that the concurrent load to each service,
+// * measured over a window specified by `smoothWin`, stays within the
+// * load band delimited by `lowLoad` and `highLoad`.
+// *
+// * Unavailable services are not counted--the aperture expands as
+// * needed to cover those that are available.
+// *
+// * For example, if the load band is [0.5, 2], the aperture will be
+// * adjusted so that no service inside the aperture has a load less
+// * than 0.5 or more than 2, so long as offered load permits it.
+// *
+// * The default load band, [0.5, 2], matches closely the load distribution
+// * given by least-loaded without any aperturing.
+// *
+// * Among the benefits of aperture balancing are:
+// *
+// *  1. A client uses resources commensurate to offered load. In particular,
+// *     it does not have to open sessions with every service in a large cluster.
+// *     This is especially important when offered load and cluster capacity
+// *     are mismatched.
+// *  2. It balances over fewer, and thus warmer, services. This enhances the
+// *     efficacy of the fail-fast mechanisms, etc. This also means that clients pay
+// *     the penalty of session establishment less frequently.
+// *  3. It increases the efficacy of least-loaded balancing which, in order to
+// *     work well, requires concurrent load. The load-band balancer effectively
+// *     arranges load in a manner that ensures a higher level of per-service
+// *     concurrency.
+// */
 
 public class Aperture {
 

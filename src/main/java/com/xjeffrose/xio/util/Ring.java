@@ -1,26 +1,26 @@
 package com.xjeffrose.xio.util;
 
-/**
- * Class `Ring` implements a hash ring. Given an array mapping
- * indices to positions, the ring supplies the reverse mapping: to
- * which index does a position belong?
- *
- * Its distinguishing feature is that `Ring` can pick random
- * positions in a range. (And then map them to their corresponding
- * indices.) Ring can also pick without replacement two elements from
- * a range.
- *
- * {{{
- * val r = new Ring(Array(1,5,20))
- * r(0)  == 0
- * r(1)  == 0
- * r(2)  == 1
- * r(5)  == 1
- * r(6)  == 2
- * r(20) == 2
- * r(21) == 0 // Wraps around; it's a ring!
- * }}}
- */
+///**
+// * Class `Ring` implements a hash ring. Given an array mapping
+// * indices to positions, the ring supplies the reverse mapping: to
+// * which index does a position belong?
+// *
+// * Its distinguishing feature is that `Ring` can pick random
+// * positions in a range. (And then map them to their corresponding
+// * indices.) Ring can also pick without replacement two elements from
+// * a range.
+// *
+// * {{{
+// * val r = new Ring(Array(1,5,20))
+// * r(0)  == 0
+// * r(1)  == 0
+// * r(2)  == 1
+// * r(5)  == 1
+// * r(6)  == 2
+// * r(20) == 2
+// * r(21) == 0 // Wraps around; it's a ring!
+// * }}}
+// */
 
 public class Ring {
   private final int i;

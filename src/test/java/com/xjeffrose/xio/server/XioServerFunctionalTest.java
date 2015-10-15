@@ -40,7 +40,6 @@ import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
@@ -50,7 +49,6 @@ import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
-import io.netty.util.ReferenceCounted;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.charset.Charset;
@@ -76,15 +74,18 @@ public class XioServerFunctionalTest {
   @Test
   public void testComplexServerConfigurationTCP() throws Exception {
     XioServerDef serverDef = new XioServerDefBuilder()
-        .clientIdleTimeout(new Duration((double) 200, TimeUnit.MILLISECONDS))
-        .limitConnectionsTo(200)
+        .clientIdleTimeout(new Duration((double) 2000, TimeUnit.MILLISECONDS))
+        .limitConnectionsTo(20)
         .limitFrameSizeTo(1024)
-        .limitQueuedResponsesPerConnection(50)
+        .limitQueuedResponsesPerConnection(5)
         .listen(new InetSocketAddress(9001))
         .name("Xio Test Server")
-        .taskTimeout(new Duration((double) 20000, TimeUnit.MILLISECONDS))
+        .taskTimeout(new Duration((double) 2000, TimeUnit.MILLISECONDS))
         .using(Executors.newCachedThreadPool())
         .withSecurityFactory(new XioNoOpSecurityFactory())
+        .withCodecFactory(() -> new TcpCodec())
+        .withAggregator(() -> new XioNoOpHandler())
+//        .withAggregator(() -> new TcpAggregator())
         .withProcessorFactory(() -> (ctx, request, reqCtx) -> {
           ListeningExecutorService service = MoreExecutors.listeningDecorator(ctx.executor());
 
@@ -93,13 +94,6 @@ public class XioServerFunctionalTest {
             return true;
           });
         })
-        .withCodecFactory(() -> new SimpleChannelInboundHandler<Object>() {
-          @Override
-          protected void channelRead0(ChannelHandlerContext ctx, Object o) throws Exception {
-            ctx.fireChannelRead(((ByteBuf) o).retain());
-          }
-        })
-        .withAggregator(XioNoOpHandler::new)
         .build();
 
     XioServerConfig serverConfig = new XioServerConfigBuilder()

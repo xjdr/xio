@@ -16,11 +16,12 @@ public class TcpClient {
       outToServer.writeBytes(req + '\n');
 
       BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-      String response = inFromServer.readLine();
 
-//      clientSocket.close();
+      String response = inFromServer.readLine();
+      clientSocket.close();
 
       return response;
+
     } catch (IOException e) {
       e.printStackTrace();
     }

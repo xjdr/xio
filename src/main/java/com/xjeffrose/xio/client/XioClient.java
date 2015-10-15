@@ -23,22 +23,21 @@ import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
+import org.apache.log4j.Logger;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
 @SuppressWarnings("unchecked")
 public class XioClient implements Closeable {
+  private static final Logger log = Logger.getLogger(XioClient.class);
+
   public static final Duration DEFAULT_CONNECT_TIMEOUT = new Duration(2, TimeUnit.SECONDS);
   public static final Duration DEFAULT_RECEIVE_TIMEOUT = new Duration(2, TimeUnit.SECONDS);
   public static final Duration DEFAULT_READ_TIMEOUT = new Duration(2, TimeUnit.SECONDS);
   private static final Duration DEFAULT_SEND_TIMEOUT = new Duration(2, TimeUnit.SECONDS);
-
-
   private static final int DEFAULT_MAX_FRAME_SIZE = 16777216;
 
   private final XioClientConfig xioClientConfig;
-  private final ExecutorService bossExecutor;
-  private final ExecutorService workerExecutor;
   private final EventLoopGroup group;
   private final ChannelGroup allChannels;
   private final Timer timer;
@@ -54,8 +53,6 @@ public class XioClient implements Closeable {
     this.xioClientConfig = xioClientConfig;
 
     this.timer = xioClientConfig.getTimer();
-    this.bossExecutor = xioClientConfig.getBossExecutor();
-    this.workerExecutor = xioClientConfig.getWorkerExecutor();
     this.group = new NioEventLoopGroup(1);
     this.allChannels = new DefaultChannelGroup(this.group.next());
   }
@@ -103,7 +100,14 @@ public class XioClient implements Closeable {
       int maxFrameSize) {
     checkNotNull(clientChannelConnector, "clientChannelConnector is null");
 
-    Bootstrap bootstrap = new Bootstrap();
+    int retryCount = 0;
+    long elapsedTime = 0;
+    final Bootstrap bootstrap = new Bootstrap();
+    final RetrySleeper sleeper = (time, unit) -> {
+      Thread.sleep(time);
+    };
+
+    final long connectStart = System.currentTimeMillis();
 
     if (ctx != null) {
       bootstrap.group(ctx.channel().eventLoop().parent());
@@ -130,8 +134,7 @@ public class XioClient implements Closeable {
         .option(ChannelOption.WRITE_BUFFER_LOW_WATER_MARK, 8 * 1024)
         .option(ChannelOption.TCP_NODELAY, true);
 
-    ChannelFuture nettyChannelFuture = connect(clientChannelConnector, bootstrap);
-    addSuccessCallback(nettyChannelFuture, retryPolicy);
+    ChannelFuture nettyChannelFuture = connect(clientChannelConnector, bootstrap, retryPolicy, retryCount, sleeper);
 
     return new XioFuture<>(clientChannelConnector,
         receiveTimeout,
@@ -141,22 +144,31 @@ public class XioClient implements Closeable {
         xioClientConfig);
   }
 
-  private ChannelFuture connect(XioClientConnector clientChannelConnector, Bootstrap bootstrap) {
-    return clientChannelConnector.connect(bootstrap);
+  private static long getElapsedTime(long startTime) {
+    return startTime - System.currentTimeMillis();
   }
 
-  private void addSuccessCallback(ChannelFuture channelFuture, RetryPolicy retryPolicy) {
-    channelFuture.addListener(new ChannelFutureListener() {
+  private ChannelFuture connect(XioClientConnector clientChannelConnector, Bootstrap bootstrap, RetryPolicy retryPolicy, int retryCount, RetrySleeper sleeper) {
+    final long connectStart = System.currentTimeMillis();
+    ChannelFuture[] channelFuture = new ChannelFuture[1];
+    channelFuture[0] = clientChannelConnector.connect(bootstrap);
+    channelFuture[0].addListener(new ChannelFutureListener() {
       @Override
       public void operationComplete(ChannelFuture future) throws Exception {
         Channel channel = future.channel();
         if (channel != null && channel.isOpen()) {
           allChannels.add(channel);
         } else {
-//          retryPolicy.allowRetry();
+          if (retryPolicy.allowRetry(retryCount, getElapsedTime(connectStart), sleeper)) {
+            int newCount = retryCount + 1;
+            channelFuture[0] = connect(clientChannelConnector, bootstrap, retryPolicy, newCount, sleeper);
+          } else {
+            log.error("Retry Count Exceeded - Failed to connect to server");
+          }
         }
       }
     });
+    return channelFuture[0];
   }
 
   @Override

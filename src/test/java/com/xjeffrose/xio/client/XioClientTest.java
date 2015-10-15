@@ -137,7 +137,7 @@ public class XioClientTest {
     DefaultFullHttpResponse httpResponse = BBtoHttpResponse.getResponse(listener.getResponse());
 
     //Now we have something that we can actually test ...
-    assertEquals(HttpResponseStatus.MOVED_PERMANENTLY, httpResponse.getStatus());
+    assertEquals(HttpResponseStatus.OK, httpResponse.getStatus());
     assertEquals("gws", httpResponse.headers().get("Server"));
     assertTrue(httpResponse.content() != null);
 

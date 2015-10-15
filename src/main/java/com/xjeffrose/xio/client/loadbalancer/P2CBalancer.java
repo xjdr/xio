@@ -1,28 +1,28 @@
 package com.xjeffrose.xio.client.loadbalancer;
 
 
-/**
- * An O(1), concurrent, weighted least-loaded fair load balancer.
- * This uses the ideas behind "power of 2 choices" [1] combined with
- * O(1) biased coin flipping through the aliasing method, described
- * in [[com.twitter.finagle.util.Drv Drv]].
- *
- * @param activity An activity that updates with the set of
- * (node, weight) pairs over which we distribute load.
- *
- * @param maxEffort the maximum amount of "effort" we're willing to
- * expend on a load balancing decision without reweighing.
- *
- * @param rng The PRNG used for flipping coins. Override for
- * deterministic tests.
- *
- * @param statsReceiver The stats receiver to which operational
- * statistics are reported.
- *
- * [1] Michael Mitzenmacher. 2001. The Power of Two Choices in
- * Randomized Load Balancing. IEEE Trans. Parallel Distrib. Syst. 12,
- * 10 (October 2001), 1094-1104.
- */
+///**
+// * An O(1), concurrent, weighted least-loaded fair load balancer.
+// * This uses the ideas behind "power of 2 choices" [1] combined with
+// * O(1) biased coin flipping through the aliasing method, described
+// * in [[com.twitter.finagle.util.Drv Drv]].
+// *
+// * @param activity An activity that updates with the set of
+// * (node, weight) pairs over which we distribute load.
+// *
+// * @param maxEffort the maximum amount of "effort" we're willing to
+// * expend on a load balancing decision without reweighing.
+// *
+// * @param rng The PRNG used for flipping coins. Override for
+// * deterministic tests.
+// *
+// * @param statsReceiver The stats receiver to which operational
+// * statistics are reported.
+// *
+// * [1] Michael Mitzenmacher. 2001. The Power of Two Choices in
+// * Randomized Load Balancing. IEEE Trans. Parallel Distrib. Syst. 12,
+// * 10 (October 2001), 1094-1104.
+// */
 
 public class P2CBalancer {
 
@@ -37,33 +37,33 @@ public class P2CBalancer {
 //  with P2C[Req, Rep]
 //  with Updating[Req, Rep]
 //
-  /**
-   * Like [[com.twitter.finagle.loadbalancer.P2CBalancer]] but
-   * using the Peak EWMA load metric.
-   *
-   * Peak EWMA is designed to converge quickly when encountering
-   * slow endpoints. It is quick to react to latency spikes, recovering
-   * only cautiously. Peak EWMA takes history into account, so that
-   * slow behavior is penalized relative to the supplied decay time.
-   *
-   * @param activity An activity that updates with the set of
-   * (node, weight) pairs over which we distribute load.
-   *
-   * @param decayTime The window of latency observations.
-   *
-   * @param maxEffort the maximum amount of "effort" we're willing to
-   * expend on a load balancing decision without reweighing.
-   *
-   * @param rng The PRNG used for flipping coins. Override for
-   * deterministic tests.
-   *
-   * @param statsReceiver The stats receiver to which operational
-   * statistics are reported.
-   *
-   * [1] Michael Mitzenmacher. 2001. The Power of Two Choices in
-   * Randomized Load Balancing. IEEE Trans. Parallel Distrib. Syst. 12,
-   * 10 (October 2001), 1094-1104.
-   */
+//  /**
+//   * Like [[com.twitter.finagle.loadbalancer.P2CBalancer]] but
+//   * using the Peak EWMA load metric.
+//   *
+//   * Peak EWMA is designed to converge quickly when encountering
+//   * slow endpoints. It is quick to react to latency spikes, recovering
+//   * only cautiously. Peak EWMA takes history into account, so that
+//   * slow behavior is penalized relative to the supplied decay time.
+//   *
+//   * @param activity An activity that updates with the set of
+//   * (node, weight) pairs over which we distribute load.
+//   *
+//   * @param decayTime The window of latency observations.
+//   *
+//   * @param maxEffort the maximum amount of "effort" we're willing to
+//   * expend on a load balancing decision without reweighing.
+//   *
+//   * @param rng The PRNG used for flipping coins. Override for
+//   * deterministic tests.
+//   *
+//   * @param statsReceiver The stats receiver to which operational
+//   * statistics are reported.
+//   *
+//   * [1] Michael Mitzenmacher. 2001. The Power of Two Choices in
+//   * Randomized Load Balancing. IEEE Trans. Parallel Distrib. Syst. 12,
+//   * 10 (October 2001), 1094-1104.
+//   */
 //  private class P2CBalancerPeakEwma[Req, Rep](
 //  protected val activity: Activity[Traversable[ServiceFactory[Req, Rep]]],
 //  protected val decayTime: Duration,
