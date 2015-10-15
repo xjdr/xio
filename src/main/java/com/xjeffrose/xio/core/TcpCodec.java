@@ -14,15 +14,15 @@ public class TcpCodec extends ChannelInboundHandlerAdapter {
     ctx.fireChannelActive();
   }
 
-//  @Override
-//  public void channelRead(final ChannelHandlerContext ctx, Object msg) {
-//    ctx.fireChannelRead(((ByteBuf) msg).retain());
-//  }
+  @Override
+  public void channelRead(final ChannelHandlerContext ctx, Object msg) {
+    ctx.fireChannelRead(((ByteBuf) msg).retain());
+  }
 
-//  @Override
-//  public void channelInactive(ChannelHandlerContext ctx) {
-//    closeOnFlush(ctx.channel());
-//  }
+  @Override
+  public void channelInactive(ChannelHandlerContext ctx) {
+    closeOnFlush(ctx.channel());
+  }
 
   @Override
   public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
