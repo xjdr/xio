@@ -48,6 +48,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -85,7 +86,6 @@ public class XioServerFunctionalTest {
         .withSecurityFactory(new XioNoOpSecurityFactory())
         .withCodecFactory(() -> new TcpCodec())
         .withAggregator(() -> new XioNoOpHandler())
-//        .withAggregator(() -> new TcpAggregator())
         .withProcessorFactory(() -> (ctx, request, reqCtx) -> {
           ListeningExecutorService service = MoreExecutors.listeningDecorator(ctx.executor());
 
@@ -512,7 +512,11 @@ public class XioServerFunctionalTest {
                               @Override
                               public ChannelHandler getEncryptionHandler() {
                                 try {
-                                  SslContext sslCtx = SslContext.newClientContext(SslContext.defaultClientProvider(), InsecureTrustManagerFactory.INSTANCE);
+                                  SslContext sslCtx = SslContextBuilder
+                                      .forClient()
+                                      .trustManager(InsecureTrustManagerFactory.INSTANCE)
+                                      .build();
+
                                   return sslCtx.newHandler(new PooledByteBufAllocator());
                                 } catch (SSLException e) {
                                   e.printStackTrace();
