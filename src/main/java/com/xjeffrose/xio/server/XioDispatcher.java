@@ -5,6 +5,7 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.xjeffrose.xio.core.ConnectionContext;
 import com.xjeffrose.xio.core.ConnectionContexts;
+import com.xjeffrose.xio.processor.XioProcessor;
 import com.xjeffrose.xio.processor.XioProcessorFactory;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -38,6 +39,7 @@ public class XioDispatcher extends SimpleChannelInboundHandler<Object> {
   private final AtomicInteger dispatcherSequenceId = new AtomicInteger(0);
   private final AtomicInteger lastResponseWrittenId = new AtomicInteger(0);
   private final long requestStart;
+  private final XioProcessor processor;
 
   private RequestContext requestContext;
   private boolean isOrderedResponsesRequired = false;
@@ -50,6 +52,7 @@ public class XioDispatcher extends SimpleChannelInboundHandler<Object> {
     this.taskTimeoutMillis = (def.getTaskTimeout() == null ? 0 : def.getTaskTimeout().toMillis());
     this.taskTimeoutTimer = (def.getTaskTimeout() == null ? null : config.getTimer());
     this.requestStart = System.currentTimeMillis();
+    this.processor = processorFactory.getProcessor();
   }
 
   @Override
@@ -119,7 +122,7 @@ public class XioDispatcher extends SimpleChannelInboundHandler<Object> {
             requestContext = new XioRequestContext(connectionContext);
             RequestContexts.setCurrentContext(requestContext);
 
-            processFuture = processorFactory.getProcessor().process(ctx, message, requestContext);
+            processFuture = processor.process(ctx, message, requestContext);
           } finally {
             // RequestContext does NOT stay set while we are waiting for the process
             // future to complete. This is by design because we'll might move on to the
