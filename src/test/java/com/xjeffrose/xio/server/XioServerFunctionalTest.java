@@ -14,6 +14,7 @@ import com.xjeffrose.xio.client.Listener;
 import com.xjeffrose.xio.client.XioClient;
 import com.xjeffrose.xio.client.XioClientChannel;
 import com.xjeffrose.xio.client.XioClientConfig;
+import com.xjeffrose.xio.client.retry.BoundedExponentialBackoffRetry;
 import com.xjeffrose.xio.core.BBtoHttpResponse;
 import com.xjeffrose.xio.core.TcpAggregator;
 import com.xjeffrose.xio.core.TcpCodec;
@@ -334,7 +335,7 @@ public class XioServerFunctionalTest {
 
                     ListenableFuture<XioClientChannel> responseFuture = null;
 
-                    responseFuture = xioClient.connectAsync(new HttpClientConnector(new URI("http://localhost:8089")));
+                    responseFuture = xioClient.connectAsync(ctx, new HttpClientConnector(new URI("http://localhost:8089")), new BoundedExponentialBackoffRetry(100, 10000, 3));
 
                     XioClientChannel xioClientChannel = null;
 
@@ -472,105 +473,6 @@ public class XioServerFunctionalTest {
 
 
   @Test
-  public void testSimpleWithCallProxy() throws Exception {
-    SimpleTestServer testServer = new SimpleTestServer(8092);
-    testServer.run();
-
-    XioServerDef serverDef = new XioServerDefBuilder()
-        .clientIdleTimeout(new Duration((double) 200, TimeUnit.MILLISECONDS))
-        .limitConnectionsTo(200)
-        .limitFrameSizeTo(1024)
-        .limitQueuedResponsesPerConnection(50)
-        .listen(new InetSocketAddress(8091))
-//        .listen(new InetSocketAddress("127.0.0.1", 8082))
-        .name("Xio Test Server")
-        .taskTimeout(new Duration((double) 20000, TimeUnit.MILLISECONDS))
-        .using(Executors.newCachedThreadPool())
-        .withSecurityFactory(new XioTestSecurityFactory())
-        .withProcessorFactory(new XioProcessorFactory() {
-
-          @Override
-          public XioProcessor getProcessor() {
-            return new XioProcessor() {
-              @Override
-              public ListenableFuture<Boolean> process(ChannelHandlerContext ctx, Object request, RequestContext reqCtx) {
-                final ListeningExecutorService service = MoreExecutors.listeningDecorator(ctx.executor());
-
-                ListenableFuture<Boolean> httpResponseFuture = service.submit(new Callable<Boolean>() {
-                  @Override
-                  public Boolean call() throws Exception {
-
-                    DefaultFullHttpResponse httpResponse = XioClient.call(new URI("http://localhost:8092"));
-
-                    assertEquals(HttpResponseStatus.OK, httpResponse.getStatus());
-                    assertEquals("Jetty(9.3.1.v20150714)", httpResponse.headers().get("Server"));
-                    assertEquals("CONGRATS!\n\r\n", httpResponse.content().toString(Charset.defaultCharset()));
-
-                    reqCtx.setContextData(reqCtx.getConnectionId(), httpResponse);
-                    return true;
-                  }
-
-                });
-                return httpResponseFuture;
-              }
-            };
-          }
-        })
-        .withCodecFactory(new XioCodecFactory() {
-          @Override
-          public ChannelHandler getCodec() {
-            return new HttpServerCodec();
-          }
-        })
-        .withAggregator(new XioAggregatorFactory() {
-          @Override
-          public ChannelHandler getAggregator() {
-            return new HttpObjectAggregator(16777216);
-          }
-        })
-        .build();
-
-    XioServerConfig serverConfig = new XioServerConfigBuilder()
-        .setBossThreadCount(12)
-        .setBossThreadExecutor(Executors.newCachedThreadPool())
-        .setWorkerThreadCount(20)
-        .setWorkerThreadExecutor(Executors.newCachedThreadPool())
-        .setTimer(timer)
-        .setXioName("Xio Name Test")
-        .build();
-
-    // Create the server transport
-    final XioServerTransport server = new XioServerTransport(serverDef,
-        serverConfig,
-        new DefaultChannelGroup(new NioEventLoopGroup().next()));
-
-    // Start the server
-    server.start();
-
-    // Use 3rd party client to test proper operation
-    Request request = new Request.Builder()
-        .url("https://127.0.0.1:8091/")
-        .build();
-
-    Response response = OkHttpUnsafe.getUnsafeClient().newCall(request).execute();
-    assertEquals(200, response.code());
-    assertEquals("CONGRATS!\n", response.body().string());
-
-
-    // Arrange to stop the server at shutdown
-    Runtime.getRuntime().addShutdownHook(new Thread() {
-      @Override
-      public void run() {
-        try {
-          server.stop();
-        } catch (InterruptedException e) {
-          Thread.currentThread().interrupt();
-        }
-      }
-    });
-  }
-
-  @Test
   public void testComplexProxy() throws Exception {
 
     XioServerDef serverDef = new XioServerDefBuilder()
@@ -628,7 +530,7 @@ public class XioServerFunctionalTest {
                         })
                         .build();
                     final XioClient xioClient = new XioClient(xioClientConfig);
-                    final ListenableFuture<XioClientChannel> responseFuture = xioClient.connectAsync(new HttpClientConnector(new URI("https://www.paypal.com/home")));
+                    final ListenableFuture<XioClientChannel> responseFuture = xioClient.connectAsync(ctx, new HttpClientConnector(new URI("https://www.paypal.com/home")), new BoundedExponentialBackoffRetry(1000, 100000, 3));
 
                     XioClientChannel xioClientChannel;
 
@@ -746,130 +648,6 @@ public class XioServerFunctionalTest {
     // Use 3rd party client to test proper operation
     Request request = new Request.Builder()
         .url("https://127.0.0.1:8090/")
-        .build();
-
-    Response response = OkHttpUnsafe.getUnsafeClient().newCall(request).execute();
-    assertEquals(200, response.code());
-    assertTrue(!response.body().string().isEmpty());
-
-    // Arrange to stop the server at shutdown
-    Runtime.getRuntime().addShutdownHook(new Thread() {
-      @Override
-      public void run() {
-        try {
-          server.stop();
-        } catch (InterruptedException e) {
-          Thread.currentThread().interrupt();
-        }
-      }
-    });
-  }
-
-  @Test
-  public void testComplexProxyWithCall() throws Exception {
-
-    XioServerDef serverDef = new XioServerDefBuilder()
-        .clientIdleTimeout(new Duration((double) 200, TimeUnit.MILLISECONDS))
-        .limitConnectionsTo(200)
-        .limitFrameSizeTo(1024)
-        .limitQueuedResponsesPerConnection(50)
-        .listen(new InetSocketAddress(8093))
-//        .listen(new InetSocketAddress("127.0.0.1", 8082))
-        .name("Xio Test Server")
-        .taskTimeout(new Duration((double) 20000, TimeUnit.MILLISECONDS))
-        .using(Executors.newCachedThreadPool())
-        .withSecurityFactory(new XioTestSecurityFactory())
-        .withProcessorFactory(new XioProcessorFactory() {
-
-          @Override
-          public XioProcessor getProcessor() {
-            return new XioProcessor() {
-              @Override
-              public ListenableFuture<Boolean> process(ChannelHandlerContext ctx, Object request, RequestContext reqCtx) {
-                final ListeningExecutorService service = MoreExecutors.listeningDecorator(ctx.executor());
-
-                ListenableFuture<Boolean> httpResponseFuture = service.submit(new Callable<Boolean>() {
-                  @Override
-                  public Boolean call() throws Exception {
-                    final XioClientConfig xioClientConfig = XioClientConfig.newBuilder()
-                        .setSecurityFactory(new XioSecurityFactory() {
-                          @Override
-                          public XioSecurityHandlers getSecurityHandlers(XioServerDef def, XioServerConfig serverConfig) {
-                            return null;
-                          }
-
-                          @Override
-                          public XioSecurityHandlers getSecurityHandlers() {
-                            return new XioSecurityHandlers() {
-                              @Override
-                              public ChannelHandler getAuthenticationHandler() {
-                                return new XioNoOpHandler();
-                              }
-
-                              @Override
-                              public ChannelHandler getEncryptionHandler() {
-                                try {
-                                  SslContext sslCtx = SslContext.newClientContext(SslContext.defaultClientProvider(), InsecureTrustManagerFactory.INSTANCE);
-                                  return sslCtx.newHandler(new PooledByteBufAllocator());
-                                } catch (SSLException e) {
-                                  e.printStackTrace();
-                                }
-                                return null;
-                              }
-                            };
-                          }
-                        })
-                        .build();
-                    DefaultFullHttpResponse httpResponse = XioClient.call(xioClientConfig, new URI("https://www.paypal.com/home"));
-
-                    assertEquals(HttpResponseStatus.OK, httpResponse.getStatus());
-                    assertEquals("nginx/1.6.0", httpResponse.headers().get("Server"));
-                    assertTrue(httpResponse.content() != null);
-
-                    reqCtx.setContextData(reqCtx.getConnectionId(), httpResponse);
-                    return true;
-                  }
-
-                });
-                return httpResponseFuture;
-              }
-            };
-          }
-        })
-        .withCodecFactory(new XioCodecFactory() {
-          @Override
-          public ChannelHandler getCodec() {
-            return new HttpServerCodec();
-          }
-        })
-        .withAggregator(new XioAggregatorFactory() {
-          @Override
-          public ChannelHandler getAggregator() {
-            return new HttpObjectAggregator(16777216);
-          }
-        })
-        .build();
-
-    XioServerConfig serverConfig = new XioServerConfigBuilder()
-        .setBossThreadCount(12)
-        .setBossThreadExecutor(Executors.newCachedThreadPool())
-        .setWorkerThreadCount(20)
-        .setWorkerThreadExecutor(Executors.newCachedThreadPool())
-        .setTimer(timer)
-        .setXioName("Xio Name Test")
-        .build();
-
-    // Create the server transport
-    final XioServerTransport server = new XioServerTransport(serverDef,
-        serverConfig,
-        new DefaultChannelGroup(new NioEventLoopGroup().next()));
-
-    // Start the server
-    server.start();
-
-    // Use 3rd party client to test proper operation
-    Request request = new Request.Builder()
-        .url("https://127.0.0.1:8093/")
         .build();
 
     Response response = OkHttpUnsafe.getUnsafeClient().newCall(request).execute();

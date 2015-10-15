@@ -3,6 +3,7 @@ package com.xjeffrose.xio.client;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.net.HttpHeaders;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.xjeffrose.xio.client.retry.BoundedExponentialBackoffRetry;
 import com.xjeffrose.xio.core.BBtoHttpResponse;
 import com.xjeffrose.xio.core.XioException;
 import com.xjeffrose.xio.core.XioNoOpHandler;
@@ -74,37 +75,6 @@ public class XioClientTest {
       })
       .build();
 
-
-  @Test
-  public void testCall() throws Exception {
-    DefaultFullHttpResponse httpResponse = XioClient.call(new URI("http://www.google.com/"));
-
-    assertEquals(HttpResponseStatus.OK, httpResponse.getStatus());
-    assertEquals("gws", httpResponse.headers().get("Server"));
-    assertTrue(httpResponse.content() != null);
-  }
-
-  //  @Test(expected = XioTransportException.class)
-  @Test
-  public void testBadCall() throws Exception {
-
-    DefaultFullHttpResponse httpResponse = XioClient.call(new URI("https://www.google.com/"));
-
-    assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, httpResponse.getStatus());
-//    assertEquals("gws", httpResponse.headers().get("Server"));
-    assertTrue(httpResponse.content() != null);
-
-  }
-
-  @Test
-  public void testCall1() throws Exception {
-
-    DefaultFullHttpResponse httpResponse = XioClient.call(xioClientConfig, new URI("https://www.paypal.com/home"));
-    assertEquals(HttpResponseStatus.OK, httpResponse.getStatus());
-    assertEquals("nginx/1.6.0", httpResponse.headers().get("Server"));
-    assertTrue(httpResponse.content() != null);
-  }
-
   @Test
   public void testAsyncHttp() throws Exception {
 
@@ -112,7 +82,7 @@ public class XioClientTest {
     final Condition waitForFinish = lock.newCondition();
 
     XioClient xioClient = new XioClient();
-    ListenableFuture<XioClientChannel> responseFuture = xioClient.connectAsync(new HttpClientConnector(new URI("http://www.google.com/")));
+    ListenableFuture<XioClientChannel> responseFuture = xioClient.connectAsync(new HttpClientConnector(new URI("http://www.google.com/")),  new BoundedExponentialBackoffRetry(100, 10000, 3));
     XioClientChannel xioClientChannel = responseFuture.get();
     HttpClientChannel httpClientChannel = (HttpClientChannel) xioClientChannel;
 
@@ -167,7 +137,7 @@ public class XioClientTest {
     DefaultFullHttpResponse httpResponse = BBtoHttpResponse.getResponse(listener.getResponse());
 
     //Now we have something that we can actually test ...
-    assertEquals(HttpResponseStatus.OK, httpResponse.getStatus());
+    assertEquals(HttpResponseStatus.MOVED_PERMANENTLY, httpResponse.getStatus());
     assertEquals("gws", httpResponse.headers().get("Server"));
     assertTrue(httpResponse.content() != null);
 
@@ -221,7 +191,7 @@ public class XioClientTest {
       }
     };
 
-    ListenableFuture<XioClientChannel> responseFuture = xioClient.connectAsync(new HttpClientConnector(new URI("https://www.paypal.com/home")));
+    ListenableFuture<XioClientChannel> responseFuture = xioClient.connectAsync(new HttpClientConnector(new URI("https://www.paypal.com/home")),  new BoundedExponentialBackoffRetry(100, 10000, 3));
     XioClientChannel xioClientChannel = responseFuture.get();
     HttpClientChannel httpClientChannel = (HttpClientChannel) xioClientChannel;
     Map<String, String> headerMap = ImmutableMap.of(
@@ -258,7 +228,7 @@ public class XioClientTest {
     final Condition waitForFinish = lock.newCondition();
 
     XioClient xioClient = new XioClient();
-    ListenableFuture<XioClientChannel> responseFuture = xioClient.connectAsync(new TcpClientConnector("127.0.0.1", 8100));
+    ListenableFuture<XioClientChannel> responseFuture = xioClient.connectAsync(new TcpClientConnector("127.0.0.1", 8100),  new BoundedExponentialBackoffRetry(100, 10000, 3));
     XioClientChannel xioClientChannel = responseFuture.get();
     TcpClientChannel tcpClientChannel = (TcpClientChannel) xioClientChannel;
 
