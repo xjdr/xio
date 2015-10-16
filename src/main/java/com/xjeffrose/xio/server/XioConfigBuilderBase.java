@@ -40,7 +40,7 @@ public abstract class XioConfigBuilderBase<T extends XioConfigBuilderBase<T>> {
     return XioName;
   }
 
-  protected T setXioName(String XioName) {
+  public T setXioName(String XioName) {
     Preconditions.checkNotNull(XioName, "XioName cannot be null");
     this.XioName = XioName;
     return (T) this;

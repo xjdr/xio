@@ -261,6 +261,7 @@ public class XioDispatcher extends SimpleChannelInboundHandler<Object> {
     // Reads always start out unblocked
     DispatcherContext.unblockChannelReads(ctx);
     this.processor = processorFactory.getProcessor();
+    processor.connect(ctx);
     super.channelActive(ctx);
   }
 
