@@ -16,7 +16,6 @@ import com.xjeffrose.xio.client.XioClientChannel;
 import com.xjeffrose.xio.client.XioClientConfig;
 import com.xjeffrose.xio.client.retry.BoundedExponentialBackoffRetry;
 import com.xjeffrose.xio.core.BBtoHttpResponse;
-import com.xjeffrose.xio.core.TcpAggregator;
 import com.xjeffrose.xio.core.TcpCodec;
 import com.xjeffrose.xio.core.XioAggregatorFactory;
 import com.xjeffrose.xio.core.XioCodecFactory;
@@ -86,14 +85,29 @@ public class XioServerFunctionalTest {
         .withSecurityFactory(new XioNoOpSecurityFactory())
         .withCodecFactory(() -> new TcpCodec())
         .withAggregator(() -> new XioNoOpHandler())
-        .withProcessorFactory(() -> (ctx, request, reqCtx) -> {
-          ListeningExecutorService service = MoreExecutors.listeningDecorator(ctx.executor());
+        .withProcessorFactory(
+            new XioProcessorFactory() {
+              @Override
+              public XioProcessor getProcessor() {
+                return new XioProcessor() {
+                  @Override
+                  public void connect(ChannelHandlerContext ctx) {
 
-          return service.submit(() -> {
-            reqCtx.setContextData(reqCtx.getConnectionId(), request);
-            return true;
-          });
-        })
+                  }
+
+                  @Override
+                  public ListenableFuture<Boolean> process(ChannelHandlerContext ctx, Object request, RequestContext reqCtx) {
+                    ListeningExecutorService service = MoreExecutors.listeningDecorator(ctx.executor());
+
+                    return service.submit(() -> {
+                      reqCtx.setContextData(reqCtx.getConnectionId(), request);
+                      return true;
+                    });
+                  }
+                };
+              }
+            }
+        )
         .build();
 
     XioServerConfig serverConfig = new XioServerConfigBuilder()
@@ -121,16 +135,20 @@ public class XioServerFunctionalTest {
     assertEquals(expectedResponse, response);
 
     // Arrange to stop the server at shutdown
-    Runtime.getRuntime().addShutdownHook(new Thread() {
-      @Override
-      public void run() {
-        try {
-          server.stop();
-        } catch (InterruptedException e) {
-          Thread.currentThread().interrupt();
-        }
-      }
-    });
+    Runtime.getRuntime().
+
+        addShutdownHook(new Thread() {
+                          @Override
+                          public void run() {
+                            try {
+                              server.stop();
+                            } catch (InterruptedException e) {
+                              Thread.currentThread().interrupt();
+                            }
+                          }
+                        }
+
+        );
   }
 
   @Test
@@ -312,10 +330,16 @@ public class XioServerFunctionalTest {
         .using(Executors.newCachedThreadPool())
         .withSecurityFactory(new XioTestSecurityFactory())
         .withProcessorFactory(new XioProcessorFactory() {
-
           @Override
           public XioProcessor getProcessor() {
+
             return new XioProcessor() {
+
+              @Override
+              public void connect(ChannelHandlerContext ctx) {
+
+              }
+
               @Override
               public ListenableFuture<Boolean> process(ChannelHandlerContext ctx, Object request, RequestContext reqCtx) {
                 final ListeningExecutorService service = MoreExecutors.listeningDecorator(ctx.executor());
@@ -485,6 +509,11 @@ public class XioServerFunctionalTest {
           @Override
           public XioProcessor getProcessor() {
             return new XioProcessor() {
+              @Override
+              public void connect(ChannelHandlerContext ctx) {
+
+              }
+
               @Override
               public ListenableFuture<Boolean> process(ChannelHandlerContext ctx, Object request, RequestContext reqCtx) {
                 final ListeningExecutorService service = MoreExecutors.listeningDecorator(ctx.executor());

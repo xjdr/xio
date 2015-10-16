@@ -27,7 +27,10 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 public class XioTestProcessor implements XioProcessor {
+  @Override
+  public void connect(ChannelHandlerContext ctx) {
 
+  }
   @Override
   public ListenableFuture<Boolean> process(ChannelHandlerContext ctx, Object msg, RequestContext respCtx) {
     ListeningExecutorService service = MoreExecutors.listeningDecorator(ctx.executor());
