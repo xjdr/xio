@@ -1,10 +1,10 @@
-package com.xjeffrose.xio.client.loadbalancer;
-
-import com.xjeffrose.xio.core.XioTimer;
-import com.xjeffrose.xio.util.RNG;
-import com.xjeffrose.xio.util.Ring;
-import io.airlift.units.Duration;
-
+package com.xjeffrose.xio.client.loadbalancer.strategies;
+//
+//import com.xjeffrose.xio.core.XioTimer;
+//import com.xjeffrose.xio.util.RNG;
+//import com.xjeffrose.xio.util.Ring;
+//import io.airlift.units.Duration;
+//
 ///**
 // * The aperture load-band balancer balances load to the smallest
 // * subset ("aperture") of services so that the concurrent load to each service,
@@ -35,50 +35,50 @@ import io.airlift.units.Duration;
 // *     arranges load in a manner that ensures a higher level of per-service
 // *     concurrency.
 // */
-
+//
 public class Aperture {
-
-  //  package com.twitter.finagle.loadbalancer
 //
-//  import com.twitter.conversions.time._
-//  import com.twitter.finagle.service.FailingFactory
-//  import com.twitter.finagle.stats.{StatsReceiver, NullStatsReceiver}
-//  import com.twitter.finagle.util.{RNG, Ring, Ema, DefaultTimer}
-//  import com.twitter.finagle.{
-//    ClientConnection, NoBrokersAvailableException, ServiceFactory, ServiceFactoryProxy,
-//        ServiceProxy, Status}
-//  import com.twitter.util.{Activity, Return, Future, Throw, Time, Var, Duration, Timer}
-//  import java.util.concurrent.atomic.AtomicInteger
-//  import java.util.logging.Logger
+//  //  package com.twitter.finagle.loadbalancer
+////
+////  import com.twitter.conversions.time._
+////  import com.twitter.finagle.service.FailingFactory
+////  import com.twitter.finagle.stats.{StatsReceiver, NullStatsReceiver}
+////  import com.twitter.finagle.util.{RNG, Ring, Ema, DefaultTimer}
+////  import com.twitter.finagle.{
+////    ClientConnection, NoBrokersAvailableException, ServiceFactory, ServiceFactoryProxy,
+////        ServiceProxy, Status}
+////  import com.twitter.util.{Activity, Return, Future, Throw, Time, Var, Duration, Timer}
+////  import java.util.concurrent.atomic.AtomicInteger
+////  import java.util.logging.Logger
+////
 //
-
-//  private class ApertureLoadBandBalancer[Req, Rep](
-//  protected  activity: Activity[Traversable[ServiceFactory[Req, Rep]]],
-  protected Duration smoothWin;
-  protected double lowLoad;
-  protected double highLoad;
-  protected int minAperture;
-  protected int maxEffort;
-  protected RNG rng;
-  protected XioTimer timer;
-//  protected  statsReceiver: StatsReceiver,
-//  protected  emptyException: NoBrokersAvailableException)
-//      extends Balancer[Req, Rep]
-//  with Aperture[Req, Rep]
-//  with LoadBand[Req, Rep]
-//  with Updating[Req, Rep]
-//
-//  object Aperture {
-//    // Note, we need to have a non-zero range for each node
-//    // in order for Ring.pick2 to pick distinctly. That is,
-//    // `RingWidth` should be wider than the number of slices
-//    // in the ring.
-    private int RingWidth = Integer.MAX_VALUE;
-//
-//    // Ring that maps to 0 for every value.
-    private Ring ZeroRing = new Ring(1, RingWidth);
-//  }
-//
+////  private class ApertureLoadBandBalancer[Req, Rep](
+////  protected  activity: Activity[Traversable[ServiceFactory[Req, Rep]]],
+//  protected Duration smoothWin;
+//  protected double lowLoad;
+//  protected double highLoad;
+//  protected int minAperture;
+//  protected int maxEffort;
+//  protected RNG rng;
+//  protected XioTimer timer;
+////  protected  statsReceiver: StatsReceiver,
+////  protected  emptyException: NoBrokersAvailableException)
+////      extends Balancer[Req, Rep]
+////  with Aperture[Req, Rep]
+////  with LoadBand[Req, Rep]
+////  with Updating[Req, Rep]
+////
+////  object Aperture {
+////    // Note, we need to have a non-zero range for each node
+////    // in order for Ring.pick2 to pick distinctly. That is,
+////    // `RingWidth` should be wider than the number of slices
+////    // in the ring.
+//    private int RingWidth = Integer.MAX_VALUE;
+////
+////    // Ring that maps to 0 for every value.
+//    private Ring ZeroRing = new Ring(1, RingWidth);
+////  }
+////
 //  /**
 //   * The aperture distributor balances load onto a window--the
 //   * aperture--of underlying capacity. The distributor exposes a
@@ -94,6 +94,7 @@ public class Aperture {
 //   * harmless to adjust apertures frequently, since underlying nodes
 //   * are typically backed by pools, and will be warm on average.
 //   */
+//
 //  private trait Aperture[Req, Rep] { self: Balancer[Req, Rep] =>
 //    import Aperture._
 //
@@ -279,41 +280,41 @@ public class Aperture {
 //    narrow()
 //    }
 //
-//protected case class Node(
-//    factory: ServiceFactory[Req, Rep],
-//    counter: AtomicInteger, token: Int)
-//    extends ServiceFactoryProxy[Req, Rep](factory)
-//    with NodeT {
-//    type This = Node
+////protected case class Node(
+////    factory: ServiceFactory[Req, Rep],
+////    counter: AtomicInteger, token: Int)
+////    extends ServiceFactoryProxy[Req, Rep](factory)
+////    with NodeT {
+////    type This = Node
+////
+////    def load = counter.get
+////    def pending = counter.get
+////
+////    override def apply(conn: ClientConnection) = {
+////    adjustNode(this, 1)
+////    super.apply(conn) transform {
+////    case Return(svc) =>
+////    Future.value(new ServiceProxy(svc) {
+////    override def close(deadline: Time) =
+////    super.close(deadline) ensure {
+////    adjustNode(Node.this, -1)
+////    }
+////    })
+////
+////    case t@Throw(_) =>
+////    adjustNode(this, -1)
+////    Future.const(t)
+////    }
+////    }
+////    }
+////
+////protected def newNode(factory: ServiceFactory[Req, Rep], statsReceiver: StatsReceiver) =
+////    Node(factory, new AtomicInteger(0), rng.nextInt())
+////
+////private[this] val failingLoad = new AtomicInteger(0)
+////protected def failingNode(cause: Throwable) = Node(
+////    new FailingFactory(cause), failingLoad, 0)
+////    }
 //
-//    def load = counter.get
-//    def pending = counter.get
 //
-//    override def apply(conn: ClientConnection) = {
-//    adjustNode(this, 1)
-//    super.apply(conn) transform {
-//    case Return(svc) =>
-//    Future.value(new ServiceProxy(svc) {
-//    override def close(deadline: Time) =
-//    super.close(deadline) ensure {
-//    adjustNode(Node.this, -1)
-//    }
-//    })
-//
-//    case t@Throw(_) =>
-//    adjustNode(this, -1)
-//    Future.const(t)
-//    }
-//    }
-//    }
-//
-//protected def newNode(factory: ServiceFactory[Req, Rep], statsReceiver: StatsReceiver) =
-//    Node(factory, new AtomicInteger(0), rng.nextInt())
-//
-//private[this] val failingLoad = new AtomicInteger(0)
-//protected def failingNode(cause: Throwable) = Node(
-//    new FailingFactory(cause), failingLoad, 0)
-//    }
-
-
 }
