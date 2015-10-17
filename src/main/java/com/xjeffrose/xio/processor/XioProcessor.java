@@ -5,6 +5,7 @@ import com.xjeffrose.xio.server.RequestContext;
 import io.netty.channel.ChannelHandlerContext;
 
 public interface XioProcessor {
+  void connect(ChannelHandlerContext ctx);
   ListenableFuture<Boolean> process(ChannelHandlerContext ctx, Object request, RequestContext reqCtx);
 }
 

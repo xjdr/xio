@@ -39,7 +39,7 @@ public class XioDispatcher extends SimpleChannelInboundHandler<Object> {
   private final AtomicInteger dispatcherSequenceId = new AtomicInteger(0);
   private final AtomicInteger lastResponseWrittenId = new AtomicInteger(0);
   private final long requestStart;
-  private final XioProcessor processor;
+  private XioProcessor processor;
 
   private RequestContext requestContext;
   private boolean isOrderedResponsesRequired = true;
@@ -52,7 +52,6 @@ public class XioDispatcher extends SimpleChannelInboundHandler<Object> {
     this.taskTimeoutMillis = (def.getTaskTimeout() == null ? 0 : def.getTaskTimeout().toMillis());
     this.taskTimeoutTimer = (def.getTaskTimeout() == null ? null : config.getTimer());
     this.requestStart = System.currentTimeMillis();
-    this.processor = processorFactory.getProcessor();
   }
 
   @Override
@@ -138,11 +137,18 @@ public class XioDispatcher extends SimpleChannelInboundHandler<Object> {
                 @Override
                 public void onSuccess(Boolean result) {
                   deleteExpirationTimer(expireTimeout.get());
+
+                  Object response = requestContext.getContextData(requestContext.getConnectionId());
+                  // passing through case
+                  if (response == null) {
+                    return;
+                  }
+
                   try {
                     // Only write response if the client is still there and the task timeout
                     // hasn't expired.
                     if (ctx.channel().isActive() && responseSent.compareAndSet(false, true)) {
-                      writeResponse(ctx, requestContext.getContextData(requestContext.getConnectionId()), requestSequenceId);
+                      writeResponse(ctx, response, requestSequenceId);
                     }
                   } catch (Throwable t) {
                     onDispatchException(ctx, t);
@@ -254,6 +260,8 @@ public class XioDispatcher extends SimpleChannelInboundHandler<Object> {
   public void channelActive(ChannelHandlerContext ctx) throws Exception {
     // Reads always start out unblocked
     DispatcherContext.unblockChannelReads(ctx);
+    this.processor = processorFactory.getProcessor();
+    processor.connect(ctx);
     super.channelActive(ctx);
   }
 
