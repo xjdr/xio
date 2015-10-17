@@ -9,13 +9,13 @@ import io.netty.channel.ChannelFutureListener;
 import javax.annotation.Nullable;
 
 
-class XioFuture<T extends XioClientChannel> extends AbstractFuture<T> {
-  protected XioFuture(final XioClientConnector<T> clientChannelConnector,
-                      @Nullable final Duration receiveTimeout,
-                      @Nullable final Duration readTimeout,
-                      @Nullable final Duration sendTimeout,
-                      final ChannelFuture channelFuture,
-                      final XioClientConfig xioClientConfig) {
+public class XioFuture<T extends XioClientChannel> extends AbstractFuture<T> {
+  public XioFuture(final XioClientConnector<T> clientChannelConnector,
+                   @Nullable final Duration receiveTimeout,
+                   @Nullable final Duration readTimeout,
+                   @Nullable final Duration sendTimeout,
+                   final ChannelFuture channelFuture,
+                   final XioClientConfig xioClientConfig) {
     channelFuture.addListener(new ChannelFutureListener() {
       @Override
       public void operationComplete(ChannelFuture future) throws Exception {

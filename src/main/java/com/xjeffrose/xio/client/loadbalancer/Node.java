@@ -1,69 +1,70 @@
 package com.xjeffrose.xio.client.loadbalancer;
 
-public class Node implements NodeT {
+import com.google.common.net.HostAndPort;
+import io.netty.channel.Channel;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.util.UUID;
+import java.util.Vector;
 
-  public Node() {
+/**
+ * The base type of nodes over which load is balanced. Nodes define the load metric that is used;
+ * distributors like P2C will use these to decide where to balance the next connection request.
+ */
+public class Node {
 
+  private final UUID token = UUID.randomUUID();
+  private final Vector<Channel> pending = new Vector<>();
+  private final SocketAddress address;
+  private double load;
+
+  public Node(HostAndPort hostAndPort) {
+    this(toInetAddress(hostAndPort));
   }
 
-  public Node newNode() {
-    return new Node();
+  public Node(SocketAddress address) {
+    this.address = address;
+    this.load = 0;
   }
 
-  protected Node failingNode() {
-
-    return new Node();
+  /**
+   * The current host and port returned as a InetSocketAddress
+   */
+  public static InetSocketAddress toInetAddress(HostAndPort hostAndPort) {
+    return (hostAndPort == null) ? null : new InetSocketAddress(hostAndPort.getHostText(), hostAndPort.getPort());
   }
 
-  @Override
+  /**
+   * The current load, in units of the active metric.
+   */
   public double load() {
-    return 0;
+    return load;
   }
 
-  @Override
+  /**
+   * The number of pending requests to this node.
+   */
   public int pending() {
-    return 0;
+    return pending.size();
   }
 
-  @Override
-  public int token() {
-    return 0;
+  /**
+   * A token is a random integer identifying the node. It persists through node updates.
+   */
+  public UUID token() {
+    return token;
   }
 
-  //    protected case class Node(factory: ServiceFactory[Req, Rep], metric: Metric, token: Int)
-//    extends ServiceFactoryProxy[Req, Rep](factory)
-//        with NodeT {
-//      type This = Node
-//
-//      def load = metric.get()
-//      def pending = metric.rate()
-//
-//      override def apply(conn: ClientConnection) = {
-//        val ts = metric.start()
-//        super.apply(conn) transform {
-//          case Return(svc) =>
-//            Future.value(new ServiceProxy(svc) {
-//              override def close(deadline: Time) =
-//                  super.close(deadline) ensure {
-//                metric.end(ts)
-//              }
-//            })
-//
-//          case t@Throw(_) =>
-//            metric.end(ts)
-//            Future.const(t)
-//        }
-//      }
-//    }
-//
-//  protected def newNode(factory: ServiceFactory[Req, Rep], statsReceiver: StatsReceiver): Node =
-//  Node(factory, new Metric(statsReceiver, factory.toString), rng.nextInt())
-//
-//  protected def failingNode(cause: Throwable) = Node(
-//      new FailingFactory(cause),
-//  new Metric(NullStatsReceiver, "failing"),
-//  0
-//      )
-//}
+  public SocketAddress address() {
+    return address;
+  }
 
+  public void pending(Channel channel) {
+    pending.add(channel);
+  }
+
+  public boolean isAvailable() {
+    //TODO(JR): Find better way to determine this
+    return true;
+  }
 }

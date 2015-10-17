@@ -42,15 +42,6 @@ public class HttpClientConnector extends AbstractClientConnector<HttpClientChann
     this(uri, defaultProtocolFactory());
   }
 
-  public HttpClientConnector(String hostNameAndPort, String servicePath, XioProtocolFactory protocolFactory)
-      throws URISyntaxException {
-    super(new InetSocketAddress(HostAndPort.fromString(hostNameAndPort).getHostText(),
-            HostAndPort.fromString(hostNameAndPort).getPortOrDefault(80)),
-        protocolFactory);
-
-    this.endpointUri = new URI("http", hostNameAndPort, servicePath, null, null);
-  }
-
   public HttpClientConnector(URI uri, XioProtocolFactory protocolFactory) {
     super(toSocketAddress(HostAndPort.fromParts(checkNotNull(uri).getHost(), getPortFromURI(uri))),
         protocolFactory);
@@ -59,6 +50,15 @@ public class HttpClientConnector extends AbstractClientConnector<HttpClientChann
         "HttpClientConnector requires an absolute URI with a path");
 
     this.endpointUri = uri;
+  }
+
+  public HttpClientConnector(String hostNameAndPort, String servicePath, XioProtocolFactory protocolFactory)
+      throws URISyntaxException {
+    super(new InetSocketAddress(HostAndPort.fromString(hostNameAndPort).getHostText(),
+            HostAndPort.fromString(hostNameAndPort).getPortOrDefault(80)),
+        protocolFactory);
+
+    this.endpointUri = new URI("http", hostNameAndPort, servicePath, null, null);
   }
 
   private static int getPortFromURI(URI uri) {

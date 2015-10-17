@@ -107,8 +107,6 @@ public class XioClient implements Closeable {
       Thread.sleep(time);
     };
 
-    final long connectStart = System.currentTimeMillis();
-
     if (ctx != null) {
       bootstrap.group(ctx.channel().eventLoop().parent());
     } else {
@@ -118,10 +116,6 @@ public class XioClient implements Closeable {
     bootstrap
         .channel(NioSocketChannel.class)
         .handler(clientChannelConnector.newChannelPipelineFactory(maxFrameSize, xioClientConfig));
-
-    xioClientConfig.getBootstrapOptions().entrySet().forEach(xs -> {
-      bootstrap.option(xs.getKey(), xs.getValue());
-    });
 
     if (connectTimeout != null) {
       bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, (int) connectTimeout.toMillis());
@@ -133,6 +127,10 @@ public class XioClient implements Closeable {
         .option(ChannelOption.WRITE_BUFFER_HIGH_WATER_MARK, 32 * 1024)
         .option(ChannelOption.WRITE_BUFFER_LOW_WATER_MARK, 8 * 1024)
         .option(ChannelOption.TCP_NODELAY, true);
+
+    xioClientConfig.getBootstrapOptions().entrySet().forEach(xs -> {
+      bootstrap.option(xs.getKey(), xs.getValue());
+    });
 
     ChannelFuture nettyChannelFuture = connect(clientChannelConnector, bootstrap, retryPolicy, retryCount, sleeper);
 
