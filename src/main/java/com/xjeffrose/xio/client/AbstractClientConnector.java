@@ -1,17 +1,33 @@
 package com.xjeffrose.xio.client;
 
 import com.google.common.net.HostAndPort;
+import com.xjeffrose.xio.client.loadbalancer.Distributor;
+import com.xjeffrose.xio.client.loadbalancer.Node;
+import com.xjeffrose.xio.client.loadbalancer.strategies.RoundRobinLoadBalancer;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.util.Vector;
 
 
 public abstract class AbstractClientConnector<T extends XioClientChannel> implements XioClientConnector<T> {
   private final SocketAddress address;
   private final XioProtocolFactory protocolFactory;
+  private final Distributor pool;
+
+  public AbstractClientConnector(Distributor pool, XioProtocolFactory protocolFactory) {
+    this.pool = pool;
+    this.address = null;
+//    this.address = address;
+    this.protocolFactory = protocolFactory;
+  }
 
   public AbstractClientConnector(SocketAddress address, XioProtocolFactory protocolFactory) {
+    final Vector<Node> singletonPool = new Vector<>();
+    singletonPool.add(new Node(address));
+
+    this.pool = new Distributor(singletonPool, new RoundRobinLoadBalancer());
     this.address = address;
     this.protocolFactory = protocolFactory;
   }
@@ -26,7 +42,11 @@ public abstract class AbstractClientConnector<T extends XioClientChannel> implem
 
   @Override
   public ChannelFuture connect(Bootstrap bootstrap) {
-    return bootstrap.connect(address);
+    final Node node = pool.pick();
+    final ChannelFuture cf = bootstrap.connect(node.address());
+
+    node.pending(cf.channel());
+    return cf;
   }
 
   @Override

@@ -1,7 +1,11 @@
 package com.xjeffrose.xio.client.loadbalancer;
 
 import com.google.common.net.HostAndPort;
-import java.util.concurrent.atomic.AtomicInteger;
+import io.netty.channel.Channel;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.util.UUID;
+import java.util.Vector;
 
 /**
  * The base type of nodes over which load is balanced. Nodes define the load metric that is used;
@@ -9,22 +13,26 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class Node {
 
-  private int token;
+  private final UUID token = UUID.randomUUID();
+  private final Vector<Channel> pending = new Vector<>();
+  private final SocketAddress address;
   private double load;
-  private AtomicInteger pending;
-  private HostAndPort hostAndPort;
 
   public Node(HostAndPort hostAndPort) {
-    this.hostAndPort = hostAndPort;
+    this(toInetAddress(hostAndPort));
   }
 
-//  public Node newNode() {
-//    return new Node();
-//  }
-//
-//  protected Node failingNode() {
-//    return new Node();
-//  }
+  public Node(SocketAddress address) {
+    this.address = address;
+    this.load = 0;
+  }
+
+  /**
+   * The current host and port returned as a InetSocketAddress
+   */
+  public static InetSocketAddress toInetAddress(HostAndPort hostAndPort) {
+    return (hostAndPort == null) ? null : new InetSocketAddress(hostAndPort.getHostText(), hostAndPort.getPort());
+  }
 
   /**
    * The current load, in units of the active metric.
@@ -37,14 +45,26 @@ public class Node {
    * The number of pending requests to this node.
    */
   public int pending() {
-    return pending.get();
+    return pending.size();
   }
 
   /**
    * A token is a random integer identifying the node. It persists through node updates.
    */
-  public int token() {
+  public UUID token() {
     return token;
   }
 
+  public SocketAddress address() {
+    return address;
+  }
+
+  public void pending(Channel channel) {
+    pending.add(channel);
+  }
+
+  public boolean isAvailable() {
+    //TODO(JR): Find better way to determine this
+    return true;
+  }
 }
