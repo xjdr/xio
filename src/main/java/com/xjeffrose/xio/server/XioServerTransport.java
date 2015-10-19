@@ -220,7 +220,6 @@ public class XioServerTransport {
         }
       }
       ctx.fireChannelActive();
-      super.channelActive(ctx);
     }
 
     @Override
@@ -231,7 +230,6 @@ public class XioServerTransport {
         }
       }
       ctx.fireChannelInactive();
-      super.channelInactive(ctx);
     }
 
     @Override
