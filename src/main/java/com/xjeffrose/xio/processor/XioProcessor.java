@@ -6,6 +6,9 @@ import io.netty.channel.ChannelHandlerContext;
 
 public interface XioProcessor {
   void connect(ChannelHandlerContext ctx);
+
+  void disconnect(ChannelHandlerContext ctx);
+
   ListenableFuture<Boolean> process(ChannelHandlerContext ctx, Object request, RequestContext reqCtx);
 }
 
