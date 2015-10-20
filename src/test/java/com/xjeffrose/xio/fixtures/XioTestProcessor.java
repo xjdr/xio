@@ -31,6 +31,12 @@ public class XioTestProcessor implements XioProcessor {
   public void connect(ChannelHandlerContext ctx) {
 
   }
+
+  @Override
+  public void disconnect(ChannelHandlerContext ctx) {
+
+  }
+
   @Override
   public ListenableFuture<Boolean> process(ChannelHandlerContext ctx, Object msg, RequestContext respCtx) {
     ListeningExecutorService service = MoreExecutors.listeningDecorator(ctx.executor());

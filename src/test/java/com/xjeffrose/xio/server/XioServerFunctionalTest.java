@@ -96,6 +96,11 @@ public class XioServerFunctionalTest {
                   }
 
                   @Override
+                  public void disconnect(ChannelHandlerContext ctx) {
+
+                  }
+
+                  @Override
                   public ListenableFuture<Boolean> process(ChannelHandlerContext ctx, Object request, RequestContext reqCtx) {
                     ListeningExecutorService service = MoreExecutors.listeningDecorator(ctx.executor());
 
@@ -341,6 +346,11 @@ public class XioServerFunctionalTest {
               }
 
               @Override
+              public void disconnect(ChannelHandlerContext ctx) {
+
+              }
+
+              @Override
               public ListenableFuture<Boolean> process(ChannelHandlerContext ctx, Object request, RequestContext reqCtx) {
                 final ListeningExecutorService service = MoreExecutors.listeningDecorator(ctx.executor());
 
@@ -511,6 +521,11 @@ public class XioServerFunctionalTest {
             return new XioProcessor() {
               @Override
               public void connect(ChannelHandlerContext ctx) {
+
+              }
+
+              @Override
+              public void disconnect(ChannelHandlerContext ctx) {
 
               }
 

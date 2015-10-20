@@ -9,6 +9,7 @@ import com.xjeffrose.xio.processor.XioProcessor;
 import com.xjeffrose.xio.processor.XioProcessorFactory;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.DefaultHttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -28,7 +29,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.apache.log4j.Logger;
 
 
-public class XioDispatcher extends SimpleChannelInboundHandler<Object> {
+public class XioDispatcher extends ChannelInboundHandlerAdapter {
   private static final Logger log = Logger.getLogger(XioServerTransport.class.getName());
 
   private final XioProcessorFactory processorFactory;
@@ -55,7 +56,31 @@ public class XioDispatcher extends SimpleChannelInboundHandler<Object> {
   }
 
   @Override
-  protected void channelRead0(ChannelHandlerContext ctx, Object o) throws Exception {
+  public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+    // Any out of band exception are caught here and we tear down the socket
+    closeChannel(ctx);
+
+    // Send for logging
+    ctx.fireChannelRead(cause);
+  }
+
+  @Override
+  public void channelActive(ChannelHandlerContext ctx) throws Exception {
+    // Reads always start out unblocked
+    DispatcherContext.unblockChannelReads(ctx);
+    this.processor = processorFactory.getProcessor();
+    processor.connect(ctx);
+    super.channelActive(ctx);
+  }
+
+  @Override
+  public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+    processor.disconnect(ctx);
+    ctx.fireChannelInactive();
+  }
+
+  @Override
+  public void channelRead(ChannelHandlerContext ctx, Object o) throws Exception {
     // retain the object so that it can be used in XioClient
     if (o instanceof ReferenceCounted) {
       ((ReferenceCounted) o).retain();
@@ -241,30 +266,11 @@ public class XioDispatcher extends SimpleChannelInboundHandler<Object> {
     }
   }
 
-  @Override
-  public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-    // Any out of band exception are caught here and we tear down the socket
-    closeChannel(ctx);
-
-    // Send for logging
-    ctx.fireChannelRead(cause);
-  }
-
   private void closeChannel(ChannelHandlerContext ctx) {
     if (ctx.channel().isOpen()) {
       ctx.channel().close();
     }
   }
-
-  @Override
-  public void channelActive(ChannelHandlerContext ctx) throws Exception {
-    // Reads always start out unblocked
-    DispatcherContext.unblockChannelReads(ctx);
-    this.processor = processorFactory.getProcessor();
-    processor.connect(ctx);
-    super.channelActive(ctx);
-  }
-
 
   private static class DispatcherContext {
     private ReadBlockedState readBlockedState = ReadBlockedState.NOT_BLOCKED;
