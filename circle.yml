@@ -7,6 +7,3 @@ dependencies:
 test:
   override:
     - mvn cobertura:cobertura coveralls:report
-notify:
-  webhooks:
-    - url: https://hooks.slack.com/services/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
