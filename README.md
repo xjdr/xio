@@ -1,5 +1,5 @@
 ### Status
-[![Build Status](https://travis-ci.org/xjdr/xio.png)](https://travis-ci.org/xjdr/xio)
+[![Circle CI](https://circleci.com/gh/xjdr/xio.svg?style=svg)](https://circleci.com/gh/xjdr/xio)
 
 [![Coverage Status](https://coveralls.io/repos/xjdr/xio/badge.svg?branch=master&service=github)](https://coveralls.io/github/xjdr/xio?branch=master)
 
