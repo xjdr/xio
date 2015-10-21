@@ -6,7 +6,6 @@ dependencies:
     - ~/.m2
 test:
   override:
-    - mvn test
     - mvn cobertura:cobertura coveralls:report
 notify:
   webhooks:
