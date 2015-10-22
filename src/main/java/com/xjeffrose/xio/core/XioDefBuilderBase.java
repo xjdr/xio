@@ -4,11 +4,9 @@ package com.xjeffrose.xio.core;
 import com.xjeffrose.xio.processor.XioProcessorFactory;
 import com.xjeffrose.xio.server.XioServerDef;
 import io.airlift.units.Duration;
-import io.netty.channel.ChannelHandler;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
-
 
 import static com.google.common.base.Preconditions.checkState;
 
@@ -35,6 +33,7 @@ public abstract class XioDefBuilderBase<T extends XioDefBuilderBase<T>> {
   private InetSocketAddress hostAddress;
   private XioCodecFactory codecFactory;
   private XioAggregatorFactory aggregatorFactory;
+  private XioRoutingFilterFactory routingFilterFactory;
 
   public XioDefBuilderBase() {
     this.port = 8080;
@@ -53,6 +52,7 @@ public abstract class XioDefBuilderBase<T extends XioDefBuilderBase<T>> {
     this.securityFactory = new XioNoOpSecurityFactory();
     this.codecFactory = null;
     this.aggregatorFactory = null;
+    this.routingFilterFactory = null;
   }
 
   public T name(String name) {
@@ -121,10 +121,16 @@ public abstract class XioDefBuilderBase<T extends XioDefBuilderBase<T>> {
     return (T) this;
   }
 
+  public T withRoutingFilter(XioRoutingFilterFactory routingFilterFactory) {
+    this.routingFilterFactory = routingFilterFactory;
+    return (T) this;
+  }
+
   public XioServerDef build() {
     checkState(xioProcessorFactory != null, "Processor not defined!");
     checkState(codecFactory != null, "Codec not defined!");
     checkState(aggregatorFactory != null, "Aggregator not defined!");
+    checkState(routingFilterFactory != null, "routingFilterFactory not defined!");
 
 //    checkState(xioProcessorFactory == null, "Processors will be automatically adapted to XioProcessors, don't specify both");
     checkState(maxConnections >= 0, "maxConnections should be 0 (for unlimited) or positive");
@@ -142,6 +148,7 @@ public abstract class XioDefBuilderBase<T extends XioDefBuilderBase<T>> {
         executor,
         securityFactory,
         codecFactory,
-        aggregatorFactory);
+        aggregatorFactory,
+        routingFilterFactory);
   }
 }
