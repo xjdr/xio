@@ -2,10 +2,10 @@ package com.xjeffrose.xio.server;
 
 import com.xjeffrose.xio.core.XioAggregatorFactory;
 import com.xjeffrose.xio.core.XioCodecFactory;
+import com.xjeffrose.xio.core.XioRoutingFilterFactory;
 import com.xjeffrose.xio.core.XioSecurityFactory;
 import com.xjeffrose.xio.processor.XioProcessorFactory;
 import io.airlift.units.Duration;
-import io.netty.channel.ChannelHandler;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executor;
 
@@ -23,6 +23,7 @@ public class XioServerDef {
   private final XioCodecFactory codecFactory;
   private final XioAggregatorFactory aggregatorFactory;
   private final InetSocketAddress hostAddress;
+  private final XioRoutingFilterFactory routingFilterFactory;
 
   public XioServerDef(
       String name,
@@ -37,7 +38,8 @@ public class XioServerDef {
       Executor executor,
       XioSecurityFactory securityFactory,
       XioCodecFactory codecFactory,
-      XioAggregatorFactory aggregatorFactory) {
+      XioAggregatorFactory aggregatorFactory,
+      XioRoutingFilterFactory routingFilterFactory) {
 
     this.name = name;
     this.serverPort = serverPort;
@@ -52,6 +54,7 @@ public class XioServerDef {
     this.securityFactory = securityFactory;
     this.codecFactory = codecFactory;
     this.aggregatorFactory = aggregatorFactory;
+    this.routingFilterFactory = routingFilterFactory;
   }
 
   public static XioServerDefBuilder newBuilder() {
@@ -110,4 +113,7 @@ public class XioServerDef {
     return aggregatorFactory;
   }
 
+  public XioRoutingFilterFactory getRoutingFilterFactory() {
+    return routingFilterFactory;
+  }
 }
