@@ -7,6 +7,7 @@ import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
 import com.xjeffrose.xio.core.XioAggregatorFactory;
 import com.xjeffrose.xio.core.XioCodecFactory;
+import com.xjeffrose.xio.core.XioNoOpHandler;
 import com.xjeffrose.xio.core.XioNoOpSecurityFactory;
 import com.xjeffrose.xio.fixtures.XioTestProcessorFactory;
 import com.xjeffrose.xio.server.XioBootstrap;
@@ -46,6 +47,7 @@ public class XioModuleTest {
                 .taskTimeout(new Duration((double) 20000, TimeUnit.MILLISECONDS))
                 .using(Executors.newCachedThreadPool())
                 .withSecurityFactory(new XioNoOpSecurityFactory())
+                .withRoutingFilter(() -> new XioNoOpHandler())
                 .withProcessorFactory(new XioTestProcessorFactory())
                 .withCodecFactory(new XioCodecFactory() {
                   @Override

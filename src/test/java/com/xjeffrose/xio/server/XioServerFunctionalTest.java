@@ -85,6 +85,7 @@ public class XioServerFunctionalTest {
         .withSecurityFactory(new XioNoOpSecurityFactory())
         .withCodecFactory(() -> new TcpCodec())
         .withAggregator(() -> new XioNoOpHandler())
+        .withRoutingFilter(() -> new XioNoOpHandler())
         .withProcessorFactory(
             new XioProcessorFactory() {
               @Override
@@ -169,6 +170,7 @@ public class XioServerFunctionalTest {
         .taskTimeout(new Duration((double) 20000, TimeUnit.MILLISECONDS))
         .using(Executors.newCachedThreadPool())
         .withSecurityFactory(new XioNoOpSecurityFactory())
+        .withRoutingFilter(() -> new XioNoOpHandler())
         .withProcessorFactory(new XioTestProcessorFactory())
         .withCodecFactory(new XioCodecFactory() {
           @Override
@@ -252,6 +254,7 @@ public class XioServerFunctionalTest {
         .using(Executors.newCachedThreadPool())
         .withSecurityFactory(new XioTestSecurityFactory())
         .withProcessorFactory(new XioTestProcessorFactory())
+        .withRoutingFilter(() -> new XioNoOpHandler())
         .withCodecFactory(new XioCodecFactory() {
           @Override
           public ChannelHandler getCodec() {
@@ -334,6 +337,7 @@ public class XioServerFunctionalTest {
         .taskTimeout(new Duration((double) 20000, TimeUnit.MILLISECONDS))
         .using(Executors.newCachedThreadPool())
         .withSecurityFactory(new XioTestSecurityFactory())
+        .withRoutingFilter(() -> new XioNoOpHandler())
         .withProcessorFactory(new XioProcessorFactory() {
           @Override
           public XioProcessor getProcessor() {
@@ -514,6 +518,7 @@ public class XioServerFunctionalTest {
         .taskTimeout(new Duration((double) 20000, TimeUnit.MILLISECONDS))
         .using(Executors.newCachedThreadPool())
         .withSecurityFactory(new XioTestSecurityFactory())
+        .withRoutingFilter(() -> new XioNoOpHandler())
         .withProcessorFactory(new XioProcessorFactory() {
 
           @Override
