@@ -27,10 +27,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 public class XioTestProcessor implements XioProcessor {
-  @Override
-  public void connect(ChannelHandlerContext ctx) {
-
-  }
 
   @Override
   public void disconnect(ChannelHandlerContext ctx) {
