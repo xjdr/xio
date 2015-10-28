@@ -69,13 +69,14 @@ public class XioDispatcher extends ChannelInboundHandlerAdapter {
     // Reads always start out unblocked
     DispatcherContext.unblockChannelReads(ctx);
     this.processor = processorFactory.getProcessor();
-    processor.connect(ctx);
     super.channelActive(ctx);
   }
 
   @Override
   public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-    processor.disconnect(ctx);
+    if (processor != null) {
+      processor.disconnect(ctx);
+    }
     ctx.fireChannelInactive();
   }
 

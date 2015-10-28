@@ -91,10 +91,6 @@ public class XioServerFunctionalTest {
               @Override
               public XioProcessor getProcessor() {
                 return new XioProcessor() {
-                  @Override
-                  public void connect(ChannelHandlerContext ctx) {
-
-                  }
 
                   @Override
                   public void disconnect(ChannelHandlerContext ctx) {
@@ -345,11 +341,6 @@ public class XioServerFunctionalTest {
             return new XioProcessor() {
 
               @Override
-              public void connect(ChannelHandlerContext ctx) {
-
-              }
-
-              @Override
               public void disconnect(ChannelHandlerContext ctx) {
 
               }
@@ -524,10 +515,6 @@ public class XioServerFunctionalTest {
           @Override
           public XioProcessor getProcessor() {
             return new XioProcessor() {
-              @Override
-              public void connect(ChannelHandlerContext ctx) {
-
-              }
 
               @Override
               public void disconnect(ChannelHandlerContext ctx) {
