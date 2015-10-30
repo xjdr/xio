@@ -2,7 +2,7 @@ machine:
   java:
     version: oraclejdk8
   pre:
-    - sudo apt-get install openssl-dev
+    - sudo apt-get install openssl libssl-dev
 dependencies:
   cache_directories:
     - ~/.m2
