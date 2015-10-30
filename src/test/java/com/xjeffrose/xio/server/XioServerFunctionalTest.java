@@ -39,6 +39,7 @@ import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
@@ -121,10 +122,17 @@ public class XioServerFunctionalTest {
         .setXioName("Xio Name Test")
         .build();
 
-    // Create the server transport
+    DefaultChannelGroup defaultChannelGroup;
+
+    if (System.getProperty("os.name") == "Linux") {
+      defaultChannelGroup =  new DefaultChannelGroup(new EpollEventLoopGroup().next());
+    } else {
+      defaultChannelGroup = new DefaultChannelGroup(new NioEventLoopGroup().next());
+    }
+
+      // Create the server transport
     final XioServerTransport server = new XioServerTransport(serverDef,
-        serverConfig,
-        new DefaultChannelGroup(new NioEventLoopGroup().next()));
+        serverConfig, defaultChannelGroup);
 
     // Start the server
     server.start();
