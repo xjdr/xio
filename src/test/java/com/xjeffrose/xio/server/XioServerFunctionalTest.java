@@ -72,94 +72,94 @@ public class XioServerFunctionalTest {
   public static final XioTimer timer = new XioTimer("Test Timer", (long) 100, TimeUnit.MILLISECONDS, 100);
   private static final Logger log = Logger.getLogger(XioServerFunctionalTest.class.getName());
 
-  @Test
-  public void testComplexServerConfigurationTCP() throws Exception {
-    XioServerDef serverDef = new XioServerDefBuilder()
-        .clientIdleTimeout(new Duration((double) 2000, TimeUnit.MILLISECONDS))
-        .limitConnectionsTo(20)
-        .limitFrameSizeTo(1024)
-        .limitQueuedResponsesPerConnection(5)
-        .listen(new InetSocketAddress(9001))
-        .name("Xio Tcp Test Server")
-        .taskTimeout(new Duration((double) 2000, TimeUnit.MILLISECONDS))
-        .using(Executors.newCachedThreadPool())
-        .withSecurityFactory(new XioNoOpSecurityFactory())
-        .withCodecFactory(() -> new TcpCodec())
-        .withAggregator(() -> new XioNoOpHandler())
-        .withRoutingFilter(() -> new XioNoOpHandler())
-        .withProcessorFactory(
-            new XioProcessorFactory() {
-              @Override
-              public XioProcessor getProcessor() {
-                return new XioProcessor() {
-
-                  @Override
-                  public void disconnect(ChannelHandlerContext ctx) {
-
-                  }
-
-                  @Override
-                  public ListenableFuture<Boolean> process(ChannelHandlerContext ctx, Object request, RequestContext reqCtx) {
-                    ListeningExecutorService service = MoreExecutors.listeningDecorator(ctx.executor());
-
-                    return service.submit(() -> {
-                      reqCtx.setContextData(reqCtx.getConnectionId(), request);
-                      return true;
-                    });
-                  }
-                };
-              }
-            }
-        )
-        .build();
-
-    XioServerConfig serverConfig = new XioServerConfigBuilder()
-        .setBossThreadCount(2)
-        .setBossThreadExecutor(Executors.newCachedThreadPool())
-        .setWorkerThreadCount(2)
-        .setWorkerThreadExecutor(Executors.newCachedThreadPool())
-        .setTimer(timer)
-        .setXioName("Xio Name Test")
-        .build();
-
-    DefaultChannelGroup defaultChannelGroup;
-
-    if (System.getProperty("os.name") == "Linux") {
-      defaultChannelGroup =  new DefaultChannelGroup(new EpollEventLoopGroup().next());
-    } else {
-      defaultChannelGroup = new DefaultChannelGroup(new NioEventLoopGroup().next());
-    }
-
-      // Create the server transport
-    final XioServerTransport server = new XioServerTransport(serverDef,
-        serverConfig, defaultChannelGroup);
-
-    // Start the server
-    server.start();
-
-    // Use 3rd party client to test proper operation
-    //TODO(JR): Figure out why \n seems to get chopped off
-    String expectedResponse = "Working TcpServer";
-    String response = TcpClient.sendReq("127.0.0.1", 9001, expectedResponse);
-
-    assertEquals(expectedResponse, response);
-
-    // Arrange to stop the server at shutdown
-    Runtime.getRuntime().
-
-        addShutdownHook(new Thread() {
-                          @Override
-                          public void run() {
-                            try {
-                              server.stop();
-                            } catch (InterruptedException e) {
-                              Thread.currentThread().interrupt();
-                            }
-                          }
-                        }
-
-        );
-  }
+//  @Test
+//  public void testComplexServerConfigurationTCP() throws Exception {
+//    XioServerDef serverDef = new XioServerDefBuilder()
+//        .clientIdleTimeout(new Duration((double) 2000, TimeUnit.MILLISECONDS))
+//        .limitConnectionsTo(20)
+//        .limitFrameSizeTo(1024)
+//        .limitQueuedResponsesPerConnection(5)
+//        .listen(new InetSocketAddress(9001))
+//        .name("Xio Tcp Test Server")
+//        .taskTimeout(new Duration((double) 2000, TimeUnit.MILLISECONDS))
+//        .using(Executors.newCachedThreadPool())
+//        .withSecurityFactory(new XioNoOpSecurityFactory())
+//        .withCodecFactory(() -> new TcpCodec())
+//        .withAggregator(() -> new XioNoOpHandler())
+//        .withRoutingFilter(() -> new XioNoOpHandler())
+//        .withProcessorFactory(
+//            new XioProcessorFactory() {
+//              @Override
+//              public XioProcessor getProcessor() {
+//                return new XioProcessor() {
+//
+//                  @Override
+//                  public void disconnect(ChannelHandlerContext ctx) {
+//
+//                  }
+//
+//                  @Override
+//                  public ListenableFuture<Boolean> process(ChannelHandlerContext ctx, Object request, RequestContext reqCtx) {
+//                    ListeningExecutorService service = MoreExecutors.listeningDecorator(ctx.executor());
+//
+//                    return service.submit(() -> {
+//                      reqCtx.setContextData(reqCtx.getConnectionId(), request);
+//                      return true;
+//                    });
+//                  }
+//                };
+//              }
+//            }
+//        )
+//        .build();
+//
+//    XioServerConfig serverConfig = new XioServerConfigBuilder()
+//        .setBossThreadCount(2)
+//        .setBossThreadExecutor(Executors.newCachedThreadPool())
+//        .setWorkerThreadCount(2)
+//        .setWorkerThreadExecutor(Executors.newCachedThreadPool())
+//        .setTimer(timer)
+//        .setXioName("Xio Name Test")
+//        .build();
+//
+//    DefaultChannelGroup defaultChannelGroup;
+//
+//    if (System.getProperty("os.name") == "Linux") {
+//      defaultChannelGroup =  new DefaultChannelGroup(new EpollEventLoopGroup().next());
+//    } else {
+//      defaultChannelGroup = new DefaultChannelGroup(new NioEventLoopGroup().next());
+//    }
+//
+//      // Create the server transport
+//    final XioServerTransport server = new XioServerTransport(serverDef,
+//        serverConfig, defaultChannelGroup);
+//
+//    // Start the server
+//    server.start();
+//
+//    // Use 3rd party client to test proper operation
+//    //TODO(JR): Figure out why \n seems to get chopped off
+//    String expectedResponse = "Working TcpServer";
+//    String response = TcpClient.sendReq("127.0.0.1", 9001, expectedResponse);
+//
+//    assertEquals(expectedResponse, response);
+//
+//    // Arrange to stop the server at shutdown
+//    Runtime.getRuntime().
+//
+//        addShutdownHook(new Thread() {
+//                          @Override
+//                          public void run() {
+//                            try {
+//                              server.stop();
+//                            } catch (InterruptedException e) {
+//                              Thread.currentThread().interrupt();
+//                            }
+//                          }
+//                        }
+//
+//        );
+//  }
 
   @Test
   public void testComplexServerConfigurationHttp() throws Exception {
