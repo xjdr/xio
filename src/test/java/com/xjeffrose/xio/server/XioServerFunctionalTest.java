@@ -199,10 +199,18 @@ public class XioServerFunctionalTest {
         .setXioName("Xio Name Test")
         .build();
 
+
+    DefaultChannelGroup defaultChannelGroup;
+
+    if (System.getProperty("os.name") == "Linux") {
+      defaultChannelGroup =  new DefaultChannelGroup(new EpollEventLoopGroup().next());
+    } else {
+      defaultChannelGroup = new DefaultChannelGroup(new NioEventLoopGroup().next());
+    }
+
     // Create the server transport
     final XioServerTransport server = new XioServerTransport(serverDef,
-        serverConfig,
-        new DefaultChannelGroup(new NioEventLoopGroup().next()));
+        serverConfig, defaultChannelGroup);
 
     // Start the server
     server.start();
@@ -281,10 +289,18 @@ public class XioServerFunctionalTest {
         .setXioName("Xio Name Test")
         .build();
 
+
+    DefaultChannelGroup defaultChannelGroup;
+
+    if (System.getProperty("os.name") == "Linux") {
+      defaultChannelGroup =  new DefaultChannelGroup(new EpollEventLoopGroup().next());
+    } else {
+      defaultChannelGroup = new DefaultChannelGroup(new NioEventLoopGroup().next());
+    }
+
     // Create the server transport
     final XioServerTransport server = new XioServerTransport(serverDef,
-        serverConfig,
-        new DefaultChannelGroup(new NioEventLoopGroup().next()));
+        serverConfig, defaultChannelGroup);
 
     // Start the server
     server.start();
@@ -472,10 +488,18 @@ public class XioServerFunctionalTest {
         .setXioName("Xio Name Test")
         .build();
 
+
+    DefaultChannelGroup defaultChannelGroup;
+
+    if (System.getProperty("os.name") == "Linux") {
+      defaultChannelGroup =  new DefaultChannelGroup(new EpollEventLoopGroup().next());
+    } else {
+      defaultChannelGroup = new DefaultChannelGroup(new NioEventLoopGroup().next());
+    }
+
     // Create the server transport
     final XioServerTransport server = new XioServerTransport(serverDef,
-        serverConfig,
-        new DefaultChannelGroup(new NioEventLoopGroup().next()));
+        serverConfig, defaultChannelGroup);
 
     // Start the server
     server.start();
@@ -679,10 +703,18 @@ public class XioServerFunctionalTest {
         .setXioName("Xio Name Test")
         .build();
 
+
+    DefaultChannelGroup defaultChannelGroup;
+
+    if (System.getProperty("os.name") == "Linux") {
+      defaultChannelGroup =  new DefaultChannelGroup(new EpollEventLoopGroup().next());
+    } else {
+      defaultChannelGroup = new DefaultChannelGroup(new NioEventLoopGroup().next());
+    }
+
     // Create the server transport
     final XioServerTransport server = new XioServerTransport(serverDef,
-        serverConfig,
-        new DefaultChannelGroup(new NioEventLoopGroup().next()));
+        serverConfig, defaultChannelGroup);
 
     // Start the server
     server.start();
