@@ -9,6 +9,7 @@ import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelHandler;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.handler.ssl.SslProvider;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
 import java.security.cert.CertificateException;
@@ -27,7 +28,10 @@ public class XioTestSecurityFactory implements XioSecurityFactory {
       public ChannelHandler getEncryptionHandler() {
         try {
           SelfSignedCertificate ssc = new SelfSignedCertificate();
-          SslContext sslCtx =  SslContextBuilder.forServer(ssc.certificate(), ssc.privateKey()).build();
+          SslContext sslCtx =  SslContextBuilder
+              .forServer(ssc.certificate(), ssc.privateKey())
+              .sslProvider(SslProvider.OPENSSL)
+              .build();
 
           return sslCtx.newHandler(new PooledByteBufAllocator());
 
