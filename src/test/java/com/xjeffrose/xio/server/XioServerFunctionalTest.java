@@ -183,9 +183,9 @@ public class XioServerFunctionalTest {
         .build();
 
     XioServerConfig serverConfig = new XioServerConfigBuilder()
-        .setBossThreadCount(12)
+        .setBossThreadCount(2)
         .setBossThreadExecutor(Executors.newCachedThreadPool())
-        .setWorkerThreadCount(20)
+        .setWorkerThreadCount(2)
         .setWorkerThreadExecutor(Executors.newCachedThreadPool())
         .setTimer(timer)
         .setXioName("Xio Name Test")
@@ -265,9 +265,9 @@ public class XioServerFunctionalTest {
         }).build();
 
     XioServerConfig serverConfig = new XioServerConfigBuilder()
-        .setBossThreadCount(12)
+        .setBossThreadCount(2)
         .setBossThreadExecutor(Executors.newCachedThreadPool())
-        .setWorkerThreadCount(20)
+        .setWorkerThreadCount(2)
         .setWorkerThreadExecutor(Executors.newCachedThreadPool())
         .setTimer(timer)
         .setXioName("Xio Name Test")
@@ -456,9 +456,9 @@ public class XioServerFunctionalTest {
         .build();
 
     XioServerConfig serverConfig = new XioServerConfigBuilder()
-        .setBossThreadCount(12)
+        .setBossThreadCount(2)
         .setBossThreadExecutor(Executors.newCachedThreadPool())
-        .setWorkerThreadCount(20)
+        .setWorkerThreadCount(2)
         .setWorkerThreadExecutor(Executors.newCachedThreadPool())
         .setTimer(timer)
         .setXioName("Xio Name Test")
@@ -663,9 +663,9 @@ public class XioServerFunctionalTest {
         .build();
 
     XioServerConfig serverConfig = new XioServerConfigBuilder()
-        .setBossThreadCount(12)
+        .setBossThreadCount(2)
         .setBossThreadExecutor(Executors.newCachedThreadPool())
-        .setWorkerThreadCount(20)
+        .setWorkerThreadCount(2)
         .setWorkerThreadExecutor(Executors.newCachedThreadPool())
         .setTimer(timer)
         .setXioName("Xio Name Test")
