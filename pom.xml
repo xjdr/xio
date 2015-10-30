@@ -92,8 +92,6 @@
             <artifactId>netty-tcnative</artifactId>
             <version>1.1.33.Fork6</version>
             <classifier>${os.detected.classifier}</classifier>
-            <!--<classifier>osx-x86_64</classifier>-->
-            <!--<classifier>linux-x86_64</classifier>-->
         </dependency>
 
         <dependency>
@@ -255,7 +253,6 @@
                     <configuration>
                         <source>1.8</source>
                         <target>1.8</target>
-                        <fork>true</fork>
                         <compilerArgument>-XDignore.symbol.file</compilerArgument>
                     </configuration>
                 </plugin>

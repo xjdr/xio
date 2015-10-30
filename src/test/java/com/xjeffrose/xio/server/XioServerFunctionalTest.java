@@ -79,7 +79,7 @@ public class XioServerFunctionalTest {
         .limitFrameSizeTo(1024)
         .limitQueuedResponsesPerConnection(5)
         .listen(new InetSocketAddress(9001))
-        .name("Xio Test Server")
+        .name("Xio Tcp Test Server")
         .taskTimeout(new Duration((double) 2000, TimeUnit.MILLISECONDS))
         .using(Executors.newCachedThreadPool())
         .withSecurityFactory(new XioNoOpSecurityFactory())
