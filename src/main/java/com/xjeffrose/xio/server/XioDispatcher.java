@@ -82,10 +82,6 @@ public class XioDispatcher extends ChannelInboundHandlerAdapter {
 
   @Override
   public void channelRead(ChannelHandlerContext ctx, Object o) throws Exception {
-    // retain the object so that it can be used in XioClient
-    if (o instanceof ReferenceCounted) {
-      ((ReferenceCounted) o).retain();
-    }
     processRequest(ctx, o);
   }
 
