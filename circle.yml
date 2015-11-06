@@ -1,9 +1,11 @@
 machine:
   java:
     version: oraclejdk8
+  pre:
+    - sudo apt-get install openssl libssl-dev
 dependencies:
   cache_directories:
     - ~/.m2
 test:
   override:
-    - mvn cobertura:cobertura coveralls:report
+    - mvn test

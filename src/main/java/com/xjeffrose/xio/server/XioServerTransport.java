@@ -18,6 +18,9 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
+import io.netty.channel.MultithreadEventLoopGroup;
+import io.netty.channel.epoll.EpollEventLoopGroup;
+import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -50,8 +53,8 @@ public class XioServerTransport {
   private ExecutorService bossExecutor;
   private ExecutorService ioWorkerExecutor;
   private Channel serverChannel;
-  private NioEventLoopGroup bossGroup;
-  private NioEventLoopGroup workerGroup;
+//  private MultithreadEventLoopGroup bossGroup;
+//  private MultithreadEventLoopGroup workerGroup;
 
   public XioServerTransport(final XioServerDef def) {
     this(def, XioServerConfig.newBuilder().build(), new DefaultChannelGroup(new NioEventLoopGroup().next()));
@@ -108,10 +111,16 @@ public class XioServerTransport {
     ioWorkerExecutor = xioServerConfig.getWorkerExecutor();
     int ioWorkerThreadCount = xioServerConfig.getWorkerThreadCount();
 
-    bossGroup = new NioEventLoopGroup(bossThreadCount);
-    workerGroup = new NioEventLoopGroup(ioWorkerThreadCount);
+    if (System.getProperty("os.name") == "Linux") {
+//      bossGroup = new EpollEventLoopGroup(bossThreadCount);
+//      workerGroup = new EpollEventLoopGroup(ioWorkerThreadCount);
 
-    start(bossGroup, workerGroup);
+      start(new EpollEventLoopGroup(bossThreadCount), new EpollEventLoopGroup(ioWorkerThreadCount));
+    } else {
+//      bossGroup = new NioEventLoopGroup(bossThreadCount);
+//      workerGroup = new NioEventLoopGroup(ioWorkerThreadCount);
+      start(new NioEventLoopGroup(bossThreadCount), new NioEventLoopGroup(ioWorkerThreadCount));
+    }
   }
 
   public void start(NioEventLoopGroup bossGroup, NioEventLoopGroup workerGroup) {
@@ -119,6 +128,36 @@ public class XioServerTransport {
     bootstrap
         .group(bossGroup, workerGroup)
         .channel(NioServerSocketChannel.class)
+        .childHandler(pipelineFactory);
+
+    xioServerConfig.getBootstrapOptions().entrySet().forEach(xs -> {
+      bootstrap.option(xs.getKey(), xs.getValue());
+    });
+
+    //Set some sane defaults
+    bootstrap
+        .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
+        .option(ChannelOption.WRITE_BUFFER_HIGH_WATER_MARK, 32 * 1024)
+        .option(ChannelOption.WRITE_BUFFER_LOW_WATER_MARK, 8 * 1024)
+        .option(ChannelOption.TCP_NODELAY, true);
+
+    try {
+      serverChannel = bootstrap.bind(hostAddr).sync().channel();
+    } catch (InterruptedException e) {
+      //TODO(JR): Do somefin here
+      e.printStackTrace();
+    }
+    InetSocketAddress actualSocket = (InetSocketAddress) serverChannel.localAddress();
+    actualPort = actualSocket.getPort();
+    Preconditions.checkState(actualPort != 0 && (actualPort == requestedPort || requestedPort == 0));
+    log.info("started transport " + def.getName() + ":" + actualPort);
+  }
+
+  public void start(EpollEventLoopGroup bossGroup, EpollEventLoopGroup workerGroup) {
+    bootstrap = new ServerBootstrap();
+    bootstrap
+        .group(bossGroup, workerGroup)
+        .channel(EpollServerSocketChannel.class)
         .childHandler(pipelineFactory);
 
     xioServerConfig.getBootstrapOptions().entrySet().forEach(xs -> {
@@ -169,19 +208,19 @@ public class XioServerTransport {
     // If the channelFactory was created by us, we should also clean it up. If the
     // channelFactory was passed in by XioBootstrap, then it may be shared so don't clean
     // it up.
-    if (bossGroup != null) {
-      ShutdownUtil.shutdownChannelFactory(bossGroup,
-          bossExecutor,
-          ioWorkerExecutor,
-          allChannels);
-    }
-
-    if (workerGroup != null) {
-      ShutdownUtil.shutdownChannelFactory(workerGroup,
-          bossExecutor,
-          ioWorkerExecutor,
-          allChannels);
-    }
+//    if (bossGroup != null) {
+//      ShutdownUtil.shutdownChannelFactory(bossGroup,
+//          bossExecutor,
+//          ioWorkerExecutor,
+//          allChannels);
+//    }
+//
+//    if (workerGroup != null) {
+//      ShutdownUtil.shutdownChannelFactory(workerGroup,
+//          bossExecutor,
+//          ioWorkerExecutor,
+//          allChannels);
+//    }
   }
 
   public Channel getServerChannel() {
