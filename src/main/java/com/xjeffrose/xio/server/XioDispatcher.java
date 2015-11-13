@@ -7,6 +7,7 @@ import com.xjeffrose.xio.core.ConnectionContext;
 import com.xjeffrose.xio.core.ConnectionContexts;
 import com.xjeffrose.xio.processor.XioProcessor;
 import com.xjeffrose.xio.processor.XioProcessorFactory;
+import com.xjeffrose.xio.processor.XioSimpleProcessor;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -61,7 +62,7 @@ public class XioDispatcher extends ChannelInboundHandlerAdapter {
     closeChannel(ctx);
 
     // Send for logging
-    ctx.fireChannelRead(cause);
+    ctx.fireExceptionCaught(cause);
   }
 
   @Override
@@ -82,7 +83,12 @@ public class XioDispatcher extends ChannelInboundHandlerAdapter {
 
   @Override
   public void channelRead(ChannelHandlerContext ctx, Object o) throws Exception {
-    processRequest(ctx, o);
+    if (processor instanceof XioSimpleProcessor) {
+      // for proxy case, really no need to go through all the complexity in processRequest
+      processor.process(ctx, o, requestContext);
+    } else {
+      processRequest(ctx, o);
+    }
   }
 
   private void processRequest(
