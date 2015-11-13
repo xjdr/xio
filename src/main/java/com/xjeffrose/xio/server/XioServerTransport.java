@@ -5,6 +5,7 @@ import com.xjeffrose.xio.core.ChannelStatistics;
 import com.xjeffrose.xio.core.ConnectionContextHandler;
 import com.xjeffrose.xio.core.ShutdownUtil;
 import com.xjeffrose.xio.core.XioExceptionLogger;
+import com.xjeffrose.xio.core.XioMessageLogger;
 import com.xjeffrose.xio.core.XioMetrics;
 import com.xjeffrose.xio.core.XioSecurityHandlers;
 import io.netty.bootstrap.ServerBootstrap;
@@ -18,7 +19,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
-import io.netty.channel.MultithreadEventLoopGroup;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.group.ChannelGroup;
@@ -84,6 +84,7 @@ public class XioServerTransport {
         cp.addLast("connectionLimiter", connectionLimiter);
         cp.addLast(ChannelStatistics.NAME, channelStatistics);
         cp.addLast("encryptionHandler", securityHandlers.getEncryptionHandler());
+        cp.addLast("messageLogger", new XioMessageLogger());
         cp.addLast("codec", def.getCodecFactory().getCodec());
         cp.addLast("aggregator", def.getAggregatorFactory().getAggregator());
         cp.addLast("routingFilter", def.getRoutingFilterFactory().getRoutingFilter());
@@ -111,14 +112,9 @@ public class XioServerTransport {
     ioWorkerExecutor = xioServerConfig.getWorkerExecutor();
     int ioWorkerThreadCount = xioServerConfig.getWorkerThreadCount();
 
-    if (System.getProperty("os.name") == "Linux") {
-//      bossGroup = new EpollEventLoopGroup(bossThreadCount);
-//      workerGroup = new EpollEventLoopGroup(ioWorkerThreadCount);
-
+    if (System.getProperty("os.name") == "Linux1") {
       start(new EpollEventLoopGroup(bossThreadCount), new EpollEventLoopGroup(ioWorkerThreadCount));
     } else {
-//      bossGroup = new NioEventLoopGroup(bossThreadCount);
-//      workerGroup = new NioEventLoopGroup(ioWorkerThreadCount);
       start(new NioEventLoopGroup(bossThreadCount), new NioEventLoopGroup(ioWorkerThreadCount));
     }
   }
@@ -146,6 +142,8 @@ public class XioServerTransport {
     } catch (InterruptedException e) {
       //TODO(JR): Do somefin here
       e.printStackTrace();
+    } catch (Exception e) {
+      log.error("Error starting " + hostAddr);
     }
     InetSocketAddress actualSocket = (InetSocketAddress) serverChannel.localAddress();
     actualPort = actualSocket.getPort();
@@ -176,6 +174,9 @@ public class XioServerTransport {
     } catch (InterruptedException e) {
       //TODO(JR): Do somefin here
       e.printStackTrace();
+    } catch (Exception e) {
+      log.error("cannot start server for " + hostAddr);
+      throw e;
     }
     InetSocketAddress actualSocket = (InetSocketAddress) serverChannel.localAddress();
     actualPort = actualSocket.getPort();

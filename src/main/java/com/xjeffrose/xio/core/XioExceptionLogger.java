@@ -11,13 +11,11 @@ public class XioExceptionLogger extends LoggingHandler {
 
   @Override
   public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-    this.logMessageDebug(ctx, "RECEIVED", msg);
     ctx.fireChannelRead(msg);
   }
 
   @Override
   public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
-    this.logMessageDebug(ctx, "WRITE", msg);
     ctx.write(msg, promise);
   }
 
@@ -26,12 +24,7 @@ public class XioExceptionLogger extends LoggingHandler {
     this.logMessage(ctx, "EXCEPTION: " + cause, null);
   }
 
-  private void logMessageDebug(ChannelHandlerContext ctx, String eventName, Object msg) {
-    log.debug(format(ctx, formatMessage(eventName, msg)));
-  }
-
   private void logMessage(ChannelHandlerContext ctx, String eventName, Object msg) {
     log.error(format(ctx, formatMessage(eventName, msg)));
   }
-
 }
