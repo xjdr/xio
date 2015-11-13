@@ -112,14 +112,9 @@ public class XioServerTransport {
     ioWorkerExecutor = xioServerConfig.getWorkerExecutor();
     int ioWorkerThreadCount = xioServerConfig.getWorkerThreadCount();
 
-    if (System.getProperty("os.name") == "Linux") {
-//      bossGroup = new EpollEventLoopGroup(bossThreadCount);
-//      workerGroup = new EpollEventLoopGroup(ioWorkerThreadCount);
-
+    if (System.getProperty("os.name") == "Linux1") {
       start(new EpollEventLoopGroup(bossThreadCount), new EpollEventLoopGroup(ioWorkerThreadCount));
     } else {
-//      bossGroup = new NioEventLoopGroup(bossThreadCount);
-//      workerGroup = new NioEventLoopGroup(ioWorkerThreadCount);
       start(new NioEventLoopGroup(bossThreadCount), new NioEventLoopGroup(ioWorkerThreadCount));
     }
   }
