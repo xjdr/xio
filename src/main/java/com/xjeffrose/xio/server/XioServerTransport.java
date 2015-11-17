@@ -176,7 +176,7 @@ public class XioServerTransport {
       e.printStackTrace();
     } catch (Exception e) {
       log.error("cannot start server for " + hostAddr);
-      throw e;
+      return;
     }
     InetSocketAddress actualSocket = (InetSocketAddress) serverChannel.localAddress();
     actualPort = actualSocket.getPort();
