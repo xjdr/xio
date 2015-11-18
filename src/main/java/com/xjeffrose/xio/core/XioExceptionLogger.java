@@ -25,6 +25,6 @@ public class XioExceptionLogger extends LoggingHandler {
   }
 
   private void logMessage(ChannelHandlerContext ctx, String eventName, Object msg) {
-    log.error(format(ctx, formatMessage(eventName, msg)));
+    log.error(ctx.channel() + " " + format(ctx, formatMessage(eventName, msg)));
   }
 }
