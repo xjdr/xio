@@ -135,6 +135,7 @@ public class XioServerTransport {
         .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
         .option(ChannelOption.WRITE_BUFFER_HIGH_WATER_MARK, 32 * 1024)
         .option(ChannelOption.WRITE_BUFFER_LOW_WATER_MARK, 8 * 1024)
+        .option(ChannelOption.SO_BACKLOG, 128)
         .option(ChannelOption.TCP_NODELAY, true);
 
     try {
@@ -144,6 +145,7 @@ public class XioServerTransport {
       e.printStackTrace();
     } catch (Exception e) {
       log.error("Error starting " + hostAddr);
+      throw new RuntimeException(e);
     }
     InetSocketAddress actualSocket = (InetSocketAddress) serverChannel.localAddress();
     actualPort = actualSocket.getPort();
@@ -188,7 +190,7 @@ public class XioServerTransport {
       throws InterruptedException {
     if (serverChannel != null) {
 //      log.info("stopping transport %s:%s", def.getName(), actualPort);
-      // first stop accepting
+//       first stop accepting
       final CountDownLatch latch = new CountDownLatch(1);
       serverChannel.close().addListener(new ChannelFutureListener() {
         @Override

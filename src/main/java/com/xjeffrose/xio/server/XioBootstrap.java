@@ -1,6 +1,7 @@
 package com.xjeffrose.xio.server;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.util.concurrent.ExecutionError;
 import com.google.inject.Inject;
 import com.xjeffrose.xio.core.XioMetrics;
 import io.netty.channel.group.ChannelGroup;
@@ -9,9 +10,12 @@ import java.util.Map;
 import java.util.Set;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import org.apache.log4j.Logger;
 
 
 public class XioBootstrap {
+  private static final Logger log = Logger.getLogger(XioServerTransport.class.getName());
+
   private final XioServerConfig xioServerConfig;
   private final Map<XioServerDef, XioServerTransport> transports;
   private NioEventLoopGroup bossGroup;
@@ -37,7 +41,12 @@ public class XioBootstrap {
     bossGroup = new NioEventLoopGroup(xioServerConfig.getBossThreadCount());
     workerGroup = new NioEventLoopGroup(xioServerConfig.getWorkerThreadCount());
     for (XioServerTransport transport : transports.values()) {
-      transport.start(bossGroup, workerGroup);
+      try {
+        transport.start(bossGroup, workerGroup);
+      } catch (ExecutionError e) {
+        log.error("Error starting port " + transport.getPort());
+        throw new RuntimeException(e);
+      }
     }
   }
 
