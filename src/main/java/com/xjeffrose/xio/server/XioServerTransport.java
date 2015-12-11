@@ -35,7 +35,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.inject.Inject;
 import org.apache.log4j.Logger;
 
-
 public class XioServerTransport {
   private static final Logger log = Logger.getLogger(XioServerTransport.class.getName());
 
@@ -140,12 +139,12 @@ public class XioServerTransport {
 
     try {
       serverChannel = bootstrap.bind(hostAddr).sync().channel();
-    } catch (InterruptedException e) {
+    } catch (Throwable e) {
       //TODO(JR): Do somefin here
-      e.printStackTrace();
-    } catch (Exception e) {
-      log.error("Error starting " + hostAddr);
-      throw new RuntimeException(e);
+//      e.printStackTrace();
+      String msg = e.getMessage() + " ("+hostAddr+")";
+      log.error(msg, e);
+      throw new RuntimeException(msg, e);
     }
     InetSocketAddress actualSocket = (InetSocketAddress) serverChannel.localAddress();
     actualPort = actualSocket.getPort();
@@ -173,12 +172,12 @@ public class XioServerTransport {
 
     try {
       serverChannel = bootstrap.bind(hostAddr).sync().channel();
-    } catch (InterruptedException e) {
+    } catch (Throwable e) {
       //TODO(JR): Do somefin here
-      e.printStackTrace();
-    } catch (Exception e) {
-      log.error("cannot start server for " + hostAddr);
-      return;
+//      e.printStackTrace();
+      String msg = e.getMessage() + " ("+hostAddr+")";
+      log.error(msg, e);
+      throw new RuntimeException(msg, e);
     }
     InetSocketAddress actualSocket = (InetSocketAddress) serverChannel.localAddress();
     actualPort = actualSocket.getPort();
