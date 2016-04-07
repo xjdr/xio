@@ -294,7 +294,6 @@ public class XioClientTest {
 
     final RoundRobinLoadBalancer strategy = new RoundRobinLoadBalancer();
     final ImmutableList<Node> pool = ImmutableList.of(new Node(new InetSocketAddress("127.0.0.1", 8100)), new Node(new InetSocketAddress("127.0.0.1", 8200)), new Node(new InetSocketAddress("127.0.0.1", 8300)));
-
     final Distributor distributor = new Distributor(pool, strategy);
 
     XioClient xioClient = new XioClient();

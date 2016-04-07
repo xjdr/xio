@@ -36,7 +36,7 @@ public abstract class XioDefBuilderBase<T extends XioDefBuilderBase<T>> {
   private XioCodecFactory codecFactory;
   private XioAggregatorFactory aggregatorFactory;
   private XioRoutingFilterFactory routingFilterFactory;
-  private XioDistributorFactory distributorFactory;
+  private Distributor distributor;
 
   public XioDefBuilderBase() {
     this.port = 8080;
@@ -129,8 +129,8 @@ public abstract class XioDefBuilderBase<T extends XioDefBuilderBase<T>> {
     return (T) this;
   }
 
-  public T withDistributor(XioDistributorFactory distributorFactory) {
-    this.distributorFactory = distributorFactory;
+  public T withDistributor(Distributor distributor) {
+    this.distributor = distributor;
     return (T) this;
   }
 

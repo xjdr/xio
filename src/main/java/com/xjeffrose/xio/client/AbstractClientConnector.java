@@ -27,8 +27,6 @@ public abstract class AbstractClientConnector<T extends XioClientChannel> implem
   public AbstractClientConnector(SocketAddress address, XioProtocolFactory protocolFactory) {
     final ImmutableList<Node> singletonPool = ImmutableList.of(new Node(address));
 
-//    singletonPool.add(new Node(address));
-
     this.pool = new Distributor(singletonPool, new RoundRobinLoadBalancer());
     this.address = address;
     this.protocolFactory = protocolFactory;
