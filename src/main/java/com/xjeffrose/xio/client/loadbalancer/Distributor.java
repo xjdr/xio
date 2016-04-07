@@ -1,5 +1,6 @@
 package com.xjeffrose.xio.client.loadbalancer;
 
+import com.google.common.collect.ImmutableList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -14,11 +15,11 @@ import static com.google.common.base.Preconditions.checkState;
 public class Distributor {
   private static final Logger log = Logger.getLogger(Distributor.class);
 
-  private final Vector<Node> pool;
+  private final ImmutableList<Node> pool;
   private final Map<UUID, Node> revLookup = new HashMap<>();
   private Strategy strategy;
 
-  public Distributor(Vector<Node> pool, Strategy strategy) {
+  public Distributor(ImmutableList<Node> pool, Strategy strategy) {
     this.pool = pool;
     this.strategy = strategy;
 
@@ -38,7 +39,7 @@ public class Distributor {
   /**
    * The vector of pool over which we are currently balancing.
    */
-  public Vector<Node> vector() {
+  public ImmutableList<Node> pool() {
     return pool;
   }
 
@@ -74,8 +75,8 @@ public class Distributor {
   /**
    * Rebuild this distributor with a new vector.
    */
-  public Distributor rebuild(Vector<Node> vector) {
-    return new Distributor(vector, strategy);
+  public Distributor rebuild(ImmutableList<Node> list) {
+    return new Distributor(list, strategy);
   }
 
 }

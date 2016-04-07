@@ -6,6 +6,7 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.UUID;
 import java.util.Vector;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * The base type of nodes over which load is balanced. Nodes define the load metric that is used;
@@ -55,8 +56,8 @@ public class Node {
     return token;
   }
 
-  public SocketAddress address() {
-    return address;
+  public InetSocketAddress address() {
+    return (InetSocketAddress)address;
   }
 
   public void pending(Channel channel) {

@@ -1,8 +1,8 @@
 package com.xjeffrose.xio.client.loadbalancer;
 
-import java.util.Vector;
+import com.google.common.collect.ImmutableList;
 
 public interface Strategy {
 
-  Node getNextNode(Vector<Node> pool);
+  Node getNextNode(ImmutableList<Node> pool);
 }

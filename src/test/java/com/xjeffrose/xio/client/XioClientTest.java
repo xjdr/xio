@@ -1,8 +1,12 @@
 package com.xjeffrose.xio.client;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.net.HostAndPort;
 import com.google.common.net.HttpHeaders;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.xjeffrose.xio.client.loadbalancer.Distributor;
+import com.xjeffrose.xio.client.loadbalancer.Node;
+import com.xjeffrose.xio.client.loadbalancer.strategies.RoundRobinLoadBalancer;
 import com.xjeffrose.xio.client.retry.BoundedExponentialBackoffRetry;
 import com.xjeffrose.xio.core.BBtoHttpResponse;
 import com.xjeffrose.xio.core.XioException;
@@ -24,9 +28,11 @@ import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
+import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.Map;
+import java.util.Vector;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -272,5 +278,75 @@ public class XioClientTest {
     lock.unlock();
 
     assertEquals("Working Tcp Proxy\n", listener.getResponse().toString(Charset.defaultCharset()));
+  }
+
+
+  @Test
+  public void testTCPLB() throws Exception {
+    TcpServer tcpServer = new TcpServer(8100);
+    new Thread(tcpServer).start();
+
+    Thread.sleep(100);
+
+    final Lock lock = new ReentrantLock();
+    final Condition waitForFinish = lock.newCondition();
+
+    final RoundRobinLoadBalancer strategy = new RoundRobinLoadBalancer();
+    final Vector<Node> pool = new Vector<>();
+    pool.add(new Node(new InetSocketAddress("127.0.0.1", 8100)));
+    pool.add(new Node(new InetSocketAddress("127.0.0.1", 8200)));
+    pool.add(new Node(new InetSocketAddress("127.0.0.1", 8300)));
+
+    final Distributor distributor = new Distributor(pool, strategy);
+
+    XioClient xioClient = new XioClient();
+    ListenableFuture<XioClientChannel> responseFuture = xioClient.connectAsync(new TcpClientConnector((InetSocketAddress)distributor.pick().address() ),  new BoundedExponentialBackoffRetry(1000, 100000, 3));
+    XioClientChannel xioClientChannel = responseFuture.get();
+    TcpClientChannel tcpClientChannel = (TcpClientChannel) xioClientChannel;
+
+    Listener<ByteBuf> listener = new Listener<ByteBuf>() {
+      ByteBuf response;
+
+      @Override
+      public void onRequestSent() {
+        //For debug only
+//        log.error("Request Sent");
+      }
+
+      @Override
+      public void onResponseReceived(ByteBuf message) {
+        response = message;
+        lock.lock();
+        waitForFinish.signalAll();
+        lock.unlock();
+      }
+
+      @Override
+      public void onChannelError(XioException requestException) {
+        log.error("Error", requestException);
+
+        lock.lock();
+        waitForFinish.signalAll();
+        lock.unlock();
+      }
+
+      @Override
+      public ByteBuf getResponse() {
+        return response;
+      }
+
+    };
+
+    tcpClientChannel.sendAsynchronousRequest(Unpooled.wrappedBuffer("Working Tcp Proxy\n".getBytes()), false, listener);
+
+    lock.lock();
+    waitForFinish.await();
+    lock.unlock();
+
+    assertEquals("Working Tcp Proxy\n", listener.getResponse().toString(Charset.defaultCharset()));
+    assertEquals( 8200 , ((InetSocketAddress) distributor.pick().address()).getPort());
+    assertEquals( 8300 , ((InetSocketAddress) distributor.pick().address()).getPort());
+    assertEquals( 8100 , ((InetSocketAddress) distributor.pick().address()).getPort());
+
   }
 }
