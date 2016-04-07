@@ -1,7 +1,5 @@
 package com.xjeffrose.xio.client.retry;
 
-import com.xjeffrose.xio.client.RetrySleeper;
-
 public class RetryUntilElapsed extends SleepingRetry {
   private final int maxElapsedTimeMs;
   private final int sleepMsBetweenRetries;

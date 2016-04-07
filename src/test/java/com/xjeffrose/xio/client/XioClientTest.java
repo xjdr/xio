@@ -1,5 +1,6 @@
 package com.xjeffrose.xio.client;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.net.HostAndPort;
 import com.google.common.net.HttpHeaders;
@@ -292,10 +293,7 @@ public class XioClientTest {
     final Condition waitForFinish = lock.newCondition();
 
     final RoundRobinLoadBalancer strategy = new RoundRobinLoadBalancer();
-    final Vector<Node> pool = new Vector<>();
-    pool.add(new Node(new InetSocketAddress("127.0.0.1", 8100)));
-    pool.add(new Node(new InetSocketAddress("127.0.0.1", 8200)));
-    pool.add(new Node(new InetSocketAddress("127.0.0.1", 8300)));
+    final ImmutableList<Node> pool = ImmutableList.of(new Node(new InetSocketAddress("127.0.0.1", 8100)), new Node(new InetSocketAddress("127.0.0.1", 8200)), new Node(new InetSocketAddress("127.0.0.1", 8300)));
 
     final Distributor distributor = new Distributor(pool, strategy);
 
