@@ -1,6 +1,7 @@
 package com.xjeffrose.xio.client.retry;
 
 import com.xjeffrose.xio.client.XioClient;
+import com.xjeffrose.xio.core.XioTransportException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -108,10 +109,11 @@ public class RetryLoop {
 //   * @return true/false
 //   */
   public static boolean isRetryException(Throwable exception) {
-//    if (exception instanceof KeeperException) {
-//      KeeperException keeperException = (KeeperException) exception;
-//      return shouldRetry(keeperException.code().intValue());
-//    }
+    if (exception instanceof XioTransportException) {
+      XioTransportException keeperException = (XioTransportException) exception;
+//      return shouldRetry(XioTransportException.code().intValue());
+      return true;
+    }
     return false;
   }
 
@@ -139,7 +141,7 @@ public class RetryLoop {
 //   */
   public void takeException(Exception exception) throws Exception {
     boolean rethrow = true;
-//    if (isRetryException(exception)) {
+    if (isRetryException(exception)) {
 //      if (!Boolean.getBoolean(DebugUtils.PROPERTY_DONT_LOG_CONNECTION_ISSUES)) {
 //        log.debug("Retry-able exception received", exception);
 //      }
@@ -155,7 +157,7 @@ public class RetryLoop {
 //        if (!Boolean.getBoolean(DebugUtils.PROPERTY_DONT_LOG_CONNECTION_ISSUES)) {
 //          log.debug("Retry policy not allowing retry");
 //        }
-//      }
+      }
     }
 
     if (rethrow) {
