@@ -2,6 +2,7 @@ package com.xjeffrose.xio.client.retry;
 
 import com.xjeffrose.xio.client.XioClient;
 import com.xjeffrose.xio.core.XioTransportException;
+import java.net.ConnectException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -48,7 +49,7 @@ public class RetryLoop {
   private boolean isDone = false;
   private int retryCount = 0;
 
-  RetryLoop(RetryPolicy retryPolicy, AtomicReference<TracerDriver> tracer) {
+  public RetryLoop(RetryPolicy retryPolicy, AtomicReference<TracerDriver> tracer) {
     this.retryPolicy = retryPolicy;
     this.tracer = tracer;
   }
@@ -109,8 +110,8 @@ public class RetryLoop {
 //   * @return true/false
 //   */
   public static boolean isRetryException(Throwable exception) {
-    if (exception instanceof XioTransportException) {
-      XioTransportException keeperException = (XioTransportException) exception;
+    if (exception instanceof ConnectException) {
+      ConnectException keeperException = (ConnectException) exception;
 //      return shouldRetry(XioTransportException.code().intValue());
       return true;
     }
