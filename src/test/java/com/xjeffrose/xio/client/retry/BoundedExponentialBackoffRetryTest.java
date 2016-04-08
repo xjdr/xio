@@ -1,6 +1,7 @@
 package com.xjeffrose.xio.client.retry;
 
 import com.xjeffrose.xio.core.XioTransportException;
+import java.net.ConnectException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Test;
@@ -16,7 +17,7 @@ public class BoundedExponentialBackoffRetryTest {
     assertEquals(5000, retry.getMaxSleepTimeMs());
   }
 
-  @Test(expected = XioTransportException.class)
+  @Test(expected = ConnectException.class)
   public void getSleepTimeMs() throws Exception {
     TracerDriver tracerDriver = new TracerDriver() {
 
@@ -32,14 +33,7 @@ public class BoundedExponentialBackoffRetryTest {
     RetryLoop rt_loop = new RetryLoop(retry, new AtomicReference<>(tracerDriver));
 
     for (int i = 0; i < 5; i++) {
-      System.out.println(retry.getSleepTimeMs(i, 200));
-      System.out.print(retry.allowRetry(i, 200, new RetrySleeper() {
-        @Override
-        public void sleepFor(long time, TimeUnit unit) throws InterruptedException {
-
-        }
-      }));
-      rt_loop.takeException(new XioTransportException("foo", new Exception()));
+      rt_loop.takeException(new ConnectException("connection failure"));
     }
   }
 }
