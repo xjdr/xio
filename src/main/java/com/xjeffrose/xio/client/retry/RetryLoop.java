@@ -2,6 +2,7 @@ package com.xjeffrose.xio.client.retry;
 
 import com.xjeffrose.xio.client.XioClient;
 import com.xjeffrose.xio.core.XioTransportException;
+import io.netty.channel.ConnectTimeoutException;
 import java.net.ConnectException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
@@ -110,8 +111,7 @@ public class RetryLoop {
 //   * @return true/false
 //   */
   public static boolean isRetryException(Throwable exception) {
-    if (exception instanceof ConnectException) {
-      ConnectException keeperException = (ConnectException) exception;
+    if (exception instanceof ConnectException || exception instanceof ConnectTimeoutException) {
 //      return shouldRetry(XioTransportException.code().intValue());
       return true;
     }
