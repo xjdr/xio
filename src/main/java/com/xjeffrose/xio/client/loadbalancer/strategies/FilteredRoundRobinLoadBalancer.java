@@ -14,7 +14,6 @@ public class FilteredRoundRobinLoadBalancer implements Strategy {
     this.filters = filters;
   }
 
-
   private boolean okToPick(Node node) {
     return node.getFilters().stream().allMatch(filters::contains);
   }

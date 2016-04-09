@@ -1,20 +1,15 @@
 package com.xjeffrose.xio.client.loadbalancer;
 
 import com.google.common.base.Function;
-import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Ordering;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
-import java.util.Vector;
+import java.util.concurrent.ConcurrentHashMap;
 import org.apache.log4j.Logger;
 
-import static com.google.common.base.Preconditions.checkPositionIndex;
 import static com.google.common.base.Preconditions.checkState;
 
 /**
@@ -24,7 +19,7 @@ public class Distributor {
   private static final Logger log = Logger.getLogger(Distributor.class);
 
   private final ImmutableList<Node> pool;
-  private final Map<UUID, Node> revLookup = new HashMap<>();
+  private final Map<UUID, Node> revLookup = new ConcurrentHashMap<>();
   private final Strategy strategy;
   private final Timer t = new Timer();
   private final Ordering<Node> byWeight = Ordering.natural().onResultOf(
@@ -56,7 +51,7 @@ public class Distributor {
       if (node.isAvailable()) {
         revLookup.put(node.token(), node);
       } else {
-        log.error("Node is unreachable: " + node );
+        log.error("Node is unreachable: " + node.address().getHostName() + ":" + node.address().getPort());
 //        pool.remove(node);
       }
     }
@@ -83,12 +78,12 @@ public class Distributor {
    */
   public Node pick() {
     Node _maybe = strategy.getNextNode(pool);
+
     if (revLookup.containsKey(_maybe.token())) {
       return _maybe;
     } else {
       return pick();
     }
-//    return strategy.getNextNode(pool);
   }
 
   /**

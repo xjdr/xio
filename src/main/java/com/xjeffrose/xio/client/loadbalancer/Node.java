@@ -2,6 +2,9 @@ package com.xjeffrose.xio.client.loadbalancer;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.net.HostAndPort;
+import com.xjeffrose.xio.client.retry.ExponentialBackoffRetry;
+import com.xjeffrose.xio.client.retry.RetryLoop;
+import com.xjeffrose.xio.client.retry.TracerDriver;
 import io.netty.channel.Channel;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -9,6 +12,7 @@ import java.net.SocketAddress;
 import java.nio.channels.SocketChannel;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * The base type of nodes over which load is balanced. Nodes define the load metric that is used;
@@ -80,14 +84,24 @@ public class Node {
 
   public boolean isAvailable() {
 
+    RetryLoop retryLoop = new RetryLoop(new ExponentialBackoffRetry(20, 3, 50), new AtomicReference<TracerDriver>());
+
+    while (retryLoop.shouldContinue()) {
     try {
       SocketChannel channel = SocketChannel.open();
       channel.connect(address);
+//      channel.configureBlocking(false);
       channel.close();
     } catch (IOException e) {
-      return false;
+      try {
+        retryLoop.takeException(e);
+      } catch (Exception e1) {
+        return false;
+      }
     }
-    return true;
+      return true;
+    }
+    return false;
   }
 
   public ImmutableList<String> getFilters() {
