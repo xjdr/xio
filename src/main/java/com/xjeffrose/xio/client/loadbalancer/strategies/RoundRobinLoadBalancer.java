@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class RoundRobinLoadBalancer implements Strategy {
 
-  AtomicInteger last = new AtomicInteger();
+  private final AtomicInteger last = new AtomicInteger();
 
   @Override
   public Node getNextNode(ImmutableList<Node> pool) {

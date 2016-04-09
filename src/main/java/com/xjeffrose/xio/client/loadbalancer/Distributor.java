@@ -1,12 +1,20 @@
 package com.xjeffrose.xio.client.loadbalancer;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Ordering;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.UUID;
 import java.util.Vector;
 import org.apache.log4j.Logger;
 
+import static com.google.common.base.Preconditions.checkPositionIndex;
 import static com.google.common.base.Preconditions.checkState;
 
 /**
@@ -17,24 +25,44 @@ public class Distributor {
 
   private final ImmutableList<Node> pool;
   private final Map<UUID, Node> revLookup = new HashMap<>();
-  private Strategy strategy;
+  private final Strategy strategy;
+  private final Timer t = new Timer();
+  private final Ordering<Node> byWeight = Ordering.natural().onResultOf(
+      new Function<Node, Integer>() {
+        public Integer apply(Node node) {
+          return node.getWeight();
+        }
+      }
+  ).reverse();
 
   public Distributor(ImmutableList<Node> pool, Strategy strategy) {
-    this.pool = pool;
+    this.pool = ImmutableList.copyOf(byWeight.sortedCopy(pool));
     this.strategy = strategy;
 
+    refreshPool();
+    checkState(pool.size() > 0, "Must be at least one reachable node in the pool");
+
+    t.schedule(new TimerTask() {
+
+      @Override
+      public void run() {
+        refreshPool();
+      }
+    }, 5000, 5000);
+  }
+
+  private void refreshPool() {
     for (Node node : pool) {
       if (node.isAvailable()) {
         revLookup.put(node.token(), node);
       } else {
         log.error("Node is unreachable: " + node );
-        pool.remove(node);
+//        pool.remove(node);
       }
     }
-
-    checkState(pool.size() > 0, "Must be at least one reachable node in the pool");
-
+    checkState(revLookup.keySet().size() > 0, "Must be at least one reachable node in the pool");
   }
+
 
   /**
    * The vector of pool over which we are currently balancing.
@@ -54,7 +82,13 @@ public class Distributor {
    * Pick the next node. This is the main load balancer.
    */
   public Node pick() {
-    return strategy.getNextNode(pool);
+    Node _maybe = strategy.getNextNode(pool);
+    if (revLookup.containsKey(_maybe.token())) {
+      return _maybe;
+    } else {
+      return pick();
+    }
+//    return strategy.getNextNode(pool);
   }
 
   /**

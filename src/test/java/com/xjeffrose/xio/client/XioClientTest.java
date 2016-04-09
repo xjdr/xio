@@ -284,8 +284,14 @@ public class XioClientTest {
 
   @Test
   public void testTCPLB() throws Exception {
-    TcpServer tcpServer = new TcpServer(8100);
-    new Thread(tcpServer).start();
+    TcpServer tcpServer1 = new TcpServer(8100);
+    TcpServer tcpServer2 = new TcpServer(8200);
+    TcpServer tcpServer3 = new TcpServer(8300);
+
+    new Thread(tcpServer1).start();
+    new Thread(tcpServer2).start();
+    new Thread(tcpServer3).start();
+
 
     Thread.sleep(100);
 
