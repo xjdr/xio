@@ -92,6 +92,7 @@ public class Node {
       channel.connect(address);
 //      channel.configureBlocking(false);
       channel.close();
+      return true;
     } catch (IOException e) {
       try {
         retryLoop.takeException(e);
@@ -99,7 +100,6 @@ public class Node {
         return false;
       }
     }
-      return true;
     }
     return false;
   }
