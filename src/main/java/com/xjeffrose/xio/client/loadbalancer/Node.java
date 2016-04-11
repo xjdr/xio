@@ -1,5 +1,6 @@
 package com.xjeffrose.xio.client.loadbalancer;
 
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.net.HostAndPort;
 import com.xjeffrose.xio.client.retry.ExponentialBackoffRetry;
@@ -10,8 +11,11 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.channels.SocketChannel;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -21,11 +25,16 @@ import java.util.concurrent.atomic.AtomicReference;
 public class Node {
 
   private final UUID token = UUID.randomUUID();
-  private final ConcurrentLinkedDeque<Channel> pending = new ConcurrentLinkedDeque<>();
+  private final ConcurrentHashMap<Channel, Stopwatch> pending = new ConcurrentHashMap<>();
   private final SocketAddress address;
-  private double load;
   private final ImmutableList<String> filters;
   private final int weight;
+  private final Stopwatch connectionStopwatch = Stopwatch.createUnstarted();
+  private final List<Long> connectionTimes = new ArrayList<>();
+  private final List<Long> requestTimes = new ArrayList<>();
+
+  private double load;
+
 
   public Node(HostAndPort hostAndPort) {
     this(toInetAddress(hostAndPort));
@@ -78,8 +87,12 @@ public class Node {
     return (InetSocketAddress)address;
   }
 
-  public void pending(Channel channel) {
-    pending.add(channel);
+  public void addPending(Channel channel) {
+    pending.put(channel, Stopwatch.createStarted());
+  }
+
+  public void removePending(Channel channel) {
+    requestTimes.add(pending.remove(channel).elapsed(TimeUnit.MICROSECONDS));
   }
 
   public boolean isAvailable() {
@@ -89,10 +102,14 @@ public class Node {
 
     while (retryLoop.shouldContinue()) {
     try {
+      connectionStopwatch.start();
       SocketChannel channel = SocketChannel.open();
       channel.connect(address);
 //      channel.configureBlocking(false);
       channel.close();
+      connectionStopwatch.stop();
+      connectionTimes.add(connectionStopwatch.elapsed(TimeUnit.MICROSECONDS));
+      connectionStopwatch.reset();
       return true;
     } catch (IOException e) {
       try {

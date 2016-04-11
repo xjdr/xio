@@ -45,7 +45,7 @@ public abstract class AbstractClientConnector<T extends XioClientChannel> implem
     final Node node = pool.pick();
     final ChannelFuture cf = bootstrap.connect(node.address());
 
-    node.pending(cf.channel());
+    node.addPending(cf.channel());
     return cf;
   }
 
