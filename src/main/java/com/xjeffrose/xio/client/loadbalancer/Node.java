@@ -88,7 +88,7 @@ public class Node {
   }
 
   public void addPending(Channel channel) {
-    pending.put(channel, Stopwatch.createStarted());
+    pending.putIfAbsent(channel, Stopwatch.createStarted());
   }
 
   public void removePending(Channel channel) {
@@ -102,7 +102,9 @@ public class Node {
 
     while (retryLoop.shouldContinue()) {
     try {
-      connectionStopwatch.start();
+      if (!connectionStopwatch.isRunning()) {
+        connectionStopwatch.start();
+      }
       SocketChannel channel = SocketChannel.open();
       channel.connect(address);
 //      channel.configureBlocking(false);

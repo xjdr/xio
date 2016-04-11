@@ -284,9 +284,9 @@ public class XioClientTest {
 
   @Test
   public void testTCPLB() throws Exception {
-    TcpServer tcpServer1 = new TcpServer(8100);
-    TcpServer tcpServer2 = new TcpServer(8200);
-    TcpServer tcpServer3 = new TcpServer(8300);
+    TcpServer tcpServer1 = new TcpServer(9110);
+    TcpServer tcpServer2 = new TcpServer(9120);
+    TcpServer tcpServer3 = new TcpServer(9130);
 
     new Thread(tcpServer1).start();
     new Thread(tcpServer2).start();
@@ -299,7 +299,7 @@ public class XioClientTest {
     final Condition waitForFinish = lock.newCondition();
 
     final RoundRobinLoadBalancer strategy = new RoundRobinLoadBalancer();
-    final ImmutableList<Node> pool = ImmutableList.of(new Node(new InetSocketAddress("127.0.0.1", 8100)), new Node(new InetSocketAddress("127.0.0.1", 8200)), new Node(new InetSocketAddress("127.0.0.1", 8300)));
+    final ImmutableList<Node> pool = ImmutableList.of(new Node(new InetSocketAddress("127.0.0.1", 9110)), new Node(new InetSocketAddress("127.0.0.1", 9120)), new Node(new InetSocketAddress("127.0.0.1", 9130)));
     final Distributor distributor = new Distributor(pool, strategy);
 
     XioClient xioClient = new XioClient();
@@ -331,6 +331,8 @@ public class XioClientTest {
         lock.lock();
         waitForFinish.signalAll();
         lock.unlock();
+
+        response.release();
       }
 
       @Override
