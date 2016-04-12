@@ -32,6 +32,7 @@ public class Node {
   private final Stopwatch connectionStopwatch = Stopwatch.createUnstarted();
   private final List<Long> connectionTimes = new ArrayList<>();
   private final List<Long> requestTimes = new ArrayList<>();
+  private final String serviceName;
 
   private double load;
 
@@ -41,18 +42,19 @@ public class Node {
   }
 
   public Node(SocketAddress address) {
-    this(address, ImmutableList.of(), 0);
+    this(address, ImmutableList.of(), 0, "");
   }
 
   public Node(SocketAddress address, int weight) {
-    this(address, ImmutableList.of(), weight);
+    this(address, ImmutableList.of(), weight, "");
   }
 
-  public Node(SocketAddress address, ImmutableList<String> filters, int weight) {
+  public Node(SocketAddress address, ImmutableList<String> filters, int weight, String serviceName) {
     this.address = address;
     this.load = 0;
     this.filters = ImmutableList.copyOf(filters);
     this.weight = weight;
+    this.serviceName = serviceName;
   }
 
   /**
@@ -130,5 +132,9 @@ public class Node {
 
   public int getWeight() {
     return weight;
+  }
+
+  public String getServiceName() {
+    return serviceName;
   }
 }
