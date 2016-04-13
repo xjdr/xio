@@ -36,7 +36,6 @@ public class Distributor {
     this.pool = ImmutableList.copyOf(byWeight.sortedCopy(pool));
     this.strategy = strategy;
 
-    refreshPool();
     checkState(pool.size() > 0, "Must be at least one reachable node in the pool");
 
     t.schedule(new TimerTask() {
