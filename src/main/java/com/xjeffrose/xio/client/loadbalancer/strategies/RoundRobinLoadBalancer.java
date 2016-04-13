@@ -10,6 +10,11 @@ public class RoundRobinLoadBalancer implements Strategy {
   private final AtomicInteger last = new AtomicInteger();
 
   @Override
+  public boolean okToPick(Node node) {
+    return true;
+  }
+
+  @Override
   public Node getNextNode(ImmutableList<Node> pool) {
     if (pool.isEmpty()) {
       return null;
