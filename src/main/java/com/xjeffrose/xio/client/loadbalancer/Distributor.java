@@ -78,6 +78,10 @@ public class Distributor {
    * Pick the next node. This is the main load balancer.
    */
   public Node pick() {
+    if (revLookup.size() < 1) {
+      return null;
+    }
+
     Node _maybe = strategy.getNextNode(pool);
 
     if (revLookup.containsKey(_maybe.token())) {
