@@ -3,6 +3,9 @@ package com.xjeffrose.xio.client.loadbalancer;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Ordering;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -17,7 +20,6 @@ import static com.google.common.base.Preconditions.checkState;
  */
 public class Distributor {
   private static final Logger log = Logger.getLogger(Distributor.class);
-
   private final ImmutableList<Node> pool;
   private final Map<UUID, Node> revLookup = new ConcurrentHashMap<>();
   private final Strategy strategy;
@@ -106,6 +108,25 @@ public class Distributor {
    */
   public Distributor rebuild(ImmutableList<Node> list) {
     return new Distributor(list, strategy);
+  }
+
+  public ImmutableList<Node> getPool() {
+    return pool;
+  }
+
+  public List<NodeStat> getNodeStat(){
+    ImmutableList<Node> nodes = ImmutableList.copyOf(this.pool());
+    List<NodeStat> nodeStat = new ArrayList<>() ;
+    if(nodes != null && !nodes.isEmpty()) {
+      nodes.stream()
+           .forEach(node -> {
+             NodeStat ns = new NodeStat(node);
+             ns.setHealthy(revLookup.containsKey(node.token()));
+             ns.setUsedForRouting(strategy.okToPick(node));
+             nodeStat.add(ns);
+           });
+    }
+    return nodeStat;
   }
 
 }

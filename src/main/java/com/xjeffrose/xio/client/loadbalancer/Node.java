@@ -57,7 +57,15 @@ public class Node {
     this.serviceName = serviceName;
   }
 
-  /**
+  public Node(Node n) {
+    this.address = n.address;
+    this.load = 0;
+    this.filters = ImmutableList.copyOf(n.filters);
+    this.weight = n.weight;
+    this.serviceName = n.serviceName;
+  }
+
+  /**.
    * The current host and port returned as a InetSocketAddress
    */
   public static InetSocketAddress toInetAddress(HostAndPort hostAndPort) {
@@ -136,5 +144,9 @@ public class Node {
 
   public String getServiceName() {
     return serviceName;
+  }
+
+  public SocketAddress getAddress() {
+    return address;
   }
 }
