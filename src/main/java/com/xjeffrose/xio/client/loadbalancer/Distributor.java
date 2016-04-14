@@ -30,7 +30,7 @@ public class Distributor {
         }
       }
   ).reverse();
-  
+
   public Distributor(ImmutableList<Node> pool, Strategy strategy) {
     this.pool = ImmutableList.copyOf(byWeight.sortedCopy(pool));
     this.strategy = strategy;
@@ -51,7 +51,7 @@ public class Distributor {
     }, 5000, 5000);
   }
 
-  public void refreshPool() {
+  private void refreshPool() {
     for (Node node : pool) {
       if (node.isAvailable()) {
         revLookup.put(node.token(), node);
@@ -82,17 +82,7 @@ public class Distributor {
    * Pick the next node. This is the main load balancer.
    */
   public Node pick() {
-    if (revLookup.size() < 1) {
-      return null;
-    }
-
-    Node _maybe = strategy.getNextNode(pool);
-
-    if (revLookup.containsKey(_maybe.token())) {
-      return _maybe;
-    } else {
-      return pick(1);
-    }
+    return pick(0);
   }
 
   /**
@@ -119,6 +109,7 @@ public class Distributor {
         return pick(++overflow);
       }
     }
+
     return null;
   }
 
