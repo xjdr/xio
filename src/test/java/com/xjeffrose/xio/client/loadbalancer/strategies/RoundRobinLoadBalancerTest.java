@@ -11,10 +11,13 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class RoundRobinLoadBalancerTest {
-  TcpServer tcpServer1 = new TcpServer(8081);
-  TcpServer tcpServer2 = new TcpServer(8082);
-  TcpServer tcpServer3 = new TcpServer(8083);
+  TcpServer tcpServer1 = new TcpServer(8281);
+  TcpServer tcpServer2 = new TcpServer(8282);
+  TcpServer tcpServer3 = new TcpServer(8283);
 
+  TcpServer tcpServer11 = new TcpServer(8381);
+  TcpServer tcpServer12 = new TcpServer(8382);
+  TcpServer tcpServer13 = new TcpServer(8383);
 
   @Test
   public void getNextNodeUnweighted() throws Exception {
@@ -22,9 +25,9 @@ public class RoundRobinLoadBalancerTest {
     new Thread(tcpServer2).start();
     new Thread(tcpServer3).start();
 
-    Node node1 = new Node(new InetSocketAddress("127.0.0.1", 8081));
-    Node node2 = new Node(new InetSocketAddress("127.0.0.1", 8082));
-    Node node3 = new Node(new InetSocketAddress("127.0.0.1", 8083));
+    Node node1 = new Node(new InetSocketAddress("127.0.0.1", 8281));
+    Node node2 = new Node(new InetSocketAddress("127.0.0.1", 8282));
+    Node node3 = new Node(new InetSocketAddress("127.0.0.1", 8283));
 
     Strategy lb = new RoundRobinLoadBalancer();
     Distributor distributor = new Distributor(ImmutableList.of(node1, node2, node3), lb);
@@ -38,13 +41,9 @@ public class RoundRobinLoadBalancerTest {
 
   @Test
   public void getNextNodeWeighted() throws Exception {
-    new Thread(tcpServer1).start();
-    new Thread(tcpServer2).start();
-    new Thread(tcpServer3).start();
-
-    Node node1 = new Node(new InetSocketAddress("127.0.0.1", 8081), 10);
-    Node node2 = new Node(new InetSocketAddress("127.0.0.1", 8082), 100);
-    Node node3 = new Node(new InetSocketAddress("127.0.0.1", 8083), 1);
+    Node node1 = new Node(new InetSocketAddress("127.0.0.1", 8281), 10);
+    Node node2 = new Node(new InetSocketAddress("127.0.0.1", 8282), 100);
+    Node node3 = new Node(new InetSocketAddress("127.0.0.1", 8283), 1);
 
     Strategy lb = new RoundRobinLoadBalancer();
     Distributor distributor = new Distributor(ImmutableList.of(node1, node2, node3), lb);
@@ -58,22 +57,39 @@ public class RoundRobinLoadBalancerTest {
 
   @Test()
   public void getEjectUnavailableNode() throws Exception {
-    new Thread(tcpServer1).start();
-//    new Thread(tcpServer2).start();
-    new Thread(tcpServer3).start();
+    new Thread(tcpServer11).start();
+    new Thread(tcpServer13).start();
 
-    Node node1 = new Node(new InetSocketAddress("127.0.0.1", 8081));
-    Node node2 = new Node(new InetSocketAddress("127.0.0.1", 8082));
-    Node node3 = new Node(new InetSocketAddress("127.0.0.1", 8083));
+    Node node1 = new Node(new InetSocketAddress("127.0.0.1", 8381));
+    Node node2 = new Node(new InetSocketAddress("127.0.0.1", 8382));
+    Node node3 = new Node(new InetSocketAddress("127.0.0.1", 8383));
 
     Strategy lb = new RoundRobinLoadBalancer();
     Distributor distributor = new Distributor(ImmutableList.of(node1, node2, node3), lb);
 
-//    assertEquals(node2.address().getPort(), distributor.pick().address().getPort());
+    // Sleep is required to allow for node refresh
+    Thread.sleep(5500);
+
     assertEquals(node1.address().getPort(), distributor.pick().address().getPort());
     assertEquals(node3.address().getPort(), distributor.pick().address().getPort());
     assertEquals(node1.address().getPort(), distributor.pick().address().getPort());
-
   }
 
+  @Test(expected = AssertionError.class)
+  public void preventStackOverflow() throws Exception {
+    Node node1 = new Node(new InetSocketAddress("127.0.0.1", 8481));
+    Node node2 = new Node(new InetSocketAddress("127.0.0.1", 8482));
+    Node node3 = new Node(new InetSocketAddress("127.0.0.1", 8483));
+
+    Strategy lb = new RoundRobinLoadBalancer();
+    Distributor distributor = new Distributor(ImmutableList.of(node1, node2, node3), lb);
+
+    // Sleep is required to allow for node refresh to eject node
+    Thread.sleep(5500);
+
+    assertEquals(node1.address().getPort(), distributor.pick().address().getPort());
+    assertEquals(node2.address().getPort(), distributor.pick().address().getPort());
+    assertEquals(node3.address().getPort(), distributor.pick().address().getPort());
+    assertEquals(node1.address().getPort(), distributor.pick().address().getPort());
+  }
 }
