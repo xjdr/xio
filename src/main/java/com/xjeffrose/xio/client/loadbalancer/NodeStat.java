@@ -4,9 +4,6 @@ import com.google.common.collect.ImmutableList;
 
 import java.net.SocketAddress;
 
-/**
- * Created by root on 4/13/16.
- */
 public class NodeStat {
 
     private final SocketAddress address;
