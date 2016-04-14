@@ -2,6 +2,7 @@ package com.xjeffrose.xio.client.loadbalancer.strategies;
 
 import com.google.common.collect.ImmutableList;
 import com.xjeffrose.xio.client.loadbalancer.Distributor;
+import com.xjeffrose.xio.client.loadbalancer.Filter;
 import com.xjeffrose.xio.client.loadbalancer.Node;
 import com.xjeffrose.xio.client.loadbalancer.Strategy;
 import com.xjeffrose.xio.fixtures.TcpServer;
@@ -91,5 +92,26 @@ public class RoundRobinLoadBalancerTest {
     assertEquals(node2.address().getPort(), distributor.pick().address().getPort());
     assertEquals(node3.address().getPort(), distributor.pick().address().getPort());
     assertEquals(node1.address().getPort(), distributor.pick().address().getPort());
+  }
+
+  @Test
+  public void testRoundrobinAndNoOverflow() throws Exception {
+
+    Node node1 = new Node(new InetSocketAddress("127.0.0.1", 8181));
+    Node node2 = new Node(new InetSocketAddress("127.0.0.2", 8182));
+    Node node3 = new Node(new InetSocketAddress("127.0.0.3", 8183));
+
+    Strategy lb = new RoundRobinLoadBalancer();
+    ImmutableList<Node> pool = ImmutableList.of(node1, node2, node3);
+
+    assertEquals(node1, lb.getNextNode(pool));
+    assertEquals(node2, lb.getNextNode(pool));
+    assertEquals(node3, lb.getNextNode(pool));
+
+    // test restarting from idx 0 to make sure no overflow
+    assertEquals(node1, lb.getNextNode(pool));
+    assertEquals(node2, lb.getNextNode(pool));
+    assertEquals(node3, lb.getNextNode(pool));
+
   }
 }

@@ -22,7 +22,7 @@ public class RoundRobinLoadBalancer implements Strategy {
 
     int idx = last.getAndIncrement();
     if (idx == pool.size()) {
-      last.set(0);
+      last.set(1);
       idx = 0;
     }
     return pool.get(idx);

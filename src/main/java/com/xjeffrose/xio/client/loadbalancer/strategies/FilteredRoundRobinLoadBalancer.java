@@ -34,18 +34,17 @@ public class FilteredRoundRobinLoadBalancer implements Strategy {
       return null;
     }
 
-    overflow++;
-
     int idx = last.getAndIncrement();
     if (idx == pool.size()) {
-      last.set(0);
+      last.set(1);
       idx = 0;
     }
+
     Node nextNode = pool.get(idx);
     if (okToPick(nextNode)) {
       return nextNode;
     } else {
-      return getNextNode(pool, overflow);
+      return getNextNode(pool, ++overflow);
     }
   }
 
