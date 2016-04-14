@@ -24,7 +24,12 @@ public class RoundRobinLoadBalancer implements Strategy {
       last.set(0);
       return pool.get(0);
     } else {
-      return pool.get(last.getAndIncrement());
+      int next = last.getAndIncrement();
+      if (next <= pool.size()) {
+        return pool.get(next);
+      } else {
+        return null;
+      }
     }
   }
 

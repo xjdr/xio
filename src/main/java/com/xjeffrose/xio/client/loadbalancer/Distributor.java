@@ -54,7 +54,7 @@ public class Distributor {
   private void refreshPool() {
     for (Node node : pool) {
       if (node.isAvailable()) {
-        revLookup.put(node.token(), node);
+        revLookup.putIfAbsent(node.token(), node);
       } else {
         log.error("Node is unreachable: " + node.address().getHostName() + ":" + node.address().getPort());
         revLookup.remove(node.token());
