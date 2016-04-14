@@ -1,7 +1,5 @@
 package com.xjeffrose.xio.client.retry;
 
-import com.xjeffrose.xio.client.RetryPolicy;
-import com.xjeffrose.xio.client.RetrySleeper;
 import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 

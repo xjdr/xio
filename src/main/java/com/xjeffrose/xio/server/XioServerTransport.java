@@ -19,6 +19,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
+import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.group.ChannelGroup;
@@ -52,8 +53,6 @@ public class XioServerTransport {
   private ExecutorService bossExecutor;
   private ExecutorService ioWorkerExecutor;
   private Channel serverChannel;
-//  private MultithreadEventLoopGroup bossGroup;
-//  private MultithreadEventLoopGroup workerGroup;
 
   public XioServerTransport(final XioServerDef def) {
     this(def, XioServerConfig.newBuilder().build(), new DefaultChannelGroup(new NioEventLoopGroup().next()));
@@ -111,7 +110,7 @@ public class XioServerTransport {
     ioWorkerExecutor = xioServerConfig.getWorkerExecutor();
     int ioWorkerThreadCount = xioServerConfig.getWorkerThreadCount();
 
-    if (System.getProperty("os.name") == "Linux1") {
+    if (Epoll.isAvailable()) {
       start(new EpollEventLoopGroup(bossThreadCount), new EpollEventLoopGroup(ioWorkerThreadCount));
     } else {
       start(new NioEventLoopGroup(bossThreadCount), new NioEventLoopGroup(ioWorkerThreadCount));
@@ -206,23 +205,6 @@ public class XioServerTransport {
       latch.await();
       serverChannel = null;
     }
-
-    // If the channelFactory was created by us, we should also clean it up. If the
-    // channelFactory was passed in by XioBootstrap, then it may be shared so don't clean
-    // it up.
-//    if (bossGroup != null) {
-//      ShutdownUtil.shutdownChannelFactory(bossGroup,
-//          bossExecutor,
-//          ioWorkerExecutor,
-//          allChannels);
-//    }
-//
-//    if (workerGroup != null) {
-//      ShutdownUtil.shutdownChannelFactory(workerGroup,
-//          bossExecutor,
-//          ioWorkerExecutor,
-//          allChannels);
-//    }
   }
 
   public Channel getServerChannel() {

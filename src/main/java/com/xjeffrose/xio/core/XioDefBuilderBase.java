@@ -1,6 +1,8 @@
 package com.xjeffrose.xio.core;
 
 
+import com.xjeffrose.xio.client.loadbalancer.Distributor;
+import com.xjeffrose.xio.client.loadbalancer.XioDistributorFactory;
 import com.xjeffrose.xio.processor.XioProcessorFactory;
 import com.xjeffrose.xio.server.XioServerDef;
 import io.airlift.units.Duration;
@@ -34,6 +36,7 @@ public abstract class XioDefBuilderBase<T extends XioDefBuilderBase<T>> {
   private XioCodecFactory codecFactory;
   private XioAggregatorFactory aggregatorFactory;
   private XioRoutingFilterFactory routingFilterFactory;
+  private Distributor distributor;
 
   public XioDefBuilderBase() {
     this.port = 8080;
@@ -123,6 +126,11 @@ public abstract class XioDefBuilderBase<T extends XioDefBuilderBase<T>> {
 
   public T withRoutingFilter(XioRoutingFilterFactory routingFilterFactory) {
     this.routingFilterFactory = routingFilterFactory;
+    return (T) this;
+  }
+
+  public T withDistributor(Distributor distributor) {
+    this.distributor = distributor;
     return (T) this;
   }
 

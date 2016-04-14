@@ -1,17 +1,23 @@
 package com.xjeffrose.xio.client.loadbalancer.strategies;
 
 import com.google.common.collect.ImmutableList;
+import com.xjeffrose.xio.client.loadbalancer.Filter;
 import com.xjeffrose.xio.client.loadbalancer.Node;
 import com.xjeffrose.xio.client.loadbalancer.Strategy;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class RoundRobinLoadBalancer implements Strategy {
+public class FilteredRoundRobinLoadBalancer implements Strategy {
 
   private final AtomicInteger last = new AtomicInteger();
+  private final Filter filter;
+
+  public FilteredRoundRobinLoadBalancer(Filter filter) {
+    this.filter = filter;
+  }
 
   @Override
   public boolean okToPick(Node node) {
-    return true;
+    return node.getFilters().stream().allMatch(item -> filter.contains(node.getServiceName(), node.address().getHostName(), item));
   }
 
   @Override
@@ -20,17 +26,23 @@ public class RoundRobinLoadBalancer implements Strategy {
       return null;
     }
 
-    if (last.get() == pool.size()) {
+    if (last.get() == pool.size() && okToPick(pool.get(0))) {
       last.set(0);
       return pool.get(0);
     } else {
       int next = last.getAndIncrement();
       if (next <= pool.size()) {
-        return pool.get(next);
+        Node nextNode = pool.get(next);
+        if (okToPick(nextNode)) {
+          return nextNode;
+        } else {
+          getNextNode(pool);
+        }
       } else {
         return null;
       }
     }
+    return null;
   }
 
 }
