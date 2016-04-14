@@ -21,10 +21,6 @@ public class XioExceptionLogger extends LoggingHandler {
 
   @Override
   public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-    this.logMessage(ctx, "EXCEPTION: " + cause, null);
-  }
-
-  private void logMessage(ChannelHandlerContext ctx, String eventName, Object msg) {
-    log.error(ctx.channel() + " " + format(ctx, formatMessage(eventName, msg)));
+    log.error("Exception caught: " + cause.getMessage(), cause);
   }
 }
