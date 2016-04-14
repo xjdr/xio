@@ -28,14 +28,13 @@ public class Node {
   private final ConcurrentHashMap<Channel, Stopwatch> pending = new ConcurrentHashMap<>();
   private final SocketAddress address;
   private final ImmutableList<String> filters;
-  private final int weight;
   private final Stopwatch connectionStopwatch = Stopwatch.createUnstarted();
   private final List<Long> connectionTimes = new ArrayList<>();
   private final List<Long> requestTimes = new ArrayList<>();
   private final String serviceName;
+  private final int weight;
 
   private double load;
-
 
   public Node(HostAndPort hostAndPort) {
     this(toInetAddress(hostAndPort));
@@ -102,13 +101,15 @@ public class Node {
   }
 
   public void removePending(Channel channel) {
-    requestTimes.add(pending.remove(channel).elapsed(TimeUnit.MICROSECONDS));
+    if (pending.contains(channel)) {
+      requestTimes.add(pending.remove(channel).elapsed(TimeUnit.MICROSECONDS));
+    }
   }
 
   public boolean isAvailable() {
 
     //TODO(JR): Make this value configurable
-    RetryLoop retryLoop = new RetryLoop(new ExponentialBackoffRetry(20, 3, 50), new AtomicReference<TracerDriver>());
+    RetryLoop retryLoop = new RetryLoop(new ExponentialBackoffRetry(200, 3, 500), new AtomicReference<TracerDriver>());
 
     while (retryLoop.shouldContinue()) {
     try {
@@ -117,7 +118,6 @@ public class Node {
       }
       SocketChannel channel = SocketChannel.open();
       channel.connect(address);
-//      channel.configureBlocking(false);
       channel.close();
       connectionStopwatch.stop();
       connectionTimes.add(connectionStopwatch.elapsed(TimeUnit.MICROSECONDS));
