@@ -52,7 +52,7 @@ public class Distributor {
     }, 5000, 5000);
   }
 
-  private void refreshPool() {
+  public void refreshPool() {
     for (Node node : pool) {
       if (node.isAvailable()) {
         revLookup.put(node.token(), node);
