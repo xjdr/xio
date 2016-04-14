@@ -36,6 +36,11 @@ public class Distributor {
     this.pool = ImmutableList.copyOf(byWeight.sortedCopy(pool));
     this.strategy = strategy;
 
+    // assume all are reachable before the first health check
+    for (Node node : pool) {
+      revLookup.put(node.token(), node);
+    }
+
     checkState(pool.size() > 0, "Must be at least one reachable node in the pool");
 
     t.schedule(new TimerTask() {
@@ -47,13 +52,13 @@ public class Distributor {
     }, 5000, 5000);
   }
 
-  private void refreshPool() {
+  public void refreshPool() {
     for (Node node : pool) {
       if (node.isAvailable()) {
         revLookup.put(node.token(), node);
       } else {
         log.error("Node is unreachable: " + node.address().getHostName() + ":" + node.address().getPort());
-//        pool.remove(node);
+        revLookup.remove(node.token());
       }
     }
     checkState(revLookup.keySet().size() > 0, "Must be at least one reachable node in the pool");
@@ -79,6 +84,7 @@ public class Distributor {
    */
   public Node pick() {
     if (revLookup.size() < 1) {
+      //TODO(JR): Shouldn't return null here
       return null;
     }
 

@@ -292,9 +292,6 @@ public class XioClientTest {
     new Thread(tcpServer2).start();
     new Thread(tcpServer3).start();
 
-
-    Thread.sleep(100);
-
     final Lock lock = new ReentrantLock();
     final Condition waitForFinish = lock.newCondition();
 
@@ -303,7 +300,7 @@ public class XioClientTest {
     final Distributor distributor = new Distributor(pool, strategy);
 
     XioClient xioClient = new XioClient();
-    ListenableFuture<XioClientChannel> responseFuture = xioClient.connectAsync(new TcpClientConnector((InetSocketAddress)distributor.pick().address() ),  new BoundedExponentialBackoffRetry(1000, 100000, 3));
+    ListenableFuture<XioClientChannel> responseFuture = xioClient.connectAsync(new TcpClientConnector(distributor.pick().address()),  new BoundedExponentialBackoffRetry(1000, 100000, 3));
     XioClientChannel xioClientChannel = responseFuture.get();
     TcpClientChannel tcpClientChannel = (TcpClientChannel) xioClientChannel;
 
@@ -339,7 +336,6 @@ public class XioClientTest {
       public ByteBuf getResponse() {
         return response;
       }
-
     };
 
     tcpClientChannel.sendAsynchronousRequest(Unpooled.wrappedBuffer("Working Tcp Proxy\n".getBytes()), false, listener);
@@ -349,9 +345,8 @@ public class XioClientTest {
     lock.unlock();
 
     assertEquals("Working Tcp Proxy\n", listener.getResponse().toString(Charset.defaultCharset()));
-    assertEquals( 8200 , ((InetSocketAddress) distributor.pick().address()).getPort());
-    assertEquals( 8300 , ((InetSocketAddress) distributor.pick().address()).getPort());
-    assertEquals( 8100 , ((InetSocketAddress) distributor.pick().address()).getPort());
-
+    assertEquals( 9120 , distributor.pick().address().getPort());
+    assertEquals( 9130 , distributor.pick().address().getPort());
+    assertEquals( 9110 , distributor.pick().address().getPort());
   }
 }

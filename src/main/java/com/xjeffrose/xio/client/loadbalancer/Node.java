@@ -108,7 +108,7 @@ public class Node {
   public boolean isAvailable() {
 
     //TODO(JR): Make this value configurable
-    RetryLoop retryLoop = new RetryLoop(new ExponentialBackoffRetry(20, 3, 50), new AtomicReference<TracerDriver>());
+    RetryLoop retryLoop = new RetryLoop(new ExponentialBackoffRetry(200, 3, 500), new AtomicReference<TracerDriver>());
 
     while (retryLoop.shouldContinue()) {
     try {
