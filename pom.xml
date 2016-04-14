@@ -10,7 +10,7 @@
 
     <groupId>com.xjeffrose</groupId>
     <artifactId>xio</artifactId>
-    <version>0.8.7-SNAPSHOT</version>
+    <version>0.9.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>xio</name>
     <description>High Performance HTTP Server based on Netty and Xio</description>
@@ -77,7 +77,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>18.0</version>
+            <version>19.0</version>
         </dependency>
 
         <dependency>
