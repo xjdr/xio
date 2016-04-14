@@ -52,7 +52,7 @@ public class Distributor {
     }, 5000, 5000);
   }
 
-  private void refreshPool() {
+  public void refreshPool() {
     for (Node node : pool) {
       if (node.isAvailable()) {
         revLookup.put(node.token(), node);
@@ -83,12 +83,16 @@ public class Distributor {
    * Pick the next node. This is the main load balancer.
    */
   public Node pick() {
+
     if (revLookup.size() < 1) {
-      //TODO(JR): Shouldn't return null here
       return null;
     }
 
     Node _maybe = strategy.getNextNode(pool);
+
+    if (_maybe == null) {
+      return null;
+    }
 
     if (revLookup.containsKey(_maybe.token())) {
       return _maybe;
