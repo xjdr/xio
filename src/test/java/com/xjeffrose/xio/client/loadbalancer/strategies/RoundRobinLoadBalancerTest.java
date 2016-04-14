@@ -75,7 +75,7 @@ public class RoundRobinLoadBalancerTest {
     assertEquals(node1.address().getPort(), distributor.pick().address().getPort());
   }
 
-  @Test(expected = AssertionError.class)
+  @Test(expected = NullPointerException.class)
   public void preventStackOverflow() throws Exception {
     Node node1 = new Node(new InetSocketAddress("127.0.0.1", 8481));
     Node node2 = new Node(new InetSocketAddress("127.0.0.1", 8482));

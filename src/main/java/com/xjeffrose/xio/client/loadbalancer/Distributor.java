@@ -3,7 +3,6 @@ package com.xjeffrose.xio.client.loadbalancer;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Ordering;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -52,7 +51,7 @@ public class Distributor {
     }, 5000, 5000);
   }
 
-  public void refreshPool() {
+  private void refreshPool() {
     for (Node node : pool) {
       if (node.isAvailable()) {
         revLookup.put(node.token(), node);
@@ -83,18 +82,35 @@ public class Distributor {
    * Pick the next node. This is the main load balancer.
    */
   public Node pick() {
+    return pick(0);
+  }
+
+  /**
+   * Pick the next node. This is the main load balancer.
+   */
+  private Node pick(int _overflow) {
+    int overflow = _overflow;
+
     if (revLookup.size() < 1) {
-      //TODO(JR): Shouldn't return null here
       return null;
     }
 
-    Node _maybe = strategy.getNextNode(pool);
+    if (overflow <= revLookup.size()) {
 
-    if (revLookup.containsKey(_maybe.token())) {
-      return _maybe;
-    } else {
-      return pick();
+      Node _maybe = strategy.getNextNode(pool);
+
+      if (_maybe == null) {
+        return null;
+      }
+
+      if (revLookup.containsKey(_maybe.token())) {
+        return _maybe;
+      } else {
+        return pick(++overflow);
+      }
     }
+
+    return null;
   }
 
   /**
@@ -123,17 +139,17 @@ public class Distributor {
     return pool;
   }
 
-  public List<NodeStat> getNodeStat(){
+  public List<NodeStat> getNodeStat() {
     ImmutableList<Node> nodes = ImmutableList.copyOf(this.pool());
-    List<NodeStat> nodeStat = new ArrayList<>() ;
-    if(nodes != null && !nodes.isEmpty()) {
+    List<NodeStat> nodeStat = new ArrayList<>();
+    if (nodes != null && !nodes.isEmpty()) {
       nodes.stream()
-           .forEach(node -> {
-             NodeStat ns = new NodeStat(node);
-             ns.setHealthy(revLookup.containsKey(node.token()));
-             ns.setUsedForRouting(strategy.okToPick(node));
-             nodeStat.add(ns);
-           });
+          .forEach(node -> {
+            NodeStat ns = new NodeStat(node);
+            ns.setHealthy(revLookup.containsKey(node.token()));
+            ns.setUsedForRouting(strategy.okToPick(node));
+            nodeStat.add(ns);
+          });
     }
     return nodeStat;
   }
