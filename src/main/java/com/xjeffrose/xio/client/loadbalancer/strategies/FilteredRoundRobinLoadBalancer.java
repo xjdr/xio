@@ -7,7 +7,6 @@ import com.xjeffrose.xio.client.loadbalancer.Strategy;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class FilteredRoundRobinLoadBalancer implements Strategy {
-
   private final AtomicInteger last = new AtomicInteger();
   private final Filter filter;
 
@@ -26,18 +25,28 @@ public class FilteredRoundRobinLoadBalancer implements Strategy {
       return null;
     }
 
-    if (last.get() == pool.size() && okToPick(pool.get(0))) {
-      last.set(0);
-      return pool.get(0);
-    } else {
-      Node nextNode = pool.get(last.getAndIncrement());
-      if (okToPick(nextNode)) {
-        return nextNode;
-      } else {
-        getNextNode(pool);
-      }
+    return getNextNode(pool, 0);
+  }
+
+  private Node getNextNode(ImmutableList<Node> pool, int overflow) {
+
+    if (overflow == pool.size()) {
+      return null;
     }
-    return null;
+
+    overflow++;
+
+    int idx = last.getAndIncrement();
+    if (idx == pool.size()) {
+      last.set(0);
+      idx = 0;
+    }
+    Node nextNode = pool.get(idx);
+    if (okToPick(nextNode)) {
+      return nextNode;
+    } else {
+      return getNextNode(pool, overflow);
+    }
   }
 
 }
