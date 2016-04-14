@@ -31,6 +31,8 @@ public class Distributor {
       }
   ).reverse();
 
+  private int overflow = 0;
+
   public Distributor(ImmutableList<Node> pool, Strategy strategy) {
     this.pool = ImmutableList.copyOf(byWeight.sortedCopy(pool));
     this.strategy = strategy;
@@ -86,12 +88,7 @@ public class Distributor {
       return null;
     }
 
-
     Node _maybe = strategy.getNextNode(pool);
-
-    if (_maybe == null) {
-      return null;
-    }
 
     if (revLookup.containsKey(_maybe.token())) {
       return _maybe;
@@ -121,8 +118,7 @@ public class Distributor {
       if (revLookup.containsKey(_maybe.token())) {
         return _maybe;
       } else {
-        ++overflow;
-        return pick(overflow);
+        return pick(++overflow);
       }
     }
     return null;

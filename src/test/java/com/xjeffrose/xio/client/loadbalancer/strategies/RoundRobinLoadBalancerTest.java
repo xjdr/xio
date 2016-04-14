@@ -92,26 +92,4 @@ public class RoundRobinLoadBalancerTest {
     assertEquals(node3.address().getPort(), distributor.pick().address().getPort());
     assertEquals(node1.address().getPort(), distributor.pick().address().getPort());
   }
-
-  @Test(expected = NullPointerException.class)
-  public void preventOverflow() throws Exception {
-    Node node1 = new Node(new InetSocketAddress("127.0.0.1", 8481));
-    Node node2 = new Node(new InetSocketAddress("127.0.0.1", 8482));
-    Node node3 = new Node(new InetSocketAddress("127.0.0.1", 8483));
-
-    Strategy lb = new RoundRobinLoadBalancer();
-    Distributor distributor = new Distributor(ImmutableList.of(node1, node2, node3), lb);
-
-    // Sleep is required to allow for node refresh to eject node
-    Thread.sleep(5500);
-
-    try {
-      assertEquals(node1.address().getPort(), distributor.pick().address().getPort());
-      assertEquals(node2.address().getPort(), distributor.pick().address().getPort());
-      assertEquals(node3.address().getPort(), distributor.pick().address().getPort());
-      assertEquals(node1.address().getPort(), distributor.pick().address().getPort());
-    } catch (AssertionError e) {
-
-    }
-  }
 }
