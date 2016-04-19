@@ -1,12 +1,15 @@
 package com.xjeffrose.xio.client.loadbalancer.strategies;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.xjeffrose.xio.client.loadbalancer.Distributor;
 import com.xjeffrose.xio.client.loadbalancer.Filter;
 import com.xjeffrose.xio.client.loadbalancer.Node;
 import com.xjeffrose.xio.client.loadbalancer.Strategy;
 import com.xjeffrose.xio.fixtures.TcpServer;
 import java.net.InetSocketAddress;
+import java.util.HashMap;
+import java.util.UUID;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -104,14 +107,14 @@ public class RoundRobinLoadBalancerTest {
     Strategy lb = new RoundRobinLoadBalancer();
     ImmutableList<Node> pool = ImmutableList.of(node1, node2, node3);
 
-    assertEquals(node1, lb.getNextNode(pool));
-    assertEquals(node2, lb.getNextNode(pool));
-    assertEquals(node3, lb.getNextNode(pool));
+    assertEquals(node1, lb.getNextNode(pool, ImmutableMap.of(node1.token(), node1)));
+    assertEquals(node2, lb.getNextNode(pool, ImmutableMap.of(node2.token(), node2)));
+    assertEquals(node3, lb.getNextNode(pool, ImmutableMap.of(node3.token(), node3)));
 
     // test restarting from idx 0 to make sure no overflow
-    assertEquals(node1, lb.getNextNode(pool));
-    assertEquals(node2, lb.getNextNode(pool));
-    assertEquals(node3, lb.getNextNode(pool));
+    assertEquals(node1, lb.getNextNode(pool, ImmutableMap.of(node1.token(), node1)));
+    assertEquals(node2, lb.getNextNode(pool, ImmutableMap.of(node2.token(), node2)));
+    assertEquals(node3, lb.getNextNode(pool, ImmutableMap.of(node3.token(), node3)));
 
   }
 }

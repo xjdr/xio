@@ -20,7 +20,7 @@ import static com.google.common.base.Preconditions.checkState;
 public class Distributor {
   private static final Logger log = Logger.getLogger(Distributor.class);
   private final ImmutableList<Node> pool;
-  private final Map<UUID, Node> revLookup = new ConcurrentHashMap<>();
+  private final Map<UUID, Node> okNodes = new ConcurrentHashMap<>();
   private final Strategy strategy;
   private final Timer t = new Timer();
   private final Ordering<Node> byWeight = Ordering.natural().onResultOf(
@@ -37,7 +37,7 @@ public class Distributor {
 
     // assume all are reachable before the first health check
     for (Node node : pool) {
-      revLookup.put(node.token(), node);
+      okNodes.put(node.token(), node);
     }
 
     checkState(pool.size() > 0, "Must be at least one reachable node in the pool");
@@ -54,13 +54,13 @@ public class Distributor {
   private void refreshPool() {
     for (Node node : pool) {
       if (node.isAvailable()) {
-        revLookup.putIfAbsent(node.token(), node);
+        okNodes.putIfAbsent(node.token(), node);
       } else {
         log.error("Node is unreachable: " + node.address().getHostName() + ":" + node.address().getPort());
-        revLookup.remove(node.token());
+        okNodes.remove(node.token());
       }
     }
-    checkState(revLookup.keySet().size() > 0, "Must be at least one reachable node in the pool");
+    checkState(okNodes.keySet().size() > 0, "Must be at least one reachable node in the pool");
   }
 
 
@@ -75,7 +75,7 @@ public class Distributor {
    * The node returned by UUID.
    */
   public Node getNodeById(UUID id) {
-    return revLookup.get(id);
+    return okNodes.get(id);
   }
 
   /**
@@ -91,23 +91,12 @@ public class Distributor {
   private Node pick(int _overflow) {
     int overflow = _overflow;
 
-    if (revLookup.size() < 1) {
+    if (okNodes.size() < 1) {
       return null;
     }
 
-    if (overflow <= revLookup.size()) {
-
-      Node _maybe = strategy.getNextNode(pool);
-
-      if (_maybe == null) {
-        return null;
-      }
-
-      if (revLookup.containsKey(_maybe.token())) {
-        return _maybe;
-      } else {
-        return pick(++overflow);
-      }
+    if (overflow <= okNodes.size()) {
+      return strategy.getNextNode(pool, okNodes);
     }
 
     return null;
@@ -146,12 +135,16 @@ public class Distributor {
       nodes.stream()
           .forEach(node -> {
             NodeStat ns = new NodeStat(node);
-            ns.setHealthy(revLookup.containsKey(node.token()));
+            ns.setHealthy(okNodes.containsKey(node.token()));
             ns.setUsedForRouting(strategy.okToPick(node));
             nodeStat.add(ns);
           });
     }
     return nodeStat;
+  }
+
+  public Map<UUID, Node> getOkNodes() {
+    return okNodes;
   }
 
 }
