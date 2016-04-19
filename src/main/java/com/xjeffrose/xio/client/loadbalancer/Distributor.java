@@ -82,24 +82,7 @@ public class Distributor {
    * Pick the next node. This is the main load balancer.
    */
   public Node pick() {
-    return pick(0);
-  }
-
-  /**
-   * Pick the next node. This is the main load balancer.
-   */
-  private Node pick(int _overflow) {
-    int overflow = _overflow;
-
-    if (okNodes.size() < 1) {
-      return null;
-    }
-
-    if (overflow <= okNodes.size()) {
-      return strategy.getNextNode(pool, okNodes);
-    }
-
-    return null;
+    return strategy.getNextNode(pool, okNodes);
   }
 
   /**
