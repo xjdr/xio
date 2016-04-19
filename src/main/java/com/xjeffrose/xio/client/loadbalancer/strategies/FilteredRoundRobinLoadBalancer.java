@@ -4,6 +4,9 @@ import com.google.common.collect.ImmutableList;
 import com.xjeffrose.xio.client.loadbalancer.Filter;
 import com.xjeffrose.xio.client.loadbalancer.Node;
 import com.xjeffrose.xio.client.loadbalancer.Strategy;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
@@ -24,17 +27,15 @@ public class FilteredRoundRobinLoadBalancer implements Strategy {
 
   @Override
   public Node getNextNode(ImmutableList<Node> pool, Map<UUID, Node> okNodes) {
-    if (okNodes.isEmpty()) {
-      return null;
+    List<UUID> ids = new ArrayList<>(okNodes.keySet());
+
+    Collections.shuffle(ids, new Random());
+    for (UUID id: ids) {
+      Node nextNode = okNodes.get(id);
+      if (okToPick(nextNode)) {
+        return nextNode;
+      }
     }
-
-    ImmutableList<UUID> _ok = ImmutableList.copyOf(okNodes.keySet());
-    Node nextNode = okNodes.get( _ok.get(new Random().nextInt(okNodes.size())));
-
-    if (okToPick(nextNode)) {
-      return nextNode;
-    }
-
-    return getNextNode(pool, okNodes);
+    return null;
   }
 }
