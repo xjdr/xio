@@ -39,8 +39,8 @@ import org.apache.log4j.Logger;
 public class XioServerTransport {
   private static final Logger log = Logger.getLogger(XioServerTransport.class.getName());
 
-  private static final int NO_WRITER_IDLE_TIMEOUT = 0;
-  private static final int NO_ALL_IDLE_TIMEOUT = 0;
+  private static final int NO_WRITER_IDLE_TIMEOUT = 60000;
+  private static final int NO_ALL_IDLE_TIMEOUT = 60000;
   private final int requestedPort;
   private final InetSocketAddress hostAddr;
   private final ChannelGroup allChannels;
@@ -167,7 +167,8 @@ public class XioServerTransport {
         .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
         .option(ChannelOption.WRITE_BUFFER_HIGH_WATER_MARK, 32 * 1024)
         .option(ChannelOption.WRITE_BUFFER_LOW_WATER_MARK, 8 * 1024)
-        .option(ChannelOption.TCP_NODELAY, true);
+        .option(ChannelOption.TCP_NODELAY, true)
+        .option(ChannelOption.SO_REUSEADDR, true);
 
     try {
       serverChannel = bootstrap.bind(hostAddr).sync().channel();
