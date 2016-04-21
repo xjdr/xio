@@ -1,0 +1,7 @@
+{
+    "project_id" : "xio",
+    "conduit_uri" : "http://phabricator.prodng.paypal.com",
+    "arc.land.onto.default" : "develop",
+    "arc.feature.start.default" : "develop",
+    "unit.engine" : "JunitTestEngine"
+}

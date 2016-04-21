@@ -1,4 +1,4 @@
-package com.xjeffrose.xio.client;
+package com.xjeffrose.xio.client.retry;
 
 import java.util.concurrent.TimeUnit;
 

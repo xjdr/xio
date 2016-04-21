@@ -1,8 +1,12 @@
 package com.xjeffrose.xio.client.loadbalancer;
 
-import java.util.Vector;
+import com.google.common.collect.ImmutableList;
+import java.util.Map;
+import java.util.UUID;
 
 public interface Strategy {
 
-  Node getNextNode(Vector<Node> pool);
+  boolean okToPick(Node node);
+
+  Node getNextNode(ImmutableList<Node> pool, Map<UUID, Node> okNodes);
 }

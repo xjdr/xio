@@ -1,5 +1,6 @@
 package com.xjeffrose.xio.client;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.net.HostAndPort;
 import com.xjeffrose.xio.client.loadbalancer.Distributor;
 import com.xjeffrose.xio.client.loadbalancer.Node;
@@ -24,8 +25,7 @@ public abstract class AbstractClientConnector<T extends XioClientChannel> implem
   }
 
   public AbstractClientConnector(SocketAddress address, XioProtocolFactory protocolFactory) {
-    final Vector<Node> singletonPool = new Vector<>();
-    singletonPool.add(new Node(address));
+    final ImmutableList<Node> singletonPool = ImmutableList.of(new Node(address));
 
     this.pool = new Distributor(singletonPool, new RoundRobinLoadBalancer());
     this.address = address;
@@ -45,7 +45,7 @@ public abstract class AbstractClientConnector<T extends XioClientChannel> implem
     final Node node = pool.pick();
     final ChannelFuture cf = bootstrap.connect(node.address());
 
-    node.pending(cf.channel());
+    node.addPending(cf.channel());
     return cf;
   }
 

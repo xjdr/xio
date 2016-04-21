@@ -27,6 +27,10 @@ public class TcpClientConnector extends AbstractClientConnector<TcpClientChannel
     this(host + ":" + Integer.toString(port), defaultProtocolFactory());
   }
 
+  public TcpClientConnector(InetSocketAddress addr) {
+    this(addr.getHostString() + ":" + addr.getPort(), defaultProtocolFactory());
+  }
+
   public TcpClientConnector(String hostNameAndPort, XioProtocolFactory protocolFactory) {
     super(new InetSocketAddress(HostAndPort.fromString(hostNameAndPort).getHostText(),
         HostAndPort.fromString(hostNameAndPort).getPortOrDefault(80)), protocolFactory);

@@ -3,6 +3,8 @@ package com.xjeffrose.xio.client;
 
 import com.google.common.net.HostAndPort;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.xjeffrose.xio.client.retry.RetryPolicy;
+import com.xjeffrose.xio.client.retry.RetrySleeper;
 import com.xjeffrose.xio.core.ShutdownUtil;
 import io.airlift.units.Duration;
 import io.netty.bootstrap.Bootstrap;
@@ -20,7 +22,6 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.Timer;
 import java.io.Closeable;
 import java.net.InetSocketAddress;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 import org.apache.log4j.Logger;
