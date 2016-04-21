@@ -5,6 +5,7 @@ import com.xjeffrose.xio.core.ChannelStatistics;
 import com.xjeffrose.xio.core.ConnectionContextHandler;
 import com.xjeffrose.xio.core.ShutdownUtil;
 import com.xjeffrose.xio.core.XioExceptionLogger;
+import com.xjeffrose.xio.core.XioIdleDisconnectHandler;
 import com.xjeffrose.xio.core.XioMessageLogger;
 import com.xjeffrose.xio.core.XioMetrics;
 import com.xjeffrose.xio.core.XioSecurityHandlers;
@@ -87,15 +88,11 @@ public class XioServerTransport {
         cp.addLast("aggregator", def.getAggregatorFactory().getAggregator());
         cp.addLast("routingFilter", def.getRoutingFilterFactory().getRoutingFilter());
         if (def.getClientIdleTimeout() != null) {
-          cp.addLast("idleTimeoutHandler", new IdleStateHandler(
-              def.getClientIdleTimeout().toMillis(),
+          cp.addLast("idleDisconnectHandler", new XioIdleDisconnectHandler(
+              (int) def.getClientIdleTimeout().toMillis(),
               NO_WRITER_IDLE_TIMEOUT,
               NO_ALL_IDLE_TIMEOUT,
               TimeUnit.MILLISECONDS));
-          cp.addLast("idleDisconnectHandler", new IdleDisconnectHandler(
-              (int) def.getClientIdleTimeout().toMillis(),
-              NO_WRITER_IDLE_TIMEOUT,
-              NO_ALL_IDLE_TIMEOUT));
         }
         cp.addLast("authHandler", securityHandlers.getAuthenticationHandler());
         cp.addLast("dispatcher", new XioDispatcher(def, xioServerConfig));
