@@ -18,6 +18,6 @@ public class XioIdleDisconnectHandler extends IdleStateHandler{
   protected void channelIdle(ChannelHandlerContext ctx, IdleStateEvent evt) throws Exception {
     ctx.channel().close();
 
-    throw new XioIdleDisconnectException();
+    throw new XioIdleDisconnectException("Disconnecting " + ctx.channel().remoteAddress() + " due to idle state");
   }
 }
