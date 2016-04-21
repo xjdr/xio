@@ -88,15 +88,11 @@ public class XioServerTransport {
         cp.addLast("aggregator", def.getAggregatorFactory().getAggregator());
         cp.addLast("routingFilter", def.getRoutingFilterFactory().getRoutingFilter());
         if (def.getClientIdleTimeout() != null) {
-          cp.addLast("idleTimeoutHandler", new IdleStateHandler(
-              def.getClientIdleTimeout().toMillis(),
-              NO_WRITER_IDLE_TIMEOUT,
-              NO_ALL_IDLE_TIMEOUT,
-              TimeUnit.MILLISECONDS));
           cp.addLast("idleDisconnectHandler", new XioIdleDisconnectHandler(
               (int) def.getClientIdleTimeout().toMillis(),
               NO_WRITER_IDLE_TIMEOUT,
-              NO_ALL_IDLE_TIMEOUT));
+              NO_ALL_IDLE_TIMEOUT,
+              TimeUnit.MILLISECONDS));
         }
         cp.addLast("authHandler", securityHandlers.getAuthenticationHandler());
         cp.addLast("dispatcher", new XioDispatcher(def, xioServerConfig));
