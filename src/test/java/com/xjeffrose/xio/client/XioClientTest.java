@@ -297,7 +297,7 @@ public class XioClientTest {
 
     final RoundRobinLoadBalancer strategy = new RoundRobinLoadBalancer();
     final ImmutableList<Node> pool = ImmutableList.of(new Node(new InetSocketAddress("127.0.0.1", 9110)), new Node(new InetSocketAddress("127.0.0.1", 9120)), new Node(new InetSocketAddress("127.0.0.1", 9130)));
-    final Distributor distributor = new Distributor(pool, strategy);
+    final Distributor distributor = new Distributor(pool, strategy, new XioTimer("Test Timer", 5000, TimeUnit.MILLISECONDS, 5));
 
     XioClient xioClient = new XioClient();
     ListenableFuture<XioClientChannel> responseFuture = xioClient.connectAsync(new TcpClientConnector(distributor.pick().address()),  new BoundedExponentialBackoffRetry(1000, 100000, 3));

@@ -3,13 +3,15 @@ package com.xjeffrose.xio.client.loadbalancer;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Ordering;
+import com.xjeffrose.xio.core.XioTimer;
+import io.netty.util.Timeout;
+import io.netty.util.TimerTask;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 
 import static com.google.common.base.Preconditions.checkState;
@@ -22,7 +24,9 @@ public class Distributor {
   private final ImmutableList<Node> pool;
   private final Map<UUID, Node> okNodes = new ConcurrentHashMap<>();
   private final Strategy strategy;
-  private final Timer t = new Timer();
+//  private final Timer t = new Timer();
+  private final XioTimer xioTimer;
+
   private final Ordering<Node> byWeight = Ordering.natural().onResultOf(
       new Function<Node, Integer>() {
         public Integer apply(Node node) {
@@ -31,7 +35,8 @@ public class Distributor {
       }
   ).reverse();
 
-  public Distributor(ImmutableList<Node> pool, Strategy strategy) {
+  public Distributor(ImmutableList<Node> pool, Strategy strategy, XioTimer xioTimer) {
+    this.xioTimer = xioTimer;
     this.pool = ImmutableList.copyOf(byWeight.sortedCopy(pool));
     this.strategy = strategy;
 
@@ -42,13 +47,7 @@ public class Distributor {
 
     checkState(pool.size() > 0, "Must be at least one reachable node in the pool");
 
-    t.schedule(new TimerTask() {
-
-      @Override
-      public void run() {
-        refreshPool();
-      }
-    }, 5000, 5000);
+    xioTimer.newTimeout(timeout -> refreshPool(), 5000, TimeUnit.MILLISECONDS);
   }
 
   private void refreshPool() {
@@ -97,14 +96,14 @@ public class Distributor {
    * Rebuild this distributor.
    */
   public Distributor rebuild() {
-    return new Distributor(pool, strategy);
+    return new Distributor(pool, strategy, xioTimer);
   }
 
   /**
    * Rebuild this distributor with a new vector.
    */
   public Distributor rebuild(ImmutableList<Node> list) {
-    return new Distributor(list, strategy);
+    return new Distributor(list, strategy, xioTimer);
   }
 
   public ImmutableList<Node> getPool() {

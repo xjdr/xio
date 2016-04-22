@@ -6,10 +6,12 @@ import com.xjeffrose.xio.client.loadbalancer.Distributor;
 import com.xjeffrose.xio.client.loadbalancer.Filter;
 import com.xjeffrose.xio.client.loadbalancer.Node;
 import com.xjeffrose.xio.client.loadbalancer.Strategy;
+import com.xjeffrose.xio.core.XioTimer;
 import com.xjeffrose.xio.fixtures.TcpServer;
 import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -41,7 +43,7 @@ public class FilteredRoundRobinLoadBalancerTest {
         return true;
       }
     });
-    Distributor distributor = new Distributor(ImmutableList.of(node1, node2, node3), lb);
+    Distributor distributor = new Distributor(ImmutableList.of(node1, node2, node3), lb, new XioTimer("Test Timer", 5000, TimeUnit.MILLISECONDS, 5));
 
     assertEquals(node2.address().getHostName(), distributor.pick().address().getHostName());
     assertEquals(node2.address().getHostName(), distributor.pick().address().getHostName());
