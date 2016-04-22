@@ -8,7 +8,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.log4j.Logger;
 
-class Route {
+public class Route {
   private static final Logger log = Logger.getLogger(Route.class);
 
   private static final Pattern keywordPattern = Pattern.compile("(:\\w+)");
