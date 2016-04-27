@@ -26,6 +26,7 @@ public class Distributor {
   private final Strategy strategy;
 //  private final Timer t = new Timer();
   private final XioTimer xioTimer;
+  private final Timeout refreshTimeout;
 
   private final Ordering<Node> byWeight = Ordering.natural().onResultOf(
       new Function<Node, Integer>() {
@@ -47,7 +48,7 @@ public class Distributor {
 
     checkState(pool.size() > 0, "Must be at least one reachable node in the pool");
 
-    xioTimer.newTimeout(timeout -> refreshPool(), 5000, TimeUnit.MILLISECONDS);
+    refreshTimeout = xioTimer.newTimeout(timeout -> refreshPool(), 5000, TimeUnit.MILLISECONDS);
   }
 
   private void refreshPool() {
@@ -62,6 +63,9 @@ public class Distributor {
     checkState(okNodes.keySet().size() > 0, "Must be at least one reachable node in the pool");
   }
 
+  public void stop() {
+    refreshTimeout.cancel();
+  }
 
   /**
    * The vector of pool over which we are currently balancing.
