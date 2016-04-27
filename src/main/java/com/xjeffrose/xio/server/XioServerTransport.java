@@ -28,7 +28,6 @@ import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.timeout.IdleStateHandler;
 import java.net.InetSocketAddress;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -138,7 +137,7 @@ public class XioServerTransport {
     } catch (Throwable e) {
       //TODO(JR): Do somefin here
 //      e.printStackTrace();
-      String msg = e.getMessage() + " ("+hostAddr+")";
+      String msg = e.getMessage() + " (" + hostAddr + ")";
       log.error(msg, e);
       throw new RuntimeException(msg, e);
     }
@@ -172,7 +171,7 @@ public class XioServerTransport {
     } catch (Throwable e) {
       //TODO(JR): Do somefin here
 //      e.printStackTrace();
-      String msg = e.getMessage() + " ("+hostAddr+")";
+      String msg = e.getMessage() + " (" + hostAddr + ")";
       log.error(msg, e);
       throw new RuntimeException(msg, e);
     }
