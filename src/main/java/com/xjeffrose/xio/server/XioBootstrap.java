@@ -7,13 +7,11 @@ import com.xjeffrose.xio.core.XioMetrics;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
-import jdk.nashorn.internal.ir.annotations.Immutable;
 import org.apache.log4j.Logger;
 
 
