@@ -201,6 +201,7 @@ public class XioServerTransport {
       });
       latch.await();
       serverChannel = null;
+      log.info("stopped transport " + def.getName() + ":" + actualPort);
     }
   }
 
