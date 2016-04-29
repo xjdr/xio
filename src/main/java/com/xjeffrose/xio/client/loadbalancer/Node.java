@@ -64,8 +64,8 @@ public class Node {
     this.serviceName = n.serviceName;
   }
 
-  /**.
-   * The current host and port returned as a InetSocketAddress
+  /**
+   * . The current host and port returned as a InetSocketAddress
    */
   public static InetSocketAddress toInetAddress(HostAndPort hostAndPort) {
     return (hostAndPort == null) ? null : new InetSocketAddress(hostAndPort.getHostText(), hostAndPort.getPort());
@@ -93,7 +93,7 @@ public class Node {
   }
 
   public InetSocketAddress address() {
-    return (InetSocketAddress)address;
+    return (InetSocketAddress) address;
   }
 
   public void addPending(Channel channel) {
@@ -112,24 +112,24 @@ public class Node {
     RetryLoop retryLoop = new RetryLoop(new ExponentialBackoffRetry(200, 3, 500), new AtomicReference<TracerDriver>());
 
     while (retryLoop.shouldContinue()) {
-    try {
-      if (!connectionStopwatch.isRunning()) {
-        connectionStopwatch.start();
-      }
-      SocketChannel channel = SocketChannel.open();
-      channel.connect(address);
-      channel.close();
-      connectionStopwatch.stop();
-      connectionTimes.add(connectionStopwatch.elapsed(TimeUnit.MICROSECONDS));
-      connectionStopwatch.reset();
-      return true;
-    } catch (IOException e) {
       try {
-        retryLoop.takeException(e);
-      } catch (Exception e1) {
-        return false;
+        if (!connectionStopwatch.isRunning()) {
+          connectionStopwatch.start();
+        }
+        try (SocketChannel channel = SocketChannel.open()) {
+          channel.connect(address);
+        }
+        connectionStopwatch.stop();
+        connectionTimes.add(connectionStopwatch.elapsed(TimeUnit.MICROSECONDS));
+        connectionStopwatch.reset();
+        return true;
+      } catch (IOException e) {
+        try {
+          retryLoop.takeException(e);
+        } catch (Exception e1) {
+          return false;
+        }
       }
-    }
     }
     return false;
   }
