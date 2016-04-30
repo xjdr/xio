@@ -69,7 +69,7 @@ public class XioServerTransport {
     this.hostAddr = def.getHostAddress();
     this.allChannels = allChannels;
     // connectionLimiter must be instantiated exactly once (and thus outside the pipeline factory)
-    final ConnectionLimiter connectionLimiter = new ConnectionLimiter(def.getMaxConnections());
+    final ConnectionLimiter connectionLimiter = new ConnectionLimiter(15000);
     this.channelStatistics = new ChannelStatistics(allChannels);
 
     //TODO(JR): This is an ugly mess, clean this up
@@ -79,7 +79,8 @@ public class XioServerTransport {
         ChannelPipeline cp = channel.pipeline();
         XioSecurityHandlers securityHandlers = def.getSecurityFactory().getSecurityHandlers(def, xioServerConfig);
         cp.addLast("connectionContext", new ConnectionContextHandler());
-        cp.addLast("connectionLimiter", connectionLimiter);
+        cp.addLast("globalConnectionLimiter", connectionLimiter);
+        cp.addLast("serviceConnectionLimiter", new ConnectionLimiter(def.getMaxConnections()));
         cp.addLast(ChannelStatistics.NAME, channelStatistics);
         cp.addLast("encryptionHandler", securityHandlers.getEncryptionHandler());
         cp.addLast("messageLogger", new XioMessageLogger());
