@@ -118,17 +118,20 @@ public class Node {
         }
         try (SocketChannel channel = SocketChannel.open()) {
           channel.connect(address);
-        }
-        connectionStopwatch.stop();
-        connectionTimes.add(connectionStopwatch.elapsed(TimeUnit.MICROSECONDS));
-        connectionStopwatch.reset();
-        return true;
-      } catch (IOException e) {
-        try {
-          retryLoop.takeException(e);
-        } catch (Exception e1) {
-          return false;
-        }
+        } catch (IOException e) {
+          try {
+            retryLoop.takeException(e);
+          } catch (Exception e1) {
+            return false;
+          }
+          connectionStopwatch.stop();
+          connectionTimes.add(connectionStopwatch.elapsed(TimeUnit.MICROSECONDS));
+          connectionStopwatch.reset();
+          return true;
+      }
+
+      } catch (Exception e) {
+        throw new RuntimeException(e);
       }
     }
     return false;

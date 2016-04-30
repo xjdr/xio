@@ -33,7 +33,7 @@ public class XioChannelProxy extends ChannelDuplexHandler {
     connectionContext = inboundChannel.attr(Constants.CONNECTION_STATE_TRACKER).get();
   }
 
-  static void closeOnFlush(Channel ch) {
+  private static void closeOnFlush(Channel ch) {
     if (ch.isOpen()) {
       ch.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
     }

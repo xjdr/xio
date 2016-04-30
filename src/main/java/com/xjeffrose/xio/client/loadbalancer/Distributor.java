@@ -24,7 +24,6 @@ public class Distributor {
   private final ImmutableList<Node> pool;
   private final Map<UUID, Node> okNodes = new ConcurrentHashMap<>();
   private final Strategy strategy;
-//  private final Timer t = new Timer();
   private final XioTimer xioTimer;
   private final Timeout refreshTimeout;
 
@@ -48,7 +47,7 @@ public class Distributor {
 
     checkState(pool.size() > 0, "Must be at least one reachable node in the pool");
 
-    refreshTimeout = xioTimer.newTimeout(timeout -> refreshPool(), 5000, TimeUnit.MILLISECONDS);
+    refreshTimeout = xioTimer.newTimeout(timeout -> refreshPool(), 60000, TimeUnit.MILLISECONDS);
   }
 
   private void refreshPool() {
@@ -86,14 +85,6 @@ public class Distributor {
    */
   public Node pick() {
     return strategy.getNextNode(pool, okNodes);
-  }
-
-  /**
-   * True if this distributor needs to be rebuilt. (For example, it may need to be updated with
-   * current availabilities.)
-   */
-  public boolean needsRebuild() {
-    return false;
   }
 
   /**
