@@ -21,6 +21,7 @@ import static com.google.common.base.Preconditions.checkState;
  */
 public class Distributor {
   private static final Logger log = Logger.getLogger(Distributor.class);
+
   private final ImmutableList<Node> pool;
   private final Map<UUID, Node> okNodes = new ConcurrentHashMap<>();
   private final Strategy strategy;
@@ -47,7 +48,7 @@ public class Distributor {
 
     checkState(pool.size() > 0, "Must be at least one reachable node in the pool");
 
-    refreshTimeout = xioTimer.newTimeout(timeout -> refreshPool(), 60000, TimeUnit.MILLISECONDS);
+    refreshTimeout = xioTimer.newTimeout(timeout -> refreshPool(), 5000, TimeUnit.MILLISECONDS);
   }
 
   private void refreshPool() {

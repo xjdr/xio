@@ -17,12 +17,14 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import org.apache.log4j.Logger;
 
 /**
  * The base type of nodes over which load is balanced. Nodes define the load metric that is used;
  * distributors like P2C will use these to decide where to balance the next connection request.
  */
 public class Node {
+  private static final Logger log = Logger.getLogger(Node.class);
 
   private final UUID token = UUID.randomUUID();
   private final ConcurrentHashMap<Channel, Stopwatch> pending = new ConcurrentHashMap<>();
@@ -120,8 +122,10 @@ public class Node {
           channel.connect(address);
         } catch (IOException e) {
           try {
+            log.warn("Node is unreachable: Retrying " + address);
             retryLoop.takeException(e);
           } catch (Exception e1) {
+            log.error("Node has exceeded its max retry count" + address);
             return false;
           }
           connectionStopwatch.stop();
@@ -131,9 +135,13 @@ public class Node {
       }
 
       } catch (Exception e) {
-        throw new RuntimeException(e);
+        //TODO(JR): Remove Me
+        log.error("Should never get here 1");
+        return false;
       }
     }
+    //TODO(JR): Remove Me
+    log.error("Should never get here 2");
     return false;
   }
 
