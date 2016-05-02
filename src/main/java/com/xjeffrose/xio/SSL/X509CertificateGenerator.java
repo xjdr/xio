@@ -125,6 +125,8 @@ public final class X509CertificateGenerator {
   }
 
   public static X509Certificate generate(String keyPath, String certPath) {
+    FileInputStream certInputStream = null;
+
     try {
 
       DERKeySpec ks = parseDERKeySpec(Paths.get(keyPath));
@@ -133,35 +135,45 @@ public final class X509CertificateGenerator {
 
       // Sign the cert to identify the algorithm that's used.
       CertificateFactory cf = CertificateFactory.getInstance("X.509");
-      java.security.cert.X509Certificate x509Certificate = (java.security.cert.X509Certificate) cf.generateCertificate(new FileInputStream(certPath));
+      certInputStream = new FileInputStream(certPath);
+      java.security.cert.X509Certificate x509Certificate = (java.security.cert.X509Certificate) cf.generateCertificate(certInputStream);
       X509CertImpl cert = (X509CertImpl) x509Certificate;
 
-      //cert.sign(privateKey, "SHA1withRSA");
+      //TODO(JR): We should verify key after creation
+//      cert.sign(privateKey, "SHA1withRSA");
 //      cert.verify(publicKey);
 
       return new X509Certificate(cert.getIssuerX500Principal().getName(), privateKey, cert);
     } catch (FileNotFoundException | CertificateException e) {
       log.error("Failed to import x509 cert", e);
       throw new RuntimeException(e);
+    } finally {
+      if (certInputStream != null) {
+        try {
+          certInputStream.close();
+        } catch (IOException e) {
+          throw new RuntimeException(e);
+        }
+      }
     }
   }
 
   public static class DERKeySpec {
-    public BigInteger version;
-    public BigInteger modulus;
-    public BigInteger publicExp;
-    public BigInteger privateExp;
-    public BigInteger prime1;
-    public BigInteger prime2;
-    public BigInteger exp1;
-    public BigInteger exp2;
-    public BigInteger crtCoef;
+    private BigInteger version;
+    private BigInteger modulus;
+    private BigInteger publicExp;
+    private BigInteger privateExp;
+    private BigInteger prime1;
+    private BigInteger prime2;
+    private BigInteger exp1;
+    private BigInteger exp2;
+    private BigInteger crtCoef;
 
-    public RSAPrivateCrtKeySpec rsaPrivateCrtKeySpec() {
+    private RSAPrivateCrtKeySpec rsaPrivateCrtKeySpec() {
       return new RSAPrivateCrtKeySpec(modulus, publicExp, privateExp, prime1, prime2, exp1, exp2, crtCoef);
     }
 
-    public RSAPublicKeySpec rsaPublicKeySpec() {
+    private RSAPublicKeySpec rsaPublicKeySpec() {
       return new RSAPublicKeySpec(modulus, publicExp);
     }
   }
