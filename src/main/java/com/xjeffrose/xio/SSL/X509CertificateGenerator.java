@@ -21,6 +21,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
 import java.security.KeyFactory;
@@ -44,10 +45,20 @@ public final class X509CertificateGenerator {
   private X509CertificateGenerator() {
   }
 
-  public static DERKeySpec parseDERKeySpec(String path) {
+  public static DERKeySpec parseDERKeySpec(Path path) {
+    String rawKeyString = null;
     try {
-      String rawKeyString = new String(Files.readAllBytes(Paths.get(path).toAbsolutePath()));
+      rawKeyString = new String(Files.readAllBytes(path));
+    } catch (IOException e) {
+      //TODO(JR): This is bad practice, we should fix this more elegantly
+      throw new RuntimeException(new GeneralSecurityException("Could not parse a PKCS1 private key."));
+    }
 
+    return parseDERKeySpec(rawKeyString);
+  }
+
+    public static DERKeySpec parseDERKeySpec(String rawKeyString) {
+    try {
       // Base64 decode the data
       Base64.Decoder b64decoder = Base64.getDecoder();
       byte[] encoded = b64decoder.decode(
