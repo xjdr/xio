@@ -3,10 +3,22 @@ package com.xjeffrose.xio.client.loadbalancer;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.net.HostAndPort;
+import com.xjeffrose.xio.client.retry.BoundedExponentialBackoffRetry;
 import com.xjeffrose.xio.client.retry.ExponentialBackoffRetry;
 import com.xjeffrose.xio.client.retry.RetryLoop;
 import com.xjeffrose.xio.client.retry.TracerDriver;
+import com.xjeffrose.xio.core.XioIdleDisconnectHandler;
+import com.xjeffrose.xio.core.XioSecurityHandlers;
+import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.ChannelPipeline;
+import io.netty.handler.codec.http.HttpClientCodec;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -37,6 +49,7 @@ public class Node {
   private final int weight;
 
   private double load;
+  private boolean available = true;
 
   public Node(HostAndPort hostAndPort) {
     this(toInetAddress(hostAndPort));
@@ -109,40 +122,7 @@ public class Node {
   }
 
   public boolean isAvailable() {
-
-    //TODO(JR): Make this value configurable
-    RetryLoop retryLoop = new RetryLoop(new ExponentialBackoffRetry(200, 3, 500), new AtomicReference<TracerDriver>());
-
-    while (retryLoop.shouldContinue()) {
-      try {
-        if (!connectionStopwatch.isRunning()) {
-          connectionStopwatch.start();
-        }
-        try (SocketChannel channel = SocketChannel.open()) {
-          channel.connect(address);
-        } catch (IOException e) {
-          try {
-            log.warn("Node is unreachable: Retrying " + address);
-            retryLoop.takeException(e);
-          } catch (Exception e1) {
-            log.error("Node has exceeded its max retry count" + address);
-            return false;
-          }
-          connectionStopwatch.stop();
-          connectionTimes.add(connectionStopwatch.elapsed(TimeUnit.MICROSECONDS));
-          connectionStopwatch.reset();
-          return true;
-      }
-
-      } catch (Exception e) {
-        //TODO(JR): Remove Me
-        log.error("Should never get here 1");
-        return false;
-      }
-    }
-    //TODO(JR): Remove Me
-    log.error("Should never get here 2");
-    return false;
+    return available;
   }
 
   public ImmutableList<String> getFilters() {
@@ -159,5 +139,9 @@ public class Node {
 
   public SocketAddress getAddress() {
     return address;
+  }
+
+  public void setAvailable(boolean available) {
+    this.available = available;
   }
 }
