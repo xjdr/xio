@@ -26,16 +26,19 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.net.ssl.KeyManagerFactory;
 
-
 public class XioSecurityHandlerImpl implements XioSecurityHandlers {
   private static final String PASSWORD = "passwordsAreGood";
-
-  private final String cert;
-  private final String key;
 
   public XioSecurityHandlerImpl() {
     this.cert = null;
     this.key = null;
+    
+    try {
+      this.cert = SelfSignedX509CertGenerator.generate("*.paypal.com").toString();
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+    this.key = "";
   }
 
   public XioSecurityHandlerImpl(String cert, String key) {
@@ -121,7 +124,7 @@ public class XioSecurityHandlerImpl implements XioSecurityHandlers {
       // JDK 7, 8, 9 (Early Access)    SSLv2Hello(2), SSLv3, TLSv1, TLSv1.1, TLSv1.2
       // TODO(JR): Fix this or only enable for certain service as this is insecure
       ((SslHandler) handler).engine().setEnabledProtocols(((SslHandler) handler).engine().getSupportedProtocols());
-
+      
       return handler;
 
     } catch (NoSuchAlgorithmException | KeyStoreException | UnrecoverableKeyException | CertificateException | NoSuchProviderException | IllegalArgumentException | IOException e) {
