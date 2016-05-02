@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import org.apache.log4j.Logger;
 
@@ -49,7 +50,7 @@ public class Node {
   private final int weight;
 
   private double load;
-  private boolean available = true;
+  private final AtomicBoolean available = new AtomicBoolean(true);
 
   public Node(HostAndPort hostAndPort) {
     this(toInetAddress(hostAndPort));
@@ -122,7 +123,7 @@ public class Node {
   }
 
   public boolean isAvailable() {
-    return available;
+    return available.get();
   }
 
   public ImmutableList<String> getFilters() {
@@ -142,6 +143,6 @@ public class Node {
   }
 
   public void setAvailable(boolean available) {
-    this.available = available;
+    this.available.set(available);
   }
 }
