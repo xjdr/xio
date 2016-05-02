@@ -126,7 +126,8 @@ public final class X509CertificateGenerator {
 
   public static X509Certificate generate(String keyPath, String certPath) {
     try {
-      DERKeySpec ks = parseDERKeySpec(keyPath);
+
+      DERKeySpec ks = parseDERKeySpec(Paths.get(keyPath));
       PrivateKey privateKey = buildPrivateKey(ks);
       PublicKey publicKey = buildPublicKey(ks);
 
