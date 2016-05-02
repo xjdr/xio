@@ -49,6 +49,7 @@ public class NodeECV extends ChannelInboundHandlerAdapter {
   @Override
   public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
     log.error("Exception in ECV check for node " + node.address() + ": ", cause);
+    node.setAvailable(false);
     ctx.close();
   }
 
