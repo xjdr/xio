@@ -25,6 +25,7 @@ public class Distributor {
   private final ImmutableList<Node> pool;
   private final Map<UUID, Node> okNodes = new ConcurrentHashMap<>();
   private final Strategy strategy;
+  private final NodeHealthCheck nodeHealthCheck;
   private final XioTimer xioTimer;
   private final Timeout refreshTimeout;
 
@@ -36,7 +37,8 @@ public class Distributor {
       }
   ).reverse();
 
-  public Distributor(ImmutableList<Node> pool, Strategy strategy, XioTimer xioTimer) {
+  public Distributor(ImmutableList<Node> pool, Strategy strategy, NodeHealthCheck nodeHealthCheck, XioTimer xioTimer) {
+    this.nodeHealthCheck = nodeHealthCheck;
     this.xioTimer = xioTimer;
     this.pool = ImmutableList.copyOf(byWeight.sortedCopy(pool));
     this.strategy = strategy;
@@ -53,6 +55,7 @@ public class Distributor {
 
   private void refreshPool() {
     for (Node node : pool) {
+      nodeHealthCheck.connect(node, node.getProto(), node.isSSL(), null);
       if (node.isAvailable()) {
         okNodes.putIfAbsent(node.token(), node);
       } else {
@@ -92,14 +95,14 @@ public class Distributor {
    * Rebuild this distributor.
    */
   public Distributor rebuild() {
-    return new Distributor(pool, strategy, xioTimer);
+    return new Distributor(pool, strategy, nodeHealthCheck, xioTimer);
   }
 
   /**
    * Rebuild this distributor with a new vector.
    */
   public Distributor rebuild(ImmutableList<Node> list) {
-    return new Distributor(list, strategy, xioTimer);
+    return new Distributor(list, strategy, nodeHealthCheck, xioTimer);
   }
 
   public ImmutableList<Node> getPool() {
