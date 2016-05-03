@@ -29,18 +29,17 @@ public class NodeHealthCheck {
   private final NioEventLoopGroup nioEventLoop;
 
 
-  public NodeHealthCheck() {
+  public NodeHealthCheck(int workerPoolSize) {
     if (Epoll.isAvailable()) {
-      epoolEventLoop = new EpollEventLoopGroup(12);
+      epoolEventLoop = new EpollEventLoopGroup(workerPoolSize);
       nioEventLoop = null;
     } else {
       epoolEventLoop = null;
-      nioEventLoop = new NioEventLoopGroup(12);
+      nioEventLoop = new NioEventLoopGroup(workerPoolSize);
     }
-
   }
 
-  public void connect(Node node, Protocol proto, boolean ssl) {
+  public void connect(Node node, Protocol proto, boolean ssl, ECV ecv) {
 
     ChannelInitializer<SocketChannel> pipeline = new ChannelInitializer<SocketChannel>() {
       @Override
@@ -56,7 +55,7 @@ public class NodeHealthCheck {
           cp.addLast(new HttpClientCodec());
         }
         cp.addLast(new XioIdleDisconnectHandler(60, 60, 60));
-        cp.addLast(new NodeECV(node, proto));
+        cp.addLast(new NodeECV(node, proto, ecv));
       }
     };
 

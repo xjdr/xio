@@ -3,33 +3,15 @@ package com.xjeffrose.xio.client.loadbalancer;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.net.HostAndPort;
-import com.xjeffrose.xio.client.retry.BoundedExponentialBackoffRetry;
-import com.xjeffrose.xio.client.retry.ExponentialBackoffRetry;
-import com.xjeffrose.xio.client.retry.RetryLoop;
-import com.xjeffrose.xio.client.retry.TracerDriver;
-import com.xjeffrose.xio.core.XioIdleDisconnectHandler;
-import com.xjeffrose.xio.core.XioSecurityHandlers;
-import io.netty.bootstrap.Bootstrap;
-import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.ChannelPipeline;
-import io.netty.handler.codec.http.HttpClientCodec;
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 import org.apache.log4j.Logger;
 
 /**
@@ -48,24 +30,27 @@ public class Node {
   private final List<Long> requestTimes = new ArrayList<>();
   private final String serviceName;
   private final int weight;
-
-  private double load;
+  private final Protocol proto;
+  private final boolean ssl;
   private final AtomicBoolean available = new AtomicBoolean(true);
+  private double load;
 
   public Node(HostAndPort hostAndPort) {
     this(toInetAddress(hostAndPort));
   }
 
   public Node(SocketAddress address) {
-    this(address, ImmutableList.of(), 0, "");
+    this(address, ImmutableList.of(), 0, "", Protocol.TCP, false);
   }
 
   public Node(SocketAddress address, int weight) {
-    this(address, ImmutableList.of(), weight, "");
+    this(address, ImmutableList.of(), weight, "", Protocol.TCP, false);
   }
 
-  public Node(SocketAddress address, ImmutableList<String> filters, int weight, String serviceName) {
+  public Node(SocketAddress address, ImmutableList<String> filters, int weight, String serviceName, Protocol proto, boolean ssl) {
     this.address = address;
+    this.proto = proto;
+    this.ssl = ssl;
     this.load = 0;
     this.filters = ImmutableList.copyOf(filters);
     this.weight = weight;
@@ -78,6 +63,8 @@ public class Node {
     this.filters = ImmutableList.copyOf(n.filters);
     this.weight = n.weight;
     this.serviceName = n.serviceName;
+    this.proto = Protocol.TCP;
+    this.ssl = false;
   }
 
   /**
@@ -126,6 +113,10 @@ public class Node {
     return available.get();
   }
 
+  public void setAvailable(boolean available) {
+    this.available.set(available);
+  }
+
   public ImmutableList<String> getFilters() {
     return filters;
   }
@@ -142,7 +133,11 @@ public class Node {
     return address;
   }
 
-  public void setAvailable(boolean available) {
-    this.available.set(available);
+  public Protocol getProto() {
+    return proto;
+  }
+
+  public boolean isSSL() {
+    return ssl;
   }
 }

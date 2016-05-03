@@ -12,14 +12,6 @@ public class NodeECV extends ChannelInboundHandlerAdapter {
   private final Protocol proto;
   private final ECV ecv;
 
-  public NodeECV(Node node) {
-    this(node, Protocol.TCP, null);
-  }
-
-  public NodeECV(Node node, Protocol proto) {
-    this(node, proto, null);
-  }
-
   public NodeECV(Node node, Protocol proto, ECV ecv) {
     this.node = node;
     this.proto = proto;
