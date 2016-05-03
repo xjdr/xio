@@ -48,7 +48,7 @@ public final class X509CertificateGenerator {
   public static DERKeySpec parseDERKeySpec(Path path) {
     String rawKeyString = null;
     try {
-      rawKeyString = new String(Files.readAllBytes(path));
+      rawKeyString = new String(Files.readAllBytes(path.toAbsolutePath()));
     } catch (IOException e) {
       //TODO(JR): This is bad practice, we should fix this more elegantly
       throw new RuntimeException(new GeneralSecurityException("Could not parse a PKCS1 private key."));
