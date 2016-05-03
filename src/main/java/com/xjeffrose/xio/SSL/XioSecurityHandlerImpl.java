@@ -11,12 +11,14 @@ import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.ssl.SslProvider;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.security.InvalidKeyException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.SignatureException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
@@ -32,12 +34,8 @@ public class XioSecurityHandlerImpl implements XioSecurityHandlers {
   private final String key;
 
   public XioSecurityHandlerImpl() {
-    try {
-      this.cert = SelfSignedX509CertGenerator.generate("*.paypal.com").toString();
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
-    this.key = "";
+    this.cert = null;
+    this.key = null;
   }
 
   public XioSecurityHandlerImpl(String cert, String key) {
@@ -56,25 +54,44 @@ public class XioSecurityHandlerImpl implements XioSecurityHandlers {
 
       final List<java.security.cert.X509Certificate> certList = new ArrayList<>();
       final String rawCertString = cert;
+      PrivateKey privateKey;
+      PublicKey publicKey;
+      X509Certificate selfSignedCert = null;
 
-      X509CertificateGenerator.DERKeySpec derKeySpec = X509CertificateGenerator.parseDERKeySpec(key);
-      PrivateKey privateKey = X509CertificateGenerator.buildPrivateKey(derKeySpec);
-      PublicKey publicKey = X509CertificateGenerator.buildPublicKey(derKeySpec);
-
-      String[] certs = rawCertString.split("-----END CERTIFICATE-----\n");
-
-      for (String cert : certs) {
-        CertificateFactory cf = CertificateFactory.getInstance("X.509");
-        java.security.cert.X509Certificate x509Certificate =
-            (java.security.cert.X509Certificate) cf.generateCertificate(
-                new ByteArrayInputStream((cert + "-----END CERTIFICATE-----\n").getBytes()));
-        certList.add(x509Certificate);
+      if (key != null) {
+        X509CertificateGenerator.DERKeySpec derKeySpec = X509CertificateGenerator.parseDERKeySpec(key);
+        privateKey = X509CertificateGenerator.buildPrivateKey(derKeySpec);
+        publicKey = X509CertificateGenerator.buildPublicKey(derKeySpec);
+      } else {
+        selfSignedCert = SelfSignedX509CertGenerator.generate("*.paypal.com");
+        privateKey = selfSignedCert.getKey();
       }
 
-      final java.security.cert.X509Certificate[] chain = new java.security.cert.X509Certificate[certList.size()];
+      java.security.cert.X509Certificate[] chain;
 
-      for (int i = 0; i < certList.size(); i++) {
-        chain[i] = certList.get(i);
+      if (cert != null) {
+
+        String[] certs = rawCertString.split("-----END CERTIFICATE-----\n");
+
+        for (String cert : certs) {
+          CertificateFactory cf = CertificateFactory.getInstance("X.509");
+          java.security.cert.X509Certificate x509Certificate =
+              (java.security.cert.X509Certificate) cf.generateCertificate(
+                  new ByteArrayInputStream((cert + "-----END CERTIFICATE-----\n").getBytes()));
+          certList.add(x509Certificate);
+        }
+
+        chain = new java.security.cert.X509Certificate[certList.size()];
+
+        for (int i = 0; i < certList.size(); i++) {
+          chain[i] = certList.get(i);
+        }
+      } else {
+        if (selfSignedCert == null) {
+          selfSignedCert = SelfSignedX509CertGenerator.generate("*.paypal.com");
+        }
+        chain = new java.security.cert.X509Certificate[1];
+        chain[0] = selfSignedCert.getCert();
       }
 
       SslContext sslCtx;
@@ -107,6 +124,10 @@ public class XioSecurityHandlerImpl implements XioSecurityHandlers {
       return handler;
 
     } catch (NoSuchAlgorithmException | KeyStoreException | UnrecoverableKeyException | CertificateException | NoSuchProviderException | IllegalArgumentException | IOException e) {
+      e.printStackTrace();
+    } catch (SignatureException e) {
+      e.printStackTrace();
+    } catch (InvalidKeyException e) {
       e.printStackTrace();
     }
 
