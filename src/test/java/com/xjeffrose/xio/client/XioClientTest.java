@@ -77,11 +77,6 @@ public class XioClientTest {
 
               return null;
             }
-
-            @Override
-            public ChannelHandler getEncryptionHandler(boolean clientMode) {
-              return null;
-            }
           };
         }
       })

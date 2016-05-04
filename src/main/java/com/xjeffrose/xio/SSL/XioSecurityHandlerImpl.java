@@ -49,7 +49,7 @@ public class XioSecurityHandlerImpl implements XioSecurityHandlers {
   }
 
   @Override
-  public ChannelHandler getEncryptionHandler(boolean clientMode) {
+  public ChannelHandler getEncryptionHandler() {
     try {
 
       final List<java.security.cert.X509Certificate> certList = new ArrayList<>();
@@ -121,7 +121,6 @@ public class XioSecurityHandlerImpl implements XioSecurityHandlers {
       // JDK 7, 8, 9 (Early Access)    SSLv2Hello(2), SSLv3, TLSv1, TLSv1.1, TLSv1.2
       // TODO(JR): Fix this or only enable for certain service as this is insecure
       ((SslHandler) handler).engine().setEnabledProtocols(((SslHandler) handler).engine().getSupportedProtocols());
-      ((SslHandler) handler).engine().setUseClientMode(clientMode);
 
       return handler;
 
@@ -134,10 +133,5 @@ public class XioSecurityHandlerImpl implements XioSecurityHandlers {
     }
 
     return null;
-  }
-
-  @Override
-  public ChannelHandler getEncryptionHandler() {
-    return getEncryptionHandler(false);
   }
 }

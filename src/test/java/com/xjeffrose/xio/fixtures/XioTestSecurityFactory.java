@@ -40,11 +40,6 @@ public class XioTestSecurityFactory implements XioSecurityFactory {
         }
         return null;
       }
-
-      @Override
-      public ChannelHandler getEncryptionHandler(boolean clientMode) {
-        return null;
-      }
     };
   }
 
@@ -72,11 +67,6 @@ public class XioTestSecurityFactory implements XioSecurityFactory {
           e.printStackTrace();
         }
 //                return new SslHandler(engine);
-        return null;
-      }
-
-      @Override
-      public ChannelHandler getEncryptionHandler(boolean clientMode) {
         return null;
       }
     };
