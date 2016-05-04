@@ -18,6 +18,11 @@ public class XioNoOpSecurityFactory implements XioSecurityFactory {
       public ChannelHandler getEncryptionHandler() {
         return new XioNoOpHandler();
       }
+
+      @Override
+      public ChannelHandler getEncryptionHandler(boolean clientMode) {
+        return new XioNoOpHandler();
+      }
     };
   }
 
@@ -31,6 +36,11 @@ public class XioNoOpSecurityFactory implements XioSecurityFactory {
 
       @Override
       public ChannelHandler getEncryptionHandler() {
+        return new XioNoOpHandler();
+      }
+
+      @Override
+      public ChannelHandler getEncryptionHandler(boolean clientMode) {
         return new XioNoOpHandler();
       }
     };

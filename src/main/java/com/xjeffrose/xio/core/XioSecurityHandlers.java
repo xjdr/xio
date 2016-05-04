@@ -7,4 +7,6 @@ public interface XioSecurityHandlers {
   ChannelHandler getAuthenticationHandler();
 
   ChannelHandler getEncryptionHandler();
+
+  ChannelHandler getEncryptionHandler(boolean clientMode);
 }
