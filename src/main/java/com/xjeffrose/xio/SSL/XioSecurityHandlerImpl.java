@@ -9,6 +9,7 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.ssl.SslProvider;
+import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.security.InvalidKeyException;
@@ -32,15 +33,27 @@ public class XioSecurityHandlerImpl implements XioSecurityHandlers {
 
   private final String cert;
   private final String key;
+  private final boolean clientMode;
+
 
   public XioSecurityHandlerImpl() {
-    this.cert = null;
-    this.key = null;
+    this(false);
+  }
+
+
+  public XioSecurityHandlerImpl(boolean clientMode) {
+    this(null, null, clientMode);
   }
 
   public XioSecurityHandlerImpl(String cert, String key) {
+    this(cert, key, false);
+  }
+
+
+  public XioSecurityHandlerImpl(String cert, String key, boolean clientMode) {
     this.cert = cert;
     this.key = key;
+    this.clientMode = clientMode;
   }
 
   @Override
@@ -93,42 +106,69 @@ public class XioSecurityHandlerImpl implements XioSecurityHandlers {
         chain = new java.security.cert.X509Certificate[1];
         chain[0] = selfSignedCert.getCert();
       }
+      if (!clientMode) {
 
-      SslContext sslCtx;
+        SslContext sslCtx;
 
-      if (OpenSsl.isAvailable()) {
-        sslCtx = SslContextBuilder
-            .forServer(privateKey, chain)
-            .sslProvider(SslProvider.OPENSSL)
-            .build();
+        if (OpenSsl.isAvailable()) {
+          sslCtx = SslContextBuilder
+              .forServer(privateKey, chain)
+              .sslProvider(SslProvider.OPENSSL)
+              .build();
+        } else {
+          final KeyStore keyStore = KeyStore.getInstance("JKS", "SUN");
+          keyStore.load(null, PASSWORD.toCharArray());
+          keyStore.setKeyEntry(chain[0].getIssuerX500Principal().getName(), privateKey, PASSWORD.toCharArray(), chain);
+          KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
+
+          kmf.init(keyStore, PASSWORD.toCharArray());
+          sslCtx = SslContextBuilder
+              .forServer(kmf)
+              .sslProvider(SslProvider.JDK)
+              .build();
+        }
+
+        ChannelHandler handler = sslCtx.newHandler(new PooledByteBufAllocator());
+
+        //
+        // tsu - enable all protocols since legacy apps still use SSLv2Hello...
+        // JDK 7, 8, 9 (Early Access)    SSLv2Hello(2), SSLv3, TLSv1, TLSv1.1, TLSv1.2
+        // TODO(JR): Fix this or only enable for certain service as this is insecure
+        ((SslHandler) handler).engine().setEnabledProtocols(((SslHandler) handler).engine().getSupportedProtocols());
+
+        return handler;
+
       } else {
-        final KeyStore keyStore = KeyStore.getInstance("JKS", "SUN");
-        keyStore.load(null, PASSWORD.toCharArray());
-        keyStore.setKeyEntry(chain[0].getIssuerX500Principal().getName(), privateKey, PASSWORD.toCharArray(), chain);
-        KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
+        SslContext sslCtx;
 
-        kmf.init(keyStore, PASSWORD.toCharArray());
-        sslCtx = SslContextBuilder
-            .forServer(kmf)
-            .sslProvider(SslProvider.JDK)
-            .build();
+        if (OpenSsl.isAvailable()) {
+          sslCtx = SslContextBuilder
+              .forClient()
+              .sslProvider(SslProvider.OPENSSL)
+              .keyManager(privateKey, chain)
+              .trustManager(InsecureTrustManagerFactory.INSTANCE)
+              .build();
+        } else {
+          final KeyStore keyStore = KeyStore.getInstance("JKS", "SUN");
+          keyStore.load(null, PASSWORD.toCharArray());
+          keyStore.setKeyEntry(chain[0].getIssuerX500Principal().getName(), privateKey, PASSWORD.toCharArray(), chain);
+          KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
+
+          kmf.init(keyStore, PASSWORD.toCharArray());
+          sslCtx = SslContextBuilder
+              .forClient()
+              .sslProvider(SslProvider.JDK)
+              .keyManager(kmf)
+              .trustManager(InsecureTrustManagerFactory.INSTANCE)
+              .build();
+        }
+
+        ChannelHandler handler = sslCtx.newHandler(new PooledByteBufAllocator());
+
+        return handler;
       }
 
-      ChannelHandler handler = sslCtx.newHandler(new PooledByteBufAllocator());
-
-      //
-      // tsu - enable all protocols since legacy apps still use SSLv2Hello...
-      // JDK 7, 8, 9 (Early Access)    SSLv2Hello(2), SSLv3, TLSv1, TLSv1.1, TLSv1.2
-      // TODO(JR): Fix this or only enable for certain service as this is insecure
-      ((SslHandler) handler).engine().setEnabledProtocols(((SslHandler) handler).engine().getSupportedProtocols());
-
-      return handler;
-
-    } catch (NoSuchAlgorithmException | KeyStoreException | UnrecoverableKeyException | CertificateException | NoSuchProviderException | IllegalArgumentException | IOException e) {
-      e.printStackTrace();
-    } catch (SignatureException e) {
-      e.printStackTrace();
-    } catch (InvalidKeyException e) {
+    } catch (NoSuchAlgorithmException | KeyStoreException | UnrecoverableKeyException | CertificateException | NoSuchProviderException | IllegalArgumentException | IOException | SignatureException | InvalidKeyException e) {
       e.printStackTrace();
     }
 
