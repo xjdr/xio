@@ -15,9 +15,9 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollServerSocketChannel;
+import io.netty.channel.epoll.EpollSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.SocketChannel;
-import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.http.HttpClientCodec;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -41,32 +41,50 @@ public class NodeHealthCheck {
 
   public void connect(Node node, Protocol proto, boolean ssl, ECV ecv) {
 
-    ChannelInitializer<SocketChannel> pipeline = new ChannelInitializer<SocketChannel>() {
-      @Override
-      protected void initChannel(SocketChannel channel) throws Exception {
-        ChannelPipeline cp = channel.pipeline();
-        if (ssl) {
-          cp.addLast("encryptionHandler", new XioSecurityHandlerImpl().getEncryptionHandler());
-        }
-        if (proto == (Protocol.HTTP)) {
-          cp.addLast(new HttpClientCodec());
-        }
-        if (proto == (Protocol.HTTPS)) {
-          cp.addLast(new HttpClientCodec());
-        }
-        cp.addLast(new XioIdleDisconnectHandler(60, 60, 60));
-        cp.addLast(new NodeECV(node, proto, ecv));
-      }
-    };
-
     if (Epoll.isAvailable()) {
+      ChannelInitializer<EpollSocketChannel> pipeline = new ChannelInitializer<EpollSocketChannel>() {
+        @Override
+        protected void initChannel(EpollSocketChannel channel) throws Exception {
+          ChannelPipeline cp = channel.pipeline();
+          if (ssl) {
+            cp.addLast("encryptionHandler", new XioSecurityHandlerImpl(true).getEncryptionHandler());
+          }
+          if (proto == (Protocol.HTTP)) {
+            cp.addLast(new HttpClientCodec());
+          }
+          if (proto == (Protocol.HTTPS)) {
+            cp.addLast(new HttpClientCodec());
+          }
+          cp.addLast(new XioIdleDisconnectHandler(60, 60, 60));
+          cp.addLast(new NodeECV(node, proto, ecv));
+        }
+      };
+
       connect(node, epoolEventLoop, pipeline);
     } else {
+      ChannelInitializer<NioSocketChannel> pipeline = new ChannelInitializer<NioSocketChannel>() {
+        @Override
+        protected void initChannel(NioSocketChannel channel) throws Exception {
+          ChannelPipeline cp = channel.pipeline();
+          if (ssl) {
+            cp.addLast("encryptionHandler", new XioSecurityHandlerImpl(true).getEncryptionHandler());
+          }
+          if (proto == (Protocol.HTTP)) {
+            cp.addLast(new HttpClientCodec());
+          }
+          if (proto == (Protocol.HTTPS)) {
+            cp.addLast(new HttpClientCodec());
+          }
+          cp.addLast(new XioIdleDisconnectHandler(60, 60, 60));
+          cp.addLast(new NodeECV(node, proto, ecv));
+        }
+      };
+
       connect(node, nioEventLoop, pipeline);
     }
   }
 
-  private void connect(Node node, NioEventLoopGroup workerGroup, ChannelInitializer<SocketChannel> pipeline) {
+  private void connect(Node node, NioEventLoopGroup workerGroup, ChannelInitializer<NioSocketChannel> pipeline) {
 
     // Start the connection attempt.
     Bootstrap b = new Bootstrap();
@@ -78,7 +96,7 @@ public class NodeHealthCheck {
         .option(ChannelOption.TCP_NODELAY, true);
 
     b.group(workerGroup)
-        .channel(NioServerSocketChannel.class)
+        .channel(NioSocketChannel.class)
         .handler(pipeline);
 
     BoundedExponentialBackoffRetry retry = new BoundedExponentialBackoffRetry(50, 500, 4);
@@ -98,7 +116,7 @@ public class NodeHealthCheck {
     connect2(node, b, retryLoop);
   }
 
-  private void connect(Node node, EpollEventLoopGroup workerGroup, ChannelInitializer<SocketChannel> pipeline) {
+  private void connect(Node node, EpollEventLoopGroup workerGroup, ChannelInitializer<EpollSocketChannel> pipeline) {
 
     // Start the connection attempt.
     Bootstrap b = new Bootstrap();
@@ -145,6 +163,8 @@ public class NodeHealthCheck {
             node.setAvailable(false);
           }
         } else {
+          // TODO: close will happen after true ecv check is done
+          future.channel().close();
           log.info("Node connected: ");
         }
       }
