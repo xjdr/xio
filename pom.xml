@@ -83,8 +83,14 @@
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
-            <version>4.0.36.Final</version>
+            <version>4.1.0.CR7</version>
         </dependency>
+
+        <!--<dependency>-->
+            <!--<groupId>io.netty</groupId>-->
+            <!--<artifactId>netty-codec-http2</artifactId>-->
+            <!--<version>4.1.0.CR7</version>-->
+        <!--</dependency>-->
 
         <!--Mac for Testing, please use linux for production-->
         <dependency>
