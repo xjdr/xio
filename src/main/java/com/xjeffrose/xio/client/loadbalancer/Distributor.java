@@ -50,7 +50,7 @@ public class Distributor {
 
     checkState(pool.size() > 0, "Must be at least one reachable node in the pool");
 
-    refreshTimeout = xioTimer.newTimeout(timeout -> refreshPool(), 5000, TimeUnit.MILLISECONDS);
+    refreshTimeout = xioTimer.newTimeout(timeout -> refreshPool(), 500, TimeUnit.MILLISECONDS);
   }
 
   private void refreshPool() {

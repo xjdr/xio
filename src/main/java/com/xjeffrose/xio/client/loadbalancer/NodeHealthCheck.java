@@ -25,16 +25,16 @@ import org.apache.log4j.Logger;
 
 public class NodeHealthCheck {
   private static final Logger log = Logger.getLogger(NodeHealthCheck.class.getName());
-  private final EpollEventLoopGroup epoolEventLoop;
+  private final EpollEventLoopGroup epollEventLoop;
   private final NioEventLoopGroup nioEventLoop;
 
 
   public NodeHealthCheck(int workerPoolSize) {
     if (Epoll.isAvailable()) {
-      epoolEventLoop = new EpollEventLoopGroup(workerPoolSize);
+      epollEventLoop = new EpollEventLoopGroup(workerPoolSize);
       nioEventLoop = null;
     } else {
-      epoolEventLoop = null;
+      epollEventLoop = null;
       nioEventLoop = new NioEventLoopGroup(workerPoolSize);
     }
   }
@@ -60,7 +60,7 @@ public class NodeHealthCheck {
         }
       };
 
-      connect(node, epoolEventLoop, pipeline);
+      connect(node, epollEventLoop, pipeline);
     } else {
       ChannelInitializer<NioSocketChannel> pipeline = new ChannelInitializer<NioSocketChannel>() {
         @Override
