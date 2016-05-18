@@ -261,7 +261,8 @@ public class XioDispatcher extends ChannelInboundHandlerAdapter {
         // This response was next in line, write this response now, and see if
         // there are others next in line that should be sent now as well.
         do {
-          ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
+//          ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
+          ctx.writeAndFlush(response);
           lastResponseWrittenId.incrementAndGet();
           ++currentResponseId;
           response = responseMap.remove(currentResponseId);
