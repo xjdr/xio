@@ -2,7 +2,6 @@ package com.xjeffrose.xio.server;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.ExecutionError;
-import com.google.inject.Inject;
 import com.xjeffrose.xio.core.XioMetrics;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -24,7 +23,6 @@ public class XioBootstrap {
   private NioEventLoopGroup workerGroup;
   private final ChannelGroup allChannels;
 
-  @Inject
   public XioBootstrap(
       Set<XioServerDef> xioServerDefs,
       XioServerConfig xioServerConfig,

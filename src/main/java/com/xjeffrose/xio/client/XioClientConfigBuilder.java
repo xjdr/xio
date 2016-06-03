@@ -4,7 +4,6 @@ package com.xjeffrose.xio.client;
 import com.google.common.base.Strings;
 import com.google.common.net.HostAndPort;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.google.inject.Inject;
 import com.xjeffrose.xio.server.XioConfigBuilderBase;
 import com.xjeffrose.xio.core.XioNoOpSecurityFactory;
 import com.xjeffrose.xio.core.XioSecurityFactory;
@@ -29,7 +28,7 @@ public class XioClientConfigBuilder extends XioConfigBuilderBase<XioClientConfig
   private XioSecurityFactory securityFactory = null;
   private HostAndPort defaultSocksProxyAddress = null;
 
-  @Inject
+
   public XioClientConfigBuilder() {
 //    getSocketChannelConfig().setOption(ChannelOption.TCP_NODELAY, true);
   }

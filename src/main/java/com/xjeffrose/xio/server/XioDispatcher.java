@@ -22,6 +22,7 @@ import io.netty.util.Timer;
 import io.netty.util.TimerTask;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -37,7 +38,7 @@ public class XioDispatcher extends ChannelInboundHandlerAdapter {
   private final long taskTimeoutMillis;
   private final Timer taskTimeoutTimer;
   private final int queuedResponseLimit;
-  private final Map<Integer, Object> responseMap = new HashMap<>();
+  private final ConcurrentHashMap<Integer, Object> responseMap = new ConcurrentHashMap<>();
   private final AtomicInteger dispatcherSequenceId = new AtomicInteger(0);
   private final AtomicInteger lastResponseWrittenId = new AtomicInteger(0);
   private final long requestStart;
@@ -250,34 +251,34 @@ public class XioDispatcher extends ChannelInboundHandlerAdapter {
                                     int responseSequenceId) {
     // Ensure responses to requests are written in the same order the requests
     // were received.
-    synchronized (responseMap) {
-      int currentResponseId = lastResponseWrittenId.get() + 1;
-      if (responseSequenceId != currentResponseId) {
-        // This response is NOT next in line of ordered responses, save it to
-        // be sent later, after responses to all earlier requests have been
-        // sent.
-        responseMap.put(responseSequenceId, response);
-      } else {
-        // This response was next in line, write this response now, and see if
-        // there are others next in line that should be sent now as well.
-        do {
-//          ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
+////    synchronized (responseMap) {
+//      int currentResponseId = lastResponseWrittenId.get() + 1;
+//      if (responseSequenceId != currentResponseId) {
+//        // This response is NOT next in line of ordered responses, save it to
+//        // be sent later, after responses to all earlier requests have been
+//        // sent.
+//        responseMap.put(responseSequenceId, response);
+//      } else {
+//        // This response was next in line, write this response now, and see if
+//        // there are others next in line that should be sent now as well.
+//        do {
+////          ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
           ctx.writeAndFlush(response);
-          lastResponseWrittenId.incrementAndGet();
-          ++currentResponseId;
-          response = responseMap.remove(currentResponseId);
-        } while (null != response);
-
-        // Now that we've written some responses, check if reads should be unblocked
-        if (DispatcherContext.isChannelReadBlocked(ctx)) {
-          int lastRequestSequenceId = dispatcherSequenceId.get();
-          if (lastRequestSequenceId <= lastResponseWrittenId.get() + queuedResponseLimit) {
+//          lastResponseWrittenId.incrementAndGet();
+//          ++currentResponseId;
+//          response = responseMap.remove(currentResponseId);
+//        } while (null != response);
+//
+//        // Now that we've written some responses, check if reads should be unblocked
+//        if (DispatcherContext.isChannelReadBlocked(ctx)) {
+//          int lastRequestSequenceId = dispatcherSequenceId.get();
+//          if (lastRequestSequenceId <= lastResponseWrittenId.get() + queuedResponseLimit) {
             DispatcherContext.unblockChannelReads(ctx);
-          }
-        }
+//          }
+//        }
       }
-    }
-  }
+//    }
+//  }
 
   private void closeChannel(ChannelHandlerContext ctx) {
     if (ctx.channel().isOpen()) {

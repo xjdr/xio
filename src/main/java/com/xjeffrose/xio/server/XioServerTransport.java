@@ -33,7 +33,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import javax.inject.Inject;
 import org.apache.log4j.Logger;
 
 public class XioServerTransport {
@@ -58,7 +57,6 @@ public class XioServerTransport {
     this(def, XioServerConfig.newBuilder().build(), new DefaultChannelGroup(new NioEventLoopGroup().next()));
   }
 
-  @Inject
   public XioServerTransport(
       final XioServerDef def,
       final XioServerConfig xioServerConfig,

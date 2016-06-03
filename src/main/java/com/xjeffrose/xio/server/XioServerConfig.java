@@ -1,13 +1,11 @@
 package com.xjeffrose.xio.server;
 
 
-import com.google.inject.ProvidedBy;
 import io.netty.channel.ChannelOption;
 import io.netty.util.Timer;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
-@ProvidedBy(XioServerConfigProvider.class)
 public class XioServerConfig {
   private final Map<ChannelOption<Object>, Object> bootstrapOptions;
   private final Timer timer;
