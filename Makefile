@@ -1,5 +1,3 @@
-.PHONY: check-syntax
-
 all: xio/core xio/server xio/client xio/ssl xio/log xio/mux xio/proxy
 
 target:

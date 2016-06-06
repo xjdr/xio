@@ -5,8 +5,10 @@ import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import java.util.concurrent.Executors;
 
+import org.apache.log4j.Logger;
 
 public class Http {
+  private static final Logger log = Logger.getLogger(XioServerTransport.class.getName());
 
   private Http() {
   }
