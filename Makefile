@@ -1,26 +1,29 @@
 .PHONY: check-syntax
 
-all: xio/core xio/client xio/server xio/ssl xio/log xio/mux xio/proxy
+all: xio/core xio/server xio/client xio/ssl xio/log xio/mux xio/proxy
 
-xio/core:
+target:
+	mkdir -p target
+
+xio/core: target
 	$(MAKE) -C src/main/java/com/xjeffrose/xio/core
 
-xio/client:
+xio/client: target
 	$(MAKE) -C src/main/java/com/xjeffrose/xio/client
 
-xio/server:
+xio/server: target
 	$(MAKE) -C src/main/java/com/xjeffrose/xio/server
 
-xio/ssl:
+xio/ssl: target
 	$(MAKE) -C src/main/java/com/xjeffrose/xio/SSL
 
-xio/log:
+xio/log: target
 	$(MAKE) -C src/main/java/com/xjeffrose/xio/log
 
-xio/mux:
+xio/mux: target
 	$(MAKE) -C src/main/java/com/xjeffrose/xio/mux
 
-xio/proxy:
+xio/proxy: target
 	$(MAKE) -C src/main/java/com/xjeffrose/xio/proxy
 
 test:
