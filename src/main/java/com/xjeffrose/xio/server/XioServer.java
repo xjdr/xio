@@ -99,6 +99,10 @@ public class XioServer {
     };
   }
 
+  public void serve() {
+    start();
+  }
+
   public void start() {
     bossExecutor = xioServerConfig.getBossExecutor();
     int bossThreadCount = xioServerConfig.getBossThreadCount();
