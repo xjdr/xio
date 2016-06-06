@@ -12,11 +12,8 @@ import com.xjeffrose.xio.core.XioSecurityHandlers;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
-//import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
-//import io.netty.channel.ChannelHandler;
-//import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
@@ -40,6 +37,8 @@ public class XioServer {
 
   private static final int NO_WRITER_IDLE_TIMEOUT = 60000;
   private static final int NO_ALL_IDLE_TIMEOUT = 60000;
+  private static final XioConnectionLimiter globalConnectionLimiter = new XioConnectionLimiter(15000);
+
   private final int requestedPort;
   private final InetSocketAddress hostAddr;
   private final ChannelGroup allChannels;
@@ -69,8 +68,6 @@ public class XioServer {
     this.requestedPort = def.getServerPort();
     this.hostAddr = def.getHostAddress();
     this.allChannels = allChannels;
-    // connectionLimiter must be instantiated exactly once (and thus outside the pipeline factory)
-    final XioConnectionLimiter connectionLimiter = new XioConnectionLimiter(15000);
     this.channelStatistics = new ChannelStatistics(allChannels);
 
     //TODO(JR): This is an ugly mess, clean this up
@@ -80,7 +77,7 @@ public class XioServer {
         ChannelPipeline cp = channel.pipeline();
         XioSecurityHandlers securityHandlers = def.getSecurityFactory().getSecurityHandlers(def, xioServerConfig);
         cp.addLast("connectionContext", new ConnectionContextHandler());
-        cp.addLast("globalConnectionLimiter", connectionLimiter);
+        cp.addLast("globalConnectionLimiter", globalConnectionLimiter);
         cp.addLast("serviceConnectionLimiter", new XioConnectionLimiter(def.getMaxConnections()));
         cp.addLast(ChannelStatistics.NAME, channelStatistics);
         cp.addLast("encryptionHandler", securityHandlers.getEncryptionHandler());

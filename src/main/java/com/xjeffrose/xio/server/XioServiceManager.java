@@ -4,10 +4,14 @@ import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.ConcurrentLinkedDeque;
+
 import org.apache.log4j.Logger;
 
 public class XioServiceManager extends ChannelDuplexHandler {
   private static final Logger log = Logger.getLogger(XioServiceManager.class.getName());
+
+  private final ConcurrentLinkedDeque<XioService> serviceList = new ConcurrentLinkedDeque<>();
 
   private final XioService xioService;
 
@@ -40,5 +44,13 @@ public class XioServiceManager extends ChannelDuplexHandler {
   @Override
   public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
     ctx.fireChannelReadComplete();
+  }
+
+  public void andThen(XioService xioService) {
+    serviceList.addLast(xioService);
+  }
+
+  public ConcurrentLinkedDeque<XioService> getServiceList() {
+    return serviceList;
   }
 }
