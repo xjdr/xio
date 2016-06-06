@@ -4,17 +4,31 @@ import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.ConcurrentLinkedDeque;
+
 import org.apache.log4j.Logger;
 
 public class XioService extends ChannelDuplexHandler {
   private static final Logger log = Logger.getLogger(XioService.class.getName());
 
+  private final ConcurrentLinkedDeque<XioService> serviceList = new ConcurrentLinkedDeque<>();
+
   public XioService() {
+
+  }
+
+  @Override
+  @SuppressWarnings("deprecated")
+  public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+
   }
 
   @Override
   public void channelActive(ChannelHandlerContext ctx) throws Exception {
     ctx.fireChannelActive();
+    serviceList.stream().forEach(xs -> {
+        ctx.pipeline().addLast(xs);
+    });
   }
 
   @Override
@@ -30,5 +44,13 @@ public class XioService extends ChannelDuplexHandler {
   @Override
   public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
     ctx.fireChannelReadComplete();
+  }
+
+  public void andThen(XioService xioService) {
+    serviceList.addLast(xioService);
+  }
+
+  public ConcurrentLinkedDeque<XioService> getServiceList() {
+    return serviceList;
   }
 }
