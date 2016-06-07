@@ -76,13 +76,13 @@ public class XioServer {
         XioSecurityHandlers securityHandlers = def.getSecurityFactory().getSecurityHandlers(def, xioServerConfig);
         cp.addLast("globalConnectionLimiter", globalConnectionLimiter);
         cp.addLast("serviceConnectionLimiter", new XioConnectionLimiter(def.getMaxConnections()));
-        cp.addLast("L4Firewall", new XioL4Firewall()); // TODO(JR): Need to make this configurable
+        cp.addLast("L4Firewall", new XioL4Firewall(null)); // TODO(JR): Need to make this configurable
         cp.addLast("connectionContext", new ConnectionContextHandler());
         cp.addLast("globalChannelStatistics", channelStatistics);
         cp.addLast("encryptionHandler", securityHandlers.getEncryptionHandler());
         cp.addLast("messageLogger", new XioMessageLogger()); // TODO(JR): Should this really be here?
         cp.addLast("codec", def.getCodecFactory().getCodec());
-        cp.addLast("L7Firewall", new XioL7Firewall());  // TODO(JR): Need to make this configurable
+        cp.addLast("L7Firewall", new XioL7Firewall(null));  // TODO(JR): Need to make this configurable
         cp.addLast("authHandler", securityHandlers.getAuthenticationHandler());
         cp.addLast("xioService", new XioService());
         if (def.getClientIdleTimeout() != null) {
@@ -136,8 +136,6 @@ public class XioServer {
     try {
       serverChannel = bootstrap.bind(hostAddr).sync().channel();
     } catch (Throwable e) {
-      //TODO(JR): Do somefin here
-//      e.printStackTrace();
       String msg = e.getMessage() + " (" + hostAddr + ")";
       log.error(msg, e);
       throw new RuntimeException(msg, e);
@@ -170,8 +168,6 @@ public class XioServer {
     try {
       serverChannel = bootstrap.bind(hostAddr).sync().channel();
     } catch (Throwable e) {
-      //TODO(JR): Do somefin here
-//      e.printStackTrace();
       String msg = e.getMessage() + " (" + hostAddr + ")";
       log.error(msg, e);
       throw new RuntimeException(msg, e);
@@ -185,8 +181,7 @@ public class XioServer {
   public void stop()
       throws InterruptedException {
     if (serverChannel != null) {
-//      log.info("stopping transport %s:%s", def.getName(), actualPort);
-//       first stop accepting
+     log.info("stopping transport " + def.getName() + ":" +  actualPort);
       final CountDownLatch latch = new CountDownLatch(1);
       serverChannel.close().addListener(new ChannelFutureListener() {
         @Override

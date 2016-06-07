@@ -11,16 +11,16 @@ import org.apache.log4j.Logger;
 public class XioL7Firewall extends ChannelDuplexHandler {
   private static final Logger log = Logger.getLogger(XioL7Firewall.class.getName());
 
-  private final ConcurrentLinkedDeque<ChannelHandler> serviceList = new ConcurrentLinkedDeque<>();
+  private final XioApplicationFirewall waf;
 
-  public XioL7Firewall() {
-
+  public XioL7Firewall(XioApplicationFirewall waf) {
+    this.waf = waf;
   }
 
   @Override
   @SuppressWarnings("deprecated")
   public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-
+    log.error("Exception Caught in L7Firewall: ", cause);
   }
 
   @Override
@@ -35,7 +35,12 @@ public class XioL7Firewall extends ChannelDuplexHandler {
 
   @Override
   public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-    ctx.fireChannelRead(msg);
+    if (waf.block(ctx, msg)) {
+      log.info("WAF blocked :" + ctx.channel());
+      ctx.channel().deregister();
+    } else {
+      ctx.fireChannelRead(msg);
+    }
   }
 
   @Override

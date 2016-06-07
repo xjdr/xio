@@ -3,29 +3,33 @@ package com.xjeffrose.xio.server;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.ConcurrentLinkedDeque;
-
+import java.net.InetSocketAddress;
+import java.util.HashSet;
 import org.apache.log4j.Logger;
 
 public class XioL4Firewall extends ChannelDuplexHandler {
   private static final Logger log = Logger.getLogger(XioL4Firewall.class.getName());
 
-  private final ConcurrentLinkedDeque<ChannelHandler> serviceList = new ConcurrentLinkedDeque<>();
+  private final HashSet<String> blacklist;
 
-  public XioL4Firewall() {
-
+  public XioL4Firewall(HashSet blacklist) {
+    this.blacklist = blacklist;
   }
 
   @Override
   @SuppressWarnings("deprecated")
   public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-
+    log.error("Exception Caught in L4Firewall: ", cause);
   }
 
   @Override
   public void channelActive(ChannelHandlerContext ctx) throws Exception {
-    ctx.fireChannelActive();
+    if (blacklist.contains(((InetSocketAddress) ctx.channel().remoteAddress()).getHostString())) {
+      log.info("L4 Firewall blocked :" + ctx.channel());
+      ctx.channel().deregister();
+    } else {
+      ctx.fireChannelActive();
+    }
   }
 
   @Override
