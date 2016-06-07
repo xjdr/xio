@@ -93,7 +93,8 @@ public class XioServer {
               TimeUnit.MILLISECONDS));
         }
         cp.addLast("authHandler", securityHandlers.getAuthenticationHandler());
-        cp.addLast("xioServiceManager", new XioServiceManager(xioService));
+        // cp.addLast("xioServiceManager", new XioServiceManager(xioService));
+        cp.addLast("xioService", new XioService());
         cp.addLast("exceptionLogger", new XioExceptionLogger());
       }
     };
@@ -116,7 +117,7 @@ public class XioServer {
     }
   }
 
-  public void start(NioEventLoopGroup bossGroup, NioEventLoopGroup workerGroup) {
+  private void start(NioEventLoopGroup bossGroup, NioEventLoopGroup workerGroup) {
     bootstrap = new ServerBootstrap();
     bootstrap
         .group(bossGroup, workerGroup)
@@ -129,11 +130,11 @@ public class XioServer {
 
     //Set some sane defaults
     bootstrap
-        .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-        .option(ChannelOption.WRITE_BUFFER_HIGH_WATER_MARK, 32 * 1024)
-        .option(ChannelOption.WRITE_BUFFER_LOW_WATER_MARK, 8 * 1024)
-        .option(ChannelOption.SO_BACKLOG, 128)
-        .option(ChannelOption.TCP_NODELAY, true);
+      .option(ChannelOption.ALLOCATOR, new PooledByteBufAllocator(true))
+      .option(ChannelOption.WRITE_BUFFER_HIGH_WATER_MARK, 32 * 1024)
+      .option(ChannelOption.WRITE_BUFFER_LOW_WATER_MARK, 8 * 1024)
+      .option(ChannelOption.SO_BACKLOG, 128)
+      .option(ChannelOption.TCP_NODELAY, true);
 
     try {
       serverChannel = bootstrap.bind(hostAddr).sync().channel();
@@ -150,7 +151,7 @@ public class XioServer {
     log.info("started transport " + def.getName() + ":" + actualPort);
   }
 
-  public void start(EpollEventLoopGroup bossGroup, EpollEventLoopGroup workerGroup) {
+  private void start(EpollEventLoopGroup bossGroup, EpollEventLoopGroup workerGroup) {
     bootstrap = new ServerBootstrap();
     bootstrap
         .group(bossGroup, workerGroup)
@@ -163,11 +164,11 @@ public class XioServer {
 
     //Set some sane defaults
     bootstrap
-        .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-        .option(ChannelOption.WRITE_BUFFER_HIGH_WATER_MARK, 32 * 1024)
-        .option(ChannelOption.WRITE_BUFFER_LOW_WATER_MARK, 8 * 1024)
-        .option(ChannelOption.TCP_NODELAY, true)
-        .option(ChannelOption.SO_REUSEADDR, true);
+      .option(ChannelOption.ALLOCATOR, new PooledByteBufAllocator(true))
+      .option(ChannelOption.WRITE_BUFFER_HIGH_WATER_MARK, 32 * 1024)
+      .option(ChannelOption.WRITE_BUFFER_LOW_WATER_MARK, 8 * 1024)
+      .option(ChannelOption.TCP_NODELAY, true)
+      .option(ChannelOption.SO_REUSEADDR, true);
 
     try {
       serverChannel = bootstrap.bind(hostAddr).sync().channel();

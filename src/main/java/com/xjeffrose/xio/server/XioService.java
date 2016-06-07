@@ -11,7 +11,7 @@ import org.apache.log4j.Logger;
 public class XioService extends ChannelDuplexHandler {
   private static final Logger log = Logger.getLogger(XioService.class.getName());
 
-  private final ConcurrentLinkedDeque<XioService> serviceList = new ConcurrentLinkedDeque<>();
+  private final ConcurrentLinkedDeque<ChannelHandler> serviceList = new ConcurrentLinkedDeque<>();
 
   public XioService() {
 
@@ -25,10 +25,11 @@ public class XioService extends ChannelDuplexHandler {
 
   @Override
   public void channelActive(ChannelHandlerContext ctx) throws Exception {
-    ctx.fireChannelActive();
     serviceList.stream().forEach(xs -> {
         ctx.pipeline().addLast(xs);
     });
+    ctx.pipeline().remove(this);
+    ctx.fireChannelActive();
   }
 
   @Override
@@ -46,11 +47,19 @@ public class XioService extends ChannelDuplexHandler {
     ctx.fireChannelReadComplete();
   }
 
-  public void andThen(XioService xioService) {
-    serviceList.addLast(xioService);
+  public XioService handler(ChannelHandler handler) {
+    serviceList.addFirst(handler);
+
+    return this;
   }
 
-  public ConcurrentLinkedDeque<XioService> getServiceList() {
+  public XioService andThen(ChannelHandler handler) {
+    serviceList.addLast(handler);
+
+    return this;
+  }
+
+  public ConcurrentLinkedDeque<ChannelHandler> getServiceList() {
     return serviceList;
   }
 }

@@ -15,4 +15,4 @@ check-syntax:
 	javac $(JAVA_ARGS) -cp $(MAVEN_CLASSPATH):$(TARGETDIR) -Xlint -d $(TARGETDIR) *.java
 
 test:
-	java -cp $(PROJECT_ROOT)lib/*.jar: org.junit.runner.JUnitCore *.java
+	javac $(JAVA_ARGS) -cp $(MAVEN_CLASSPATH): -cp $(PROJECT_ROOT)lib/*.jar: org.junit.runner.JUnitCore *.java
