@@ -69,22 +69,22 @@ public class XioServer {
     this.hostAddr = def.getHostAddress();
     this.allChannels = allChannels;
     this.channelStatistics = new ChannelStatistics(allChannels);
-
-    //TODO(JR): This is an ugly mess, clean this up
     this.pipelineFactory = new ChannelInitializer<SocketChannel>() {
       @Override
       protected void initChannel(SocketChannel channel) throws Exception {
         ChannelPipeline cp = channel.pipeline();
         XioSecurityHandlers securityHandlers = def.getSecurityFactory().getSecurityHandlers(def, xioServerConfig);
-        cp.addLast("connectionContext", new ConnectionContextHandler());
         cp.addLast("globalConnectionLimiter", globalConnectionLimiter);
         cp.addLast("serviceConnectionLimiter", new XioConnectionLimiter(def.getMaxConnections()));
-        cp.addLast(ChannelStatistics.NAME, channelStatistics);
+        cp.addLast("L4Firewall", new XioL4Firewall()); // TODO(JR): Need to make this configurable
+        cp.addLast("connectionContext", new ConnectionContextHandler());
+        cp.addLast("globalChannelStatistics", channelStatistics);
         cp.addLast("encryptionHandler", securityHandlers.getEncryptionHandler());
-        cp.addLast("messageLogger", new XioMessageLogger());
+        cp.addLast("messageLogger", new XioMessageLogger()); // TODO(JR): Should this really be here?
         cp.addLast("codec", def.getCodecFactory().getCodec());
-        //cp.addLast("aggregator", def.getAggregatorFactory().getAggregator());
-        //cp.addLast("routingFilter", def.getRoutingFilterFactory().getRoutingFilter());
+        cp.addLast("L7Firewall", new XioL7Firewall());  // TODO(JR): Need to make this configurable
+        cp.addLast("authHandler", securityHandlers.getAuthenticationHandler());
+        cp.addLast("xioService", new XioService());
         if (def.getClientIdleTimeout() != null) {
           cp.addLast("idleDisconnectHandler", new XioIdleDisconnectHandler(
               (int) def.getClientIdleTimeout().toMillis(),
@@ -92,9 +92,6 @@ public class XioServer {
               NO_ALL_IDLE_TIMEOUT,
               TimeUnit.MILLISECONDS));
         }
-        cp.addLast("authHandler", securityHandlers.getAuthenticationHandler());
-        // cp.addLast("xioServiceManager", new XioServiceManager(xioService));
-        cp.addLast("xioService", new XioService());
         cp.addLast("exceptionLogger", new XioExceptionLogger());
       }
     };

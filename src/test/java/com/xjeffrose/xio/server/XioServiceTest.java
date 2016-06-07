@@ -12,5 +12,6 @@ public class XioServiceTest {
   public void testConstructor() throws Exception {
     XioService xioService = new XioService();
 
+    assertEquals(xioService, xioService.andThen(xioService));
   }
 }

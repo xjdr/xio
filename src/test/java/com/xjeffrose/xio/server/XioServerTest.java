@@ -13,7 +13,8 @@ public class XioServerTest {
     XioServerDef def = new XioServerDef();
     XioService xioService = new XioService();
 
-    XioServer XioServer = new XioServer("testService", xioService);
+    XioServer xioServer = new XioServer("testService", xioService);
+
 
   }
 }
