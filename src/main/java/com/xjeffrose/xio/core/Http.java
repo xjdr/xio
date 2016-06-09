@@ -27,7 +27,7 @@ public class Http {
   public static ListenableFuture<XioClient> client(String hostAndPort, XioService xioService) {
     ListeningExecutorService executor = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(2));
     return executor.submit(() -> {
-        return new XioClient("x", xioService);
+        return new XioClient(null, xioService, null);
       });
   };
 
