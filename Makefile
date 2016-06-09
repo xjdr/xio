@@ -1,5 +1,14 @@
 all: xio/core xio/server xio/client xio/ssl xio/log xio/mux xio/proxy
 
+PROJECT_ROOT=$(shell pwd)
+
+include Classpath.mk
+
+repl:
+	@echo $(MAVEN_CLASSPATH) | sed -e 's/^/:/' | sed -e 's/:/|:cp /g' | tr '|' '\n'
+	@echo
+	@javarepl
+
 target:
 	mkdir -p target
 
