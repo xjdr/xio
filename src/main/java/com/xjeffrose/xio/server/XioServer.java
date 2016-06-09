@@ -74,15 +74,15 @@ public class XioServer {
       protected void initChannel(SocketChannel channel) throws Exception {
         ChannelPipeline cp = channel.pipeline();
         XioSecurityHandlers securityHandlers = def.getSecurityFactory().getSecurityHandlers(def, xioServerConfig);
-        cp.addLast("globalConnectionLimiter", globalConnectionLimiter);
+        cp.addLast("globalConnectionLimiter", globalConnectionLimiter); // TODO(JR): Need to make this config
         cp.addLast("serviceConnectionLimiter", new XioConnectionLimiter(def.getMaxConnections()));
-        cp.addLast("L4Firewall", new XioL4Firewall(null)); // TODO(JR): Need to make this configurable
+        cp.addLast("L4Firewall", new XioL4Firewall(null)); // TODO(JR): SHOULD NOT BE NULL. Need to make this config
         cp.addLast("connectionContext", new ConnectionContextHandler());
         cp.addLast("globalChannelStatistics", channelStatistics);
         cp.addLast("encryptionHandler", securityHandlers.getEncryptionHandler());
         cp.addLast("messageLogger", new XioMessageLogger()); // TODO(JR): Should this really be here?
         cp.addLast("codec", def.getCodecFactory().getCodec());
-        cp.addLast("L7Firewall", new XioL7Firewall(null));  // TODO(JR): Need to make this configurable
+        cp.addLast("L7Firewall", new XioL7Firewall(null));  // TODO(JR): SHOULD NOT BE NULL. Need to make this config
         cp.addLast("authHandler", securityHandlers.getAuthenticationHandler());
         cp.addLast("xioService", new XioService());
         if (def.getClientIdleTimeout() != null) {
@@ -92,6 +92,8 @@ public class XioServer {
               NO_ALL_IDLE_TIMEOUT,
               TimeUnit.MILLISECONDS));
         }
+        // See https://finagle.github.io/blog/2016/02/09/response-classification
+        //cp.addLast("xioResponseClassifier", new XioResponseClassifier()); /// TODO(JR): This is a maybe
         cp.addLast("exceptionLogger", new XioExceptionLogger());
       }
     };
@@ -128,8 +130,8 @@ public class XioServer {
     //Set some sane defaults
     bootstrap
       .option(ChannelOption.ALLOCATOR, new PooledByteBufAllocator(true))
-      .option(ChannelOption.WRITE_BUFFER_HIGH_WATER_MARK, 32 * 1024)
-      .option(ChannelOption.WRITE_BUFFER_LOW_WATER_MARK, 8 * 1024)
+      // .option(ChannelOption.WRITE_BUFFER_HIGH_WATER_MARK, 32 * 1024)
+      // .option(ChannelOption.WRITE_BUFFER_LOW_WATER_MARK, 8 * 1024)
       .option(ChannelOption.SO_BACKLOG, 128)
       .option(ChannelOption.TCP_NODELAY, true);
 
@@ -160,8 +162,8 @@ public class XioServer {
     //Set some sane defaults
     bootstrap
       .option(ChannelOption.ALLOCATOR, new PooledByteBufAllocator(true))
-      .option(ChannelOption.WRITE_BUFFER_HIGH_WATER_MARK, 32 * 1024)
-      .option(ChannelOption.WRITE_BUFFER_LOW_WATER_MARK, 8 * 1024)
+      // .option(ChannelOption.WRITE_BUFFER_HIGH_WATER_MARK, 32 * 1024)
+      // .option(ChannelOption.WRITE_BUFFER_LOW_WATER_MARK, 8 * 1024)
       .option(ChannelOption.TCP_NODELAY, true)
       .option(ChannelOption.SO_REUSEADDR, true);
 

@@ -36,7 +36,7 @@ public class XioL7Firewall extends ChannelDuplexHandler {
   @Override
   public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
     if (waf.block(ctx, msg)) {
-      log.info("WAF blocked :" + ctx.channel());
+      log.info("Application Firewall blocked:" + ctx.channel());
       ctx.channel().deregister();
     } else {
       ctx.fireChannelRead(msg);
