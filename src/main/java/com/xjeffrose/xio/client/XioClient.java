@@ -37,16 +37,16 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class XioClient implements Closeable {
   private static final Logger log = Logger.getLogger(XioClient.class);
 
-  public XioClient(Distributor distributor, XioService xioService) {
-  }
+  // public XioClient(Distributor distributor, XioService xioService) {
+  // }
 
-  public XioClient(List<String> serverList, XioService xioService) {
-  }
+  // public XioClient(List<String> serverList, XioService xioService) {
+  // }
 
-  public XioClient(String zkConnectionStringAndPath, XioService xioService) {
-  }
+  // public XioClient(String zkConnectionStringAndPath, XioService xioService) {
+  // }
 
-  public XioClient(XioClientConfig xioClientConfig, XioService xioService) {
+  public XioClient(XioClientConfig xioClientConfig, XioService xioService, XioListener listener) {
   }
 
   private static InetSocketAddress toInetAddress(HostAndPort hostAndPort) {
