@@ -26,20 +26,27 @@ import javax.annotation.Nullable;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
+import java.util.List;
 
 import com.xjeffrose.xio.server.XioService;
+import com.xjeffrose.xio.client.loadbalancer.Distributor;
+
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public class XioClient implements Closeable {
   private static final Logger log = Logger.getLogger(XioClient.class);
 
-  public XioClient(String HostAndPort, XioService xioService) {
+  public XioClient(Distributor distributor, XioService xioService) {
+  }
 
+  public XioClient(List<String> serverList, XioService xioService) {
+  }
+
+  public XioClient(String zkConnectionStringAndPath, XioService xioService) {
   }
 
   public XioClient(XioClientConfig xioClientConfig, XioService xioService) {
-
   }
 
   private static InetSocketAddress toInetAddress(HostAndPort hostAndPort) {
