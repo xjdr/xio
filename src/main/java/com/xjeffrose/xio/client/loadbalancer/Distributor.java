@@ -49,8 +49,10 @@ public class Distributor {
     }
 
     checkState(pool.size() > 0, "Must be at least one reachable node in the pool");
-
-    refreshTimeout = xioTimer.newTimeout(timeout -> refreshPool(), 500, TimeUnit.MILLISECONDS);
+    
+    // this is causing socket descriptor not released problem
+    // refreshTimeout = xioTimer.newTimeout(timeout -> refreshPool(), 5000, TimeUnit.MILLISECONDS);
+    refreshTimeout = null;
   }
 
   private void refreshPool() {
@@ -67,7 +69,9 @@ public class Distributor {
   }
 
   public void stop() {
-    refreshTimeout.cancel();
+    if (refreshTimeout != null) {
+      refreshTimeout.cancel();
+    }
   }
 
   /**
