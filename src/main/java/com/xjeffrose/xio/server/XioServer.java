@@ -76,13 +76,16 @@ public class XioServer {
         XioSecurityHandlers securityHandlers = def.getSecurityFactory().getSecurityHandlers(def, xioServerConfig);
         cp.addLast("globalConnectionLimiter", globalConnectionLimiter); // TODO(JR): Need to make this config
         cp.addLast("serviceConnectionLimiter", new XioConnectionLimiter(def.getMaxConnections()));
-        cp.addLast("L4Firewall", new XioL4Firewall(null)); // TODO(JR): SHOULD NOT BE NULL. Need to make this config
+        cp.addLast("l4DeterministicRuleEngine", new XioDeterministicRuleEngine(true)); // TODO(JR): Need to make this config | should we add a whitelist?
+        cp.addLast("l4BehavioralRuleEngine", new XioBehavioralRuleEngine(true)); // TODO(JR): Need to make this config
         cp.addLast("connectionContext", new ConnectionContextHandler());
         cp.addLast("globalChannelStatistics", channelStatistics);
         cp.addLast("encryptionHandler", securityHandlers.getEncryptionHandler());
         cp.addLast("messageLogger", new XioMessageLogger()); // TODO(JR): Should this really be here?
         cp.addLast("codec", def.getCodecFactory().getCodec());
-        cp.addLast("L7Firewall", new XioL7Firewall(null));  // TODO(JR): SHOULD NOT BE NULL. Need to make this config
+        cp.addLast("l7DeterministicRuleEngine", new XioDeterministicRuleEngine(true)); // TODO(JR): Need to make this config
+        cp.addLast("l7BehavioralRuleEngine", new XioBehavioralRuleEngine(true)); // TODO(JR): Need to make this config
+        cp.addLast("webApplicationFirewall", new XioWebApplicationFirewall(true)); // TODO(JR): Need to make this config
         cp.addLast("authHandler", securityHandlers.getAuthenticationHandler());
         cp.addLast("xioService", new XioService());
         if (def.getClientIdleTimeout() != null) {
@@ -93,7 +96,7 @@ public class XioServer {
               TimeUnit.MILLISECONDS));
         }
         // See https://finagle.github.io/blog/2016/02/09/response-classification
-        //cp.addLast("xioResponseClassifier", new XioResponseClassifier()); /// TODO(JR): This is a maybe
+        cp.addLast("xioResponseClassifier", new XioResponseClassifier(true)); /// TODO(JR): This is a maybe
         cp.addLast("exceptionLogger", new XioExceptionLogger());
       }
     };
