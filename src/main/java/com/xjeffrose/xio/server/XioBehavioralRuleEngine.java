@@ -10,8 +10,8 @@ public class XioBehavioralRuleEngine extends XioFirewall {
     this.noOp = noOp;
   }
 
-  public XioBehavioralRuleEngine(HashSet blacklist) {
-    super(blacklist);
+  public XioBehavioralRuleEngine(HashSet blacklist, HashSet whitelist) {
+    super(blacklist, whitelist);
   }
 
 }

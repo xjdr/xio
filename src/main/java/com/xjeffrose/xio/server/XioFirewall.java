@@ -11,6 +11,7 @@ public abstract class XioFirewall extends ChannelDuplexHandler {
   private static final Logger log = Logger.getLogger(XioFirewall.class.getName());
 
   private final HashSet<String> blacklist;
+  private final HashSet<String> whitelist;
   private boolean noOp;
   private int packetSize;
   private int destinationPort;
@@ -20,11 +21,13 @@ public abstract class XioFirewall extends ChannelDuplexHandler {
 
   public XioFirewall(boolean noOp) {
     this.blacklist = null;
+    this.whitelist = null;
     this.noOp = noOp;
   }
 
-  public XioFirewall(HashSet blacklist) {
+  public XioFirewall(HashSet blacklist, HashSet whitelist) {
     this.blacklist = blacklist;
+    this.whitelist = whitelist;
     this.noOp = false;
   }
 
@@ -50,11 +53,13 @@ public abstract class XioFirewall extends ChannelDuplexHandler {
 
     buildReqCtx(ctx);
 
-    if (blacklist.contains(sourceAddress)) {
-      log.info("Xio Firewall blocked blacklisted channel:" + ctx.channel());
-      ctx.channel().deregister();
-    } else {
-      ctx.fireChannelActive();
+    if (!whitelist.contains(sourceAddress)) {
+      if (blacklist.contains(sourceAddress)) {
+        log.info("Xio Firewall blocked blacklisted channel:" + ctx.channel());
+        ctx.channel().deregister();
+      } else {
+        ctx.fireChannelActive();
+      }
     }
   }
 

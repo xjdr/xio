@@ -8,7 +8,7 @@ public class XioDeterministicRuleEngine extends XioFirewall {
     super(noOp);
   }
 
-  public XioDeterministicRuleEngine(HashSet blacklist) {
-    super(blacklist);
+  public XioDeterministicRuleEngine(HashSet blacklist, HashSet whitelist) {
+    super(blacklist, whitelist);
   }
 }

@@ -12,7 +12,6 @@ public class XioResponseClassifier extends ChannelDuplexHandler {
     this.noOp = noOp;
   }
 
-
   @Override
   @SuppressWarnings("deprecated")
   public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {

@@ -76,7 +76,7 @@ public class XioServer {
         XioSecurityHandlers securityHandlers = def.getSecurityFactory().getSecurityHandlers(def, xioServerConfig);
         cp.addLast("globalConnectionLimiter", globalConnectionLimiter); // TODO(JR): Need to make this config
         cp.addLast("serviceConnectionLimiter", new XioConnectionLimiter(def.getMaxConnections()));
-        cp.addLast("l4DeterministicRuleEngine", new XioDeterministicRuleEngine(true)); // TODO(JR): Need to make this config | should we add a whitelist?
+        cp.addLast("l4DeterministicRuleEngine", new XioDeterministicRuleEngine(true)); // TODO(JR): Need to make this config
         cp.addLast("l4BehavioralRuleEngine", new XioBehavioralRuleEngine(true)); // TODO(JR): Need to make this config
         cp.addLast("connectionContext", new ConnectionContextHandler());
         cp.addLast("globalChannelStatistics", channelStatistics);

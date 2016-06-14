@@ -8,7 +8,7 @@ public class XioWebApplicationFirewall extends XioFirewall {
     super(noOp);
   }
 
-  public XioWebApplicationFirewall(HashSet blacklist) {
-    super(blacklist);
+  public XioWebApplicationFirewall(HashSet blacklist, HashSet whitelist) {
+    super(blacklist, whitelist);
   }
 }
