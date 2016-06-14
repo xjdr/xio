@@ -9,6 +9,7 @@ import com.xjeffrose.xio.core.XioIdleDisconnectHandler;
 import com.xjeffrose.xio.core.XioMessageLogger;
 import com.xjeffrose.xio.core.XioMetrics;
 import com.xjeffrose.xio.core.XioSecurityHandlers;
+import com.xjeffrose.xio.core.ZkClient;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
@@ -54,14 +55,19 @@ public class XioServer {
   private Channel serverChannel;
 
   public XioServer(final XioServerDef def, final XioService xioService) {
-    this(def, XioServerConfig.newBuilder().build(), xioService, new DefaultChannelGroup(new NioEventLoopGroup().next()));
+    this(def, XioServerConfig.newBuilder().build(), xioService, new DefaultChannelGroup(new NioEventLoopGroup().next()), null);
+  }
+
+  public XioServer(final XioServerDef def, final XioService xioService, ZkClient zkClient) {
+    this(def, XioServerConfig.newBuilder().build(), xioService, new DefaultChannelGroup(new NioEventLoopGroup().next()), zkClient);
   }
 
   public XioServer(
     final XioServerDef def,
     final XioServerConfig xioServerConfig,
     final XioService xioService,
-    final ChannelGroup allChannels) {
+    final ChannelGroup allChannels,
+    final ZkClient zkClient) {
     this.def = def;
     this.xioServerConfig = xioServerConfig;
     this.xioService = xioService;
@@ -76,16 +82,16 @@ public class XioServer {
         XioSecurityHandlers securityHandlers = def.getSecurityFactory().getSecurityHandlers(def, xioServerConfig);
         cp.addLast("globalConnectionLimiter", globalConnectionLimiter); // TODO(JR): Need to make this config
         cp.addLast("serviceConnectionLimiter", new XioConnectionLimiter(def.getMaxConnections()));
-        cp.addLast("l4DeterministicRuleEngine", new XioDeterministicRuleEngine(true)); // TODO(JR): Need to make this config
-        cp.addLast("l4BehavioralRuleEngine", new XioBehavioralRuleEngine(true)); // TODO(JR): Need to make this config
+        cp.addLast("l4DeterministicRuleEngine", new XioDeterministicRuleEngine(zkClient, true)); // TODO(JR): Need to make this config
+        cp.addLast("l4BehavioralRuleEngine", new XioBehavioralRuleEngine(zkClient, true)); // TODO(JR): Need to make this config
         cp.addLast("connectionContext", new ConnectionContextHandler());
         cp.addLast("globalChannelStatistics", channelStatistics);
         cp.addLast("encryptionHandler", securityHandlers.getEncryptionHandler());
         cp.addLast("messageLogger", new XioMessageLogger()); // TODO(JR): Should this really be here?
         cp.addLast("codec", def.getCodecFactory().getCodec());
-        cp.addLast("l7DeterministicRuleEngine", new XioDeterministicRuleEngine(true)); // TODO(JR): Need to make this config
-        cp.addLast("l7BehavioralRuleEngine", new XioBehavioralRuleEngine(true)); // TODO(JR): Need to make this config
-        cp.addLast("webApplicationFirewall", new XioWebApplicationFirewall(true)); // TODO(JR): Need to make this config
+        cp.addLast("l7DeterministicRuleEngine", new XioDeterministicRuleEngine(zkClient, true)); // TODO(JR): Need to make this config
+        cp.addLast("l7BehavioralRuleEngine", new XioBehavioralRuleEngine(zkClient, true)); // TODO(JR): Need to make this config
+        cp.addLast("webApplicationFirewall", new XioWebApplicationFirewall(zkClient, true)); // TODO(JR): Need to make this config
         cp.addLast("authHandler", securityHandlers.getAuthenticationHandler());
         cp.addLast("xioService", new XioService());
         if (def.getClientIdleTimeout() != null) {

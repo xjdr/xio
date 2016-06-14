@@ -1,5 +1,6 @@
 package com.xjeffrose.xio.server;
 
+import com.xjeffrose.xio.core.ZkClient;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -12,7 +13,8 @@ public abstract class XioFirewall extends ChannelDuplexHandler {
 
   private final HashSet<String> blacklist;
   private final HashSet<String> whitelist;
-  private boolean noOp;
+  private final ZkClient zkClient;
+  private final boolean noOp;
   private int packetSize;
   private int destinationPort;
   private String destinationAddress;
@@ -20,15 +22,25 @@ public abstract class XioFirewall extends ChannelDuplexHandler {
   private String sourceAddress;
 
   public XioFirewall(boolean noOp) {
+    this.zkClient = null;
     this.blacklist = null;
     this.whitelist = null;
     this.noOp = noOp;
   }
 
   public XioFirewall(HashSet blacklist, HashSet whitelist) {
+    this.zkClient = null;
     this.blacklist = blacklist;
     this.whitelist = whitelist;
     this.noOp = false;
+  }
+
+  public XioFirewall(ZkClient zkClient, boolean b) {
+    this.zkClient = zkClient;
+    // TODO(JR): ZK should populate this in the constructor?
+    this.blacklist = null;
+    this.whitelist = null;
+    this.noOp = b;
   }
 
   private void buildReqCtx(ChannelHandlerContext ctx) {
