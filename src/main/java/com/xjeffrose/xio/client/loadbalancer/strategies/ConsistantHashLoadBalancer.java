@@ -3,18 +3,13 @@ package com.xjeffrose.xio.client.loadbalancer.strategies;
 import com.google.common.collect.ImmutableList;
 import com.google.common.hash.Funnels;
 import com.xjeffrose.xio.client.RendezvousHash;
-import com.xjeffrose.xio.client.loadbalancer.Filter;
 import com.xjeffrose.xio.client.loadbalancer.Node;
 import com.xjeffrose.xio.client.loadbalancer.Strategy;
-import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class ConsistantHashLoadBalancer implements Strategy {
 
@@ -28,15 +23,24 @@ public class ConsistantHashLoadBalancer implements Strategy {
 
   @Override
   public Node getNextNode(ImmutableList<Node> pool, Map<UUID, Node> okNodes) {
+    List<String> idStrings = new ArrayList<>();
+    okNodes.keySet().stream().forEach(xs -> idStrings.add(xs.toString()));
 
-//    List<String> nodeList = new ArrayList<>();
-//
-//    pool.stream().filter(xs -> okNodes.containsValue(xs)).forEach(xs -> nodeList.add(((InetSocketAddress) xs.getAddress()).getHostString()));
-//
-//    RendezvousHash rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), nodeList, 1);
-//    return rendezvousHash.get();
+    RendezvousHash rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), idStrings, idStrings.size());
 
-    // Need to pass in req val to hash against for consistent hashing
+    // TODO(JR): Will need to determine how to pass in session ID for consistant hashing
+    for (Object nodeID : rendezvousHash.get("Constant".getBytes())) {
+      if (nodeID instanceof String) {
+        UUID id = UUID.fromString((String) nodeID);
+        Node nextNode = okNodes.get(id);
+        if (okToPick(nextNode)) {
+          return nextNode;
+        }
+      } else {
+        return null;
+      }
+    }
+
     return null;
   }
 }
