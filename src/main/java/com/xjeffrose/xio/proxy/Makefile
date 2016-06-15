@@ -6,7 +6,7 @@ TARGETDIR=$(PROJECT_ROOT)target/
 include $(PROJECT_ROOT)*.mk
 
 all:
-	javac $(JAVA_ARGS) -cp $(MAVEN_CLASSPATH):$(TARGETDIR) -d $(TARGETDIR) *.java
+	infer -o /tmp/infer -- javac $(JAVA_ARGS) -cp $(MAVEN_CLASSPATH):$(TARGETDIR) -d $(TARGETDIR) *.java
 
 $(PROJECT_ROOT)/target:
 	mkdir -p $(PROJECT_ROOT)/target

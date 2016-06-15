@@ -1,6 +1,6 @@
 .PHONY: check-syntax
 
-PROJECT_ROOT=../../../../../../../
+PROJECT_ROOT=../../../../../../../../
 TARGETDIR=$(PROJECT_ROOT)target/
 
 include $(PROJECT_ROOT)*.mk
@@ -15,4 +15,4 @@ check-syntax:
 	javac $(JAVA_ARGS) -cp $(MAVEN_CLASSPATH):$(TARGETDIR) -Xlint -d $(TARGETDIR) *.java
 
 test:
-	javac $(JAVA_ARGS) -cp $(MAVEN_CLASSPATH): -cp $(PROJECT_ROOT)lib/*.jar: org.junit.runner.JUnitCore *.java
+	java -cp $(PROJECT_ROOT)lib/*.jar: org.junit.runner.JUnitCore *.java

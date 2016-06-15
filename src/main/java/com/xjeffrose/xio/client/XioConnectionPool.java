@@ -21,7 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Opens and maintains some number of connections to a given endpoint.
  *
- * At least 1 valid connection will be availabe at any point in time
+ * At least 1 valid connection will be available at any point in time
  * assuming that the network hasn't been nuked.
  *
  * Retry logic will be used to establish a valid connection in a

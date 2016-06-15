@@ -23,13 +23,17 @@ public class ConsistantHashLoadBalancer implements Strategy {
 
   @Override
   public Node getNextNode(ImmutableList<Node> pool, Map<UUID, Node> okNodes) {
+    return null;
+  }
+
+  @Override
+  public Node getNextNode(ImmutableList<Node> pool, Map<UUID, Node> okNodes, String sessionID) {
     List<String> idStrings = new ArrayList<>();
     okNodes.keySet().stream().forEach(xs -> idStrings.add(xs.toString()));
 
     RendezvousHash rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), idStrings, idStrings.size());
 
-    // TODO(JR): Will need to determine how to pass in session ID for consistant hashing
-    for (Object nodeID : rendezvousHash.get("Constant".getBytes())) {
+    for (Object nodeID : rendezvousHash.get(sessionID.getBytes())) {
       if (nodeID instanceof String) {
         UUID id = UUID.fromString((String) nodeID);
         Node nextNode = okNodes.get(id);

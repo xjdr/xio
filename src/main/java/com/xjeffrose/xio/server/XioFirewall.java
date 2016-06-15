@@ -50,6 +50,8 @@ public abstract class XioFirewall extends ChannelDuplexHandler {
     sourceAddress = ((InetSocketAddress) ctx.channel().remoteAddress()).getHostString();
   }
 
+  abstract void runRuleSet(ChannelHandlerContext ctx, Object msg);
+
   @Override
   @SuppressWarnings("deprecated")
   public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
@@ -88,6 +90,9 @@ public abstract class XioFirewall extends ChannelDuplexHandler {
       log.info("Xio Firewall blocked unreadable message :" + ctx.channel());
       ctx.channel().deregister();
     }
+
+    runRuleSet(ctx, msg);
+
     ctx.fireChannelRead(msg);
   }
 

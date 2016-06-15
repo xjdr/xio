@@ -4,5 +4,6 @@ import java.net.InetSocketAddress;
 
 public interface XioResolver {
 
-    public InetSocketAddress getEndpoint();
+  InetSocketAddress getEndpoint();
+
 }
