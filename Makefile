@@ -3,11 +3,15 @@ all: xio/core xio/server xio/client/lb xio/client/retry xio/client xio/ssl xio/l
 PROJECT_ROOT=$(shell pwd)
 
 include Classpath.mk
+include Dependencies.mk
 
 repl:
 	@echo $(MAVEN_CLASSPATH) | sed -e 's/^/:/' | sed -e 's/:/|:cp /g' | tr '|' '\n'
 	@echo
 	@javarepl
+
+fetch:
+	@coursier fetch --verbose $(DEPS_ALL)
 
 target:
 	mkdir -p target
