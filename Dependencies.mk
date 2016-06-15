@@ -12,6 +12,8 @@ DEP_JETTY=org.eclipse.jetty:jetty-server:9.3.1.v20150714
 DEP_OKHTTP=com.squareup.okhttp:okhttp:2.4.0
 DEP_LOG4J=log4j:log4j:1.2.17
 
+DEP_CHECKSTYLE=com.puppycrawl.tools:checkstyle:6.19
+
 DEPS_COMPILE=$(DEP_FINDBUGS) \
              $(DEP_GUAVA) \
              $(DEP_NETTY) \
@@ -26,4 +28,4 @@ DEPS_COMPILE=$(DEP_FINDBUGS) \
              $(DEP_OKHTTP) \
              $(DEP_LOG4J)
 
-DEPS_ALL=$(DEPS_COMPILE)
+DEPS_ALL=$(DEPS_COMPILE) $(DEP_CHECKSTYLE)
