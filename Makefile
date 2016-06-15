@@ -13,6 +13,9 @@ repl:
 fetch:
 	@coursier fetch --verbose $(DEPS_ALL)
 
+checkstyle:
+	java -Dcheckstyle.cache.file=checkstyle.cache -cp `coursier fetch -p $(DEPS_ALL)` com.puppycrawl.tools.checkstyle.Main -c checkstyle.xml src/main
+
 target:
 	mkdir -p target
 
