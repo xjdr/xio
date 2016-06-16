@@ -1,5 +1,6 @@
 package com.xjeffrose.xio.client;
 
+import com.google.common.base.Preconditions;
 import com.xjeffrose.xio.client.asyncretry.AsyncRetryLoop;
 import com.xjeffrose.xio.client.asyncretry.AsyncRetryLoopFactory;
 import io.netty.bootstrap.Bootstrap;
@@ -66,10 +67,11 @@ public class XioConnectionPool {
     }
   };
 
-  XioConnectionPool(Bootstrap bootstrap, AsyncRetryLoopFactory retryLoopFactory) {
+  public XioConnectionPool(Bootstrap bootstrap, AsyncRetryLoopFactory retryLoopFactory) {
+    Preconditions.checkNotNull(bootstrap);
     eventLoopGroup = bootstrap.config().group();
     simpleChannelPool = new SimpleChannelPool(bootstrap, channelPoolHandler, channelHealthChecker);
-    this.retryLoopFactory = retryLoopFactory;
+    this.retryLoopFactory = Preconditions.checkNotNull(retryLoopFactory);
   }
 
   private void acquireWithRetry(AsyncRetryLoop retry, DefaultPromise<Channel> result) {

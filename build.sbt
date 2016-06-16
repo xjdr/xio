@@ -19,6 +19,8 @@ libraryDependencies += "org.slf4j" % "log4j-over-slf4j" % "1.7.21"
 // http://mvnrepository.com/artifact/ch.qos.logback/logback-classic
 libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.1.7" % Test
 
+unmanagedSourceDirectories in Compile += baseDirectory.value / "src" / "example"
+
 lazy val Serial = config("serial") extend(Test)
 
 parallelExecution in Serial := false
