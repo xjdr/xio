@@ -5,6 +5,8 @@ libraryDependencies += "io.netty" % "netty-tcnative" % "1.1.33.Fork17"
 libraryDependencies += "io.airlift" % "units" % "0.128"
 libraryDependencies += "log4j" % "log4j" % "1.2.17"
 libraryDependencies += "io.netty" % "netty-tcnative-boringssl-static" % "1.1.33.Fork17"
+libraryDependencies += "org.apache.curator" % "curator-framework" % "3.1.0"
+libraryDependencies += "org.apache.curator" % "curator-recipes" % "3.1.0"
 // Testing
 libraryDependencies += "junit" % "junit" % "4.12" % Test
 libraryDependencies += "org.mockito" % "mockito-all" % "1.10.19" % Test

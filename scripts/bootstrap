@@ -1,0 +1,7 @@
+#!/bin/bash
+#
+# This script should install everything required to build the project.
+# Currently geared towards OS X
+
+brew install --HEAD paulp/extras/coursier
+brew install infer

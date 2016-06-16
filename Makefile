@@ -1,16 +1,32 @@
+.PHONY: clean compile xio/core xio/server xio/client/lb xio/client/retry xio/client xio/ssl xio/log xio/mux xio/proxy
+
 all: xio/log xio/core xio/ssl xio/server xio/client/asyncretry xio/client/retry xio/client/lb/strategies  xio/client/lb xio/client xio/mux xio/proxy
 
 PROJECT_ROOT=$(shell pwd)
+export TARGETDIR := $(PROJECT_ROOT)/target
 
 include Classpath.mk
+include Dependencies.mk
 
 repl:
 	@echo $(MAVEN_CLASSPATH) | sed -e 's/^/:/' | sed -e 's/:/|:cp /g' | tr '|' '\n'
 	@echo
 	@javarepl
 
+fetch:
+	@coursier fetch --verbose $(DEPS_ALL)
+
+checkstyle:
+	java -Dcheckstyle.cache.file=checkstyle.cache -cp `coursier fetch -p $(DEPS_ALL)` com.puppycrawl.tools.checkstyle.Main -c checkstyle.xml src/main
+
 target:
 	mkdir -p target
+
+clean:
+	rm -fr target
+
+compile: target
+	scripts/run-compile $$(find src/main -name "*.java")
 
 xio/core: target
 	$(MAKE) -C src/main/java/com/xjeffrose/xio/core
