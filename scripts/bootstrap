@@ -5,3 +5,5 @@
 
 brew install --HEAD paulp/extras/coursier
 brew install infer
+brew install drip
+brew install javarepl

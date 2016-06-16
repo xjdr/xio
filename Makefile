@@ -8,6 +8,13 @@ export TARGETDIR := $(PROJECT_ROOT)/target
 include Classpath.mk
 include Dependencies.mk
 
+Generated.mk: Dependencies.mk
+	echo > Generated.mk
+	echo "export JAR_ECJ := $$(coursier fetch -p $(DEP_ECJ))" >> Generated.mk
+	echo "export CLASSPATH_COMPILE := $$(coursier fetch -p $(DEPS_COMPILE))" >> Generated.mk
+
+-include Generated.mk
+
 repl:
 	@echo $(MAVEN_CLASSPATH) | sed -e 's/^/:/' | sed -e 's/:/|:cp /g' | tr '|' '\n'
 	@echo
@@ -17,12 +24,13 @@ fetch:
 	@coursier fetch --verbose $(DEPS_ALL)
 
 checkstyle:
-	java -Dcheckstyle.cache.file=checkstyle.cache -cp `coursier fetch -p $(DEPS_ALL)` com.puppycrawl.tools.checkstyle.Main -c checkstyle.xml src/main
+	drip -Dcheckstyle.cache.file=checkstyle.cache -cp `coursier fetch -p $(DEPS_ALL)` com.puppycrawl.tools.checkstyle.Main -c checkstyle.xml src/main
 
 target:
 	mkdir -p target
 
 clean:
+	rm Generated.mk
 	rm -fr target
 
 compile: target
