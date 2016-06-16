@@ -1,4 +1,4 @@
-.PHONY: clean compile xio/core xio/server xio/client/lb xio/client/retry xio/client xio/ssl xio/log xio/mux xio/proxy
+.PHONY: clean compile xio/log xio/core xio/ssl xio/server xio/client/asyncretry xio/client/retry xio/client/lb/strategies xio/client/lb xio/client xio/mux xio/proxy
 
 all: xio/log xio/core xio/ssl xio/server xio/client/asyncretry xio/client/retry xio/client/lb/strategies  xio/client/lb xio/client xio/mux xio/proxy
 
