@@ -29,3 +29,5 @@ DEPS_COMPILE=$(DEP_FINDBUGS) \
              $(DEP_LOG4J)
 
 DEPS_ALL=$(DEPS_COMPILE) $(DEP_CHECKSTYLE)
+
+export CLASSPATH_COMPILE := $(shell coursier fetch -p $(DEPS_COMPILE))

@@ -1,6 +1,9 @@
+.PHONY: clean compile xio/core xio/server xio/client/lb xio/client/retry xio/client xio/ssl xio/log xio/mux xio/proxy
+
 all: xio/core xio/server xio/client/lb xio/client/retry xio/client xio/ssl xio/log xio/mux xio/proxy
 
 PROJECT_ROOT=$(shell pwd)
+export TARGETDIR := $(PROJECT_ROOT)/target
 
 include Classpath.mk
 include Dependencies.mk
@@ -18,6 +21,12 @@ checkstyle:
 
 target:
 	mkdir -p target
+
+clean:
+	rm -fr target
+
+compile: target
+	scripts/run-compile $$(find src/main -name "*.java")
 
 xio/core: target
 	$(MAKE) -C src/main/java/com/xjeffrose/xio/core

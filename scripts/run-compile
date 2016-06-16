@@ -1,0 +1,3 @@
+#!/bin/bash
+
+infer -a tracing --infer_cache /tmp/infer_cache -o /tmp/infer -- javac -cp ${CLASSPATH_COMPILE}:${TARGETDIR} -d ${TARGETDIR} ${JAVA_ARGS} "$@"
