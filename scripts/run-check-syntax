@@ -1,1 +1,2 @@
-javac ${JAVA_ARGS} -cp ${MAVEN_CLASSPATH}:${TARGETDIR} -Xlint -d ${TARGETDIR} *.java
+#!/bin/bash
+java -jar ${JAR_ECJ} -cp ${CLASSPATH_COMPILE}:${TARGETDIR} -8 -Xemacs *.java

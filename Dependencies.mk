@@ -14,6 +14,8 @@ DEP_LOG4J=log4j:log4j:1.2.17
 
 DEP_CHECKSTYLE=com.puppycrawl.tools:checkstyle:6.19
 
+DEP_ECJ=org.eclipse.jdt.core.compiler:ecj:4.5.1
+
 DEPS_COMPILE=$(DEP_FINDBUGS) \
              $(DEP_GUAVA) \
              $(DEP_NETTY) \
@@ -28,6 +30,8 @@ DEPS_COMPILE=$(DEP_FINDBUGS) \
              $(DEP_OKHTTP) \
              $(DEP_LOG4J)
 
-DEPS_ALL=$(DEPS_COMPILE) $(DEP_CHECKSTYLE)
+DEPS_ALL=$(DEPS_COMPILE) $(DEP_CHECKSTYLE) $(DEP_ECJ)
+
+export JAR_ECJ := $(shell coursier fetch -p $(DEP_ECJ))
 
 export CLASSPATH_COMPILE := $(shell coursier fetch -p $(DEPS_COMPILE))
