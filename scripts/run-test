@@ -1,0 +1,1 @@
+java -cp ${PROJECT_ROOT}/lib/*.jar: org.junit.runner.JUnitCore *.java

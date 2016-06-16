@@ -6,7 +6,7 @@ export TARGETDIR := $(PROJECT_ROOT)/target/
 include $(PROJECT_ROOT)/*.mk
 
 all:
-	$(PROJECT_ROOT)/scripts/run-compile *.java
+	$(PROJECT_ROOT)/scripts/run-compile
 
 $(PROJECT_ROOT)/target:
 	mkdir -p $(PROJECT_ROOT)/target

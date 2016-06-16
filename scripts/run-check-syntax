@@ -1,0 +1,2 @@
+#!/bin/bash
+java -jar ${JAR_ECJ} -cp ${CLASSPATH_COMPILE}:${TARGETDIR} -8 -Xemacs *.java
