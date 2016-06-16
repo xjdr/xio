@@ -20,7 +20,7 @@ public class XioClient implements Closeable {
   public XioClient(String host, int port, ChannelHandler handler, boolean ssl) {
     this(new InetSocketAddress(host, port), handler, ssl);
   }
-  
+
   public XioClient(String host, int port, Bootstrap bootstrap, boolean ssl) {
     this.bootstrap = bootstrap;
     this.node = new Node(new InetSocketAddress(host, port), bootstrap);
