@@ -93,7 +93,7 @@ public class XioConnectionPool {
   }
 
   public Future<Channel> acquire() {
-    final DefaultPromise<Channel> result = new DefaultPromise<Channel>(eventLoopGroup.next());
+    final DefaultPromise<Channel> result = new DefaultPromise<>(eventLoopGroup.next());
     final AsyncRetryLoop retry = retryLoopFactory.buildLoop(eventLoopGroup);
     retry.attempt(() -> acquireWithRetry(retry, result));
     return result;

@@ -3,7 +3,20 @@ package com.xjeffrose.xio.client.loadbalancer;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.net.HostAndPort;
+import com.xjeffrose.xio.client.XioConnectionPool;
+import com.xjeffrose.xio.client.asyncretry.AsyncRetryLoop;
+import com.xjeffrose.xio.client.asyncretry.AsyncRetryLoopFactory;
+import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.EventLoopGroup;
+import io.netty.util.concurrent.DefaultProgressivePromise;
+import io.netty.util.concurrent.DefaultPromise;
+import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.FutureListener;
+import io.netty.util.concurrent.Promise;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.ArrayList;
@@ -33,21 +46,22 @@ public class Node {
   private final Protocol proto;
   private final boolean ssl;
   private final AtomicBoolean available = new AtomicBoolean(true);
+  private final XioConnectionPool connectionPool;
   private double load;
 
-  public Node(HostAndPort hostAndPort) {
-    this(toInetAddress(hostAndPort));
+  public Node(HostAndPort hostAndPort, Bootstrap bootstrap) {
+    this(toInetAddress(hostAndPort), bootstrap);
   }
 
-  public Node(SocketAddress address) {
-    this(address, ImmutableList.of(), 0, "", Protocol.TCP, false);
+  public Node(SocketAddress address, Bootstrap bootstrap) {
+    this(address, ImmutableList.of(), 0, "", Protocol.TCP, false, bootstrap);
   }
 
-  public Node(SocketAddress address, int weight) {
-    this(address, ImmutableList.of(), weight, "", Protocol.TCP, false);
+  public Node(SocketAddress address, int weight, Bootstrap bootstrap) {
+    this(address, ImmutableList.of(), weight, "", Protocol.TCP, false, bootstrap);
   }
 
-  public Node(SocketAddress address, ImmutableList<String> filters, int weight, String serviceName, Protocol proto, boolean ssl) {
+  public Node(SocketAddress address, ImmutableList<String> filters, int weight, String serviceName, Protocol proto, boolean ssl, Bootstrap bootstrap) {
     this.address = address;
     this.proto = proto;
     this.ssl = ssl;
@@ -55,6 +69,12 @@ public class Node {
     this.filters = ImmutableList.copyOf(filters);
     this.weight = weight;
     this.serviceName = serviceName;
+    this.connectionPool = new XioConnectionPool(bootstrap, new AsyncRetryLoopFactory() {
+      @Override
+      public AsyncRetryLoop buildLoop(EventLoopGroup eventLoopGroup) {
+        return null;
+      }
+    });
   }
 
   public Node(Node n) {
@@ -65,6 +85,7 @@ public class Node {
     this.serviceName = n.serviceName;
     this.proto = Protocol.TCP;
     this.ssl = false;
+    this.connectionPool = n.connectionPool;
   }
 
   /**
@@ -72,6 +93,28 @@ public class Node {
    */
   public static InetSocketAddress toInetAddress(HostAndPort hostAndPort) {
     return (hostAndPort == null) ? null : new InetSocketAddress(hostAndPort.getHostText(), hostAndPort.getPort());
+  }
+
+  public boolean send(ByteBuf message) {
+    Future<Channel> channelResult = connectionPool.acquire();
+    log.debug("Acquiring Node: " + this);
+    channelResult.addListener(new FutureListener<Channel>() {
+      public void operationComplete(Future<Channel> future) {
+        if (future.isSuccess()) {
+          System.out.println("Node acquired!");
+          Channel channel = future.getNow();
+          // TODO could maybe put a listener here to track successful writes
+          channel.writeAndFlush(message).addListener(new ChannelFutureListener() {
+            public void operationComplete(ChannelFuture channelFuture) {
+              log.debug("write finished for " + message);
+            }
+          });
+        } else {
+          log.error("Could not connect to client for write");
+        }
+      }
+    });
+    return true;
   }
 
   /**
@@ -139,5 +182,10 @@ public class Node {
 
   public boolean isSSL() {
     return ssl;
+  }
+
+  @Override
+  public String toString() {
+    return serviceName + ": " + address();
   }
 }

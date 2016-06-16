@@ -1,61 +1,55 @@
 package com.xjeffrose.xio.client;
 
-import com.google.common.net.HostAndPort;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.xjeffrose.xio.client.retry.RetryPolicy;
-import com.xjeffrose.xio.client.retry.RetrySleeper;
-import com.xjeffrose.xio.core.ShutdownUtil;
-import io.airlift.units.Duration;
-import io.netty.bootstrap.Bootstrap;
-import io.netty.buffer.PooledByteBufAllocator;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.EventLoopGroup;
-import io.netty.channel.group.ChannelGroup;
-import io.netty.channel.group.DefaultChannelGroup;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.util.Timer;
-import java.io.Closeable;
-import java.net.InetSocketAddress;
-import java.util.concurrent.TimeUnit;
-import javax.annotation.Nullable;
-import org.apache.log4j.Logger;
-
-import java.io.IOException;
-import java.util.List;
-
-import com.xjeffrose.xio.server.XioService;
 import com.xjeffrose.xio.client.loadbalancer.Distributor;
-
-
-import static com.google.common.base.Preconditions.checkNotNull;
+import com.xjeffrose.xio.client.loadbalancer.Node;
+import com.xjeffrose.xio.client.loadbalancer.Protocol;
+import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandler;
+import java.io.Closeable;
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import org.apache.log4j.Logger;
 
 public class XioClient implements Closeable {
   private static final Logger log = Logger.getLogger(XioClient.class);
+  private final Bootstrap bootstrap;
+  private final Node node;
+  private final Distributor distributor;
 
-  // public XioClient(Distributor distributor, XioService xioService) {
-  // }
-
-  // public XioClient(List<String> serverList, XioService xioService) {
-  // }
-
-  // public XioClient(String zkConnectionStringAndPath, XioService xioService) {
-  // }
-
-  public XioClient(XioClientConfig xioClientConfig, XioService xioService, XioListener listener) {
+  public XioClient(String host, int port, ChannelHandler handler, boolean ssl) {
+    this(new InetSocketAddress(host, port), handler, ssl);
+  }
+  
+  public XioClient(String host, int port, Bootstrap bootstrap, boolean ssl) {
+    this.bootstrap = bootstrap;
+    this.node = new Node(new InetSocketAddress(host, port), bootstrap);
+    this.distributor = null;
   }
 
-  private static InetSocketAddress toInetAddress(HostAndPort hostAndPort) {
-    return (hostAndPort == null) ? null : new InetSocketAddress(hostAndPort.getHostText(), hostAndPort.getPort());
+  public XioClient(InetSocketAddress address, ChannelHandler handler, boolean ssl) {
+    this.bootstrap = new XioClientBootstrap(handler, 4, ssl, Protocol.HTTPS).getBootstrap();
+    this.node = new Node(address, bootstrap);
+    this.distributor = null;
   }
 
+  public XioClient(Distributor distributor, ChannelHandler handler, boolean ssl) {
+    this.bootstrap = new XioClientBootstrap(handler, 4, ssl, Protocol.HTTPS).getBootstrap();
+    this.node = null;
+    this.distributor = distributor;
+  }
+
+  public boolean write(ByteBuf msg) {
+    if (node == null) {
+      return distributor.pick().send(msg);
+    } else {
+      return node.send(msg);
+    }
+  }
 
   @Override
   public void close() throws IOException {
+    bootstrap.group().shutdownGracefully();
   }
 
 }

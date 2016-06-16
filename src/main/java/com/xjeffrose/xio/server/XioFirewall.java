@@ -53,6 +53,35 @@ public abstract class XioFirewall extends ChannelDuplexHandler {
   abstract void runRuleSet(ChannelHandlerContext ctx, Object msg);
 
   @Override
+  public void userEventTriggered(ChannelHandlerContext ctx, Object _evt) {
+    XioEvent evt;
+
+    if (_evt instanceof XioEvent) {
+      evt = (XioEvent) _evt;
+    } else {
+      evt = null;
+      //TODO(JR): Throw probably?
+    }
+
+    switch (evt) {
+      case RATE_LIMIT:
+        log.info("Xio Firewall blocked based on rate limit req:" + ctx.channel());
+        ctx.channel().deregister();
+        break;
+      case BLOCK_REQ_POLICY_BASED:
+        log.info("Xio Firewall blocked based on policy:" + ctx.channel());
+        ctx.channel().deregister();
+        break;
+      case BLOCK_REQ_BEHAVIORAL_BASED:
+        log.info("Xio Firewall blocked based on behavior:" + ctx.channel());
+        ctx.channel().deregister();
+        break;
+      default:
+        break;
+    }
+  }
+
+  @Override
   @SuppressWarnings("deprecated")
   public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
     log.error("Exception Caught in Xio Firewall: ", cause);
