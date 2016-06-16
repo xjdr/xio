@@ -87,7 +87,7 @@ public class XioServer {
         cp.addLast("connectionContext", new ConnectionContextHandler());
         cp.addLast("globalChannelStatistics", channelStatistics);
         cp.addLast("encryptionHandler", securityHandlers.getEncryptionHandler());
-        cp.addLast("messageLogger", new XioMessageLogger()); // TODO(JR): Should this really be here?
+        cp.addLast("messageLogger", new XioMessageLogger()); // THIS IS FOR DEBUG ONLY AND SHOULD BE REMOVED OTHERWISE
         cp.addLast("codec", def.getCodecFactory().getCodec());
         cp.addLast("l7DeterministicRuleEngine", new XioDeterministicRuleEngine(zkClient, true)); // TODO(JR): Need to make this config
         cp.addLast("l7BehavioralRuleEngine", new XioBehavioralRuleEngine(zkClient, true)); // TODO(JR): Need to make this config
