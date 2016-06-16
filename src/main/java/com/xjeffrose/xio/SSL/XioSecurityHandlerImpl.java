@@ -1,7 +1,7 @@
 package com.xjeffrose.xio.SSL;
 
-import com.xjeffrose.xio.core.XioNoOpSecurityFactory;
-import com.xjeffrose.xio.core.XioSecurityHandlers;
+import com.xjeffrose.xio.server.XioNoOpSecurityFactory;
+import com.xjeffrose.xio.server.XioSecurityHandlers;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelHandler;
 import io.netty.handler.ssl.OpenSsl;

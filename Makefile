@@ -1,4 +1,4 @@
-all: xio/core xio/server xio/client/lb xio/client/retry xio/client xio/ssl xio/log xio/mux xio/proxy
+all: xio/log xio/core xio/ssl xio/server xio/client/asyncretry xio/client/retry xio/client/lb/strategies  xio/client/lb xio/client xio/mux xio/proxy
 
 PROJECT_ROOT=$(shell pwd)
 
@@ -18,8 +18,14 @@ xio/core: target
 xio/client: target
 	$(MAKE) -C src/main/java/com/xjeffrose/xio/client
 
+xio/client/lb/strategies: target
+	$(MAKE) -C src/main/java/com/xjeffrose/xio/client/loadbalancer/strategies
+
 xio/client/lb: target
 	$(MAKE) -C src/main/java/com/xjeffrose/xio/client/loadbalancer
+
+xio/client/asyncretry: target
+	$(MAKE) -C src/main/java/com/xjeffrose/xio/client/asyncretry
 
 xio/client/retry: target
 	$(MAKE) -C src/main/java/com/xjeffrose/xio/client/retry

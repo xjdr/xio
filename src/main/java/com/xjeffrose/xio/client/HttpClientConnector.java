@@ -3,7 +3,7 @@ package com.xjeffrose.xio.client;
 
 import com.google.common.net.HostAndPort;
 import com.xjeffrose.xio.core.*;
-import com.xjeffrose.xio.server.IdleDisconnectHandler;
+import com.xjeffrose.xio.server.XioSecurityHandlers;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
@@ -11,9 +11,7 @@ import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.http.HttpClientCodec;
-import io.netty.handler.codec.http.HttpContentDecompressor;
 import io.netty.handler.codec.http.HttpObjectAggregator;
-import io.netty.handler.timeout.IdleStateHandler;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;

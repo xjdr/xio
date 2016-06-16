@@ -2,7 +2,6 @@ package com.xjeffrose.xio.client.loadbalancer.strategies;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.hash.Funnels;
-import com.xjeffrose.xio.client.RendezvousHash;
 import com.xjeffrose.xio.client.loadbalancer.Node;
 import com.xjeffrose.xio.client.loadbalancer.Strategy;
 import java.nio.charset.Charset;

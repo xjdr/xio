@@ -1,7 +1,7 @@
 package com.xjeffrose.xio.client.retry;
 
-import com.xjeffrose.xio.client.XioClient;
-import com.xjeffrose.xio.core.XioTransportException;
+//import com.xjeffrose.xio.client.XioClient;
+//import com.xjeffrose.xio.core.XioTransportException;
 import io.netty.channel.ConnectTimeoutException;
 import java.net.ConnectException;
 import java.util.concurrent.Callable;
@@ -73,22 +73,22 @@ public class RetryLoop {
 //   * @return procedure result
 //   * @throws Exception any non-retriable errors
 //   */
-  public static <T> T callWithRetry(XioClient client, Callable<T> proc) throws Exception {
-    T result = null;
+//  public static <T> T callWithRetry(XioClient client, Callable<T> proc) throws Exception {
+//    T result = null;
 //    RetryLoop retryLoop = client.newRetryLoop();
 //    while (retryLoop.shouldContinue()) {
 //      try {
 //        client.internalBlockUntilConnectedOrTimedOut();
 
-        result = proc.call();
+//        result = proc.call();
 //        retryLoop.markComplete();
 //      } catch (Exception e) {
 //        retryLoop.takeException(e);
 //      }
 //    }
 //    return result;
-    return null;
-  }
+//    return null;
+//  }
 
 //  /**
 //   * Utility - return true if the given Zookeeper result code is retry-able

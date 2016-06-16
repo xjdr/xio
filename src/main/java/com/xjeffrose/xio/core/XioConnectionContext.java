@@ -1,4 +1,4 @@
-package com.xjeffrose.xio.server;
+package com.xjeffrose.xio.core;
 
 
 import com.google.common.base.Preconditions;

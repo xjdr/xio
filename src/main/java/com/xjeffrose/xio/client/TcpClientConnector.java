@@ -5,7 +5,7 @@ import com.google.common.net.HostAndPort;
 import com.xjeffrose.xio.core.ChannelStatistics;
 import com.xjeffrose.xio.core.ConnectionContextHandler;
 import com.xjeffrose.xio.core.XioExceptionLogger;
-import com.xjeffrose.xio.core.XioSecurityHandlers;
+import com.xjeffrose.xio.server.XioSecurityHandlers;
 import com.xjeffrose.xio.server.IdleDisconnectHandler;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;

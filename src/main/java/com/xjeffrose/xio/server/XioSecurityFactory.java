@@ -1,8 +1,5 @@
-package com.xjeffrose.xio.core;
+package com.xjeffrose.xio.server;
 
-
-import com.xjeffrose.xio.server.XioServerConfig;
-import com.xjeffrose.xio.server.XioServerDef;
 
 public interface XioSecurityFactory {
   XioSecurityHandlers getSecurityHandlers(XioServerDef def, XioServerConfig serverConfig);

@@ -1,4 +1,4 @@
-package com.xjeffrose.xio.core;
+package com.xjeffrose.xio.server;
 
 
 import io.netty.channel.ChannelHandler;

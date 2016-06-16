@@ -8,7 +8,6 @@ import com.xjeffrose.xio.core.XioExceptionLogger;
 import com.xjeffrose.xio.core.XioIdleDisconnectHandler;
 import com.xjeffrose.xio.core.XioMessageLogger;
 import com.xjeffrose.xio.core.XioMetrics;
-import com.xjeffrose.xio.core.XioSecurityHandlers;
 import com.xjeffrose.xio.core.ZkClient;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -30,7 +29,6 @@ import java.net.InetSocketAddress;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.log4j.Logger;
 
 public class XioServer {

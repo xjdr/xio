@@ -1,4 +1,4 @@
-package com.xjeffrose.xio.client;
+package com.xjeffrose.xio.client.loadbalancer.strategies;
 
 import com.google.common.hash.Funnel;
 import com.google.common.hash.HashFunction;

@@ -46,8 +46,8 @@ public class XioChannelProxy extends ChannelDuplexHandler {
       log.debug("Service channelActive " + inboundChannel + " " + ctx.channel());
     }
     // attr never returns null
-    Attribute<Node> attrNode = inboundChannel.attr(Constants.PICKED_OUTBOUND_NODE);
-    node = attrNode.get();
+//    Attribute<Node> attrNode = inboundChannel.attr(Constants.PICKED_OUTBOUND_NODE);
+//    node = attrNode.get();
     if (node != null) {
       node.addPending(ctx.channel());
     }

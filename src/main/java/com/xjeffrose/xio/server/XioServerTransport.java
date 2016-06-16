@@ -8,7 +8,6 @@ import com.xjeffrose.xio.core.XioExceptionLogger;
 import com.xjeffrose.xio.core.XioIdleDisconnectHandler;
 import com.xjeffrose.xio.core.XioMessageLogger;
 import com.xjeffrose.xio.core.XioMetrics;
-import com.xjeffrose.xio.core.XioSecurityHandlers;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
@@ -93,7 +92,7 @@ public class XioServerTransport {
               TimeUnit.MILLISECONDS));
         }
         cp.addLast("authHandler", securityHandlers.getAuthenticationHandler());
-        cp.addLast("dispatcher", new XioDispatcher(def, xioServerConfig));
+//        cp.addLast("dispatcher", new XioDispatcher(def, xioServerConfig));
         cp.addLast("exceptionLogger", new XioExceptionLogger());
       }
     };

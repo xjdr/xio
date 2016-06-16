@@ -1,8 +1,8 @@
 package com.xjeffrose.xio.fixtures;
 
 import com.xjeffrose.xio.core.XioNoOpHandler;
-import com.xjeffrose.xio.core.XioSecurityFactory;
-import com.xjeffrose.xio.core.XioSecurityHandlers;
+import com.xjeffrose.xio.server.XioSecurityFactory;
+import com.xjeffrose.xio.server.XioSecurityHandlers;
 import com.xjeffrose.xio.server.XioServerConfig;
 import com.xjeffrose.xio.server.XioServerDef;
 import io.netty.buffer.PooledByteBufAllocator;
