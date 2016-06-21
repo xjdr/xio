@@ -8,4 +8,11 @@ def pluckFileName(val):
 def massageClassName(val):
   return val[1:-1].replace('/', '.')
 
-print massageClassName(pluckFileName(sys.argv[1]))
+def handle_args(args):
+  return map(lambda x: massageClassName(pluckFileName(x)), args)
+
+def main():
+  print " ".join(handle_args(sys.argv[1:]))
+
+if __name__ == '__main__':
+  main()
