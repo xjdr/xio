@@ -1,1 +1,22 @@
-drip -cp ${PROJECT_ROOT}/lib/*.jar: org.junit.runner.JUnitCore *.java
+#!/bin/bash
+JAVA=${JAVA:-java}
+#echo "FILE_NAME ${FILE_NAME}"
+if [[ -z "${FILE_NAME}" ]]; then
+  # emacs didn't supply a file name
+  if [[ -z "$1" ]]; then
+    # there isn't a file name in the args, look for tests in the current directory
+    TEST_FILES=$(ls *Test.java | awk -v pwd=${PWD} '{printf("%s/%s\n", pwd, $0)}')
+  else
+    # use the file names from the args
+    TEST_FILES="$@"
+  fi
+else
+  # use the file name supplied by emacs
+  TEST_FILES=${FILE_NAME}
+fi
+#echo "Test Files ${TEST_FILES}"
+# convert to class names
+TEST_CLASSES=$(${PROJECT_ROOT}/scripts/file2class ${TEST_FILES})
+echo "Testing ${TEST_CLASSES}"
+# run junit
+${JAVA} -cp ${CLASSPATH_COMPILE}:${TARGETDIR} org.junit.runner.JUnitCore ${TEST_CLASSES}

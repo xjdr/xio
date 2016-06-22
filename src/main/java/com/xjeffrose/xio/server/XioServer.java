@@ -31,7 +31,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 
-public class XioServer {
+public class XioServer implements AutoCloseable {
   private static final Logger log = Logger.getLogger(XioServerTransport.class.getName());
 
   private static final int NO_WRITER_IDLE_TIMEOUT = 60000;
@@ -51,6 +51,19 @@ public class XioServer {
   private ExecutorService bossExecutor;
   private ExecutorService ioWorkerExecutor;
   private Channel serverChannel;
+
+
+  public XioServer(Channel serverChannel) {
+    this.serverChannel = serverChannel;
+    this.requestedPort = 0;
+    this.hostAddr = null;
+    this.allChannels = null;
+    this.def = null;
+    this.xioServerConfig = null;
+    this.xioService = null;
+    this.channelStatistics = null;
+    this.pipelineFactory = null;
+  }
 
   public XioServer(final XioServerDef def, final XioService xioService) {
     this(def, XioServerConfig.newBuilder().build(), xioService, new DefaultChannelGroup(new NioEventLoopGroup().next()), null);
@@ -104,6 +117,14 @@ public class XioServer {
         cp.addLast("exceptionLogger", new XioExceptionLogger());
       }
     };
+  }
+
+  public void close() {
+    serverChannel.eventLoop().parent().shutdownGracefully();
+  }
+
+  public boolean running() {
+    return true;
   }
 
   public void serve() {

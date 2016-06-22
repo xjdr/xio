@@ -2,7 +2,7 @@
 
 all: xio/log xio/core xio/ssl xio/server xio/client/asyncretry xio/client/retry xio/client/lb/strategies  xio/client/lb xio/client xio/mux xio/proxy
 
-PROJECT_ROOT=$(shell pwd)
+export PROJECT_ROOT=$(shell pwd)
 export TARGETDIR := $(PROJECT_ROOT)/target
 
 include Classpath.mk
@@ -36,6 +36,12 @@ clean:
 compile: target
 	scripts/run-compile $$(find src/main -name "*.java")
 
+compile-src-and-test: target
+	scripts/run-compile $$(find src/main src/test -name "*.java")
+
+test: compile-src-and-test
+	scripts/run-test $$(find src/test -name "*Test.java")
+
 xio/core: target
 	$(MAKE) -C src/main/java/com/xjeffrose/xio/core
 
@@ -68,9 +74,6 @@ xio/mux: target
 
 xio/proxy: target
 	$(MAKE) -C src/main/java/com/xjeffrose/xio/proxy
-
-test:
-	java -cp lib/*.jar org.junit.runner.JUnitCore src/test/com/xjeffrose/xio/*.java
 
 jar:
 	jar cvf test.jar target/test/mod1/*.class target/test/mod2/*.class target/chica/*.class
