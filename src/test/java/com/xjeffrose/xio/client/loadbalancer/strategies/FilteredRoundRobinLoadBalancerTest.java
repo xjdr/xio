@@ -10,6 +10,7 @@ import com.xjeffrose.xio.client.loadbalancer.Protocol;
 import com.xjeffrose.xio.client.loadbalancer.Strategy;
 import com.xjeffrose.xio.core.XioTimer;
 import com.xjeffrose.xio.fixtures.TcpServer;
+import io.netty.bootstrap.Bootstrap;
 import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.UUID;
@@ -22,6 +23,8 @@ public class FilteredRoundRobinLoadBalancerTest {
 
   @Test
   public void getNextNode() throws Exception {
+
+    Bootstrap bootstrap = new Bootstrap();
     TcpServer tcpServer1 = new TcpServer(8181);
     TcpServer tcpServer2 = new TcpServer(8182);
     TcpServer tcpServer3 = new TcpServer(8183);
@@ -30,9 +33,9 @@ public class FilteredRoundRobinLoadBalancerTest {
     ImmutableList<String> okFilter = ImmutableList.of("thing1", "thing2");
     ImmutableList<String> badFilter = ImmutableList.of("noThings");
 
-    Node node1 = new Node(new InetSocketAddress("127.0.0.1", 8181));
-    Node node2 = new Node(new InetSocketAddress("127.0.0.1", 8182));
-    Node node3 = new Node(new InetSocketAddress("127.0.0.1", 8183));
+    Node node1 = new Node(new InetSocketAddress("127.0.0.1", 8181), bootstrap);
+    Node node2 = new Node(new InetSocketAddress("127.0.0.1", 8182), bootstrap);
+    Node node3 = new Node(new InetSocketAddress("127.0.0.1", 8183), bootstrap);
 
     new Thread(tcpServer1).start();
     new Thread(tcpServer2).start();
@@ -57,9 +60,10 @@ public class FilteredRoundRobinLoadBalancerTest {
   @Test
   public void getNextNodeNoFiltering() throws Exception {
 
-    Node node1 = new Node(new InetSocketAddress("127.0.0.1", 8181));
-    Node node2 = new Node(new InetSocketAddress("127.0.0.2", 8182));
-    Node node3 = new Node(new InetSocketAddress("127.0.0.3", 8183));
+    Bootstrap bootstrap = new Bootstrap();
+    Node node1 = new Node(new InetSocketAddress("127.0.0.1", 8181), bootstrap);
+    Node node2 = new Node(new InetSocketAddress("127.0.0.2", 8182), bootstrap);
+    Node node3 = new Node(new InetSocketAddress("127.0.0.3", 8183), bootstrap);
 
     Strategy lb = new FilteredRoundRobinLoadBalancer(new Filter() {
 
@@ -84,12 +88,13 @@ public class FilteredRoundRobinLoadBalancerTest {
   @Test
   public void getNextNodeWithFiltering() throws Exception {
 
+    Bootstrap bootstrap = new Bootstrap();
     Node node1 = new Node(new InetSocketAddress("127.0.0.1", 8181),
-        ImmutableList.copyOf(new String[]{"msmaster1int"}), 0, "paymentserv", Protocol.TCP, false);
+        ImmutableList.copyOf(new String[]{"msmaster1int"}), 0, "paymentserv", Protocol.TCP, false, bootstrap);
     Node node2 = new Node(new InetSocketAddress("127.0.0.2", 8182),
-        ImmutableList.copyOf(new String[]{"msmaster2int"}), 0, "paymentserv", Protocol.TCP, false);
+        ImmutableList.copyOf(new String[]{"msmaster2int"}), 0, "paymentserv", Protocol.TCP, false, bootstrap);
     Node node3 = new Node(new InetSocketAddress("127.0.0.3", 8183),
-        ImmutableList.copyOf(new String[]{"msmaster1int"}), 0, "paymentserv", Protocol.TCP, false);
+        ImmutableList.copyOf(new String[]{"msmaster1int"}), 0, "paymentserv", Protocol.TCP, false, bootstrap);
 
     Strategy lb = new FilteredRoundRobinLoadBalancer(new Filter() {
 

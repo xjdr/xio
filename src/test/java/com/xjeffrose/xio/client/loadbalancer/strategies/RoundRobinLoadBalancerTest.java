@@ -9,6 +9,7 @@ import com.xjeffrose.xio.client.loadbalancer.NodeHealthCheck;
 import com.xjeffrose.xio.client.loadbalancer.Strategy;
 import com.xjeffrose.xio.core.XioTimer;
 import com.xjeffrose.xio.fixtures.TcpServer;
+import io.netty.bootstrap.Bootstrap;
 import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.UUID;
@@ -28,13 +29,14 @@ public class RoundRobinLoadBalancerTest {
 
   @Test
   public void getNextNodeUnweighted() throws Exception {
+    Bootstrap bootstrap = new Bootstrap();
     new Thread(tcpServer1).start();
     new Thread(tcpServer2).start();
     new Thread(tcpServer3).start();
 
-    Node node1 = new Node(new InetSocketAddress("127.0.0.1", 8281));
-    Node node2 = new Node(new InetSocketAddress("127.0.0.1", 8282));
-    Node node3 = new Node(new InetSocketAddress("127.0.0.1", 8283));
+    Node node1 = new Node(new InetSocketAddress("127.0.0.1", 8281), bootstrap);
+    Node node2 = new Node(new InetSocketAddress("127.0.0.1", 8282), bootstrap);
+    Node node3 = new Node(new InetSocketAddress("127.0.0.1", 8283), bootstrap);
 
     Strategy lb = new RoundRobinLoadBalancer();
     Distributor distributor = new Distributor(ImmutableList.of(node1, node2, node3), lb, new NodeHealthCheck(2), new XioTimer("Test Timer", 5000, TimeUnit.MILLISECONDS, 5));
@@ -48,9 +50,10 @@ public class RoundRobinLoadBalancerTest {
 
   @Test
   public void getNextNodeWeighted() throws Exception {
-    Node node1 = new Node(new InetSocketAddress("127.0.0.1", 8281), 10);
-    Node node2 = new Node(new InetSocketAddress("127.0.0.1", 8282), 100);
-    Node node3 = new Node(new InetSocketAddress("127.0.0.1", 8283), 1);
+    Bootstrap bootstrap = new Bootstrap();
+    Node node1 = new Node(new InetSocketAddress("127.0.0.1", 8281), 10, bootstrap);
+    Node node2 = new Node(new InetSocketAddress("127.0.0.1", 8282), 100, bootstrap);
+    Node node3 = new Node(new InetSocketAddress("127.0.0.1", 8283), 1, bootstrap);
 
     Strategy lb = new RoundRobinLoadBalancer();
     Distributor distributor = new Distributor(ImmutableList.of(node1, node2, node3), lb, new NodeHealthCheck(2), new XioTimer("Test Timer", 5000, TimeUnit.MILLISECONDS, 5));
@@ -64,12 +67,13 @@ public class RoundRobinLoadBalancerTest {
 
   @Test()
   public void getEjectUnavailableNode() throws Exception {
+    Bootstrap bootstrap = new Bootstrap();
     new Thread(tcpServer11).start();
     new Thread(tcpServer13).start();
 
-    Node node1 = new Node(new InetSocketAddress("127.0.0.1", 8381));
-    Node node2 = new Node(new InetSocketAddress("127.0.0.1", 8382));
-    Node node3 = new Node(new InetSocketAddress("127.0.0.1", 8383));
+    Node node1 = new Node(new InetSocketAddress("127.0.0.1", 8381), bootstrap);
+    Node node2 = new Node(new InetSocketAddress("127.0.0.1", 8382), bootstrap);
+    Node node3 = new Node(new InetSocketAddress("127.0.0.1", 8383), bootstrap);
 
     Strategy lb = new RoundRobinLoadBalancer();
     Distributor distributor = new Distributor(ImmutableList.of(node1, node2, node3), lb, new NodeHealthCheck(2), new XioTimer("Test Timer", 5000, TimeUnit.MILLISECONDS, 5));
@@ -84,9 +88,10 @@ public class RoundRobinLoadBalancerTest {
 
   @Test(expected = NullPointerException.class)
   public void preventStackOverflow() throws Exception {
-    Node node1 = new Node(new InetSocketAddress("127.0.0.1", 8481));
-    Node node2 = new Node(new InetSocketAddress("127.0.0.1", 8482));
-    Node node3 = new Node(new InetSocketAddress("127.0.0.1", 8483));
+    Bootstrap bootstrap = new Bootstrap();
+    Node node1 = new Node(new InetSocketAddress("127.0.0.1", 8481), bootstrap);
+    Node node2 = new Node(new InetSocketAddress("127.0.0.1", 8482), bootstrap);
+    Node node3 = new Node(new InetSocketAddress("127.0.0.1", 8483), bootstrap);
 
     Strategy lb = new RoundRobinLoadBalancer();
     Distributor distributor = new Distributor(ImmutableList.of(node1, node2, node3), lb, new NodeHealthCheck(2), new XioTimer("Test Timer", 5000, TimeUnit.MILLISECONDS, 5));
@@ -103,9 +108,10 @@ public class RoundRobinLoadBalancerTest {
   @Test
   public void testRoundrobinAndNoOverflow() throws Exception {
 
-    Node node1 = new Node(new InetSocketAddress("127.0.0.1", 8181));
-    Node node2 = new Node(new InetSocketAddress("127.0.0.2", 8182));
-    Node node3 = new Node(new InetSocketAddress("127.0.0.3", 8183));
+    Bootstrap bootstrap = new Bootstrap();
+    Node node1 = new Node(new InetSocketAddress("127.0.0.1", 8181), bootstrap);
+    Node node2 = new Node(new InetSocketAddress("127.0.0.2", 8182), bootstrap);
+    Node node3 = new Node(new InetSocketAddress("127.0.0.3", 8183), bootstrap);
 
     Strategy lb = new RoundRobinLoadBalancer();
     ImmutableList<Node> pool = ImmutableList.of(node1, node2, node3);
