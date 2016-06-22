@@ -3,26 +3,23 @@ package com.xjeffrose.xio.client.loadbalancer;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.net.HostAndPort;
-import com.xjeffrose.xio.client.retry.ExponentialBackoffRetry;
-import com.xjeffrose.xio.client.retry.RetryLoop;
-import com.xjeffrose.xio.client.retry.TracerDriver;
 import io.netty.channel.Channel;
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.AtomicBoolean;
+import org.apache.log4j.Logger;
 
 /**
  * The base type of nodes over which load is balanced. Nodes define the load metric that is used;
  * distributors like P2C will use these to decide where to balance the next connection request.
  */
 public class Node {
+  private static final Logger log = Logger.getLogger(Node.class);
 
   private final UUID token = UUID.randomUUID();
   private final ConcurrentHashMap<Channel, Stopwatch> pending = new ConcurrentHashMap<>();
@@ -33,7 +30,9 @@ public class Node {
   private final List<Long> requestTimes = new ArrayList<>();
   private final String serviceName;
   private final int weight;
-
+  private final Protocol proto;
+  private final boolean ssl;
+  private final AtomicBoolean available = new AtomicBoolean(true);
   private double load;
 
   public Node(HostAndPort hostAndPort) {
@@ -41,15 +40,17 @@ public class Node {
   }
 
   public Node(SocketAddress address) {
-    this(address, ImmutableList.of(), 0, "");
+    this(address, ImmutableList.of(), 0, "", Protocol.TCP, false);
   }
 
   public Node(SocketAddress address, int weight) {
-    this(address, ImmutableList.of(), weight, "");
+    this(address, ImmutableList.of(), weight, "", Protocol.TCP, false);
   }
 
-  public Node(SocketAddress address, ImmutableList<String> filters, int weight, String serviceName) {
+  public Node(SocketAddress address, ImmutableList<String> filters, int weight, String serviceName, Protocol proto, boolean ssl) {
     this.address = address;
+    this.proto = proto;
+    this.ssl = ssl;
     this.load = 0;
     this.filters = ImmutableList.copyOf(filters);
     this.weight = weight;
@@ -62,6 +63,8 @@ public class Node {
     this.filters = ImmutableList.copyOf(n.filters);
     this.weight = n.weight;
     this.serviceName = n.serviceName;
+    this.proto = Protocol.TCP;
+    this.ssl = false;
   }
 
   /**
@@ -107,31 +110,11 @@ public class Node {
   }
 
   public boolean isAvailable() {
+    return available.get();
+  }
 
-    //TODO(JR): Make this value configurable
-    RetryLoop retryLoop = new RetryLoop(new ExponentialBackoffRetry(200, 3, 500), new AtomicReference<TracerDriver>());
-
-    while (retryLoop.shouldContinue()) {
-      try {
-        if (!connectionStopwatch.isRunning()) {
-          connectionStopwatch.start();
-        }
-        try (SocketChannel channel = SocketChannel.open()) {
-          channel.connect(address);
-        }
-        connectionStopwatch.stop();
-        connectionTimes.add(connectionStopwatch.elapsed(TimeUnit.MICROSECONDS));
-        connectionStopwatch.reset();
-        return true;
-      } catch (IOException e) {
-        try {
-          retryLoop.takeException(e);
-        } catch (Exception e1) {
-          return false;
-        }
-      }
-    }
-    return false;
+  public void setAvailable(boolean available) {
+    this.available.set(available);
   }
 
   public ImmutableList<String> getFilters() {
@@ -148,5 +131,13 @@ public class Node {
 
   public SocketAddress getAddress() {
     return address;
+  }
+
+  public Protocol getProto() {
+    return proto;
+  }
+
+  public boolean isSSL() {
+    return ssl;
   }
 }

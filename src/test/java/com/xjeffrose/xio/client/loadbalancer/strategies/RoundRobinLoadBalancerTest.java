@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import com.xjeffrose.xio.client.loadbalancer.Distributor;
 import com.xjeffrose.xio.client.loadbalancer.Filter;
 import com.xjeffrose.xio.client.loadbalancer.Node;
+import com.xjeffrose.xio.client.loadbalancer.NodeHealthCheck;
 import com.xjeffrose.xio.client.loadbalancer.Strategy;
 import com.xjeffrose.xio.core.XioTimer;
 import com.xjeffrose.xio.fixtures.TcpServer;
@@ -36,7 +37,7 @@ public class RoundRobinLoadBalancerTest {
     Node node3 = new Node(new InetSocketAddress("127.0.0.1", 8283));
 
     Strategy lb = new RoundRobinLoadBalancer();
-    Distributor distributor = new Distributor(ImmutableList.of(node1, node2, node3), lb, new XioTimer("Test Timer", 5000, TimeUnit.MILLISECONDS, 5));
+    Distributor distributor = new Distributor(ImmutableList.of(node1, node2, node3), lb, new NodeHealthCheck(2), new XioTimer("Test Timer", 5000, TimeUnit.MILLISECONDS, 5));
 
     assertEquals(node1.address().getPort(), distributor.pick().address().getPort());
     assertEquals(node2.address().getPort(), distributor.pick().address().getPort());
@@ -52,7 +53,7 @@ public class RoundRobinLoadBalancerTest {
     Node node3 = new Node(new InetSocketAddress("127.0.0.1", 8283), 1);
 
     Strategy lb = new RoundRobinLoadBalancer();
-    Distributor distributor = new Distributor(ImmutableList.of(node1, node2, node3), lb, new XioTimer("Test Timer", 5000, TimeUnit.MILLISECONDS, 5));
+    Distributor distributor = new Distributor(ImmutableList.of(node1, node2, node3), lb, new NodeHealthCheck(2), new XioTimer("Test Timer", 5000, TimeUnit.MILLISECONDS, 5));
 
     assertEquals(node2.address().getPort(), distributor.pick().address().getPort());
     assertEquals(node1.address().getPort(), distributor.pick().address().getPort());
@@ -71,7 +72,7 @@ public class RoundRobinLoadBalancerTest {
     Node node3 = new Node(new InetSocketAddress("127.0.0.1", 8383));
 
     Strategy lb = new RoundRobinLoadBalancer();
-    Distributor distributor = new Distributor(ImmutableList.of(node1, node2, node3), lb, new XioTimer("Test Timer", 5000, TimeUnit.MILLISECONDS, 5));
+    Distributor distributor = new Distributor(ImmutableList.of(node1, node2, node3), lb, new NodeHealthCheck(2), new XioTimer("Test Timer", 5000, TimeUnit.MILLISECONDS, 5));
 
     // Sleep is required to allow for node refresh
     Thread.sleep(5500);
@@ -88,7 +89,7 @@ public class RoundRobinLoadBalancerTest {
     Node node3 = new Node(new InetSocketAddress("127.0.0.1", 8483));
 
     Strategy lb = new RoundRobinLoadBalancer();
-    Distributor distributor = new Distributor(ImmutableList.of(node1, node2, node3), lb, new XioTimer("Test Timer", 5000, TimeUnit.MILLISECONDS, 5));
+    Distributor distributor = new Distributor(ImmutableList.of(node1, node2, node3), lb, new NodeHealthCheck(2), new XioTimer("Test Timer", 5000, TimeUnit.MILLISECONDS, 5));
 
     // Sleep is required to allow for node refresh to eject node
     Thread.sleep(5500);
