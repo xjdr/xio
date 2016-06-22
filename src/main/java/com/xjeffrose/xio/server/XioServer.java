@@ -65,6 +65,19 @@ public class XioServer implements AutoCloseable {
     this.pipelineFactory = null;
   }
 
+  // This is just here to get the tests to compile
+  public XioServer(String name, XioService service) {
+    requestedPort = 0;
+    this.serverChannel = null;
+    this.hostAddr = null;
+    this.allChannels = null;
+    this.def = null;
+    this.xioServerConfig = null;
+    this.xioService = null;
+    this.channelStatistics = null;
+    this.pipelineFactory = null;
+  }
+
   public XioServer(final XioServerDef def, final XioService xioService) {
     this(def, XioServerConfig.newBuilder().build(), xioService, new DefaultChannelGroup(new NioEventLoopGroup().next()), null);
   }
