@@ -1,11 +1,9 @@
 package com.xjeffrose.xio.pipeline;
 
-import io.netty.channel.ChannelHandler;
+import io.netty.channel.ChannelPipeline;
 
-import java.util.List;
+public interface XioPipelineFragment {
 
-abstract public class XioPipelineFragment {
-
-  abstract public List<ChannelHandler> buildHandlers();
+  public void buildHandlers(ChannelPipeline pipeline);
 
 }

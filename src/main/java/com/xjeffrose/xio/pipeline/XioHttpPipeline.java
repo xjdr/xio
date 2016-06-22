@@ -1,13 +1,10 @@
 package com.xjeffrose.xio.pipeline;
 
+import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.http.HttpRequestDecoder;
 import io.netty.handler.codec.http.HttpResponseEncoder;
-import io.netty.channel.ChannelHandler;
 
-import java.util.ArrayList;
-import java.util.List;
-
-public class XioHttpPipeline extends XioPipelineFragment {
+public class XioHttpPipeline implements XioPipelineFragment {
 
   private final XioPipelineFragment fragment;
 
@@ -19,14 +16,12 @@ public class XioHttpPipeline extends XioPipelineFragment {
     this.fragment = fragment;
   }
 
-  public List<ChannelHandler> buildHandlers() {
-    List<ChannelHandler> result = new ArrayList<>();
-    result.add(new HttpRequestDecoder());
-    result.add(new HttpResponseEncoder());
+  public void buildHandlers(ChannelPipeline pipeline) {
+    pipeline.addLast(new HttpRequestDecoder());
+    pipeline.addLast(new HttpResponseEncoder());
     if (fragment != null) {
-      result.addAll(fragment.buildHandlers());
+      fragment.buildHandlers(pipeline);
     }
-    return result;
   }
 
 }

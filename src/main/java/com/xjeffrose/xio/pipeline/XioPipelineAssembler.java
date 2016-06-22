@@ -1,11 +1,11 @@
 package com.xjeffrose.xio.pipeline;
 
-import io.netty.channel.ChannelHandler;
+import io.netty.channel.ChannelPipeline;
 
 import java.util.List;
 import java.util.ArrayList;
 
-public class XioPipelineAssembler {
+public class XioPipelineAssembler implements XioPipelineFragment {
 
   private final List<XioPipelineFragment> fragments;
 
@@ -17,12 +17,10 @@ public class XioPipelineAssembler {
     fragments.add(fragment);
   }
 
-  public List<ChannelHandler> buildHandlers() {
-    ArrayList<ChannelHandler> result = new ArrayList<ChannelHandler>();
+  public void buildHandlers(ChannelPipeline pipeline) {
     for (XioPipelineFragment fragment : fragments) {
-      result.addAll(fragment.buildHandlers());
+      fragment.buildHandlers(pipeline);
     }
-    return result;
   }
 
   public XioChannelInitializer build() {
