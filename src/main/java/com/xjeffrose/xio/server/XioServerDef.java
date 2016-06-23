@@ -24,6 +24,23 @@ public class XioServerDef {
   private final InetSocketAddress hostAddress;
   private final XioRoutingFilterFactory routingFilterFactory;
 
+  // This is just here to get the tests to compile
+  public XioServerDef() {
+    serverPort = 0;
+    maxFrameSize = 0;
+    maxConnections = 0;
+    queuedResponseLimit = 0;
+    clientIdleTimeout = null;
+    taskTimeout = null;
+    executor = null;
+    name = null;
+    securityFactory = null;
+    codecFactory = null;
+    aggregatorFactory = null;
+    hostAddress = null;
+    routingFilterFactory = null;
+  }
+
   public XioServerDef(
       String name,
       int serverPort,

@@ -10,6 +10,7 @@ import com.xjeffrose.xio.pipeline.XioPipelineFragment;
 import com.xjeffrose.xio.server.XioRandomServerEndpoint;
 import com.xjeffrose.xio.server.XioServer;
 import io.netty.channel.ChannelHandler;
+import io.netty.channel.ChannelPipeline;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
@@ -23,10 +24,8 @@ public class XioServerBootstrapFunctionalTest {
     XioRandomServerEndpoint endpoint = new XioRandomServerEndpoint();
     XioServerBootstrap bootstrap = new XioServerBootstrap()
       .addToPipeline(new XioHttpPipeline(new XioPipelineFragment() {
-        public List<ChannelHandler> buildHandlers() {
-          return Arrays.asList(
-            new XioHttp404Handler()
-          );
+        public void buildHandlers(ChannelPipeline pipeline) {
+          pipeline.addLast(new XioHttp404Handler());
         }
       }))
       .channelConfig(ChannelConfiguration.serverConfig(1, 1))

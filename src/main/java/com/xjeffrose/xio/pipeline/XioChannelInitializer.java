@@ -1,21 +1,17 @@
 package com.xjeffrose.xio.pipeline;
 
-import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.socket.SocketChannel;
-import java.util.List;
 
 public class XioChannelInitializer extends ChannelInitializer<SocketChannel> {
-  private final XioPipelineAssembler pipelineAssembler;
+  private final XioPipelineFragment pipelineFragment;
 
-  public XioChannelInitializer(XioPipelineAssembler pipelineAssembler) {
-    this.pipelineAssembler = pipelineAssembler;
+  public XioChannelInitializer(XioPipelineFragment pipelineFragment) {
+    this.pipelineFragment = pipelineFragment;
   }
 
   @Override
   public void initChannel(SocketChannel channel) {
-    for (ChannelHandler handler : pipelineAssembler.buildHandlers()) {
-      channel.pipeline().addLast(handler);
-    }
+    pipelineFragment.buildHandlers(channel.pipeline());
   }
 }

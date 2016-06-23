@@ -46,6 +46,7 @@
 LINT_ARGS="-Xlint:all -Xlint:-deprecation, -Xlint:-unchecked -Xlint:-rawtypes -Xlint:-serial"
 DISABLE_JAVA9_DEPRECATION_WARNING="-XDignore.symbol.file"
 JAVAC_ARGS="${LINT_ARGS} ${DISABLE_JAVA9_DEPRECATION_WARNING}"
+[[ -z "${DEBUG}" ]] || echo "Classpath ${CLASSPATH_COMPILE}" | tr ':' '\n'
 if [ $NOINFER ]; then
   javac -cp ${CLASSPATH_COMPILE}:${TARGETDIR} -d ${TARGETDIR} ${JAVAC_ARGS} "$@"
 else

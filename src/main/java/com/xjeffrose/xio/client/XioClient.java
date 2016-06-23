@@ -18,6 +18,13 @@ public class XioClient implements Closeable {
   private final Node node;
   private final Distributor distributor;
 
+  // This is just here to get the tests to compile
+  public XioClient() {
+    bootstrap = null;
+    node = null;
+    distributor = null;
+  }
+
   public XioClient(String host, int port, ChannelHandler handler, boolean ssl) {
     this(new InetSocketAddress(host, port), handler, ssl);
   }
