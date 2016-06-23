@@ -13,6 +13,7 @@ import org.apache.log4j.Logger;
 
 public class XioClient implements Closeable {
   private static final Logger log = Logger.getLogger(XioClient.class);
+
   private final Bootstrap bootstrap;
   private final Node node;
   private final Distributor distributor;
@@ -51,5 +52,4 @@ public class XioClient implements Closeable {
   public void close() throws IOException {
     bootstrap.group().shutdownGracefully();
   }
-
 }
