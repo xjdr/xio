@@ -1,20 +1,27 @@
 .PHONY: check-syntax
 
-PROJECT_ROOT=../../../../../../../
-TARGETDIR=$(PROJECT_ROOT)target/
+export PROJECT_ROOT=$(shell git rev-parse --show-toplevel)
+export TARGETDIR := $(PROJECT_ROOT)/target/
 
-include $(PROJECT_ROOT)*.mk
+include $(PROJECT_ROOT)/*.mk
 
 all:
-	javac $(JAVA_ARGS) -cp $(MAVEN_CLASSPATH):$(TARGETDIR) -d $(TARGETDIR) *.java
+	$(PROJECT_ROOT)/scripts/run-compile *.java
 
 $(PROJECT_ROOT)/target:
 	mkdir -p $(PROJECT_ROOT)/target
 
 check-syntax:
-	javac $(JAVA_ARGS) -cp $(MAVEN_CLASSPATH):$(TARGETDIR) -Xlint -d $(TARGETDIR) *.java
+	$(PROJECT_ROOT)/scripts/run-check-syntax
 
-test:
-	echo $(shell $(PROJECT_ROOT)scripts/file2class $(FILE_NAME))
-	javac $(JAVA_ARGS) -cp $(MAVEN_CLASSPATH):$(TARGETDIR):$(PROJECT_ROOT)lib/junit-4.12.jar: -d $(TARGETDIR) $(FILE_NAME)
-	java -cp $(MAVEN_CLASSPATH):$(TARGETDIR):$(PROJECT_ROOT)lib/junit-4.12.jar::$(PROJECT_ROOT)lib/hamcrest-core-1.3.jar: org.junit.runner.JUnitCore $(shell $(PROJECT_ROOT)scripts/file2class $(FILE_NAME))
+test: compile-all
+	$(PROJECT_ROOT)/scripts/run-test
+
+compile-all:
+	make -C $(PROJECT_ROOT) compile
+
+test-all:
+	make -C $(PROJECT_ROOT) test
+
+watch-test:
+	make -C $(PROJECT_ROOT) watch-test
