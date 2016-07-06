@@ -4,14 +4,14 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.socket.SocketChannel;
 
 public class XioChannelInitializer extends ChannelInitializer<SocketChannel> {
-  private final XioPipelineFragment pipelineFragment;
+  private final XioPipelineAssembler pipelineAssembler;
 
-  public XioChannelInitializer(XioPipelineFragment pipelineFragment) {
-    this.pipelineFragment = pipelineFragment;
+  public XioChannelInitializer(XioPipelineAssembler pipelineAssembler) {
+    this.pipelineAssembler = pipelineAssembler;
   }
 
   @Override
   public void initChannel(SocketChannel channel) {
-    pipelineFragment.buildHandlers(channel.pipeline());
+    pipelineAssembler.buildHandlers(channel.pipeline());
   }
 }

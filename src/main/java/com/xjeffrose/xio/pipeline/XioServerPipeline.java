@@ -10,23 +10,29 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelPipeline;
 
 import java.util.concurrent.TimeUnit;
+
 public class XioServerPipeline extends XioBasePipeline {
 
   private static final int NO_WRITER_IDLE_TIMEOUT = 60000;
   private static final int NO_ALL_IDLE_TIMEOUT = 60000;
-  private final XioSecurityHandlers securityHandlers;
 
-  public XioServerPipeline(XioServerDef def, ZkClient zkClient, XioServerConfig xioServerConfig, ChannelStatistics channelStatistics) {
-    super(def, zkClient, xioServerConfig, channelStatistics);
-    securityHandlers = def.getSecurityFactory().getSecurityHandlers(def, xioServerConfig);
+  public XioServerPipeline() {
+  }
+
+  public XioServerPipeline(XioServerDef def) {
+    super(def);
   }
 
   public ChannelHandler getEncryptionHandler() {
-    return securityHandlers.getEncryptionHandler();
+    return null;
   }
 
   public ChannelHandler getAuthenticationHandler() {
-    return securityHandlers.getAuthenticationHandler();
+    return null;
+  }
+
+  public ChannelHandler getCodecHandler() {
+    return null;
   }
 
   public void addIdleDisconnectHandler(ChannelPipeline pipeline) {
@@ -37,4 +43,7 @@ public class XioServerPipeline extends XioBasePipeline {
     }
   }
 
+  public String applicationProtocol() {
+    return "";
+  }
 }
