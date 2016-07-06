@@ -1,6 +1,6 @@
 export PROJECT_ROOT=$(shell pwd)
 export TARGETDIR := $(PROJECT_ROOT)/target
-export TARGET_DIR := target
+export TARGET_DIR := $(PROJECT_ROOT)/target
 
 JAVAC = javac
 JFLAGS = -g
@@ -50,7 +50,7 @@ Generated.mk: Dependencies.mk
 -include Generated.mk
 
 repl:
-	@echo $(MAVEN_CLASSPATH) | sed -e 's/^/:/' | sed -e 's/:/|:cp /g' | tr '|' '\n'
+	@echo ${CLASSPATH_COMPILE}:${TARGET_DIR} | sed -e 's/^/:/' | sed -e 's/:/|:cp /g' | tr '|' '\n'
 	@echo
 	@javarepl
 
