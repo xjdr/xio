@@ -74,17 +74,17 @@ $(TARGET_DIR)/%.class: src/test/java/%.java
 
 target/.example_compiled: $(EXAMPLE_OBJ)
 	scripts/run-compile $(?:$(TARGET_DIR)/%.class=src/example/java/%.java)
-	jdep -c $(TARGET_DIR) -j src/example/java -d $(DEP_DIR) $?
+	jdep -c $(TARGET_DIR) -j src/example/java -d $(DEP_DIR) -i com.xjeffrose.xio $?
 	touch $@
 
 target/.main_compiled: $(MAIN_OBJ)
 	scripts/run-compile $(?:$(TARGET_DIR)/%.class=src/main/java/%.java)
-	jdep -c $(TARGET_DIR) -j src/main/java -d $(DEP_DIR) $?
+	jdep -c $(TARGET_DIR) -j src/main/java -d $(DEP_DIR) -i com.xjeffrose.xio $?
 	touch $@
 
 target/.test_compiled: $(TEST_OBJ)
 	scripts/run-compile $(?:$(TARGET_DIR)/%.class=src/test/java/%.java)
-	jdep -c $(TARGET_DIR) -j src/test/java -d $(DEP_DIR) $?
+	jdep -c $(TARGET_DIR) -j src/test/java -d $(DEP_DIR) -i com.xjeffrose.xio $?
 	touch $@
 
 $(PROJECT_JAR):
