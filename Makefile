@@ -95,15 +95,22 @@ $(TARGET_DIR)/%.class: $(JAVA_SRC_DIR)/%.java
 
 -include $(PROJECT_DEP)
 
+# copy test resources into the target dir
+
+TEST_RESOURCES = $(shell cd src/test; find resources -type f -print | sed -e 's+resources+$(TARGET_DIR)+')
+
+$(TEST_RESOURCES): $(TARGET_DIR)/% : src/test/resources/%
+	cp $< $@
+
 # phonies
 
 clean:
 	rm Generated.mk
 	rm -fr $(DIRS)
 
-compile: $(DIRS) target/.main_compiled target/.test_compiled target/.example_compiled
-
-test: compile-src-and-test
-	scripts/run-test $$(find src/test -name "*Test.java")
+compile: $(DIRS) target/.main_compiled target/.test_compiled target/.example_compiled  $(TEST_RESOURCES)
 
 jar: compile $(PROJECT_JAR)
+
+test: compile
+	scripts/run-test $$(find src/test -name "*Test.java")
