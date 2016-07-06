@@ -104,6 +104,11 @@ $(TEST_RESOURCES): $(TARGET_DIR)/% : src/test/resources/%
 
 # phonies
 
+check-syntax:
+	@for dir in $$(find src -type d); do \
+		[[ -e $$dir/Makefile ]] && (echo $$dir; make -C $$dir check-syntax); \
+	done
+
 clean:
 	rm Generated.mk
 	rm -fr $(DIRS)
