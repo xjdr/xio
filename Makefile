@@ -1,9 +1,43 @@
-.PHONY: clean compile xio/log xio/core xio/ssl xio/server xio/client/asyncretry xio/client/retry xio/client/lb/strategies xio/client/lb xio/client xio/mux xio/proxy
-
-all: xio/log xio/core xio/ssl xio/server xio/client/asyncretry xio/client/retry xio/client/lb/strategies  xio/client/lb xio/client xio/mux xio/proxy
-
 export PROJECT_ROOT=$(shell pwd)
 export TARGETDIR := $(PROJECT_ROOT)/target
+export TARGET_DIR := target
+
+JAVAC = javac
+JFLAGS = -g
+
+# The directory root where the Java source files are found
+JAVA_SRC_DIR = src
+
+JAVA_SRC_ROOTS = example main test
+
+# The directory root where generated .d files go
+DEP_DIR = depend
+
+EXAMPLE_SRC = $(shell cd src/example/java; find com -name '*.java')
+EXAMPLE_OBJ = $(EXAMPLE_SRC:%.java=$(TARGET_DIR)/%.class)
+
+MAIN_SRC = $(shell cd src/main/java; find com -name '*.java')
+MAIN_OBJ = $(MAIN_SRC:%.java=$(TARGET_DIR)/%.class)
+
+TEST_SRC = $(shell cd src/test/java; find com -name '*.java')
+TEST_OBJ = $(TEST_SRC:%.java=$(TARGET_DIR)/%.class)
+
+PROJECT_JAR = xio.jar
+PROJECT_DEP = $(EXAMPLE_SRC:%.java=$(DEP_DIR)/%.d) $(MAIN_SRC:%.java=$(DEP_DIR)/%.d) $(TEST_SRC:%.java=$(DEP_DIR)/%.d)
+
+DIRS = $(DEP_DIR) $(TARGET_DIR)
+
+.PHONY: all clean compile
+# disable implicit rules
+.SUFFIXES:
+%:: %,v
+%:: RCS/%,v
+%:: RCS/%
+%:: s.%
+%:: SCCS/s.%
+all:
+	@echo "compile - build examples, main, and test"
+	@echo "jar - build $(PROJECT_JAR)"
 
 include Classpath.mk
 include Dependencies.mk
@@ -26,55 +60,50 @@ fetch:
 checkstyle:
 	drip -Dcheckstyle.cache.file=checkstyle.cache -cp `coursier fetch -p $(DEPS_ALL)` com.puppycrawl.tools.checkstyle.Main -c checkstyle.xml src/main
 
-target:
-	mkdir -p target
+$(DIRS):
+	mkdir -p $@
+
+$(TARGET_DIR)/%.class: src/example/java/%.java
+	touchp $@
+
+$(TARGET_DIR)/%.class: src/main/java/%.java
+	touchp $@
+
+$(TARGET_DIR)/%.class: src/test/java/%.java
+	touchp $@
+
+target/.example_compiled: $(EXAMPLE_OBJ)
+	scripts/run-compile $(?:$(TARGET_DIR)/%.class=src/example/java/%.java)
+	jdep -c $(TARGET_DIR) -j src/example/java -d $(DEP_DIR) $?
+	touch $@
+
+target/.main_compiled: $(MAIN_OBJ)
+	scripts/run-compile $(?:$(TARGET_DIR)/%.class=src/main/java/%.java)
+	jdep -c $(TARGET_DIR) -j src/main/java -d $(DEP_DIR) $?
+	touch $@
+
+target/.test_compiled: $(TEST_OBJ)
+	scripts/run-compile $(?:$(TARGET_DIR)/%.class=src/test/java/%.java)
+	jdep -c $(TARGET_DIR) -j src/test/java -d $(DEP_DIR) $?
+	touch $@
+
+$(PROJECT_JAR):
+	cd $(TARGET_DIR); jar cf ../$@ `find com -name '*.class'`
+
+$(TARGET_DIR)/%.class: $(JAVA_SRC_DIR)/%.java
+	touchp $@
+
+-include $(PROJECT_DEP)
+
+# phonies
 
 clean:
 	rm Generated.mk
-	rm -fr target
+	rm -fr $(DIRS)
 
-compile: target
-	scripts/run-compile $$(find src/main -name "*.java")
-
-compile-src-and-test: target
-	scripts/run-compile $$(find src/main src/test -name "*.java")
+compile: $(DIRS) target/.main_compiled target/.test_compiled target/.example_compiled
 
 test: compile-src-and-test
 	scripts/run-test $$(find src/test -name "*Test.java")
 
-xio/core: target
-	$(MAKE) -C src/main/java/com/xjeffrose/xio/core
-
-xio/client: target
-	$(MAKE) -C src/main/java/com/xjeffrose/xio/client
-
-xio/client/lb/strategies: target
-	$(MAKE) -C src/main/java/com/xjeffrose/xio/client/loadbalancer/strategies
-
-xio/client/lb: target
-	$(MAKE) -C src/main/java/com/xjeffrose/xio/client/loadbalancer
-
-xio/client/asyncretry: target
-	$(MAKE) -C src/main/java/com/xjeffrose/xio/client/asyncretry
-
-xio/client/retry: target
-	$(MAKE) -C src/main/java/com/xjeffrose/xio/client/retry
-
-xio/server: target
-	$(MAKE) -C src/main/java/com/xjeffrose/xio/server
-
-xio/ssl: target
-	$(MAKE) -C src/main/java/com/xjeffrose/xio/SSL
-
-xio/log: target
-	$(MAKE) -C src/main/java/com/xjeffrose/xio/log
-
-xio/mux: target
-	$(MAKE) -C src/main/java/com/xjeffrose/xio/mux
-
-xio/proxy: target
-	$(MAKE) -C src/main/java/com/xjeffrose/xio/proxy
-
-jar:
-	jar cvf test.jar target/test/mod1/*.class target/test/mod2/*.class target/chica/*.class
-	jar cfe test.jar test.Main.main target/test/Main.class
+jar: compile $(PROJECT_JAR)
