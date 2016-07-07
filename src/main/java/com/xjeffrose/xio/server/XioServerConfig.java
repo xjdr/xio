@@ -10,14 +10,17 @@ import java.util.concurrent.ExecutorService;
 import java.net.InetSocketAddress;
 
 public class XioServerConfig {
+  // old
   private final Map<ChannelOption<Object>, Object> bootstrapOptions;
   private final Timer timer;
   private final ExecutorService bossExecutor;
   private final int bossThreadCount;
   private final ExecutorService workerExecutor;
   private final int workerThreadCount;
+  // new
   private String name;
   private InetSocketAddress bindAddress;
+  private XioServerLimits limits;
 
   public XioServerConfig(Config config) {
     bootstrapOptions = null;
@@ -28,6 +31,7 @@ public class XioServerConfig {
     workerThreadCount = config.getInt("settings.workerThreads");
     name = config.getString("name");
     bindAddress = new InetSocketAddress(config.getString("settings.bindHost"), config.getInt("settings.bindPort"));
+    limits = new XioServerLimits(config.getConfig("limits"));
   }
 
   static public XioServerConfig fromConfig(String config) {
@@ -54,6 +58,10 @@ public class XioServerConfig {
 
   public String getName() {
     return name;
+  }
+
+  public XioServerLimits limits() {
+    return limits;
   }
 
   public static XioServerConfigBuilder newBuilder() {

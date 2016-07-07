@@ -1,6 +1,7 @@
 package com.xjeffrose.xio.pipeline;
 
 import com.xjeffrose.xio.core.ChannelStatistics;
+import com.xjeffrose.xio.core.EchoCodec;
 import com.xjeffrose.xio.core.ZkClient;
 import com.xjeffrose.xio.server.XioServerConfig;
 import com.xjeffrose.xio.server.XioServerDef;
@@ -19,7 +20,7 @@ public class XioEchoPipeline extends XioServerPipeline {
   }
 
   public ChannelHandler getCodecHandler() {
-    return new HttpServerCodec();
+    return new EchoCodec();
   }
 
 }

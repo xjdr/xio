@@ -1,16 +1,31 @@
 package com.xjeffrose.xio.server;
 
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 import com.xjeffrose.xio.core.ChannelStatistics;
 import com.xjeffrose.xio.core.ZkClient;
+import io.netty.channel.group.ChannelGroup;
+import io.netty.channel.group.DefaultChannelGroup;
+import io.netty.util.concurrent.GlobalEventExecutor;
 
 public class XioServerState {
 
   private final ZkClient zkClient;
+  private final ChannelGroup allChannels = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
   private final ChannelStatistics channelStatistics;
 
   public XioServerState(ZkClient zkClient, ChannelStatistics channelStatistics) {
     this.zkClient = zkClient;
     this.channelStatistics = channelStatistics;
+  }
+
+  public XioServerState(Config config) {
+    zkClient = new ZkClient(config.getString("settings.zookeeperCluster"));
+    channelStatistics = new ChannelStatistics(allChannels);
+  }
+
+  static public XioServerState fromConfig(String config) {
+    return new XioServerState(ConfigFactory.load().getConfig(config));
   }
 
   public ZkClient zkClient() {

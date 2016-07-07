@@ -6,6 +6,7 @@ import com.xjeffrose.xio.server.XioServer;
 import com.xjeffrose.xio.server.XioServerConfig;
 import com.xjeffrose.xio.server.XioServerEndpoint;
 import com.xjeffrose.xio.server.XioServerInstrumentation;
+import com.xjeffrose.xio.server.XioServerState;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
@@ -13,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
+
 public class XioServerBootstrap {
   private static final Logger log = LoggerFactory.getLogger(XioServerBootstrap.class);
 
@@ -24,9 +26,9 @@ public class XioServerBootstrap {
 
   private ChannelConfiguration channelConfig;
 
-  public XioServerBootstrap(XioServerConfig config) {
+  public XioServerBootstrap(XioServerConfig config, XioServerState state) {
     serverBootstrap = new ServerBootstrap();
-    pipelineAssembler = new XioPipelineAssembler(config);
+    pipelineAssembler = new XioPipelineAssembler(config, state);
   }
 
   public XioServerBootstrap addToPipeline(XioPipelineFragment fragment) {
