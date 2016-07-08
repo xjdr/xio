@@ -61,7 +61,7 @@ public class XioServerBootstrap {
       instrumentation.addressBound = (InetSocketAddress)future.channel().localAddress();
     } else {
       log.error("Couldn't bind channel", future.cause());
-      throw new RuntimeError(future.cause());
+      throw new RuntimeException(future.cause());
     }
     return new XioServer(future.channel(), instrumentation);
   }
