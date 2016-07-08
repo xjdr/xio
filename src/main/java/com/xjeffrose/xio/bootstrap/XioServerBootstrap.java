@@ -3,15 +3,16 @@ package com.xjeffrose.xio.bootstrap;
 import com.xjeffrose.xio.pipeline.XioPipelineAssembler;
 import com.xjeffrose.xio.pipeline.XioPipelineFragment;
 import com.xjeffrose.xio.server.XioServer;
+import com.xjeffrose.xio.server.XioServerConfig;
 import com.xjeffrose.xio.server.XioServerEndpoint;
+import com.xjeffrose.xio.server.XioServerInstrumentation;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.channel.ChannelFutureListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
+import java.net.InetSocketAddress;
 public class XioServerBootstrap {
   private static final Logger log = LoggerFactory.getLogger(XioServerBootstrap.class);
 
@@ -23,9 +24,9 @@ public class XioServerBootstrap {
 
   private ChannelConfiguration channelConfig;
 
-  public XioServerBootstrap() {
+  public XioServerBootstrap(XioServerConfig config) {
     serverBootstrap = new ServerBootstrap();
-    pipelineAssembler = new XioPipelineAssembler();
+    pipelineAssembler = new XioPipelineAssembler(config);
   }
 
   public XioServerBootstrap addToPipeline(XioPipelineFragment fragment) {
@@ -48,10 +49,18 @@ public class XioServerBootstrap {
     log.debug("Building");
     serverBootstrap.group(channelConfig.bossGroup(), channelConfig.workerGroup());
     serverBootstrap.channel(channelConfig.channel());
-    serverBootstrap.childHandler(pipelineAssembler.build());
+    final XioServerInstrumentation instrumentation = new XioServerInstrumentation();
+    serverBootstrap.childHandler(pipelineAssembler.build(instrumentation));
     ChannelFuture future = serverBootstrap.bind();
-    endpoint.afterBind(future);
+    endpoint.afterBind(future); // TODO(CK): kill this
+    future.addListener(new ChannelFutureListener() {
+      public void operationComplete(ChannelFuture future) {
+        if (future.isSuccess()) {
+          instrumentation.addressBound = (InetSocketAddress)future.channel().localAddress();
+        }
+      }
+    });
     future.awaitUninterruptibly();
-    return new XioServer(future.channel());
+    return new XioServer(future.channel(), instrumentation);
   }
 }

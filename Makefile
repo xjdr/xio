@@ -1,6 +1,6 @@
 export PROJECT_ROOT=$(shell pwd)
 export TARGETDIR := $(PROJECT_ROOT)/target
-export TARGET_DIR := target
+export TARGET_DIR := $(PROJECT_ROOT)/target
 
 JAVAC = javac
 JFLAGS = -g
@@ -50,7 +50,7 @@ Generated.mk: Dependencies.mk
 -include Generated.mk
 
 repl:
-	@echo $(MAVEN_CLASSPATH) | sed -e 's/^/:/' | sed -e 's/:/|:cp /g' | tr '|' '\n'
+	@echo ${CLASSPATH_COMPILE}:${TARGET_DIR} | sed -e 's/^/:/' | sed -e 's/:/|:cp /g' | tr '|' '\n'
 	@echo
 	@javarepl
 
@@ -74,17 +74,17 @@ $(TARGET_DIR)/%.class: src/test/java/%.java
 
 target/.example_compiled: $(EXAMPLE_OBJ)
 	scripts/run-compile $(?:$(TARGET_DIR)/%.class=src/example/java/%.java)
-	jdep -c $(TARGET_DIR) -j src/example/java -d $(DEP_DIR) $?
+	jdep -c $(TARGET_DIR) -j src/example/java -d $(DEP_DIR) -i com.xjeffrose.xio $?
 	touch $@
 
 target/.main_compiled: $(MAIN_OBJ)
 	scripts/run-compile $(?:$(TARGET_DIR)/%.class=src/main/java/%.java)
-	jdep -c $(TARGET_DIR) -j src/main/java -d $(DEP_DIR) $?
+	jdep -c $(TARGET_DIR) -j src/main/java -d $(DEP_DIR) -i com.xjeffrose.xio $?
 	touch $@
 
 target/.test_compiled: $(TEST_OBJ)
 	scripts/run-compile $(?:$(TARGET_DIR)/%.class=src/test/java/%.java)
-	jdep -c $(TARGET_DIR) -j src/test/java -d $(DEP_DIR) $?
+	jdep -c $(TARGET_DIR) -j src/test/java -d $(DEP_DIR) -i com.xjeffrose.xio $?
 	touch $@
 
 $(PROJECT_JAR):
@@ -95,15 +95,27 @@ $(TARGET_DIR)/%.class: $(JAVA_SRC_DIR)/%.java
 
 -include $(PROJECT_DEP)
 
+# copy test resources into the target dir
+
+TEST_RESOURCES = $(shell cd src/test; find resources -type f -print | sed -e 's+resources+$(TARGET_DIR)+')
+
+$(TEST_RESOURCES): $(TARGET_DIR)/% : src/test/resources/%
+	cp $< $@
+
 # phonies
+
+check-syntax:
+	@for dir in $$(find src -type d); do \
+		[[ -e $$dir/Makefile ]] && (echo $$dir; make -C $$dir check-syntax); \
+	done
 
 clean:
 	rm Generated.mk
 	rm -fr $(DIRS)
 
-compile: $(DIRS) target/.main_compiled target/.test_compiled target/.example_compiled
-
-test: compile-src-and-test
-	scripts/run-test $$(find src/test -name "*Test.java")
+compile: $(DIRS) target/.main_compiled target/.test_compiled target/.example_compiled  $(TEST_RESOURCES)
 
 jar: compile $(PROJECT_JAR)
+
+test: compile
+	scripts/run-test $$(find src/test -name "*Test.java")

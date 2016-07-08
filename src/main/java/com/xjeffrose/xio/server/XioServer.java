@@ -51,10 +51,12 @@ public class XioServer implements AutoCloseable {
   private ExecutorService bossExecutor;
   private ExecutorService ioWorkerExecutor;
   private Channel serverChannel;
+  private /*final*/ XioServerInstrumentation instrumentation;
 
 
-  public XioServer(Channel serverChannel) {
+  public XioServer(Channel serverChannel, XioServerInstrumentation instrumentation) {
     this.serverChannel = serverChannel;
+    this.instrumentation = instrumentation;
     this.requestedPort = 0;
     this.hostAddr = null;
     this.allChannels = null;
@@ -138,6 +140,10 @@ public class XioServer implements AutoCloseable {
 
   public boolean running() {
     return true;
+  }
+
+  public XioServerInstrumentation instrumentation() {
+    return instrumentation;
   }
 
   public void serve() {

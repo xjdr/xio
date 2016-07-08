@@ -1,20 +1,23 @@
 package com.xjeffrose.xio.pipeline;
 
+import com.xjeffrose.xio.core.ChannelStatistics;
+import com.xjeffrose.xio.core.ZkClient;
 import com.xjeffrose.xio.server.XioServerConfig;
+import com.xjeffrose.xio.server.XioServerDef;
 import com.xjeffrose.xio.server.XioServerState;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelPipeline;
-import io.netty.handler.codec.http.HttpRequestDecoder;
-import io.netty.handler.codec.http.HttpResponseEncoder;
+import io.netty.handler.codec.http.HttpServerCodec;
 
-public class XioHttpPipeline implements XioPipelineFragment {
+public class XioHttp1_1Pipeline extends XioServerPipeline {
 
   private final XioPipelineFragment fragment;
 
-  public XioHttpPipeline() {
+  public XioHttp1_1Pipeline() {
     fragment = null;
   }
 
-  public XioHttpPipeline(XioPipelineFragment fragment) {
+  public XioHttp1_1Pipeline(XioPipelineFragment fragment) {
     this.fragment = fragment;
   }
 
@@ -22,9 +25,12 @@ public class XioHttpPipeline implements XioPipelineFragment {
     return "http/1.1";
   }
 
+  public ChannelHandler getCodecHandler() {
+    return new HttpServerCodec();
+  }
+
   public void buildHandlers(XioServerConfig config, XioServerState state, ChannelPipeline pipeline) {
-    pipeline.addLast(new HttpRequestDecoder());
-    pipeline.addLast(new HttpResponseEncoder());
+    super.buildHandlers(config, state, pipeline);
     if (fragment != null) {
       fragment.buildHandlers(config, state, pipeline);
     }

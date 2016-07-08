@@ -13,6 +13,7 @@ import com.xjeffrose.xio.server.XioSecurityFactory;
 import com.xjeffrose.xio.server.XioSecurityHandlers;
 import com.xjeffrose.xio.server.XioServerConfig;
 import com.xjeffrose.xio.server.XioServerDef;
+import com.xjeffrose.xio.server.XioServerState;
 import com.xjeffrose.xio.server.XioService;
 import com.xjeffrose.xio.server.XioWebApplicationFirewall;
 import io.netty.channel.ChannelPipeline;
@@ -27,18 +28,20 @@ public class XioServerPipelineUnitTest {
     // Build pre-reqs
     XioServerDef def = mock(XioServerDef.class);
     XioServerConfig serverConfig = mock(XioServerConfig.class);
+    XioServerState serverState = mock(XioServerState.class);
+    ChannelStatistics channelStatistics = mock(ChannelStatistics.class);
+    when(serverState.channelStatistics()).thenReturn(channelStatistics);
     XioSecurityFactory securityFactory = mock(XioSecurityFactory.class);
     when(def.getSecurityFactory()).thenReturn(securityFactory);
     XioSecurityHandlers securityHandlers = mock(XioSecurityHandlers.class);
     when(securityFactory.getSecurityHandlers(def, serverConfig)).thenReturn(securityHandlers);
     XioCodecFactory codecFactory = mock(XioCodecFactory.class);
     when(def.getCodecFactory()).thenReturn(codecFactory);
-    ChannelStatistics channelStatistics = mock(ChannelStatistics.class);
 
     // Build class under test
-    XioServerPipeline server = new XioServerPipeline(def, null, serverConfig, channelStatistics);
+    XioServerPipeline server = new XioServerPipeline(def);
     ChannelPipeline pipeline = mock(ChannelPipeline.class);
-    server.buildHandlers(pipeline);
+    server.buildHandlers(serverConfig, serverState, pipeline);
     InOrder inOrder = inOrder(pipeline);
     inOrder.verify(pipeline, times(1)).addLast(eq("globalConnectionLimiter"), isA(XioConnectionLimiter.class));
     inOrder.verify(pipeline, times(1)).addLast(eq("serviceConnectionLimiter"), isA(XioConnectionLimiter.class));

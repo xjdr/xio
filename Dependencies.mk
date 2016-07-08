@@ -1,3 +1,4 @@
+DEP_CONFIG=com.typesafe:config:1.3.0
 DEP_FINDBUGS=com.google.code.findbugs:jsr305:3.0.1
 DEP_GUAVA=com.google.guava:guava:19.0
 DEP_NETTY=io.netty:netty-all:4.1.0.Final
@@ -16,7 +17,8 @@ DEP_CHECKSTYLE=com.puppycrawl.tools:checkstyle:6.19
 
 DEP_ECJ=org.eclipse.jdt.core.compiler:ecj:4.5.1
 
-DEPS_COMPILE=$(DEP_FINDBUGS) \
+DEPS_COMPILE=$(DEP_CONFIG) \
+             $(DEP_FINDBUGS) \
              $(DEP_GUAVA) \
              $(DEP_NETTY) \
              $(DEP_NETTY_TCNATIVE) \
