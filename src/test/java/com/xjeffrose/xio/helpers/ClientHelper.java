@@ -1,22 +1,17 @@
 package com.xjeffrose.xio.helpers;
 
-import java.io.IOException;
-
-import com.xjeffrose.xio.bootstrap.XioServerBootstrap;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
-import java.util.Map;
-import org.junit.Test;
+import com.xjeffrose.xio.fixtures.OkHttpUnsafe;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import java.io.IOException;
+import java.net.InetSocketAddress;
 
 public class ClientHelper {
 
-  static public Response request(String url) {
+  static public Response request(String url, OkHttpClient client) {
     try {
-      OkHttpClient client = new OkHttpClient();
       Request request = new Request.Builder()
         .url(url)
         .build()
@@ -25,5 +20,23 @@ public class ClientHelper {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  static public Response request(String url) {
+    return request(url, new OkHttpClient());
+  }
+
+  static String buildUrl(String protocol, InetSocketAddress address) {
+    return protocol + address.getHostString() + ":" + address.getPort() + "/";
+  }
+
+  static public Response http(InetSocketAddress address) {
+    String url = buildUrl("http://", address);
+    return request(url, new OkHttpClient());
+  }
+
+  static public Response https(InetSocketAddress address) {
+    String url = buildUrl("https://", address);
+    return request(url, OkHttpUnsafe.getUnsafeClient());
   }
 }

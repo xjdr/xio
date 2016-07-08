@@ -21,6 +21,10 @@ public class XioHttp1_1Pipeline extends XioServerPipeline {
     this.fragment = fragment;
   }
 
+  public XioHttp1_1Pipeline(XioChannelHandlerFactory factory) {
+    this.fragment = new XioSimplePipelineFragment(factory);
+  }
+
   public String applicationProtocol() {
     return "http/1.1";
   }

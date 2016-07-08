@@ -168,6 +168,7 @@ public class XioServerFunctionalTest {
   }
   */
 
+  // reproduced in XioHttp1_1PipelineFunctionalTest.java
   /*
   @Test
   public void testComplexServerConfigurationHttp() throws Exception {
