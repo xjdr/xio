@@ -21,7 +21,6 @@ abstract public class XioBasePipeline implements XioPipelineFragment {
 
   protected static final XioConnectionLimiter globalConnectionLimiter = new XioConnectionLimiter(15000);
 
-  // TODO(CK): change these from get to add, similar to addIdleDisconnectHandler
   abstract public ChannelHandler getEncryptionHandler();
 
   abstract public ChannelHandler getAuthenticationHandler();

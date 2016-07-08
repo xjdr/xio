@@ -1,8 +1,6 @@
 package com.xjeffrose.xio.bootstrap;
 
 import com.squareup.okhttp.Response;
-import com.xjeffrose.xio.bootstrap.ChannelConfiguration;
-import com.xjeffrose.xio.bootstrap.XioServerBootstrap;
 import com.xjeffrose.xio.handler.XioHttp404Handler;
 import com.xjeffrose.xio.helpers.ClientHelper;
 import com.xjeffrose.xio.pipeline.XioHttpPipeline;
@@ -21,8 +19,9 @@ public class XioServerBootstrapFunctionalTest {
   public void testServe404() {
     XioRandomServerEndpoint endpoint = new XioRandomServerEndpoint();
     XioServerConfig serverConfig = XioServerConfig.fromConfig("xio.exampleServer");
+    XioServerState serverState = XioServerState.fromConfig("xio.exampleApplication");
 
-    XioServerBootstrap bootstrap = new XioServerBootstrap(serverConfig)
+    XioServerBootstrap bootstrap = new XioServerBootstrap(serverConfig, serverState)
       .addToPipeline(new XioHttpPipeline(new XioPipelineFragment() {
         public String applicationProtocol() {
           return "";

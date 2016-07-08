@@ -32,6 +32,7 @@ public class XioServerBootstrap {
   }
 
   public XioServerBootstrap addToPipeline(XioPipelineFragment fragment) {
+    // TODO(CK): interrogate fragment for channel options
     pipelineAssembler.addFragment(fragment);
     return this;
   }
