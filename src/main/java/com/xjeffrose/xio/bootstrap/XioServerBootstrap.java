@@ -56,14 +56,13 @@ public class XioServerBootstrap {
     serverBootstrap.childHandler(pipelineAssembler.build(instrumentation));
     ChannelFuture future = serverBootstrap.bind();
     endpoint.afterBind(future); // TODO(CK): kill this
-    future.addListener(new ChannelFutureListener() {
-      public void operationComplete(ChannelFuture future) {
-        if (future.isSuccess()) {
-          instrumentation.addressBound = (InetSocketAddress)future.channel().localAddress();
-        }
-      }
-    });
     future.awaitUninterruptibly();
+    if (future.isSuccess()) {
+      instrumentation.addressBound = (InetSocketAddress)future.channel().localAddress();
+    } else {
+      log.error("Couldn't bind channel", future.cause());
+      throw new RuntimeError(future.cause());
+    }
     return new XioServer(future.channel(), instrumentation);
   }
 }

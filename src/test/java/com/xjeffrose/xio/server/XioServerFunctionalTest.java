@@ -69,6 +69,8 @@ public class XioServerFunctionalTest {
   @Test
   public void test() {
   }
+  // reproduced in XioEchoPipelineFunctionalTest.java
+  // reproduced in XioTcpProxyPipelineFunctionalTest.java
   /*
   @Test
   public void testComplexServerConfigurationTCP() throws Exception {
