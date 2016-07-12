@@ -544,6 +544,7 @@ public class XioServerFunctionalTest {
   */
 
 
+  // Reproduced in XioSslHttp1_1PipelineFunctionalTest.java
   /*
   @Test
   public void testComplexProxy() throws Exception {

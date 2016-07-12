@@ -7,6 +7,7 @@ import com.xjeffrose.xio.helpers.ClientHelper;
 import com.xjeffrose.xio.bootstrap.ChannelConfiguration;
 import com.xjeffrose.xio.bootstrap.XioServerBootstrap;
 import com.xjeffrose.xio.helpers.HttpProxyServer;
+import com.xjeffrose.xio.helpers.HttpsProxyServer;
 import com.xjeffrose.xio.server.XioRandomServerEndpoint;
 import com.xjeffrose.xio.server.XioServer;
 import com.xjeffrose.xio.server.XioServerConfig;
@@ -17,6 +18,8 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 public class XioSslHttp1_1PipelineFunctionalTest extends Assert {
 
@@ -54,9 +57,8 @@ public class XioSslHttp1_1PipelineFunctionalTest extends Assert {
     }
   }
 
-
   @Test
-  public void testProxyServer() throws IOException {
+  public void testProxyToHttpServer() throws IOException {
     try (SimpleTestServer testServer = new SimpleTestServer(0)) {
       testServer.run();
 
@@ -78,6 +80,31 @@ public class XioSslHttp1_1PipelineFunctionalTest extends Assert {
         assertEquals("Jetty(9.3.1.v20150714)", response.header("Server"));
         assertEquals("CONGRATS!\n", response.body().string());
       }
+    }
+  }
+
+  @Test
+  public void testProxyToHttpsServer() throws IOException, URISyntaxException {
+    URI uri = new URI("https://www.paypal.com:443/home");
+
+    XioServerConfig serverConfig = XioServerConfig.fromConfig("xio.exampleServer");
+    XioServerState serverState = XioServerState.fromConfig("xio.exampleApplication");
+
+    XioServerBootstrap bootstrap = new XioServerBootstrap(serverConfig, serverState)
+      .addToPipeline(new XioSslHttp1_1Pipeline(new HttpsProxyServer(uri)))
+      .channelConfig(ChannelConfiguration.serverConfig(1, 1))
+      .endpoint(new XioRandomServerEndpoint())
+      ;
+
+    try (XioServer server = bootstrap.build()) {
+      InetSocketAddress address = server.instrumentation().addressBound();
+      Response response = ClientHelper.https(address);
+
+      assertTrue(response.isSuccessful());
+      assertEquals(200, response.code());
+      assertEquals("Apache", response.header("Server"));
+      assertEquals("If you are reading this, maybe you should be working at PayPal instead! Check out https://www.paypal.com/us/webapps/mpp/paypal-jobs", response.header("X-Recruiting"));
+      assertFalse(response.body().string().isEmpty());
     }
   }
 
