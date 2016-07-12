@@ -2,14 +2,17 @@ package com.xjeffrose.xio.pipeline;
 
 import com.squareup.okhttp.Response;
 import com.xjeffrose.xio.fixtures.SampleHandler;
+import com.xjeffrose.xio.fixtures.SimpleTestServer;
 import com.xjeffrose.xio.helpers.ClientHelper;
 import com.xjeffrose.xio.bootstrap.ChannelConfiguration;
 import com.xjeffrose.xio.bootstrap.XioServerBootstrap;
+import com.xjeffrose.xio.helpers.HttpProxyServer;
 import com.xjeffrose.xio.server.XioRandomServerEndpoint;
 import com.xjeffrose.xio.server.XioServer;
 import com.xjeffrose.xio.server.XioServerConfig;
 import com.xjeffrose.xio.server.XioServerState;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -18,7 +21,7 @@ import java.net.InetSocketAddress;
 public class XioSslHttp1_1PipelineFunctionalTest extends Assert {
 
   @Test
-  public void testProxyServer() throws IOException {
+  public void testServer() throws IOException {
     XioServerConfig serverConfig = XioServerConfig.fromConfig("xio.exampleServer");
     XioServerState serverState = XioServerState.fromConfig("xio.exampleApplication");
 
@@ -48,6 +51,33 @@ public class XioSslHttp1_1PipelineFunctionalTest extends Assert {
       assertTrue(response.isSuccessful());
       assertEquals(200, response.code());
       assertEquals(expectedResponse, response.body().string());
+    }
+  }
+
+
+  @Test
+  public void testProxyServer() throws IOException {
+    try (SimpleTestServer testServer = new SimpleTestServer(0)) {
+      testServer.run();
+
+      XioServerConfig serverConfig = XioServerConfig.fromConfig("xio.exampleServer");
+      XioServerState serverState = XioServerState.fromConfig("xio.exampleApplication");
+
+      XioServerBootstrap bootstrap = new XioServerBootstrap(serverConfig, serverState)
+        .addToPipeline(new XioSslHttp1_1Pipeline(new HttpProxyServer(testServer.boundAddress())))
+        .channelConfig(ChannelConfiguration.serverConfig(1, 1))
+        .endpoint(new XioRandomServerEndpoint())
+      ;
+
+      try (XioServer server = bootstrap.build()) {
+        InetSocketAddress address = server.instrumentation().addressBound();
+        Response response = ClientHelper.https(address);
+
+        assertTrue(response.isSuccessful());
+        assertEquals(200, response.code());
+        assertEquals("Jetty(9.3.1.v20150714)", response.header("Server"));
+        assertEquals("CONGRATS!\n", response.body().string());
+      }
     }
   }
 
