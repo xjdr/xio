@@ -25,11 +25,12 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 //import java.util.concurrent.atomic.AtomicBoolean;
 //import java.util.concurrent.atomic.AtomicInteger;
 //import java.util.concurrent.atomic.AtomicReference;
-//import org.apache.log4j.Logger;
+//import lombok.extern.log4j.Log4j;
 //
 //
+//@Log4j
 public class XioDispatcher extends ChannelInboundHandlerAdapter {
-//  private static final Logger log = Logger.getLogger(XioServerTransport.class.getName());
+
 //
 //  private final XioProcessorFactory processorFactory;
 //  private final long taskTimeoutMillis;

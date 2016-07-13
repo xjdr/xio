@@ -21,10 +21,11 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.http.HttpClientCodec;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-import org.apache.log4j.Logger;
+import lombok.extern.log4j.Log4j;
 
+@Log4j
 public class NodeHealthCheck {
-  private static final Logger log = Logger.getLogger(NodeHealthCheck.class.getName());
+
   private final EpollEventLoopGroup epollEventLoop;
   private final NioEventLoopGroup nioEventLoop;
 

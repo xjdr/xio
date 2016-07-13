@@ -32,10 +32,11 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.apache.log4j.Logger;
+import lombok.extern.log4j.Log4j;
 
+@Log4j
 public class XioServerTransport {
-  private static final Logger log = Logger.getLogger(XioServerTransport.class.getName());
+
 
   private static final int NO_WRITER_IDLE_TIMEOUT = 60000;
   private static final int NO_ALL_IDLE_TIMEOUT = 60000;

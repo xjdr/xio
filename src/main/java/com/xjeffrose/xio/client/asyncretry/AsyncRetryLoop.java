@@ -6,8 +6,9 @@ import java.net.ConnectException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-import org.apache.log4j.Logger;
+import lombok.extern.log4j.Log4j;
 
+@Log4j
 public class AsyncRetryLoop {
   private final int attemptLimit;
   private final EventLoopGroup eventLoopGroup;

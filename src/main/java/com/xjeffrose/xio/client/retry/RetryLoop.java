@@ -7,7 +7,7 @@ import java.net.ConnectException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-import org.apache.log4j.Logger;
+import lombok.extern.log4j.Log4j;
 
 ///**
 // * <p>Mechanism to perform an operation on Zookeeper that is safe against disconnections and
@@ -36,6 +36,7 @@ import org.apache.log4j.Logger;
 // * }
 // * </pre>
 // */
+@Log4j
 public class RetryLoop {
   private static final RetrySleeper sleeper = new RetrySleeper() {
     @Override
@@ -43,7 +44,7 @@ public class RetryLoop {
       unit.sleep(time);
     }
   };
-  private final Logger log = Logger.getLogger(RetryLoop.class);
+
   private final long startTimeMs = System.currentTimeMillis();
   private final RetryPolicy retryPolicy;
   private final AtomicReference<TracerDriver> tracer;

@@ -16,10 +16,11 @@ import io.netty.channel.epoll.EpollSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.http.HttpClientCodec;
-import org.apache.log4j.Logger;
+import lombok.extern.log4j.Log4j;
 
+@Log4j
 public class XioClientBootstrap {
-  private static final Logger log = Logger.getLogger(Node.class);
+
   private final Bootstrap bootstrap;
   private boolean ssl;
   private Protocol proto;

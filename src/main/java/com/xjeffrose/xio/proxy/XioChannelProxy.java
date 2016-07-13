@@ -14,10 +14,11 @@ import io.netty.handler.ssl.SslHandler;
 import io.netty.util.Attribute;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
-import org.apache.log4j.Logger;
+import lombok.extern.log4j.Log4j;
 
+@Log4j
 public class XioChannelProxy extends ChannelDuplexHandler {
-  private static final Logger log = Logger.getLogger(XioChannelProxy.class);
+
   private final Channel inboundChannel;
   private final ConnectionStateTracker connectionContext;
   private SslHandler sslHandler;

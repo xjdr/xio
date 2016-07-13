@@ -11,10 +11,11 @@ import org.apache.curator.framework.recipes.leader.LeaderSelector;
 import org.apache.curator.framework.recipes.leader.LeaderSelectorListener;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.zookeeper.CreateMode;
-import org.apache.log4j.Logger;
+import lombok.extern.log4j.Log4j;
 
+@Log4j
 public class ZkClient {
-    private static final Logger log = Logger.getLogger(ZkClient.class.getName());
+
 
   private LeaderSelector leaderSelector;
   private final XioLeaderSelectorListener leaderListener = new XioLeaderSelectorListener();

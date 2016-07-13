@@ -6,10 +6,11 @@ import org.apache.curator.framework.state.ConnectionState;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import org.apache.log4j.Logger;
+import lombok.extern.log4j.Log4j;
 
+@Log4j
 public class XioLeaderSelectorListener implements LeaderSelectorListener {
-  private static final Logger log = Logger.getLogger(XioLeaderSelectorListener.class.getName());
+
   private Lock lock = new ReentrantLock();
   private Condition dropLeadership = lock.newCondition();
 
