@@ -3,20 +3,15 @@ package com.xjeffrose.xio.client.loadbalancer;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.net.HostAndPort;
-import com.xjeffrose.xio.client.retry.ExponentialBackoffRetry;
-import com.xjeffrose.xio.client.retry.RetryLoop;
-import com.xjeffrose.xio.client.retry.TracerDriver;
 import io.netty.channel.Channel;
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.log4j.Logger;
 
 /**
@@ -35,27 +30,37 @@ public class Node {
   private final List<Long> requestTimes = new ArrayList<>();
   private final String serviceName;
   private final int weight;
-
+  private final Protocol proto;
+  private final boolean ssl;
+  private final AtomicBoolean available = new AtomicBoolean(true);
   private double load;
+  private final String hostname;
 
   public Node(HostAndPort hostAndPort) {
     this(toInetAddress(hostAndPort));
   }
 
   public Node(SocketAddress address) {
-    this(address, ImmutableList.of(), 0, "");
+    this(address.toString(), address, ImmutableList.of(), 0, "", Protocol.TCP, false);
   }
 
   public Node(SocketAddress address, int weight) {
-    this(address, ImmutableList.of(), weight, "");
+    this(address.toString(), address, ImmutableList.of(), weight, "", Protocol.TCP, false);
   }
 
-  public Node(SocketAddress address, ImmutableList<String> filters, int weight, String serviceName) {
+  public Node(SocketAddress address, ImmutableList<String> filters, int weight, java.lang.String serviceName, Protocol proto, boolean ssl) {
+    this(address.toString(),address,filters,weight,serviceName,proto,ssl);
+  }
+
+  public Node(String hostname, SocketAddress address, ImmutableList<String> filters, int weight, java.lang.String serviceName, Protocol proto, boolean ssl) {
     this.address = address;
+    this.proto = proto;
+    this.ssl = ssl;
     this.load = 0;
     this.filters = ImmutableList.copyOf(filters);
     this.weight = weight;
     this.serviceName = serviceName;
+    this.hostname = hostname;
   }
 
   public Node(Node n) {
@@ -64,6 +69,9 @@ public class Node {
     this.filters = ImmutableList.copyOf(n.filters);
     this.weight = n.weight;
     this.serviceName = n.serviceName;
+    this.proto = Protocol.TCP;
+    this.ssl = false;
+    this.hostname = n.hostname;
   }
 
   /**
@@ -109,40 +117,11 @@ public class Node {
   }
 
   public boolean isAvailable() {
+    return available.get();
+  }
 
-    //TODO(JR): Make this value configurable
-    RetryLoop retryLoop = new RetryLoop(new ExponentialBackoffRetry(200, 3, 500), new AtomicReference<TracerDriver>());
-
-    while (retryLoop.shouldContinue()) {
-      try {
-        if (!connectionStopwatch.isRunning()) {
-          connectionStopwatch.start();
-        }
-        try (SocketChannel channel = SocketChannel.open()) {
-          channel.connect(address);
-        } catch (IOException e) {
-          try {
-            log.warn("Node is unreachable: Retrying " + address);
-            retryLoop.takeException(e);
-          } catch (Exception e1) {
-            log.error("Node has exceeded its max retry count" + address);
-            return false;
-          }
-          connectionStopwatch.stop();
-          connectionTimes.add(connectionStopwatch.elapsed(TimeUnit.MICROSECONDS));
-          connectionStopwatch.reset();
-          return true;
-      }
-
-      } catch (Exception e) {
-        //TODO(JR): Remove Me
-        log.error("Should never get here 1");
-        return false;
-      }
-    }
-    //TODO(JR): Remove Me
-    log.error("Should never get here 2");
-    return false;
+  public void setAvailable(boolean available) {
+    this.available.set(available);
   }
 
   public ImmutableList<String> getFilters() {
@@ -153,11 +132,27 @@ public class Node {
     return weight;
   }
 
-  public String getServiceName() {
+  public String getHostname() { return hostname; }
+
+  public java.lang.String getServiceName() {
     return serviceName;
   }
 
   public SocketAddress getAddress() {
     return address;
+  }
+
+  public Protocol getProto() {
+    return proto;
+  }
+
+  public boolean isSSL() {
+    return ssl;
+  }
+
+
+  @Override
+  public java.lang.String  toString() {
+    return serviceName + ": " + address() + " : "+ proto.toString() + ": SSL="+isSSL() + ":  Healthy="+isAvailable();
   }
 }

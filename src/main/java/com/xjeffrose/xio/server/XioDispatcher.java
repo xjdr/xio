@@ -83,12 +83,21 @@ public class XioDispatcher extends ChannelInboundHandlerAdapter {
 
   @Override
   public void channelRead(ChannelHandlerContext ctx, Object o) throws Exception {
+    DispatcherContext.blockChannelReads(ctx);
+
     if (processor instanceof XioSimpleProcessor) {
       // for proxy case, really no need to go through all the complexity in processRequest
       processor.process(ctx, o, requestContext);
     } else {
       processRequest(ctx, o);
     }
+  }
+
+  @Override
+  public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
+//    DispatcherContext.blockChannelReads(ctx);
+
+    ctx.fireChannelReadComplete();
   }
 
   private void processRequest(
@@ -252,7 +261,8 @@ public class XioDispatcher extends ChannelInboundHandlerAdapter {
         // This response was next in line, write this response now, and see if
         // there are others next in line that should be sent now as well.
         do {
-          ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
+//          ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
+          ctx.writeAndFlush(response);
           lastResponseWrittenId.incrementAndGet();
           ++currentResponseId;
           response = responseMap.remove(currentResponseId);

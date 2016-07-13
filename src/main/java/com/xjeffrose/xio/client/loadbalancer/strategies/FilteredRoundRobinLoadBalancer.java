@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.lang.String;
 
 public class FilteredRoundRobinLoadBalancer implements Strategy {
   private final AtomicInteger last = new AtomicInteger();
@@ -22,7 +23,7 @@ public class FilteredRoundRobinLoadBalancer implements Strategy {
 
   @Override
   public boolean okToPick(Node node) {
-    return node.getFilters().stream().allMatch(item -> filter.contains(node.getServiceName(), node.address().getHostName(), item));
+    return node.getFilters().stream().allMatch(item -> filter.contains(node.getServiceName(), node.address().getHostName(),item));
   }
 
   @Override
@@ -33,7 +34,9 @@ public class FilteredRoundRobinLoadBalancer implements Strategy {
     for (UUID id: ids) {
       Node nextNode = okNodes.get(id);
       if (okToPick(nextNode)) {
-        return nextNode;
+        if (nextNode.isAvailable()) {
+          return nextNode;
+        }
       }
     }
     return null;

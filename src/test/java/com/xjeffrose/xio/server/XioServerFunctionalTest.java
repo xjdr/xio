@@ -71,8 +71,9 @@ import static org.junit.Assert.assertTrue;
 
 
 public class XioServerFunctionalTest {
-  public static final XioTimer timer = new XioTimer("Test Timer", (long) 100, TimeUnit.MILLISECONDS, 100);
   private static final Logger log = Logger.getLogger(XioServerFunctionalTest.class.getName());
+
+  public static final XioTimer timer = new XioTimer("Test Timer", (long) 100, TimeUnit.MILLISECONDS, 100);
 
   @Test
   public void testComplexServerConfigurationTCP() throws Exception {
@@ -359,6 +360,7 @@ public class XioServerFunctionalTest {
         .limitConnectionsTo(200)
         .limitFrameSizeTo(1024)
         .limitQueuedResponsesPerConnection(50)
+        .clientIdleTimeout(new Duration(60, TimeUnit.SECONDS))
         .listen(new InetSocketAddress(8088))
 //        .listen(new InetSocketAddress("127.0.0.1", 8082))
         .name("Xio Test Server")
@@ -410,7 +412,7 @@ public class XioServerFunctionalTest {
                     httpClientChannel.setHeaders(headerMap);
 
                     Listener<ByteBuf> listener = new Listener<ByteBuf>() {
-                      ByteBuf response;
+                      ByteBuf response = null;
 
                       @Override
                       public void onRequestSent() {
@@ -420,9 +422,7 @@ public class XioServerFunctionalTest {
                       @Override
                       public void onResponseReceived(ByteBuf message) {
                         response = message;
-                        lock.lock();
-                        waitForFinish.signalAll();
-                        lock.unlock();
+
                       }
 
                       @Override
@@ -438,23 +438,25 @@ public class XioServerFunctionalTest {
 
                         response = Unpooled.wrappedBuffer(sb.toString().getBytes());
 
-                        lock.lock();
-                        waitForFinish.signalAll();
-                        lock.unlock();
                       }
 
                       @Override
                       public ByteBuf getResponse() {
-                        return response;
+                        if (response != null) {
+                          return response;
+                        } else {
+                          try {
+                            Thread.sleep(200);
+                          } catch (InterruptedException e) {
+                            e.printStackTrace();
+                          }
+                          return getResponse();
+                        }
                       }
 
                     };
 
                     httpClientChannel.sendAsynchronousRequest(Unpooled.EMPTY_BUFFER, false, listener);
-
-                    lock.lock();
-                    waitForFinish.await();
-                    lock.unlock();
 
 
                     DefaultFullHttpResponse httpResponse = BBtoHttpResponse.getResponse(listener.getResponse());
@@ -626,7 +628,7 @@ public class XioServerFunctionalTest {
                     httpClientChannel.setHeaders(headerMap);
 
                     Listener<ByteBuf> listener = new Listener<ByteBuf>() {
-                      ByteBuf response;
+                      ByteBuf response = null;
 
                       @Override
                       public void onRequestSent() {
@@ -636,9 +638,6 @@ public class XioServerFunctionalTest {
                       @Override
                       public void onResponseReceived(ByteBuf message) {
                         response = message;
-                        lock.lock();
-                        waitForFinish.signalAll();
-                        lock.unlock();
                       }
 
                       @Override
@@ -654,23 +653,25 @@ public class XioServerFunctionalTest {
 
                         response = Unpooled.wrappedBuffer(sb.toString().getBytes());
 
-                        lock.lock();
-                        waitForFinish.signalAll();
-                        lock.unlock();
                       }
 
                       @Override
                       public ByteBuf getResponse() {
-                        return response;
+                        if (response != null) {
+                          return response;
+                        } else {
+                          try {
+                            Thread.sleep(200);
+                          } catch (InterruptedException e) {
+                            e.printStackTrace();
+                          }
+                          return getResponse();
+                        }
                       }
 
                     };
 
                     httpClientChannel.sendAsynchronousRequest(Unpooled.EMPTY_BUFFER, false, listener);
-
-                    lock.lock();
-                    waitForFinish.await();
-                    lock.unlock();
 
                     DefaultFullHttpResponse httpResponse = BBtoHttpResponse.getResponse(listener.getResponse());
 

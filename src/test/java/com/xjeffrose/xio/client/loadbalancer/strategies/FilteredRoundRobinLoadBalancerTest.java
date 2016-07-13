@@ -5,6 +5,8 @@ import com.google.common.collect.ImmutableMap;
 import com.xjeffrose.xio.client.loadbalancer.Distributor;
 import com.xjeffrose.xio.client.loadbalancer.Filter;
 import com.xjeffrose.xio.client.loadbalancer.Node;
+import com.xjeffrose.xio.client.loadbalancer.NodeHealthCheck;
+import com.xjeffrose.xio.client.loadbalancer.Protocol;
 import com.xjeffrose.xio.client.loadbalancer.Strategy;
 import com.xjeffrose.xio.core.XioTimer;
 import com.xjeffrose.xio.fixtures.TcpServer;
@@ -43,7 +45,7 @@ public class FilteredRoundRobinLoadBalancerTest {
         return true;
       }
     });
-    Distributor distributor = new Distributor(ImmutableList.of(node1, node2, node3), lb, new XioTimer("Test Timer", 5000, TimeUnit.MILLISECONDS, 5));
+    Distributor distributor = new Distributor(ImmutableList.of(node1, node2, node3), lb, new NodeHealthCheck(2));
 
     assertEquals(node2.address().getHostName(), distributor.pick().address().getHostName());
     assertEquals(node2.address().getHostName(), distributor.pick().address().getHostName());
@@ -83,11 +85,11 @@ public class FilteredRoundRobinLoadBalancerTest {
   public void getNextNodeWithFiltering() throws Exception {
 
     Node node1 = new Node(new InetSocketAddress("127.0.0.1", 8181),
-        ImmutableList.copyOf(new String[]{"msmaster1int"}), 0, "paymentserv");
+        ImmutableList.copyOf(new String[]{"msmaster1int"}), 0, "paymentserv", Protocol.TCP, false);
     Node node2 = new Node(new InetSocketAddress("127.0.0.2", 8182),
-        ImmutableList.copyOf(new String[]{"msmaster2int"}), 0, "paymentserv");
+        ImmutableList.copyOf(new String[]{"msmaster2int"}), 0, "paymentserv", Protocol.TCP, false);
     Node node3 = new Node(new InetSocketAddress("127.0.0.3", 8183),
-        ImmutableList.copyOf(new String[]{"msmaster1int"}), 0, "paymentserv");
+        ImmutableList.copyOf(new String[]{"msmaster1int"}), 0, "paymentserv", Protocol.TCP, false);
 
     Strategy lb = new FilteredRoundRobinLoadBalancer(new Filter() {
 
