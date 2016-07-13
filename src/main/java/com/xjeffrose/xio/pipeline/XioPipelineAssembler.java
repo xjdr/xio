@@ -11,10 +11,12 @@ import java.util.ArrayList;
 public class XioPipelineAssembler {
 
   private final XioServerConfig config;
+  private final XioServerState state;
   private final List<XioPipelineFragment> fragments;
 
-  public XioPipelineAssembler(XioServerConfig config) {
+  public XioPipelineAssembler(XioServerConfig config, XioServerState state) {
     this.config = config;
+    this.state = state;
     fragments = new ArrayList<XioPipelineFragment>();
   }
 
@@ -24,8 +26,6 @@ public class XioPipelineAssembler {
 
   public void buildHandlers(ChannelPipeline pipeline) {
     for (XioPipelineFragment fragment : fragments) {
-      XioServerState state = null;
-
       fragment.buildHandlers(config, state, pipeline);
     }
   }

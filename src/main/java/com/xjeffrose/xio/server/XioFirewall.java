@@ -92,6 +92,7 @@ public abstract class XioFirewall extends ChannelDuplexHandler {
     if (noOp) {
       ctx.pipeline().remove(this);
       ctx.fireChannelActive();
+      return;
     }
 
     buildReqCtx(ctx);

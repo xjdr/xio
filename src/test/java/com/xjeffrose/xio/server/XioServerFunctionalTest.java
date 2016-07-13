@@ -69,6 +69,8 @@ public class XioServerFunctionalTest {
   @Test
   public void test() {
   }
+  // reproduced in XioEchoPipelineFunctionalTest.java
+  // reproduced in XioTcpProxyPipelineFunctionalTest.java
   /*
   @Test
   public void testComplexServerConfigurationTCP() throws Exception {
@@ -166,6 +168,7 @@ public class XioServerFunctionalTest {
   }
   */
 
+  // reproduced in XioHttp1_1PipelineFunctionalTest.java
   /*
   @Test
   public void testComplexServerConfigurationHttp() throws Exception {
@@ -259,6 +262,7 @@ public class XioServerFunctionalTest {
   }
   */
 
+  // Reproduced in XioSslHttp1_1PipelineFunctionalTest.java
   /*
   @Test
   public void testComplexServerConfigurationHttps() throws Exception {
@@ -350,6 +354,7 @@ public class XioServerFunctionalTest {
   */
 
 
+  // Reproduced in XioSslHttp1_1PipelineFunctionalTest.java
   /*
   @Test
   public void testSimpleProxy() throws Exception {
@@ -539,6 +544,7 @@ public class XioServerFunctionalTest {
   */
 
 
+  // Reproduced in XioSslHttp1_1PipelineFunctionalTest.java
   /*
   @Test
   public void testComplexProxy() throws Exception {

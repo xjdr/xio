@@ -10,6 +10,10 @@ public class XioServerInstrumentation {
   public XioServerInstrumentation() {
   }
 
+  public InetSocketAddress addressBound() {
+    return addressBound;
+  }
+
   public String applicationProtocol() {
     return applicationProtocol;
   }

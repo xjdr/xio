@@ -1,16 +1,20 @@
 package com.xjeffrose.xio.fixtures;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 
-public class SimpleTestServer extends AbstractHandler implements Runnable {
+public class SimpleTestServer extends AbstractHandler implements Runnable, AutoCloseable {
 
   private int port;
+  private int boundPort;
+  private Server server;
 
   public SimpleTestServer(int port) {
     this.port = port;
@@ -29,16 +33,27 @@ public class SimpleTestServer extends AbstractHandler implements Runnable {
     response.getWriter().println("CONGRATS!");
   }
 
-  public void run() {
-    {
-      Server server = new Server(port);
-      server.setHandler(new SimpleTestServer(port));
+  public InetSocketAddress boundAddress() {
+    return new InetSocketAddress("127.0.0.1", boundPort);
+  }
 
-      try {
-        server.start();
-      } catch (Exception e) {
-        throw new RuntimeException(e);
-      }
+  public void close() {
+    try {
+      server.stop();
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public void run() {
+    server = new Server(port);
+    server.setHandler(this);
+
+    try {
+      server.start();
+      boundPort = ((ServerConnector)server.getConnectors()[0]).getLocalPort();
+    } catch (Exception e) {
+      throw new RuntimeException(e);
     }
   }
 }
