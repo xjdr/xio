@@ -4,6 +4,7 @@ import com.xjeffrose.xio.client.XioClient;
 import com.xjeffrose.xio.core.XioTransportException;
 import io.netty.channel.ConnectTimeoutException;
 import java.net.ConnectException;
+import java.net.UnknownHostException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -111,7 +112,7 @@ public class RetryLoop {
 //   * @return true/false
 //   */
   public static boolean isRetryException(Throwable exception) {
-    if (exception instanceof ConnectException || exception instanceof ConnectTimeoutException) {
+    if (exception instanceof ConnectException || exception instanceof ConnectTimeoutException || exception instanceof UnknownHostException) {
 //      return shouldRetry(XioTransportException.code().intValue());
       return true;
     }

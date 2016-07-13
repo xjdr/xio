@@ -30,7 +30,9 @@ public class RoundRobinLoadBalancer implements Strategy {
     for (UUID id: ids) {
       Node nextNode = okNodes.get(id);
       if (okToPick(nextNode)) {
-        return nextNode;
+        if (nextNode.isAvailable()) {
+          return nextNode;
+        }
       }
     }
     return null;

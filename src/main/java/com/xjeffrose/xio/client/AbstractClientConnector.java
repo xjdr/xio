@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.net.HostAndPort;
 import com.xjeffrose.xio.client.loadbalancer.Distributor;
 import com.xjeffrose.xio.client.loadbalancer.Node;
+import com.xjeffrose.xio.client.loadbalancer.NodeHealthCheck;
 import com.xjeffrose.xio.client.loadbalancer.strategies.RoundRobinLoadBalancer;
 import com.xjeffrose.xio.core.XioTimer;
 import io.netty.bootstrap.Bootstrap;
@@ -29,7 +30,7 @@ public abstract class AbstractClientConnector<T extends XioClientChannel> implem
   public AbstractClientConnector(SocketAddress address, XioProtocolFactory protocolFactory) {
     final ImmutableList<Node> singletonPool = ImmutableList.of(new Node(address));
 
-    this.pool = new Distributor(singletonPool, new RoundRobinLoadBalancer(), new XioTimer("Node Check Timer", 5000, TimeUnit.MILLISECONDS, 512));
+    this.pool = new Distributor(singletonPool, new RoundRobinLoadBalancer(), new NodeHealthCheck(2));
     this.address = address;
     this.protocolFactory = protocolFactory;
   }

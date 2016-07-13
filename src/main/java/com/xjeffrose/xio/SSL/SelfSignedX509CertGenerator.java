@@ -43,13 +43,13 @@ import sun.security.x509.X509CertInfo;
 
 //import java.util.logging.Logger;
 
-public final class SelfSignedX509CertGenerator {
+final class SelfSignedX509CertGenerator {
 //  private static final Logger log = Log.getLogger(SelfSignedX509CertGenerator.class.getName());
 
   static final Date NOT_BEFORE = new Date(System.currentTimeMillis() - 86400000L * 365);
   static final Date NOT_AFTER = new Date(253402300799000L);
 
-  private SelfSignedX509CertGenerator() {
+  SelfSignedX509CertGenerator() {
   }
 
   public static X509Certificate generate(String fqdn)
