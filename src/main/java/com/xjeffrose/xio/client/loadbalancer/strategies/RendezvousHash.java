@@ -9,11 +9,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
-import org.apache.log4j.Logger;
+import lombok.extern.log4j.Log4j;
 
 
+@Log4j
 public class RendezvousHash<N> {
-  private static final Logger log = Logger.getLogger(RendezvousHash.class.getName());
+
 
   private final HashFunction hasher;
   private final Funnel<N> nodeFunnel;

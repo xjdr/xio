@@ -6,10 +6,11 @@ import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import java.net.InetSocketAddress;
 import java.util.HashSet;
-import org.apache.log4j.Logger;
+import lombok.extern.log4j.Log4j;
 
+@Log4j
 public abstract class XioFirewall extends ChannelDuplexHandler {
-  private static final Logger log = Logger.getLogger(XioFirewall.class.getName());
+
 
   private final HashSet<String> blacklist;
   private final HashSet<String> whitelist;

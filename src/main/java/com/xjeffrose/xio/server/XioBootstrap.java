@@ -11,11 +11,12 @@ import java.util.Set;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
-import org.apache.log4j.Logger;
+import lombok.extern.log4j.Log4j;
 
 
+@Log4j
 public class XioBootstrap {
-  private static final Logger log = Logger.getLogger(XioServerTransport.class.getName());
+
 
   private final XioServerConfig xioServerConfig;
   private Map<XioServerDef, XioServerTransport> transports;

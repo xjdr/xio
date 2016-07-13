@@ -4,12 +4,13 @@ import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.apache.log4j.Logger;
+import lombok.extern.log4j.Log4j;
 
 @ChannelHandler.Sharable
+@Log4j
 public class XioConnectionLimiter extends ChannelDuplexHandler {
 
-  private static final Logger log = Logger.getLogger(XioConnectionLimiter.class.getName());
+
   private final AtomicInteger numConnections;
   private final int maxConnections;
 

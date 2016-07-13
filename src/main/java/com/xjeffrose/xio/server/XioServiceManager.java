@@ -6,10 +6,11 @@ import io.netty.channel.ChannelHandlerContext;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
-import org.apache.log4j.Logger;
+import lombok.extern.log4j.Log4j;
 
+@Log4j
 public class XioServiceManager extends ChannelDuplexHandler {
-  private static final Logger log = Logger.getLogger(XioServiceManager.class.getName());
+
 
   private final ConcurrentLinkedDeque<XioService> serviceList = new ConcurrentLinkedDeque<>();
 

@@ -25,14 +25,15 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.apache.log4j.Logger;
+import lombok.extern.log4j.Log4j;
 
 /**
  * The base type of nodes over which load is balanced. Nodes define the load metric that is used;
  * distributors like P2C will use these to decide where to balance the next connection request.
  */
+@Log4j
 public class Node {
-  private static final Logger log = Logger.getLogger(Node.class);
+
 
   private final UUID token = UUID.randomUUID();
   private final ConcurrentHashMap<Channel, Stopwatch> pending = new ConcurrentHashMap<>();

@@ -9,10 +9,11 @@ import io.netty.channel.ChannelHandler;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import org.apache.log4j.Logger;
+import lombok.extern.log4j.Log4j;
 
+@Log4j
 public class XioClient implements Closeable {
-  private static final Logger log = Logger.getLogger(XioClient.class);
+
 
   private final Bootstrap bootstrap;
   private final Node node;

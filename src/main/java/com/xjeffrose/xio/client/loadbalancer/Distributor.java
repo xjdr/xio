@@ -12,15 +12,16 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-import org.apache.log4j.Logger;
+import lombok.extern.log4j.Log4j;
 
 import static com.google.common.base.Preconditions.checkState;
 
 /**
  * Creates a new Distributor to perform load balancing
  */
+@Log4j
 public class Distributor {
-  private static final Logger log = Logger.getLogger(Distributor.class);
+
 
   private final ImmutableList<Node> pool;
   private final Map<UUID, Node> okNodes = new ConcurrentHashMap<>();

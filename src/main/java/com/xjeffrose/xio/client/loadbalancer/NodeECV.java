@@ -3,10 +3,11 @@ package com.xjeffrose.xio.client.loadbalancer;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.HttpRequest;
-import org.apache.log4j.Logger;
+import lombok.extern.log4j.Log4j;
 
+@Log4j
 public class NodeECV extends ChannelInboundHandlerAdapter {
-  private static final Logger log = Logger.getLogger(NodeECV.class.getName());
+
 
   private final Node node;
   private final Protocol proto;

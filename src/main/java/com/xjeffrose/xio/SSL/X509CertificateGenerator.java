@@ -34,13 +34,14 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.RSAPrivateCrtKeySpec;
 import java.security.spec.RSAPublicKeySpec;
 import java.util.Base64;
-import org.apache.log4j.Logger;
+import lombok.extern.log4j.Log4j;
 import sun.security.util.DerInputStream;
 import sun.security.util.DerValue;
 import sun.security.x509.X509CertImpl;
 
+@Log4j
 public final class X509CertificateGenerator {
-  private static final Logger log = Logger.getLogger(X509CertificateGenerator.class.getName());
+
 
   private X509CertificateGenerator() {
   }

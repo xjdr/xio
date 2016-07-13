@@ -2,10 +2,11 @@ package com.xjeffrose.xio.server;
 
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
-import org.apache.log4j.Logger;
+import lombok.extern.log4j.Log4j;
 
+@Log4j
 public class XioResponseClassifier extends ChannelDuplexHandler {
-  private static final Logger log = Logger.getLogger(XioResponseClassifier.class.getName());
+
   private boolean noOp;
 
   public XioResponseClassifier(boolean noOp) {

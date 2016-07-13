@@ -9,10 +9,11 @@ package com.xjeffrose.xio.core;
 //import com.xjeffrose.xio.server.XioService;
 //import com.xjeffrose.xio.client.XioClient;
 //
-//import org.apache.log4j.Logger;
+//import lombok.extern.log4j.Log4j;
 //
+//@Log4j
 public class Http {
-//  private static final Logger log = Logger.getLogger(Http.class.getName());
+
 //
 //  private Http() {
 //  }
