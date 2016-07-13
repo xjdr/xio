@@ -41,22 +41,22 @@ public class XioMessageLogger extends LoggingHandler {
   }
 
   private void logMessageDebug(ChannelHandlerContext ctx, String eventName, Object msg) {
-    log.debug(format(ctx, formatMessage(eventName, msg)));
+    log.debug(format(ctx, eventName, msg));
   }
 
   // for syslog, newline won't work, so the default pretty print logging format is messy
-  @Override
-  protected String formatByteBuf(String eventName, ByteBuf msg) {
-    int length = msg.readableBytes();
-    if (length == 0) {
-      StringBuilder rows1 = new StringBuilder(eventName.length() + 4);
-      rows1.append(eventName).append(": 0B");
-      return rows1.toString();
-    } else {
-      StringBuilder buf = new StringBuilder(eventName.length() + 12);
-      buf.append(eventName).append(": ").append(length).append('B');
-      appendPrettyHexDump(buf, msg);
-      return buf.toString();
-    }
-  }
+//  @Override
+//  private static String formatByteBuf(ChannelHandlerContext ctx, String eventName, ByteBuf msg) {
+//    int length = msg.readableBytes();
+//    if (length == 0) {
+//      StringBuilder rows1 = new StringBuilder(eventName.length() + 4);
+//      rows1.append(eventName).append(": 0B");
+//      return rows1.toString();
+//    } else {
+//      StringBuilder buf = new StringBuilder(eventName.length() + 12);
+//      buf.append(eventName).append(": ").append(length).append('B');
+//      appendPrettyHexDump(buf, msg);
+//      return buf.toString();
+//    }
+//  }
 }

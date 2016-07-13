@@ -34,20 +34,25 @@ public class Node {
   private final boolean ssl;
   private final AtomicBoolean available = new AtomicBoolean(true);
   private double load;
+  private final String hostname;
 
   public Node(HostAndPort hostAndPort) {
     this(toInetAddress(hostAndPort));
   }
 
   public Node(SocketAddress address) {
-    this(address, ImmutableList.of(), 0, "", Protocol.TCP, false);
+    this(address.toString(), address, ImmutableList.of(), 0, "", Protocol.TCP, false);
   }
 
   public Node(SocketAddress address, int weight) {
-    this(address, ImmutableList.of(), weight, "", Protocol.TCP, false);
+    this(address.toString(), address, ImmutableList.of(), weight, "", Protocol.TCP, false);
   }
 
-  public Node(SocketAddress address, ImmutableList<String> filters, int weight, String serviceName, Protocol proto, boolean ssl) {
+  public Node(SocketAddress address, ImmutableList<String> filters, int weight, java.lang.String serviceName, Protocol proto, boolean ssl) {
+    this(address.toString(),address,filters,weight,serviceName,proto,ssl);
+  }
+
+  public Node(String hostname, SocketAddress address, ImmutableList<String> filters, int weight, java.lang.String serviceName, Protocol proto, boolean ssl) {
     this.address = address;
     this.proto = proto;
     this.ssl = ssl;
@@ -55,6 +60,7 @@ public class Node {
     this.filters = ImmutableList.copyOf(filters);
     this.weight = weight;
     this.serviceName = serviceName;
+    this.hostname = hostname;
   }
 
   public Node(Node n) {
@@ -65,6 +71,7 @@ public class Node {
     this.serviceName = n.serviceName;
     this.proto = Protocol.TCP;
     this.ssl = false;
+    this.hostname = n.hostname;
   }
 
   /**
@@ -125,7 +132,9 @@ public class Node {
     return weight;
   }
 
-  public String getServiceName() {
+  public String getHostname() { return hostname; }
+
+  public java.lang.String getServiceName() {
     return serviceName;
   }
 
@@ -139,5 +148,11 @@ public class Node {
 
   public boolean isSSL() {
     return ssl;
+  }
+
+
+  @Override
+  public java.lang.String  toString() {
+    return serviceName + ": " + address() + " : "+ proto.toString() + ": SSL="+isSSL() + ":  Healthy="+isAvailable();
   }
 }

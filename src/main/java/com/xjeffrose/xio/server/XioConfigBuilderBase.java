@@ -15,7 +15,7 @@ public abstract class XioConfigBuilderBase<T extends XioConfigBuilderBase<T>> {
   private static final int DEFAULT_BOSS_THREAD_COUNT = 4;
   private static final int DEFAULT_WORKER_THREAD_COUNT = Runtime.getRuntime().availableProcessors() * 2;
 
-  private final Map<ChannelOption<Object>, Object> options = new HashMap<>();
+  private Map<ChannelOption<Object>, Object> options = new HashMap<>();
   private String XioName;
   private int bossThreadCount = DEFAULT_BOSS_THREAD_COUNT;
   private int workerThreadCount = DEFAULT_WORKER_THREAD_COUNT;
@@ -25,6 +25,11 @@ public abstract class XioConfigBuilderBase<T extends XioConfigBuilderBase<T>> {
 
   public Map<ChannelOption<Object>, Object> getBootstrapOptions() {
     return Collections.unmodifiableMap(options);
+  }
+
+  public T setBootstrapOptions(Map<ChannelOption<Object>, Object> options) {
+    this.options = options;
+    return (T) this;
   }
 
   protected Timer getTimer() {
