@@ -4,6 +4,9 @@ import com.xjeffrose.xio.core.ZkClient;
 import io.netty.channel.ChannelHandlerContext;
 import java.util.HashSet;
 
+/**
+ * Allow or Deny traffic based on the incoming IP Address
+ */
 public class XioDeterministicRuleEngine extends XioFirewall {
 
   public XioDeterministicRuleEngine(boolean noOp) {
