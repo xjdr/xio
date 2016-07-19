@@ -52,6 +52,14 @@ public class NodeHealthCheck {
     }
   }
 
+  public void close(){
+    if (Epoll.isAvailable()) {
+      epollEventLoop.shutdownGracefully();
+    } else {
+      nioEventLoop.shutdownGracefully();
+    }
+  }
+
   public void connect(Node node, Protocol proto, boolean ssl, ECV ecv) {
 
     if (Epoll.isAvailable()) {
@@ -77,7 +85,7 @@ public class NodeHealthCheck {
   private ChannelPipeline getDefaultCP(SocketChannel channel, Protocol proto, boolean ssl, ECV ecv, Node node){
     ChannelPipeline cp = channel.pipeline();
     if (ssl) {
-      cp.addLast("encryptionHandler", new XioSecurityHandlerImpl(true).getEncryptionHandler());
+      //cp.addLast("encryptionHandler", new XioSecurityHandlerImpl(true).getEncryptionHandler());
     }
     if (proto == (Protocol.HTTP)) {
       cp.addLast(new HttpClientCodec());

@@ -45,7 +45,7 @@ public class FilteredRoundRobinLoadBalancerTest {
         return true;
       }
     });
-    Distributor distributor = new Distributor(ImmutableList.of(node1, node2, node3), lb, new NodeHealthCheck(2));
+    Distributor distributor = new Distributor(ImmutableList.of(node1, node2, node3), lb, new NodeHealthCheck(2),"dummyName");
 
     assertEquals(node2.address().getHostName(), distributor.pick().address().getHostName());
     assertEquals(node2.address().getHostName(), distributor.pick().address().getHostName());
