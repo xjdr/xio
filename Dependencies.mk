@@ -5,9 +5,11 @@ DEP_LOMBOK=org.projectlombok:lombok:1.16.8
 DEP_NETTY=io.netty:netty-all:4.1.0.Final
 DEP_NETTY_TCNATIVE=io.netty:netty-tcnative:1.1.33.Fork17
 DEP_NETTY_SSL=io.netty:netty-tcnative-boringssl-static:1.1.33.Fork17
+#DEP_THRIFT=org.apache.thrift:libthrift:jar:0.9.3
 DEP_AIRLIFT=io.airlift:units:0.128
 DEP_CURATOR=org.apache.curator:curator-framework:3.1.0
 DEP_CURATOR_RECIPES=org.apache.curator:curator-recipes:3.1.0
+DEP_CURATOR_TESTING=org.apache.curator:curator-test:3.2.0
 DEP_JUNIT=junit:junit:4.12
 DEP_MOCKITO=org.mockito:mockito-all:1.10.19
 DEP_JETTY=org.eclipse.jetty:jetty-server:9.3.1.v20150714
@@ -28,10 +30,13 @@ DEPS_COMPILE=$(DEP_CONFIG) \
              $(DEP_AIRLIFT) \
              $(DEP_CURATOR) \
              $(DEP_CURATOR_RECIPES) \
+             $(DEP_CURATOR_TESTING) \
              $(DEP_JUNIT) \
              $(DEP_MOCKITO) \
              $(DEP_JETTY) \
              $(DEP_OKHTTP) \
              $(DEP_LOG4J)
+
+#             $(DEP_THRIFT) \
 
 DEPS_ALL=$(DEPS_COMPILE) $(DEP_CHECKSTYLE) $(DEP_ECJ)

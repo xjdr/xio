@@ -2,6 +2,15 @@ export PROJECT_ROOT=$(shell pwd)
 export TARGETDIR := $(PROJECT_ROOT)/target
 export TARGET_DIR := $(PROJECT_ROOT)/target
 
+# thrift
+
+THRIFT_DIR = src/main/java/com/xjeffrose/xio/marshall/thrift
+THRIFT_SRC = $(shell cd src/main/thrift; ls *.thrift)
+THRIFT_OUT = $(THRIFT_SRC:%.thrift=$(THRIFT_DIR)/%.java)
+
+$(THRIFT_DIR)/%.java: src/main/thrift/%.thrift
+	thrift --gen java -out src/main/java $<
+
 JAVAC = javac
 JFLAGS = -g
 
@@ -27,7 +36,7 @@ PROJECT_DEP = $(EXAMPLE_SRC:%.java=$(DEP_DIR)/%.d) $(MAIN_SRC:%.java=$(DEP_DIR)/
 
 DIRS = $(DEP_DIR) $(TARGET_DIR)
 
-.PHONY: all clean compile
+.PHONY: all clean compile test thrift
 # disable implicit rules
 .SUFFIXES:
 %:: %,v
@@ -42,10 +51,12 @@ all:
 include Classpath.mk
 include Dependencies.mk
 
-Generated.mk: Dependencies.mk
+Generated.mk: Dependencies.mk lib/*.jar
 	echo > Generated.mk
 	echo "export JAR_ECJ := $$(coursier fetch -p $(DEP_ECJ))" >> Generated.mk
-	echo "export CLASSPATH_COMPILE := $$(coursier fetch -p $(DEPS_COMPILE))" >> Generated.mk
+	echo "export CLASSPATH_VENDOR := $(shell ls lib/*.jar | sed -e s%^%${PWD}/% | tr '\n' ':' | sed -e 's/jar:$$/jar/')" >> Generated.mk
+	echo "export CLASSPATH_COURSIER := $$(coursier fetch -p $(DEPS_COMPILE))" >> Generated.mk
+	echo 'export CLASSPATH_COMPILE := $$(CLASSPATH_VENDOR):$$(CLASSPATH_COURSIER)' >> Generated.mk
 
 -include Generated.mk
 
@@ -116,6 +127,8 @@ clean:
 compile: $(DIRS) target/.main_compiled target/.test_compiled target/.example_compiled  $(TEST_RESOURCES)
 
 jar: compile $(PROJECT_JAR)
+
+thrift: $(THRIFT_OUT)
 
 test: compile
 	scripts/run-test $$(find src/test -name "*Test.java")

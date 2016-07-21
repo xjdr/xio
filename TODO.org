@@ -1,0 +1,64 @@
+* config
+
+** TLS - startup configurable
+
+*** TODO Load from Typesafe Config, attach to XioServerConfig
+
+** Circuit Breakers - runtime configurable
+
+** Ip Address - runtime configurable
+
+   * Config Class: IpAddressDeterministicRuleEngineConfig
+   * Marshall Class:
+
+*** DONE Define Config class
+
+*** TODO Define Marshall class
+
+** Host Address - runtime configurable
+
+   * Config Class: HostnameDeterministicRuleEngineConfig
+   * Marshall Class:
+
+*** DONE Define Config class
+
+*** TODO Define Marshall class
+
+** Layer 4 Behavioral - runtime configurable
+
+   * Config Class:
+
+*** TODO Define Config class
+
+** Application Codec - startup configurable
+
+*** TODO Load from Typesafe Config
+
+** Aggregation & Compression - startup configurable
+
+*** TODO Load from Typesafe Config
+
+** Decode Token - startup configurable
+
+*** TODO Load from Typesafe Config
+
+** Http1 Rules - runtime configurable
+
+   * Config Class: Http1DeterministicRuleEngineConfig
+   * Marshall Class:
+
+*** DONE Define Config class
+
+*** TODO Define Marshall class
+
+** Layer 7 Behavioral - runtime configurable
+
+*** TODO Define Config class
+
+** Multiplex Req - startup configurable
+
+*** TODO Load from Typesafe Config
+
+** Persistent Connection Manager - startup configurable
+
+*** TODO Load from Typesafe Config
