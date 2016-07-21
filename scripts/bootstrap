@@ -8,3 +8,4 @@ brew install infer
 brew install drip
 brew install javarepl
 brew install jdep
+brew install thrift
