@@ -24,8 +24,12 @@ public class XioServerState {
     channelStatistics = new ChannelStatistics(allChannels);
   }
 
-  static public XioServerState fromConfig(String config) {
-    return new XioServerState(ConfigFactory.load().getConfig(config));
+  static public XioServerState fromConfig(String key, Config config) {
+    return new XioServerState(config.getConfig(key));
+  }
+
+  static public XioServerState fromConfig(String key) {
+    return fromConfig(key, ConfigFactory.load());
   }
 
   public ZkClient zkClient() {

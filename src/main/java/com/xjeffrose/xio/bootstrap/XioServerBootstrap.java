@@ -29,11 +29,17 @@ public class XioServerBootstrap {
   public XioServerBootstrap(XioServerConfig config, XioServerState state) {
     serverBootstrap = new ServerBootstrap();
     pipelineAssembler = new XioPipelineAssembler(config, state);
+    bindAddress(config.getBindAddress());
   }
 
   public XioServerBootstrap addToPipeline(XioPipelineFragment fragment) {
     // TODO(CK): interrogate fragment for channel options
     pipelineAssembler.addFragment(fragment);
+    return this;
+  }
+
+  public XioServerBootstrap bindAddress(InetSocketAddress address) {
+    serverBootstrap.localAddress(address);
     return this;
   }
 
@@ -55,7 +61,9 @@ public class XioServerBootstrap {
     final XioServerInstrumentation instrumentation = new XioServerInstrumentation();
     serverBootstrap.childHandler(pipelineAssembler.build(instrumentation));
     ChannelFuture future = serverBootstrap.bind();
-    endpoint.afterBind(future); // TODO(CK): kill this
+    if (endpoint != null) {
+      endpoint.afterBind(future); // TODO(CK): kill this
+    }
     future.awaitUninterruptibly();
     if (future.isSuccess()) {
       instrumentation.addressBound = (InetSocketAddress)future.channel().localAddress();

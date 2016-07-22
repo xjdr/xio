@@ -36,7 +36,7 @@ PROJECT_DEP = $(EXAMPLE_SRC:%.java=$(DEP_DIR)/%.d) $(MAIN_SRC:%.java=$(DEP_DIR)/
 
 DIRS = $(DEP_DIR) $(TARGET_DIR)
 
-.PHONY: all clean compile test thrift
+.PHONY: all clean compile run test thrift
 # disable implicit rules
 .SUFFIXES:
 %:: %,v
@@ -113,6 +113,15 @@ TEST_RESOURCES = $(shell cd src/test; find resources -type f -print | sed -e 's+
 $(TEST_RESOURCES): $(TARGET_DIR)/% : src/test/resources/%
 	cp $< $@
 
+# copy example resources into the target dir
+
+EXAMPLE_RESOURCES = $(shell cd src/example; find resources -type f -print | sed -e 's+resources+$(TARGET_DIR)+')
+
+$(EXAMPLE_RESOURCES): $(TARGET_DIR)/% : src/example/resources/%
+	cp $< $@
+
+RESOURCES := $(TEST_RESOURCES) $(EXAMPLE_RESOURCES)
+
 # phonies
 
 check-syntax:
@@ -124,9 +133,13 @@ clean:
 	rm Generated.mk
 	rm -fr $(DIRS)
 
-compile: $(DIRS) target/.main_compiled target/.test_compiled target/.example_compiled  $(TEST_RESOURCES)
+compile: $(DIRS) target/.main_compiled target/.test_compiled target/.example_compiled  $(RESOURCES)
 
 jar: compile $(PROJECT_JAR)
+
+run: compile
+	java -cp $(CLASSPATH_COMPILE):$(TARGETDIR) $(MAIN_CLASS)
+
 
 thrift: $(THRIFT_OUT)
 
