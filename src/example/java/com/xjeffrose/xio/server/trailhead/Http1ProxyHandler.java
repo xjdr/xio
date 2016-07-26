@@ -57,14 +57,6 @@ public class Http1ProxyHandler extends SimpleChannelInboundHandler<Object> {
     }
   }
 
-  private String determineHost(FullHttpRequest request) {
-    return null;
-  }
-
-  private InetSocketAddress determineAddress(FullHttpRequest request) {
-    return null;
-  }
-
   private RouteConfig.ProxyTo determineProxyTo(FullHttpRequest request) {
     for(Route route : routes.keySet()) {
       if (route.matches(request.uri())) {
@@ -81,6 +73,14 @@ public class Http1ProxyHandler extends SimpleChannelInboundHandler<Object> {
     return pipeline;
   }
   private ChannelFuture connectToDestination(EventLoop loop, ChannelHandler handler, InetSocketAddress address, boolean needSSL) {
+    /*
+    XioClient client = XioClientBootstrap.create()
+      .channelHandler(handler)
+      .group(loop)
+      .ssl(needSSL)
+      .build()
+    ;
+    */
     Bootstrap b = new Bootstrap();
     b.channel(NioSocketChannel.class);
     b.group(loop);
@@ -100,7 +100,6 @@ public class Http1ProxyHandler extends SimpleChannelInboundHandler<Object> {
   static {
     SslContext cctx;
     try {
-      SelfSignedCertificate ssc = new SelfSignedCertificate();
       cctx = SslContext.newClientContext(InsecureTrustManagerFactory.INSTANCE);
     } catch (Exception e) {
       throw new Error(e);

@@ -11,6 +11,8 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import lombok.extern.log4j.Log4j;
 
+// TODO(CK): break XioClient into an abstract base class with concrete
+// single node and multi-node implementations
 @Log4j
 public class XioClient implements Closeable {
 
