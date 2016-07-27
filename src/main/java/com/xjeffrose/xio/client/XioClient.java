@@ -38,6 +38,12 @@ public class XioClient implements Closeable {
     this.distributor = null;
   }
 
+  public XioClient(InetSocketAddress address, Bootstrap bootstrap) {
+    this.bootstrap = bootstrap;
+    this.node = new Node(address, bootstrap);
+    this.distributor = null;
+  }
+
   public XioClient(InetSocketAddress address, ChannelHandler handler, boolean ssl) {
     this.bootstrap = new XioClientBootstrap(handler, 4, ssl, Protocol.HTTPS).getBootstrap();
     this.node = new Node(address, bootstrap);

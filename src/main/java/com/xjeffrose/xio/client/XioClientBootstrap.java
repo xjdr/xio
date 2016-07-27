@@ -6,25 +6,38 @@ import com.xjeffrose.xio.client.loadbalancer.Protocol;
 import com.xjeffrose.xio.core.XioIdleDisconnectHandler;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
+import io.netty.channel.EventLoopGroup;
 import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.http.HttpClientCodec;
+import lombok.experimental.Accessors;
 import lombok.extern.log4j.Log4j;
+import lombok.Setter;
+
+import java.net.InetSocketAddress;
 
 @Log4j
+@Accessors(fluent = true)
 public class XioClientBootstrap {
 
   private final Bootstrap bootstrap;
+  @Setter
+  private InetSocketAddress address;
+  @Setter
   private boolean ssl;
+  @Setter
   private Protocol proto;
+  private ChannelConfiguration channelConfig;
 
+  @Deprecated
   public XioClientBootstrap(ChannelHandler handler, int workerPoolSize, boolean ssl, Protocol proto) {
     if (Epoll.isAvailable()) {
       this.bootstrap = buildBootstrap(handler, new EpollEventLoopGroup(workerPoolSize));
@@ -33,6 +46,16 @@ public class XioClientBootstrap {
     }
   }
 
+  public XioClientBootstrap(ChannelConfiguration channelConfig) {
+    this.channelConfig = channelConfig;
+    bootstrap = buildBootstrap();
+  }
+
+  public XioClientBootstrap(EventLoopGroup group) {
+    this(ChannelConfiguration.clientConfig(group));
+  }
+
+  @Deprecated
   public Bootstrap buildBootstrap(ChannelHandler handler, EpollEventLoopGroup group) {
 
     if (Epoll.isAvailable()) {
@@ -69,6 +92,7 @@ public class XioClientBootstrap {
     return null;
   }
 
+  @Deprecated
   public Bootstrap buildBootstrap(ChannelHandler handler, NioEventLoopGroup group) {
     ChannelInitializer<NioSocketChannel> pipeline = new ChannelInitializer<NioSocketChannel>() {
       @Override
@@ -100,6 +124,46 @@ public class XioClientBootstrap {
       .handler(pipeline);
   }
 
+  private ChannelInitializer<Channel> buildInitializer(ChannelHandler handler) {
+    return new ChannelInitializer<Channel>() {
+      @Override
+      protected void initChannel(Channel channel) throws Exception {
+        ChannelPipeline cp = channel.pipeline();
+        if (ssl) {
+          cp.addLast("encryptionHandler", new XioSecurityHandlerImpl(true).getEncryptionHandler());
+        }
+        if (proto == (Protocol.HTTP)) {
+          cp.addLast(new HttpClientCodec());
+        }
+        if (proto == (Protocol.HTTPS)) {
+          cp.addLast(new HttpClientCodec());
+        }
+        cp.addLast(new XioIdleDisconnectHandler(60, 60, 60));
+        cp.addLast(handler);
+      }
+    };
+  }
+
+  public Bootstrap buildBootstrap() {
+    return new Bootstrap()
+      .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 500)
+      .option(ChannelOption.SO_REUSEADDR, true)
+      .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
+      .option(ChannelOption.WRITE_BUFFER_HIGH_WATER_MARK, 32 * 1024)
+      .option(ChannelOption.WRITE_BUFFER_LOW_WATER_MARK, 8 * 1024)
+      .option(ChannelOption.TCP_NODELAY, true)
+      .group(channelConfig.workerGroup())
+      .channel(channelConfig.channel());
+  }
+
+  public void setChannelHandler(ChannelHandler handler) {
+    bootstrap.handler(buildInitializer(handler));
+  }
+
+  public XioClient build() {
+    return new XioClient(address, bootstrap);
+  }
+
   public XioClient buildClient(String host, int port) {
     return new XioClient(host, port, bootstrap, ssl);
   }
@@ -108,4 +172,3 @@ public class XioClientBootstrap {
     return bootstrap;
   }
 }
-
