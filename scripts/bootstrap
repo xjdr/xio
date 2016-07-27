@@ -7,5 +7,5 @@ brew install --HEAD paulp/extras/coursier
 brew install infer
 brew install drip
 brew install javarepl
-brew install jdep
+brew install pdex/core/jdep
 brew install thrift
