@@ -7,8 +7,9 @@ package com.xjeffrose.xio.core;
 //import com.xjeffrose.xio.server.XioServerDef;
 //import com.xjeffrose.xio.server.XioNoOpSecurityFactory;
 //import com.xjeffrose.xio.server.XioSecurityFactory;
-import io.airlift.units.Duration;
+
 import java.net.InetSocketAddress;
+import java.time.Duration;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 

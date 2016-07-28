@@ -23,7 +23,6 @@ import com.xjeffrose.xio.core.XioTransportException;
 import com.xjeffrose.xio.fixtures.OkHttpUnsafe;
 import com.xjeffrose.xio.fixtures.SimpleTestServer;
 import com.xjeffrose.xio.fixtures.XioTestSecurityFactory;
-import io.airlift.units.Duration;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.buffer.Unpooled;
