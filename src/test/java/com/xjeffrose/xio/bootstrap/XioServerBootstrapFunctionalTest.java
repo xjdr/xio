@@ -36,7 +36,7 @@ public class XioServerBootstrapFunctionalTest {
     try (XioServer server = bootstrap.build()) {
       Response response = ClientHelper.request("http://" + endpoint.hostAndPort() + "/");
       assertEquals(response.code(), 404);
-      assertEquals(server.running(), true);
+      assertEquals(server.instrumentation() != null, true);
     }
   }
 }

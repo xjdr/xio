@@ -58,7 +58,7 @@ public class XioSecurityHandlerImpl implements XioSecurityHandlers {
 
   @Override
   public ChannelHandler getAuthenticationHandler() {
-    return new XioNoOpSecurityFactory().getSecurityHandlers(null, null).getAuthenticationHandler();
+    return new XioNoOpSecurityFactory().getSecurityHandlers().getAuthenticationHandler();
   }
 
   @Override
