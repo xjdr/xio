@@ -1,71 +1,28 @@
 package com.xjeffrose.xio.client;
 
-import com.xjeffrose.xio.client.loadbalancer.Distributor;
 import com.xjeffrose.xio.client.loadbalancer.Node;
-import com.xjeffrose.xio.client.loadbalancer.Protocol;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandler;
 import java.io.Closeable;
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import lombok.extern.log4j.Log4j;
 
-// TODO(CK): break XioClient into an abstract base class with concrete
-// single node and multi-node implementations
 @Log4j
-public class XioClient implements Closeable {
+abstract public class XioClient implements Closeable {
 
+  protected final Bootstrap bootstrap;
 
-  private final Bootstrap bootstrap;
-  private final Node node;
-  private final Distributor distributor;
-
-  // This is just here to get the tests to compile
-  public XioClient() {
-    bootstrap = null;
-    node = null;
-    distributor = null;
-  }
-
-  public XioClient(String host, int port, ChannelHandler handler, boolean ssl) {
-    this(new InetSocketAddress(host, port), handler, ssl);
-  }
-
-  public XioClient(String host, int port, Bootstrap bootstrap, boolean ssl) {
+  protected XioClient(Bootstrap bootstrap) {
     this.bootstrap = bootstrap;
-    this.node = new Node(new InetSocketAddress(host, port), bootstrap);
-    this.distributor = null;
   }
 
-  public XioClient(InetSocketAddress address, Bootstrap bootstrap) {
-    this.bootstrap = bootstrap;
-    this.node = new Node(address, bootstrap);
-    this.distributor = null;
-  }
-
-  public XioClient(InetSocketAddress address, ChannelHandler handler, boolean ssl) {
-    this.bootstrap = new XioClientBootstrap(handler, 4, ssl, Protocol.HTTPS).getBootstrap();
-    this.node = new Node(address, bootstrap);
-    this.distributor = null;
-  }
-
-  public XioClient(Distributor distributor, ChannelHandler handler, boolean ssl) {
-    this.bootstrap = new XioClientBootstrap(handler, 4, ssl, Protocol.HTTPS).getBootstrap();
-    this.node = null;
-    this.distributor = distributor;
-  }
+  abstract public Node getNode();
 
   public boolean write(ByteBuf msg) {
-    if (node == null) {
-      return distributor.pick().send(msg);
-    } else {
-      return node.send(msg);
-    }
+    return getNode().send(msg);
   }
 
-  @Override
-  public void close() throws IOException {
-    bootstrap.group().shutdownGracefully();
+  public boolean write(Object msg) {
+    return getNode().send(msg);
   }
 }

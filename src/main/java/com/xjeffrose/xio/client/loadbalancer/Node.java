@@ -27,12 +27,15 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import lombok.extern.log4j.Log4j;
 
+import java.io.Closeable;
+import java.io.IOException;
+
 /**
  * The base type of nodes over which load is balanced. Nodes define the load metric that is used;
  * distributors like P2C will use these to decide where to balance the next connection request.
  */
 @Log4j
-public class Node {
+public class Node implements Closeable {
 
 
   private final UUID token = UUID.randomUUID();
@@ -70,10 +73,11 @@ public class Node {
     this.filters = ImmutableList.copyOf(filters);
     this.weight = weight;
     this.serviceName = serviceName;
+    // TODO(CK): This be passed in, we're not really taking advantage of pooling
     this.connectionPool = new XioConnectionPool(bootstrap, new AsyncRetryLoopFactory() {
       @Override
       public AsyncRetryLoop buildLoop(EventLoopGroup eventLoopGroup) {
-        return null;
+        return new AsyncRetryLoop(3, bootstrap.config().group(), 1, TimeUnit.SECONDS);
       }
     });
   }
@@ -183,6 +187,11 @@ public class Node {
 
   public boolean isSSL() {
     return ssl;
+  }
+
+  @Override
+  public void close() throws IOException {
+    // TODO(CK): Not sure what to close
   }
 
   @Override
