@@ -4,7 +4,7 @@ import com.xjeffrose.xio.core.XioAggregatorFactory;
 import com.xjeffrose.xio.core.XioCodecFactory;
 import com.xjeffrose.xio.core.XioRoutingFilterFactory;
 //import com.xjeffrose.xio.processor.XioProcessorFactory;
-import io.airlift.units.Duration;
+import java.time.Duration;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executor;
 
