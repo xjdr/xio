@@ -1,14 +1,14 @@
 package com.xjeffrose.xio.client.retry;
 
-import com.xjeffrose.xio.client.XioClient;
-import com.xjeffrose.xio.core.XioTransportException;
+//import com.xjeffrose.xio.client.XioClient;
+//import com.xjeffrose.xio.core.XioTransportException;
 import io.netty.channel.ConnectTimeoutException;
 import java.net.ConnectException;
 import java.net.UnknownHostException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-import org.apache.log4j.Logger;
+import lombok.extern.log4j.Log4j;
 
 ///**
 // * <p>Mechanism to perform an operation on Zookeeper that is safe against disconnections and
@@ -37,6 +37,7 @@ import org.apache.log4j.Logger;
 // * }
 // * </pre>
 // */
+@Log4j
 public class RetryLoop {
   private static final RetrySleeper sleeper = new RetrySleeper() {
     @Override
@@ -44,7 +45,7 @@ public class RetryLoop {
       unit.sleep(time);
     }
   };
-  private final Logger log = Logger.getLogger(RetryLoop.class);
+
   private final long startTimeMs = System.currentTimeMillis();
   private final RetryPolicy retryPolicy;
   private final AtomicReference<TracerDriver> tracer;
@@ -74,22 +75,22 @@ public class RetryLoop {
 //   * @return procedure result
 //   * @throws Exception any non-retriable errors
 //   */
-  public static <T> T callWithRetry(XioClient client, Callable<T> proc) throws Exception {
-    T result = null;
+//  public static <T> T callWithRetry(XioClient client, Callable<T> proc) throws Exception {
+//    T result = null;
 //    RetryLoop retryLoop = client.newRetryLoop();
 //    while (retryLoop.shouldContinue()) {
 //      try {
 //        client.internalBlockUntilConnectedOrTimedOut();
 
-        result = proc.call();
+//        result = proc.call();
 //        retryLoop.markComplete();
 //      } catch (Exception e) {
 //        retryLoop.takeException(e);
 //      }
 //    }
 //    return result;
-    return null;
-  }
+//    return null;
+//  }
 
 //  /**
 //   * Utility - return true if the given Zookeeper result code is retry-able

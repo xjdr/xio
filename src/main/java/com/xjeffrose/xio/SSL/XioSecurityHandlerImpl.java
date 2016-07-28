@@ -1,7 +1,7 @@
 package com.xjeffrose.xio.SSL;
 
-import com.xjeffrose.xio.core.XioNoOpSecurityFactory;
-import com.xjeffrose.xio.core.XioSecurityHandlers;
+import com.xjeffrose.xio.server.XioNoOpSecurityFactory;
+import com.xjeffrose.xio.server.XioSecurityHandlers;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelHandler;
 import io.netty.handler.ssl.OpenSsl;
@@ -12,12 +12,14 @@ import io.netty.handler.ssl.SslProvider;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.security.InvalidKeyException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.SignatureException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
@@ -32,17 +34,6 @@ public class XioSecurityHandlerImpl implements XioSecurityHandlers {
   private final String cert;
   private final String key;
   private final boolean clientMode;
-  private final static X509Certificate selfSignedCert = createSelfSigned();
-
-
-  public static X509Certificate createSelfSigned(){
-    try{
-      return SelfSignedX509CertGenerator.generate("*.paypal.com");
-    }catch (Exception e){
-      e.printStackTrace();
-    }
-    return null;
-  }
 
 
   public XioSecurityHandlerImpl() {
@@ -78,12 +69,14 @@ public class XioSecurityHandlerImpl implements XioSecurityHandlers {
       final String rawCertString = cert;
       PrivateKey privateKey;
       PublicKey publicKey;
+      X509Certificate selfSignedCert = null;
 
       if (key != null) {
         X509CertificateGenerator.DERKeySpec derKeySpec = X509CertificateGenerator.parseDERKeySpec(key);
         privateKey = X509CertificateGenerator.buildPrivateKey(derKeySpec);
         publicKey = X509CertificateGenerator.buildPublicKey(derKeySpec);
       } else {
+        selfSignedCert = SelfSignedX509CertGenerator.generate("*.paypal.com");
         privateKey = selfSignedCert.getKey();
       }
 
@@ -107,6 +100,9 @@ public class XioSecurityHandlerImpl implements XioSecurityHandlers {
           chain[i] = certList.get(i);
         }
       } else {
+        if (selfSignedCert == null) {
+          selfSignedCert = SelfSignedX509CertGenerator.generate("*.paypal.com");
+        }
         chain = new java.security.cert.X509Certificate[1];
         chain[0] = selfSignedCert.getCert();
       }
@@ -172,7 +168,7 @@ public class XioSecurityHandlerImpl implements XioSecurityHandlers {
         return handler;
       }
 
-    } catch (NoSuchAlgorithmException | KeyStoreException | UnrecoverableKeyException | CertificateException | NoSuchProviderException | IllegalArgumentException | IOException  e) {
+    } catch (NoSuchAlgorithmException | KeyStoreException | UnrecoverableKeyException | CertificateException | NoSuchProviderException | IllegalArgumentException | IOException | SignatureException | InvalidKeyException e) {
       e.printStackTrace();
     }
 

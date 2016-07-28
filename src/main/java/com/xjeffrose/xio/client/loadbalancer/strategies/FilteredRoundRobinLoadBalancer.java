@@ -41,4 +41,9 @@ public class FilteredRoundRobinLoadBalancer implements Strategy {
     }
     return null;
   }
+
+  @Override
+  public Node getNextNode(ImmutableList<Node> pool, Map<UUID, Node> okNodes, String sessionID) {
+    return null;
+  }
 }

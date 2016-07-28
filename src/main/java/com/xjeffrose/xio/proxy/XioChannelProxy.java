@@ -14,10 +14,11 @@ import io.netty.handler.ssl.SslHandler;
 import io.netty.util.Attribute;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
-import org.apache.log4j.Logger;
+import lombok.extern.log4j.Log4j;
 
+@Log4j
 public class XioChannelProxy extends ChannelDuplexHandler {
-  private static final Logger log = Logger.getLogger(XioChannelProxy.class);
+
   private final Channel inboundChannel;
   private final ConnectionStateTracker connectionContext;
   private SslHandler sslHandler;
@@ -46,8 +47,8 @@ public class XioChannelProxy extends ChannelDuplexHandler {
       log.debug("Service channelActive " + inboundChannel + " " + ctx.channel());
     }
     // attr never returns null
-    Attribute<Node> attrNode = inboundChannel.attr(Constants.PICKED_OUTBOUND_NODE);
-    node = attrNode.get();
+//    Attribute<Node> attrNode = inboundChannel.attr(Constants.PICKED_OUTBOUND_NODE);
+//    node = attrNode.get();
     if (node != null) {
       node.addPending(ctx.channel());
     }

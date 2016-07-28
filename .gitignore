@@ -20,3 +20,5 @@ dependency-reduced-pom.xml
 pom.xml.releaseBackup
 release.properties
 
+Generated.mk
+depend
