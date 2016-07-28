@@ -63,9 +63,10 @@ all:
 include Classpath.mk
 include Dependencies.mk
 
-Generated.mk: Dependencies.mk lib/*.jar
+Generated.mk: Makefile Dependencies.mk lib/*.jar
 	echo > Generated.mk
 	echo "export JAR_ECJ := $$(coursier fetch -p $(DEP_ECJ))" >> Generated.mk
+	echo "export LOMBOK_JAR := $$(coursier fetch -p $(DEP_LOMBOK))" >> Generated.mk
 	echo "export CLASSPATH_VENDOR := $(shell ls lib/*.jar | sed -e s%^%${PWD}/% | tr '\n' ':' | sed -e 's/jar:$$/jar/')" >> Generated.mk
 	echo "export CLASSPATH_COURSIER := $$(coursier fetch -p $(DEPS_COMPILE))" >> Generated.mk
 	echo 'export CLASSPATH_COMPILE := $$(CLASSPATH_VENDOR):$$(CLASSPATH_COURSIER)' >> Generated.mk
