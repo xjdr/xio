@@ -37,7 +37,7 @@ public class RoundRobinLoadBalancerTest {
     Node node3 = new Node(new InetSocketAddress("127.0.0.1", 8283));
 
     Strategy lb = new RoundRobinLoadBalancer();
-    Distributor distributor = new Distributor(ImmutableList.of(node1, node2, node3), lb, new NodeHealthCheck(2));
+    Distributor distributor = new Distributor(ImmutableList.of(node1, node2, node3), lb, new NodeHealthCheck(2),"dummyName");
 
     assertEquals(node1.address().getPort(), distributor.pick().address().getPort());
     assertEquals(node2.address().getPort(), distributor.pick().address().getPort());
@@ -53,7 +53,7 @@ public class RoundRobinLoadBalancerTest {
     Node node3 = new Node(new InetSocketAddress("127.0.0.1", 8283), 1);
 
     Strategy lb = new RoundRobinLoadBalancer();
-    Distributor distributor = new Distributor(ImmutableList.of(node1, node2, node3), lb, new NodeHealthCheck(2));
+    Distributor distributor = new Distributor(ImmutableList.of(node1, node2, node3), lb, new NodeHealthCheck(2),"dummyName");
 
     assertEquals(node2.address().getPort(), distributor.pick().address().getPort());
     assertEquals(node1.address().getPort(), distributor.pick().address().getPort());
@@ -72,7 +72,7 @@ public class RoundRobinLoadBalancerTest {
     Node node3 = new Node(new InetSocketAddress("127.0.0.1", 8383));
 
     Strategy lb = new RoundRobinLoadBalancer();
-    Distributor distributor = new Distributor(ImmutableList.of(node1, node2, node3), lb, new NodeHealthCheck(2));
+    Distributor distributor = new Distributor(ImmutableList.of(node1, node2, node3), lb, new NodeHealthCheck(2),"dummyName");
 
     // Sleep is required to allow for node refresh
     Thread.sleep(5500);
@@ -89,7 +89,7 @@ public class RoundRobinLoadBalancerTest {
     Node node3 = new Node(new InetSocketAddress("127.0.0.1", 8483));
 
     Strategy lb = new RoundRobinLoadBalancer();
-    Distributor distributor = new Distributor(ImmutableList.of(node1, node2, node3), lb, new NodeHealthCheck(2));
+    Distributor distributor = new Distributor(ImmutableList.of(node1, node2, node3), lb, new NodeHealthCheck(2),"dummyName");
 
     // Sleep is required to allow for node refresh to eject node
     Thread.sleep(5500);

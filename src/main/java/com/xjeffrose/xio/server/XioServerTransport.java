@@ -78,6 +78,13 @@ public class XioServerTransport {
       protected void initChannel(SocketChannel channel) throws Exception {
         ChannelPipeline cp = channel.pipeline();
         XioSecurityHandlers securityHandlers = def.getSecurityFactory().getSecurityHandlers(def, xioServerConfig);
+        if (def.getClientIdleTimeout() != null) {
+          cp.addFirst("idleDisconnectHandler", new XioIdleDisconnectHandler(
+              (int) def.getClientIdleTimeout().toMillis(),
+              NO_WRITER_IDLE_TIMEOUT,
+              NO_ALL_IDLE_TIMEOUT,
+              TimeUnit.MILLISECONDS));
+        }
         cp.addLast("connectionContext", new ConnectionContextHandler());
         cp.addLast("globalConnectionLimiter", connectionLimiter);
         cp.addLast("serviceConnectionLimiter", new ConnectionLimiter(def.getMaxConnections()));
@@ -87,13 +94,6 @@ public class XioServerTransport {
         cp.addLast("codec", def.getCodecFactory().getCodec());
         cp.addLast("aggregator", def.getAggregatorFactory().getAggregator());
         cp.addLast("routingFilter", def.getRoutingFilterFactory().getRoutingFilter());
-        if (def.getClientIdleTimeout() != null) {
-          cp.addLast("idleDisconnectHandler", new XioIdleDisconnectHandler(
-              (int) def.getClientIdleTimeout().toMillis(),
-              NO_WRITER_IDLE_TIMEOUT,
-              NO_ALL_IDLE_TIMEOUT,
-              TimeUnit.MILLISECONDS));
-        }
         cp.addLast("authHandler", securityHandlers.getAuthenticationHandler());
         cp.addLast("dispatcher", new XioDispatcher(def, xioServerConfig));
         cp.addLast("exceptionLogger", new XioExceptionLogger());
