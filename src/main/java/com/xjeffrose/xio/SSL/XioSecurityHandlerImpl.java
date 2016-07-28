@@ -37,7 +37,7 @@ public class XioSecurityHandlerImpl implements XioSecurityHandlers {
 
   public static X509Certificate createSelfSigned(){
     try{
-      return SelfSignedX509CertGenerator.generate("*.paypal.com");
+      return SelfSignedX509CertGenerator.generate("*.xjeffrose.com");
     }catch (Exception e){
       e.printStackTrace();
     }
