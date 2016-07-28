@@ -9,10 +9,10 @@ import io.netty.handler.codec.http.HttpObjectAggregator;
 // [X] parse request
 //      * for now parse the entire request
 //      * in the future parse just the header and pass through the content
-// [ ] determine url
+// [X] determine url
 //      * for now just grab matching url and proxy
 //      * in the future use substring match or regex
-// [ ] map url to config use server.Route.java
+// [X] map url to config use server.Route.java
 // [X] proxy or error
 // [X] proxy logic
 //      * now just read/write/flush

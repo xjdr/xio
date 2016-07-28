@@ -1,6 +1,9 @@
 package com.xjeffrose.xio.server.trailhead;
 
 import com.google.common.collect.ImmutableMap;
+import com.xjeffrose.xio.client.XioClient;
+import com.xjeffrose.xio.client.XioClientBootstrap;
+import com.xjeffrose.xio.client.loadbalancer.Protocol;
 import com.xjeffrose.xio.server.Route;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -23,39 +26,12 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
 import io.netty.util.ReferenceCountUtil;
+import lombok.extern.log4j.Log4j;
 
 import java.net.InetSocketAddress;
 
-// TODO(CK): Change this to SimpleChannelInboundHandler<FullHttpRequest>
-public class Http1ProxyHandler extends SimpleChannelInboundHandler<Object> {
-  private final class BackendHandler extends ChannelInboundHandlerAdapter {
-
-    private final ChannelHandlerContext frontend;
-
-    BackendHandler(ChannelHandlerContext frontend) {
-      this.frontend = frontend;
-    }
-
-    @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-      frontend.write(msg);
-    }
-
-    @Override
-    public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
-      frontend.flush();
-    }
-
-    @Override
-    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-      frontend.close();
-    }
-
-    @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-      ctx.close();
-    }
-  }
+@Log4j
+public class Http1ProxyHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
 
   private RouteConfig.ProxyTo determineProxyTo(FullHttpRequest request) {
     for(Route route : routes.keySet()) {
@@ -66,59 +42,16 @@ public class Http1ProxyHandler extends SimpleChannelInboundHandler<Object> {
     return null;
   }
 
-  private ChannelPipeline maybeSSL(ChannelPipeline pipeline, boolean needSSL) {
-    if (needSSL) {
-      pipeline.addLast(clientSslCtx.newHandler(PooledByteBufAllocator.DEFAULT));
-    }
-    return pipeline;
-  }
-  private ChannelFuture connectToDestination(EventLoop loop, ChannelHandler handler, InetSocketAddress address, boolean needSSL) {
-    /*
-    XioClient client = XioClientBootstrap.create()
-      .channelHandler(handler)
-      .group(loop)
-      .ssl(needSSL)
-      .build()
-    ;
-    */
-    Bootstrap b = new Bootstrap();
-    b.channel(NioSocketChannel.class);
-    b.group(loop);
-    b.handler(new ChannelInitializer() {
-      public void initChannel(Channel channel) {
-        maybeSSL(channel.pipeline(), needSSL)
-          .addLast(handler)
-          .addLast(new HttpRequestEncoder())
-        ;
-      }
-    });
-    return b.connect(address);
-  }
-
-  static final SslContext clientSslCtx;
-
-  static {
-    SslContext cctx;
-    try {
-      cctx = SslContext.newClientContext(InsecureTrustManagerFactory.INSTANCE);
-    } catch (Exception e) {
-      throw new Error(e);
-    }
-    clientSslCtx = cctx;
-  }
-  private Channel backend;
+  private XioClient client;
   private final ImmutableMap<Route, RouteConfig.ProxyTo> routes;
 
   public Http1ProxyHandler(ImmutableMap<Route, RouteConfig.ProxyTo> routes) {
     this.routes = routes;
   }
 
-  /**
-   * This is an FullHttpRequest at this point
-   */
   @Override
-  public final void channelRead0(final ChannelHandlerContext ctx, Object msg) throws Exception {
-    FullHttpRequest req = (FullHttpRequest) ReferenceCountUtil.retain(msg);
+  public final void channelRead0(final ChannelHandlerContext ctx, FullHttpRequest msg) throws Exception {
+    FullHttpRequest req = ReferenceCountUtil.retain(msg);
 
     ctx.pipeline().remove(HttpObjectAggregator.class);
     ctx.pipeline().get(HttpServerCodec.class).removeInboundHandler();
@@ -129,27 +62,20 @@ public class Http1ProxyHandler extends SimpleChannelInboundHandler<Object> {
     if (proxyTo == null) {
       System.out.println("I GIVE UP!!!");
     } else {
-      System.out.println("PROXY TO: " + proxyTo.url + " need SSL: " + proxyTo.needSSL);
-      System.out.println("PROXY REQ: " + req.uri());
       req.setUri(proxyTo.urlPath);
-      System.out.println("PROXY REQ: " + req.uri());
     }
 
     req.headers().set("Host", proxyTo.host);
 
-    ChannelFuture f = connectToDestination(ctx.channel().eventLoop(), new BackendHandler(ctx), proxyTo.address, proxyTo.needSSL);
-    f.addListener(new ChannelFutureListener() {
-      @Override
-      public void operationComplete(ChannelFuture future) throws Exception {
-        if (!future.isSuccess()) {
-          ctx.close();
-        } else {
-          backend = future.channel();
-          backend.write(req);
-          backend.flush();
-        }
-      }
-    });
+    client = new XioClientBootstrap(ctx.channel().eventLoop())
+      .address(proxyTo.address)
+      .ssl(proxyTo.needSSL)
+      .applicationProtocol(() -> new HttpRequestEncoder())
+      .handler(new RawBackendHandler(ctx))
+      .build()
+    ;
+
+    client.write(req);
   }
 
   @Override
@@ -159,13 +85,14 @@ public class Http1ProxyHandler extends SimpleChannelInboundHandler<Object> {
 
   @Override
   public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-    if (backend != null) {
-      backend.close();
+    if (client != null) {
+      client.close();
     }
   }
 
   @Override
   public final void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+    log.error("exceptionCaught", cause);
     ctx.close();
   }
 

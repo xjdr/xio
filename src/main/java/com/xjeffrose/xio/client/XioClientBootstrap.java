@@ -1,7 +1,8 @@
 package com.xjeffrose.xio.client;
 
+import com.google.common.base.Preconditions;
 import com.xjeffrose.xio.SSL.XioSecurityHandlerImpl;
-import com.xjeffrose.xio.client.loadbalancer.Node;
+import com.xjeffrose.xio.client.loadbalancer.Distributor;
 import com.xjeffrose.xio.client.loadbalancer.Protocol;
 import com.xjeffrose.xio.core.XioIdleDisconnectHandler;
 import io.netty.bootstrap.Bootstrap;
@@ -23,6 +24,7 @@ import lombok.extern.log4j.Log4j;
 import lombok.Setter;
 
 import java.net.InetSocketAddress;
+import java.util.function.Supplier;
 
 @Log4j
 @Accessors(fluent = true)
@@ -32,9 +34,15 @@ public class XioClientBootstrap {
   @Setter
   private InetSocketAddress address;
   @Setter
+  private Distributor distributor;
+  @Setter
   private boolean ssl;
   @Setter
   private Protocol proto;
+  @Setter
+  private Supplier<ChannelHandler> applicationProtocol;
+  @Setter
+  private ChannelHandler handler;
   private ChannelConfiguration channelConfig;
 
   @Deprecated
@@ -124,24 +132,20 @@ public class XioClientBootstrap {
       .handler(pipeline);
   }
 
-  private ChannelInitializer<Channel> buildInitializer(ChannelHandler handler) {
-    return new ChannelInitializer<Channel>() {
-      @Override
-      protected void initChannel(Channel channel) throws Exception {
-        ChannelPipeline cp = channel.pipeline();
-        if (ssl) {
-          cp.addLast("encryptionHandler", new XioSecurityHandlerImpl(true).getEncryptionHandler());
+  private ChannelInitializer<Channel> buildInitializer() {
+    if (proto != null && (proto == Protocol.HTTP || proto == Protocol.HTTPS)) {
+      return new DefaultChannelInitializer(handler, ssl);
+    } else if (applicationProtocol != null) {
+      ChannelInitializer<Channel> result = new DefaultChannelInitializer(handler, ssl) {
+        @Override
+        public ChannelHandler protocolHandler() {
+          return applicationProtocol.get();
         }
-        if (proto == (Protocol.HTTP)) {
-          cp.addLast(new HttpClientCodec());
-        }
-        if (proto == (Protocol.HTTPS)) {
-          cp.addLast(new HttpClientCodec());
-        }
-        cp.addLast(new XioIdleDisconnectHandler(60, 60, 60));
-        cp.addLast(handler);
-      }
-    };
+      };
+      return result;
+    } else {
+      throw new RuntimeException("Cannot build initializer, specify either protocol or applicationProtocol");
+    }
   }
 
   public Bootstrap buildBootstrap() {
@@ -156,16 +160,17 @@ public class XioClientBootstrap {
       .channel(channelConfig.channel());
   }
 
-  public void setChannelHandler(ChannelHandler handler) {
-    bootstrap.handler(buildInitializer(handler));
-  }
-
   public XioClient build() {
-    return new XioClient(address, bootstrap);
-  }
-
-  public XioClient buildClient(String host, int port) {
-    return new XioClient(host, port, bootstrap, ssl);
+    Preconditions.checkNotNull(handler);
+    bootstrap.handler(buildInitializer());
+    if (address != null) {
+      bootstrap.remoteAddress(address);
+      return new SingleNodeClient(address, bootstrap);
+    } else if (distributor != null) {
+      return new MultiNodeClient(distributor, bootstrap);
+    } else {
+      throw new RuntimeException("Cannot build XioClient, specify either address or distributor");
+    }
   }
 
   public Bootstrap getBootstrap() {

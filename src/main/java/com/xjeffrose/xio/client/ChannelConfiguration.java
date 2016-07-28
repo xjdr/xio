@@ -1,5 +1,6 @@
 package com.xjeffrose.xio.client;
 
+import io.netty.channel.EventLoop;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.Channel;
 import io.netty.channel.epoll.Epoll;
