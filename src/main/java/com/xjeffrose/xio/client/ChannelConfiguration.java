@@ -46,13 +46,17 @@ public class ChannelConfiguration {
   }
 
   static public ChannelConfiguration clientConfig(EventLoopGroup workerGroup) {
+    EventLoopGroup parent = workerGroup;
+    if (parent instanceof EventLoop) {
+      parent = ((EventLoop)workerGroup).parent();
+    }
     Class<? extends Channel> channelClass;
-    if (workerGroup instanceof EpollEventLoopGroup) {
+    if (parent instanceof EpollEventLoopGroup) {
       channelClass = EpollSocketChannel.class;
-    } else if (workerGroup instanceof NioEventLoopGroup) {
+    } else if (parent instanceof NioEventLoopGroup) {
       channelClass = NioSocketChannel.class;
     } else {
-      throw new RuntimeException("Unsupported EventLoopGroup");
+      throw new RuntimeException("Unsupported EventLoopGroup " + workerGroup.getClass());
     }
 
     return new ChannelConfiguration(workerGroup, channelClass);
