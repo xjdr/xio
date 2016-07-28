@@ -34,8 +34,11 @@ public class XioServerConfig {
     limits = new XioServerLimits(config.getConfig("limits"));
   }
 
-  static public XioServerConfig fromConfig(String config) {
-    return new XioServerConfig(ConfigFactory.load().getConfig(config));
+  static public XioServerConfig fromConfig(String key, Config config) {
+    return new XioServerConfig(config.getConfig(key));
+  }
+  static public XioServerConfig fromConfig(String key) {
+    return fromConfig(key, ConfigFactory.load());
   }
 
   public XioServerConfig(Map<ChannelOption<Object>, Object> bootstrapOptions,

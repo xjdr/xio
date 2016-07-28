@@ -14,13 +14,15 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import lombok.extern.log4j.Log4j;
 
+import java.io.Closeable;
+import java.io.IOException;
 import static com.google.common.base.Preconditions.checkState;
 
 /**
  * Creates a new Distributor to perform load balancing
  */
 @Log4j
-public class Distributor {
+public class Distributor implements Closeable {
 
 
   private final ImmutableList<Node> pool;
@@ -127,6 +129,11 @@ public class Distributor {
 
   public Map<UUID, Node> getOkNodes() {
     return okNodes;
+  }
+
+  @Override
+  public void close() throws IOException {
+    // TODO(CK): Not sure what to close
   }
 
 }

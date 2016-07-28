@@ -27,12 +27,15 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import lombok.extern.log4j.Log4j;
 
+import java.io.Closeable;
+import java.io.IOException;
+
 /**
  * The base type of nodes over which load is balanced. Nodes define the load metric that is used;
  * distributors like P2C will use these to decide where to balance the next connection request.
  */
 @Log4j
-public class Node {
+public class Node implements Closeable {
 
 
   private final UUID token = UUID.randomUUID();
@@ -48,6 +51,7 @@ public class Node {
   private final boolean ssl;
   private final AtomicBoolean available = new AtomicBoolean(true);
   private final XioConnectionPool connectionPool;
+  private final EventLoopGroup eventLoopGroup;
   private double load;
 
   public Node(HostAndPort hostAndPort, Bootstrap bootstrap) {
@@ -70,12 +74,14 @@ public class Node {
     this.filters = ImmutableList.copyOf(filters);
     this.weight = weight;
     this.serviceName = serviceName;
+    // TODO(CK): This be passed in, we're not really taking advantage of pooling
     this.connectionPool = new XioConnectionPool(bootstrap, new AsyncRetryLoopFactory() {
       @Override
       public AsyncRetryLoop buildLoop(EventLoopGroup eventLoopGroup) {
-        return null;
+        return new AsyncRetryLoop(3, bootstrap.config().group(), 1, TimeUnit.SECONDS);
       }
     });
+    eventLoopGroup = bootstrap.config().group();
   }
 
   public Node(Node n) {
@@ -87,6 +93,7 @@ public class Node {
     this.proto = Protocol.TCP;
     this.ssl = false;
     this.connectionPool = n.connectionPool;
+    this.eventLoopGroup = n.eventLoopGroup;
   }
 
   /**
@@ -96,26 +103,34 @@ public class Node {
     return (hostAndPort == null) ? null : new InetSocketAddress(hostAndPort.getHostText(), hostAndPort.getPort());
   }
 
-  public boolean send(ByteBuf message) {
-    Future<Channel> channelResult = connectionPool.acquire();
+  public Future<Void> send(Object message) {
+    DefaultPromise<Void> promise = new DefaultPromise<>(eventLoopGroup.next());
+
     log.debug("Acquiring Node: " + this);
+    Future<Channel> channelResult = connectionPool.acquire();
     channelResult.addListener(new FutureListener<Channel>() {
       public void operationComplete(Future<Channel> future) {
         if (future.isSuccess()) {
-          System.out.println("Node acquired!");
           Channel channel = future.getNow();
-          // TODO could maybe put a listener here to track successful writes
           channel.writeAndFlush(message).addListener(new ChannelFutureListener() {
             public void operationComplete(ChannelFuture channelFuture) {
-              log.debug("write finished for " + message);
+              if (channelFuture.isSuccess()) {
+                log.debug("write finished for " + message);
+                promise.setSuccess(null);
+              } else {
+                log.error("Write error: ", channelFuture.cause());
+                promise.setFailure(future.cause());
+              }
             }
           });
         } else {
-          log.error("Could not connect to client for write");
+          log.error("Could not connect to client for write: " + future.cause());
+          promise.setFailure(future.cause());
         }
       }
     });
-    return true;
+
+    return promise;
   }
 
   /**
@@ -183,6 +198,11 @@ public class Node {
 
   public boolean isSSL() {
     return ssl;
+  }
+
+  @Override
+  public void close() throws IOException {
+    // TODO(CK): Not sure what to close
   }
 
   @Override

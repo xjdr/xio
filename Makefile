@@ -36,7 +36,22 @@ PROJECT_DEP = $(EXAMPLE_SRC:%.java=$(DEP_DIR)/%.d) $(MAIN_SRC:%.java=$(DEP_DIR)/
 
 DIRS = $(DEP_DIR) $(TARGET_DIR)
 
-.PHONY: all clean compile test thrift
+# declare phonies and display a useful help message
+.PHONY: all checkstyle check-syntax clean compile fetch jar repl run thrift test
+all:
+	@echo
+	@echo "  checkstyle - run checkstyle over the entire project"
+	@echo "  check-syntax - run ECJ over the entire project"
+	@echo "  clean - delete build artifacts and generated files"
+	@echo "  compile - build examples, main, and test"
+	@echo "  fetch - download all dependencies"
+	@echo "  jar - build $(PROJECT_JAR)"
+	@echo "  repl - run the java repl"
+	@echo "  run - compile and run $(MAIN_CLASS)"
+	@echo "  thrift - generate thrift sources"
+	@echo "  test - compile and test"
+	@echo
+
 # disable implicit rules
 .SUFFIXES:
 %:: %,v
@@ -44,32 +59,19 @@ DIRS = $(DEP_DIR) $(TARGET_DIR)
 %:: RCS/%
 %:: s.%
 %:: SCCS/s.%
-all:
-	@echo "compile - build examples, main, and test"
-	@echo "jar - build $(PROJECT_JAR)"
 
 include Classpath.mk
 include Dependencies.mk
 
-Generated.mk: Dependencies.mk lib/*.jar
+Generated.mk: Makefile Dependencies.mk lib/*.jar
 	echo > Generated.mk
 	echo "export JAR_ECJ := $$(coursier fetch -p $(DEP_ECJ))" >> Generated.mk
+	echo "export LOMBOK_JAR := $$(coursier fetch -p $(DEP_LOMBOK))" >> Generated.mk
 	echo "export CLASSPATH_VENDOR := $(shell ls lib/*.jar | sed -e s%^%${PWD}/% | tr '\n' ':' | sed -e 's/jar:$$/jar/')" >> Generated.mk
 	echo "export CLASSPATH_COURSIER := $$(coursier fetch -p $(DEPS_COMPILE))" >> Generated.mk
 	echo 'export CLASSPATH_COMPILE := $$(CLASSPATH_VENDOR):$$(CLASSPATH_COURSIER)' >> Generated.mk
 
 -include Generated.mk
-
-repl:
-	@echo ${CLASSPATH_COMPILE}:${TARGET_DIR} | sed -e 's/^/:/' | sed -e 's/:/|:cp /g' | tr '|' '\n'
-	@echo
-	@javarepl
-
-fetch:
-	@coursier fetch --verbose $(DEPS_ALL)
-
-checkstyle:
-	drip -Dcheckstyle.cache.file=checkstyle.cache -cp `coursier fetch -p $(DEPS_ALL)` com.puppycrawl.tools.checkstyle.Main -c checkstyle.xml src/main
 
 $(DIRS):
 	mkdir -p $@
@@ -113,7 +115,19 @@ TEST_RESOURCES = $(shell cd src/test; find resources -type f -print | sed -e 's+
 $(TEST_RESOURCES): $(TARGET_DIR)/% : src/test/resources/%
 	cp $< $@
 
+# copy example resources into the target dir
+
+EXAMPLE_RESOURCES = $(shell cd src/example; find resources -type f -print | sed -e 's+resources+$(TARGET_DIR)+')
+
+$(EXAMPLE_RESOURCES): $(TARGET_DIR)/% : src/example/resources/%
+	cp $< $@
+
+RESOURCES := $(TEST_RESOURCES) $(EXAMPLE_RESOURCES)
+
 # phonies
+
+checkstyle:
+	drip -Dcheckstyle.cache.file=checkstyle.cache -cp `coursier fetch -p $(DEPS_ALL)` com.puppycrawl.tools.checkstyle.Main -c checkstyle.xml src/main
 
 check-syntax:
 	@for dir in $$(find src -type d); do \
@@ -124,11 +138,22 @@ clean:
 	rm Generated.mk
 	rm -fr $(DIRS)
 
-compile: $(DIRS) target/.main_compiled target/.test_compiled target/.example_compiled  $(TEST_RESOURCES)
+compile: $(DIRS) target/.main_compiled target/.test_compiled target/.example_compiled  $(RESOURCES)
+
+fetch:
+	@coursier fetch --verbose $(DEPS_ALL)
 
 jar: compile $(PROJECT_JAR)
 
-thrift: $(THRIFT_OUT)
+repl:
+	@echo ${CLASSPATH_COMPILE}:${TARGET_DIR} | sed -e 's/^/:/' | sed -e 's/:/|:cp /g' | tr '|' '\n'
+	@echo
+	@javarepl
+
+run: compile
+	java -cp $(CLASSPATH_COMPILE):$(TARGETDIR) $(MAIN_CLASS)
 
 test: compile
 	scripts/run-test $$(find src/test -name "*Test.java")
+
+thrift: $(THRIFT_OUT)

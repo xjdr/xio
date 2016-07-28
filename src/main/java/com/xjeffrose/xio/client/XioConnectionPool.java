@@ -6,6 +6,7 @@ import com.xjeffrose.xio.client.asyncretry.AsyncRetryLoopFactory;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.EventLoop;
 import io.netty.channel.EventLoopGroup;
@@ -30,8 +31,9 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class XioConnectionPool {
   private final EventLoopGroup eventLoopGroup;
-  private final SimpleChannelPool simpleChannelPool;
   private final AsyncRetryLoopFactory retryLoopFactory;
+  private final ChannelHandler handler;
+  private final SimpleChannelPool simpleChannelPool;
   private final AtomicInteger channelCount = new AtomicInteger(0);
   private final AtomicInteger acquiredCount = new AtomicInteger(0);
   private final AtomicInteger releasedCount = new AtomicInteger(0);
@@ -41,6 +43,7 @@ public class XioConnectionPool {
     @Override
     public void channelCreated(Channel ch) {
       channelCount.incrementAndGet();
+      ch.pipeline().addLast(handler);
     }
 
     @Override
@@ -69,9 +72,10 @@ public class XioConnectionPool {
 
   public XioConnectionPool(Bootstrap bootstrap, AsyncRetryLoopFactory retryLoopFactory) {
     Preconditions.checkNotNull(bootstrap);
+    this.retryLoopFactory = Preconditions.checkNotNull(retryLoopFactory);
+    handler = bootstrap.config().handler();
     eventLoopGroup = bootstrap.config().group();
     simpleChannelPool = new SimpleChannelPool(bootstrap, channelPoolHandler, channelHealthChecker);
-    this.retryLoopFactory = Preconditions.checkNotNull(retryLoopFactory);
   }
 
   private void acquireWithRetry(AsyncRetryLoop retry, DefaultPromise<Channel> result) {
