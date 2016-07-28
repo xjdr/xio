@@ -3,8 +3,7 @@ package com.xjeffrose.xio.server;
 import com.xjeffrose.xio.core.XioAggregatorFactory;
 import com.xjeffrose.xio.core.XioCodecFactory;
 import com.xjeffrose.xio.core.XioRoutingFilterFactory;
-import com.xjeffrose.xio.core.XioSecurityFactory;
-import com.xjeffrose.xio.processor.XioProcessorFactory;
+//import com.xjeffrose.xio.processor.XioProcessorFactory;
 import io.airlift.units.Duration;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executor;
@@ -14,7 +13,7 @@ public class XioServerDef {
   private final int maxFrameSize;
   private final int maxConnections;
   private final int queuedResponseLimit;
-  private final XioProcessorFactory processorFactory;
+//  private final XioProcessorFactory processorFactory;
   private final Duration clientIdleTimeout;
   private final Duration taskTimeout;
   private final Executor executor;
@@ -25,6 +24,23 @@ public class XioServerDef {
   private final InetSocketAddress hostAddress;
   private final XioRoutingFilterFactory routingFilterFactory;
 
+  // This is just here to get the tests to compile
+  public XioServerDef() {
+    serverPort = 0;
+    maxFrameSize = 0;
+    maxConnections = 0;
+    queuedResponseLimit = 0;
+    clientIdleTimeout = null;
+    taskTimeout = null;
+    executor = null;
+    name = null;
+    securityFactory = null;
+    codecFactory = null;
+    aggregatorFactory = null;
+    hostAddress = null;
+    routingFilterFactory = null;
+  }
+
   public XioServerDef(
       String name,
       int serverPort,
@@ -32,7 +48,7 @@ public class XioServerDef {
       int maxFrameSize,
       int queuedResponseLimit,
       int maxConnections,
-      XioProcessorFactory processorFactory,
+//      XioProcessorFactory processorFactory,
       Duration clientIdleTimeout,
       Duration taskTimeout,
       Executor executor,
@@ -47,7 +63,7 @@ public class XioServerDef {
     this.maxFrameSize = maxFrameSize;
     this.maxConnections = maxConnections;
     this.queuedResponseLimit = queuedResponseLimit;
-    this.processorFactory = processorFactory;
+//    this.processorFactory = processorFactory;
     this.clientIdleTimeout = clientIdleTimeout;
     this.taskTimeout = taskTimeout;
     this.executor = executor;
@@ -81,9 +97,9 @@ public class XioServerDef {
     return queuedResponseLimit;
   }
 
-  public XioProcessorFactory getProcessorFactory() {
-    return processorFactory;
-  }
+//  public XioProcessorFactory getProcessorFactory() {
+//    return processorFactory;
+//  }
 
   public Duration getClientIdleTimeout() {
     return clientIdleTimeout;

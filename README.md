@@ -14,7 +14,20 @@ High performance Multithreaded non-blocking Async I/O for Java 8
 
 Full readme and docs coming soon, to see sample uses, take a look at the tests.
 
-git-flow
-========
+working with the codebase
+=========================
+
+### lombok
+
+This project uses the following lombok features:
+
+ * https://projectlombok.org/features/GetterSetter.html
+ * https://projectlombok.org/features/ToString.html
+ * https://projectlombok.org/features/Data.html
+ * https://projectlombok.org/features/Value.html
+ * https://projectlombok.org/features/Builder.html
+ * https://projectlombok.org/features/Log.html
+
+### git-flow
 
 This project is using git-flow, run `scripts/global-git-flow.sh` to globally configure git-flow

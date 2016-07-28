@@ -3,7 +3,20 @@ package com.xjeffrose.xio.client.loadbalancer;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.net.HostAndPort;
+import com.xjeffrose.xio.client.XioConnectionPool;
+import com.xjeffrose.xio.client.asyncretry.AsyncRetryLoop;
+import com.xjeffrose.xio.client.asyncretry.AsyncRetryLoopFactory;
+import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.EventLoopGroup;
+import io.netty.util.concurrent.DefaultProgressivePromise;
+import io.netty.util.concurrent.DefaultPromise;
+import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.FutureListener;
+import io.netty.util.concurrent.Promise;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.ArrayList;
@@ -12,14 +25,18 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.apache.log4j.Logger;
+import lombok.extern.log4j.Log4j;
+
+import java.io.Closeable;
+import java.io.IOException;
 
 /**
  * The base type of nodes over which load is balanced. Nodes define the load metric that is used;
  * distributors like P2C will use these to decide where to balance the next connection request.
  */
-public class Node {
-  private static final Logger log = Logger.getLogger(Node.class);
+@Log4j
+public class Node implements Closeable {
+
 
   private final UUID token = UUID.randomUUID();
   private final ConcurrentHashMap<Channel, Stopwatch> pending = new ConcurrentHashMap<>();
@@ -33,26 +50,23 @@ public class Node {
   private final Protocol proto;
   private final boolean ssl;
   private final AtomicBoolean available = new AtomicBoolean(true);
+  private final XioConnectionPool connectionPool;
+  private final EventLoopGroup eventLoopGroup;
   private double load;
-  private final String hostname;
 
-  public Node(HostAndPort hostAndPort) {
-    this(toInetAddress(hostAndPort));
+  public Node(HostAndPort hostAndPort, Bootstrap bootstrap) {
+    this(toInetAddress(hostAndPort), bootstrap);
   }
 
-  public Node(SocketAddress address) {
-    this(address.toString(), address, ImmutableList.of(), 0, "", Protocol.TCP, false);
+  public Node(SocketAddress address, Bootstrap bootstrap) {
+    this(address, ImmutableList.of(), 0, "", Protocol.TCP, false, bootstrap);
   }
 
-  public Node(SocketAddress address, int weight) {
-    this(address.toString(), address, ImmutableList.of(), weight, "", Protocol.TCP, false);
+  public Node(SocketAddress address, int weight, Bootstrap bootstrap) {
+    this(address, ImmutableList.of(), weight, "", Protocol.TCP, false, bootstrap);
   }
 
-  public Node(SocketAddress address, ImmutableList<String> filters, int weight, java.lang.String serviceName, Protocol proto, boolean ssl) {
-    this(address.toString(),address,filters,weight,serviceName,proto,ssl);
-  }
-
-  public Node(String hostname, SocketAddress address, ImmutableList<String> filters, int weight, java.lang.String serviceName, Protocol proto, boolean ssl) {
+  public Node(SocketAddress address, ImmutableList<String> filters, int weight, String serviceName, Protocol proto, boolean ssl, Bootstrap bootstrap) {
     this.address = address;
     this.proto = proto;
     this.ssl = ssl;
@@ -60,7 +74,14 @@ public class Node {
     this.filters = ImmutableList.copyOf(filters);
     this.weight = weight;
     this.serviceName = serviceName;
-    this.hostname = hostname;
+    // TODO(CK): This be passed in, we're not really taking advantage of pooling
+    this.connectionPool = new XioConnectionPool(bootstrap, new AsyncRetryLoopFactory() {
+      @Override
+      public AsyncRetryLoop buildLoop(EventLoopGroup eventLoopGroup) {
+        return new AsyncRetryLoop(3, bootstrap.config().group(), 1, TimeUnit.SECONDS);
+      }
+    });
+    eventLoopGroup = bootstrap.config().group();
   }
 
   public Node(Node n) {
@@ -71,7 +92,8 @@ public class Node {
     this.serviceName = n.serviceName;
     this.proto = Protocol.TCP;
     this.ssl = false;
-    this.hostname = n.hostname;
+    this.connectionPool = n.connectionPool;
+    this.eventLoopGroup = n.eventLoopGroup;
   }
 
   /**
@@ -79,6 +101,36 @@ public class Node {
    */
   public static InetSocketAddress toInetAddress(HostAndPort hostAndPort) {
     return (hostAndPort == null) ? null : new InetSocketAddress(hostAndPort.getHostText(), hostAndPort.getPort());
+  }
+
+  public Future<Void> send(Object message) {
+    DefaultPromise<Void> promise = new DefaultPromise<>(eventLoopGroup.next());
+
+    log.debug("Acquiring Node: " + this);
+    Future<Channel> channelResult = connectionPool.acquire();
+    channelResult.addListener(new FutureListener<Channel>() {
+      public void operationComplete(Future<Channel> future) {
+        if (future.isSuccess()) {
+          Channel channel = future.getNow();
+          channel.writeAndFlush(message).addListener(new ChannelFutureListener() {
+            public void operationComplete(ChannelFuture channelFuture) {
+              if (channelFuture.isSuccess()) {
+                log.debug("write finished for " + message);
+                promise.setSuccess(null);
+              } else {
+                log.error("Write error: ", channelFuture.cause());
+                promise.setFailure(future.cause());
+              }
+            }
+          });
+        } else {
+          log.error("Could not connect to client for write: " + future.cause());
+          promise.setFailure(future.cause());
+        }
+      }
+    });
+
+    return promise;
   }
 
   /**
@@ -132,9 +184,7 @@ public class Node {
     return weight;
   }
 
-  public String getHostname() { return hostname; }
-
-  public java.lang.String getServiceName() {
+  public String getServiceName() {
     return serviceName;
   }
 
@@ -150,9 +200,13 @@ public class Node {
     return ssl;
   }
 
+  @Override
+  public void close() throws IOException {
+    // TODO(CK): Not sure what to close
+  }
 
   @Override
-  public java.lang.String  toString() {
-    return serviceName + ": " + address() + " : "+ proto.toString() + ": SSL="+isSSL() + ":  Healthy="+isAvailable();
+  public String toString() {
+    return serviceName + ": " + address();
   }
 }

@@ -2,7 +2,6 @@ package com.xjeffrose.xio.server;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.ExecutionError;
-import com.google.inject.Inject;
 import com.xjeffrose.xio.core.XioMetrics;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -12,11 +11,12 @@ import java.util.Set;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
-import org.apache.log4j.Logger;
+import lombok.extern.log4j.Log4j;
 
 
+@Log4j
 public class XioBootstrap {
-  private static final Logger log = Logger.getLogger(XioServerTransport.class.getName());
+
 
   private final XioServerConfig xioServerConfig;
   private Map<XioServerDef, XioServerTransport> transports;
@@ -24,7 +24,6 @@ public class XioBootstrap {
   private NioEventLoopGroup workerGroup;
   private final ChannelGroup allChannels;
 
-  @Inject
   public XioBootstrap(
       Set<XioServerDef> xioServerDefs,
       XioServerConfig xioServerConfig,

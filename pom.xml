@@ -10,7 +10,7 @@
 
     <groupId>com.xjeffrose</groupId>
     <artifactId>xio</artifactId>
-    <version>0.11.0-SNAPSHOT</version>
+    <version>0.12.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>xio</name>
     <description>High Performance HTTP Server based on Netty and Xio</description>
@@ -57,21 +57,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.google.inject</groupId>
-            <artifactId>guice</artifactId>
-            <version>4.0</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.google.inject.extensions</groupId>
-            <artifactId>guice-multibindings</artifactId>
-            <version>4.0</version>
-        </dependency>
-
-        <dependency>
             <groupId>com.google.code.findbugs</groupId>
             <artifactId>jsr305</artifactId>
-            <version>3.0.0</version>
+            <version>3.0.1</version>
         </dependency>
 
         <dependency>
@@ -86,24 +74,31 @@
             <version>4.1.1.Final</version>
         </dependency>
 
-        <!--<dependency>-->
-            <!--<groupId>io.netty</groupId>-->
-            <!--<artifactId>netty-codec-http2</artifactId>-->
-            <!--<version>4.1.0.CR7</version>-->
-        <!--</dependency>-->
 
         <!--Mac for Testing, please use linux for production-->
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-tcnative</artifactId>
-            <version>1.1.33.Fork15</version>
+            <version>1.1.33.Fork17</version>
             <classifier>${os.detected.classifier}</classifier>
         </dependency>
 
         <dependency>
             <groupId>io.airlift</groupId>
             <artifactId>units</artifactId>
-            <version>0.114</version>
+            <version>0.128</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.curator</groupId>
+            <artifactId>curator-framework</artifactId>
+            <version>3.1.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.curator</groupId>
+            <artifactId>curator-recipes</artifactId>
+            <version>3.1.0</version>
         </dependency>
 
         <!-- Junit and okhttp are only required for development and testing -->
@@ -207,21 +202,6 @@
                 </executions>
             </plugin>
 
-            <!--<plugin>-->
-              <!--<groupId>org.apache.maven.plugins</groupId>-->
-              <!--<artifactId>maven-gpg-plugin</artifactId>-->
-              <!--<version>1.5</version>-->
-              <!--<executions>-->
-                <!--<execution>-->
-                  <!--<id>sign-artifacts</id>-->
-                  <!--<phase>verify</phase>-->
-                  <!--<goals>-->
-                    <!--<goal>sign</goal>-->
-                  <!--</goals>-->
-                <!--</execution>-->
-              <!--</executions>-->
-            <!--</plugin>-->
-
             <plugin>
               <groupId>org.apache.maven.plugins</groupId>
               <artifactId>maven-release-plugin</artifactId>
@@ -268,7 +248,7 @@
                     <configuration>
                         <properties>
                             <inceptionYear>${project.inceptionYear}</inceptionYear>
-                            <year>2015</year>
+                            <year>2016</year>
                         </properties>
                     </configuration>
                 </plugin>

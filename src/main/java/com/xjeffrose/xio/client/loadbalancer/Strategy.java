@@ -9,4 +9,6 @@ public interface Strategy {
   boolean okToPick(Node node);
 
   Node getNextNode(ImmutableList<Node> pool, Map<UUID, Node> okNodes);
+
+  Node getNextNode(ImmutableList<Node> pool, Map<UUID, Node> okNodes, String sessionID);
 }

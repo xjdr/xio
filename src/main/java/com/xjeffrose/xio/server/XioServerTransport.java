@@ -8,7 +8,6 @@ import com.xjeffrose.xio.core.XioExceptionLogger;
 import com.xjeffrose.xio.core.XioIdleDisconnectHandler;
 import com.xjeffrose.xio.core.XioMessageLogger;
 import com.xjeffrose.xio.core.XioMetrics;
-import com.xjeffrose.xio.core.XioSecurityHandlers;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
@@ -33,11 +32,11 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import javax.inject.Inject;
-import org.apache.log4j.Logger;
+import lombok.extern.log4j.Log4j;
 
+@Log4j
 public class XioServerTransport {
-  private static final Logger log = Logger.getLogger(XioServerTransport.class.getName());
+
 
   private static final int NO_WRITER_IDLE_TIMEOUT = 120000;
   private static final int NO_ALL_IDLE_TIMEOUT = 120000;
@@ -58,7 +57,6 @@ public class XioServerTransport {
     this(def, XioServerConfig.newBuilder().build(), new DefaultChannelGroup(new NioEventLoopGroup().next()));
   }
 
-  @Inject
   public XioServerTransport(
       final XioServerDef def,
       final XioServerConfig xioServerConfig,
@@ -95,7 +93,7 @@ public class XioServerTransport {
         cp.addLast("aggregator", def.getAggregatorFactory().getAggregator());
         cp.addLast("routingFilter", def.getRoutingFilterFactory().getRoutingFilter());
         cp.addLast("authHandler", securityHandlers.getAuthenticationHandler());
-        cp.addLast("dispatcher", new XioDispatcher(def, xioServerConfig));
+//        cp.addLast("dispatcher", new XioDispatcher(def, xioServerConfig));
         cp.addLast("exceptionLogger", new XioExceptionLogger());
       }
     };

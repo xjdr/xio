@@ -1,10 +1,12 @@
 package com.xjeffrose.xio.core;
 
 
-import com.xjeffrose.xio.client.loadbalancer.Distributor;
-import com.xjeffrose.xio.client.loadbalancer.XioDistributorFactory;
-import com.xjeffrose.xio.processor.XioProcessorFactory;
-import com.xjeffrose.xio.server.XioServerDef;
+//import com.xjeffrose.xio.client.loadbalancer.Distributor;
+//import com.xjeffrose.xio.client.loadbalancer.XioDistributorFactory;
+//import com.xjeffrose.xio.processor.XioProcessorFactory;
+//import com.xjeffrose.xio.server.XioServerDef;
+//import com.xjeffrose.xio.server.XioNoOpSecurityFactory;
+//import com.xjeffrose.xio.server.XioSecurityFactory;
 import io.airlift.units.Duration;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executor;
@@ -26,17 +28,17 @@ public abstract class XioDefBuilderBase<T extends XioDefBuilderBase<T>> {
   private int maxFrameSize;
   private int maxConnections;
   private int queuedResponseLimit;
-  private XioProcessorFactory xioProcessorFactory;
+//  private XioProcessorFactory xioProcessorFactory;
   private Executor executor;
   private String name = "Xio-" + ID.getAndIncrement();
   private Duration clientIdleTimeout;
   private Duration taskTimeout;
-  private XioSecurityFactory securityFactory;
+//  private XioSecurityFactory securityFactory;
   private InetSocketAddress hostAddress;
   private XioCodecFactory codecFactory;
   private XioAggregatorFactory aggregatorFactory;
   private XioRoutingFilterFactory routingFilterFactory;
-  private Distributor distributor;
+//  private Distributor distributor;
 
   public XioDefBuilderBase() {
     this.port = 8080;
@@ -52,7 +54,7 @@ public abstract class XioDefBuilderBase<T extends XioDefBuilderBase<T>> {
     };
     this.clientIdleTimeout = null;
     this.taskTimeout = null;
-    this.securityFactory = new XioNoOpSecurityFactory();
+//    this.securityFactory = new XioNoOpSecurityFactory();
     this.codecFactory = null;
     this.aggregatorFactory = null;
     this.routingFilterFactory = null;
@@ -74,10 +76,10 @@ public abstract class XioDefBuilderBase<T extends XioDefBuilderBase<T>> {
     return (T) this;
   }
 
-  public T withProcessorFactory(XioProcessorFactory processorFactory) {
-    this.xioProcessorFactory = processorFactory;
-    return (T) this;
-  }
+//  public T withProcessorFactory(XioProcessorFactory processorFactory) {
+//    this.xioProcessorFactory = processorFactory;
+//    return (T) this;
+//  }
 
   public T limitFrameSizeTo(int maxFrameSize) {
     this.maxFrameSize = maxFrameSize;
@@ -109,10 +111,10 @@ public abstract class XioDefBuilderBase<T extends XioDefBuilderBase<T>> {
     return (T) this;
   }
 
-  public T withSecurityFactory(XioSecurityFactory securityFactory) {
-    this.securityFactory = securityFactory;
-    return (T) this;
-  }
+//  public T withSecurityFactory(XioSecurityFactory securityFactory) {
+//    this.securityFactory = securityFactory;
+//    return (T) this;
+//  }
 
   public T withCodecFactory(XioCodecFactory codec) {
     this.codecFactory = codec;
@@ -129,34 +131,34 @@ public abstract class XioDefBuilderBase<T extends XioDefBuilderBase<T>> {
     return (T) this;
   }
 
-  public T withDistributor(Distributor distributor) {
-    this.distributor = distributor;
-    return (T) this;
-  }
+//  public T withDistributor(Distributor distributor) {
+//    this.distributor = distributor;
+//    return (T) this;
+//  }
 
-  public XioServerDef build() {
-    checkState(xioProcessorFactory != null, "Processor not defined!");
-    checkState(codecFactory != null, "Codec not defined!");
-    checkState(aggregatorFactory != null, "Aggregator not defined!");
-    checkState(routingFilterFactory != null, "routingFilterFactory not defined!");
-
+//  public XioServerDef build() {
+//    checkState(xioProcessorFactory != null, "Processor not defined!");
+//    checkState(codecFactory != null, "Codec not defined!");
+//    checkState(aggregatorFactory != null, "Aggregator not defined!");
+//    checkState(routingFilterFactory != null, "routingFilterFactory not defined!");
+//
 //    checkState(xioProcessorFactory == null, "Processors will be automatically adapted to XioProcessors, don't specify both");
-    checkState(maxConnections >= 0, "maxConnections should be 0 (for unlimited) or positive");
-
-    return new XioServerDef(
-        name,
-        port,
-        hostAddress,
-        maxFrameSize,
-        queuedResponseLimit,
-        maxConnections,
-        xioProcessorFactory,
-        clientIdleTimeout,
-        taskTimeout,
-        executor,
-        securityFactory,
-        codecFactory,
-        aggregatorFactory,
-        routingFilterFactory);
-  }
+//    checkState(maxConnections >= 0, "maxConnections should be 0 (for unlimited) or positive");
+//
+//    return new XioServerDef(
+//        name,
+//        port,
+//        hostAddress,
+//        maxFrameSize,
+//        queuedResponseLimit,
+//        maxConnections,
+//        xioProcessorFactory,
+//        clientIdleTimeout,
+//        taskTimeout,
+//        executor,
+//        securityFactory,
+//        codecFactory,
+//        aggregatorFactory,
+//        routingFilterFactory);
+//  }
 }
