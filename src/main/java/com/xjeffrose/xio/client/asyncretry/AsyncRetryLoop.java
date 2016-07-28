@@ -25,7 +25,7 @@ public class AsyncRetryLoop {
 
   public void attempt(Runnable action) {
     attemptCount++;
-    if (attemptCount == 0) {
+    if (attemptCount == 1) {
       action.run();
     } else {
       eventLoopGroup.schedule(action, delay, unit);
