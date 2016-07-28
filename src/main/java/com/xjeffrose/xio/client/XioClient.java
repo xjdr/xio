@@ -3,9 +3,11 @@ package com.xjeffrose.xio.client;
 import com.xjeffrose.xio.client.loadbalancer.Node;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
+import io.netty.util.concurrent.Future;
+import lombok.extern.log4j.Log4j;
+
 import java.io.Closeable;
 import java.io.IOException;
-import lombok.extern.log4j.Log4j;
 
 @Log4j
 abstract public class XioClient implements Closeable {
@@ -18,11 +20,7 @@ abstract public class XioClient implements Closeable {
 
   abstract public Node getNode();
 
-  public boolean write(ByteBuf msg) {
-    return getNode().send(msg);
-  }
-
-  public boolean write(Object msg) {
+  public Future<Void> write(Object msg) {
     return getNode().send(msg);
   }
 }
