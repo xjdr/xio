@@ -6,7 +6,6 @@ DEP_NETTY=io.netty:netty-all:4.1.0.Final
 DEP_NETTY_TCNATIVE=io.netty:netty-tcnative:1.1.33.Fork17
 DEP_NETTY_SSL=io.netty:netty-tcnative-boringssl-static:1.1.33.Fork17
 #DEP_THRIFT=org.apache.thrift:libthrift:jar:0.9.3
-DEP_AIRLIFT=io.airlift:units:0.128
 DEP_CURATOR=org.apache.curator:curator-framework:3.1.0
 DEP_CURATOR_RECIPES=org.apache.curator:curator-recipes:3.1.0
 DEP_CURATOR_TESTING=org.apache.curator:curator-test:3.2.0
@@ -27,7 +26,6 @@ DEPS_COMPILE=$(DEP_CONFIG) \
              $(DEP_NETTY) \
              $(DEP_NETTY_TCNATIVE) \
              $(DEP_NETTY_SSL) \
-             $(DEP_AIRLIFT) \
              $(DEP_CURATOR) \
              $(DEP_CURATOR_RECIPES) \
              $(DEP_CURATOR_TESTING) \
