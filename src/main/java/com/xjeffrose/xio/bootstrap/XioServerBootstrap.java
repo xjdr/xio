@@ -4,7 +4,6 @@ import com.xjeffrose.xio.pipeline.XioPipelineAssembler;
 import com.xjeffrose.xio.pipeline.XioPipelineFragment;
 import com.xjeffrose.xio.server.XioServer;
 import com.xjeffrose.xio.server.XioServerConfig;
-import com.xjeffrose.xio.server.XioServerEndpoint;
 import com.xjeffrose.xio.server.XioServerInstrumentation;
 import com.xjeffrose.xio.server.XioServerState;
 import io.netty.bootstrap.ServerBootstrap;
@@ -21,8 +20,6 @@ public class XioServerBootstrap {
   private final ServerBootstrap serverBootstrap;
 
   private final XioPipelineAssembler pipelineAssembler;
-
-  private XioServerEndpoint endpoint;
 
   private ChannelConfiguration channelConfig;
 
@@ -48,12 +45,6 @@ public class XioServerBootstrap {
     return this;
   }
 
-  public XioServerBootstrap endpoint(XioServerEndpoint endpoint) {
-    this.endpoint = endpoint;
-    serverBootstrap.localAddress(endpoint.bindAddress());
-    return this;
-  }
-
   public XioServer build() {
     log.debug("Building");
     serverBootstrap.group(channelConfig.bossGroup(), channelConfig.workerGroup());
@@ -61,9 +52,6 @@ public class XioServerBootstrap {
     final XioServerInstrumentation instrumentation = new XioServerInstrumentation();
     serverBootstrap.childHandler(pipelineAssembler.build(instrumentation));
     ChannelFuture future = serverBootstrap.bind();
-    if (endpoint != null) {
-      endpoint.afterBind(future); // TODO(CK): kill this
-    }
     future.awaitUninterruptibly();
     if (future.isSuccess()) {
       instrumentation.addressBound = (InetSocketAddress)future.channel().localAddress();

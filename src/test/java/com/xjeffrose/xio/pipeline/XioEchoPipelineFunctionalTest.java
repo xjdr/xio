@@ -3,7 +3,6 @@ package com.xjeffrose.xio.pipeline;
 import com.xjeffrose.xio.helpers.EchoClient;
 import com.xjeffrose.xio.bootstrap.ChannelConfiguration;
 import com.xjeffrose.xio.bootstrap.XioServerBootstrap;
-import com.xjeffrose.xio.server.XioRandomServerEndpoint;
 import com.xjeffrose.xio.server.XioServer;
 import com.xjeffrose.xio.server.XioServerConfig;
 import com.xjeffrose.xio.server.XioServerState;
@@ -21,7 +20,6 @@ public class XioEchoPipelineFunctionalTest extends Assert {
     XioServerBootstrap bootstrap = new XioServerBootstrap(serverConfig, serverState)
       .addToPipeline(new XioEchoPipeline())
       .channelConfig(ChannelConfiguration.serverConfig(1, 1))
-      .endpoint(new XioRandomServerEndpoint())
     ;
 
     try (XioServer server = bootstrap.build(); EchoClient client = new EchoClient()) {
@@ -41,7 +39,6 @@ public class XioEchoPipelineFunctionalTest extends Assert {
     XioServerBootstrap bootstrap = new XioServerBootstrap(serverConfig, serverState)
       .addToPipeline(new XioEchoPipeline())
       .channelConfig(ChannelConfiguration.serverConfig(1, 1))
-      .endpoint(new XioRandomServerEndpoint())
     ;
 
     try (XioServer server = bootstrap.build(); EchoClient client = new EchoClient()) {

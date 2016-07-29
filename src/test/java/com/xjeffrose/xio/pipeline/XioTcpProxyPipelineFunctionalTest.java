@@ -5,7 +5,6 @@ import com.xjeffrose.xio.helpers.EchoClient;
 import com.xjeffrose.xio.bootstrap.ChannelConfiguration;
 import com.xjeffrose.xio.bootstrap.XioServerBootstrap;
 import com.xjeffrose.xio.pipeline.XioTcpProxyPipeline;
-import com.xjeffrose.xio.server.XioRandomServerEndpoint;
 import com.xjeffrose.xio.server.XioServer;
 import com.xjeffrose.xio.server.XioServerConfig;
 import com.xjeffrose.xio.server.XioServerState;
@@ -26,7 +25,6 @@ public class XioTcpProxyPipelineFunctionalTest extends Assert {
       XioServerBootstrap bootstrap = new XioServerBootstrap(serverConfig, serverState)
         .addToPipeline(new XioTcpProxyPipeline(server.addressBound()))
         .channelConfig(ChannelConfiguration.serverConfig(1, 1))
-        .endpoint(new XioRandomServerEndpoint())
       ;
       try (XioServer proxy = bootstrap.build()) {
         client.connect(proxy.instrumentation().addressBound());
@@ -51,7 +49,6 @@ public class XioTcpProxyPipelineFunctionalTest extends Assert {
       XioServerBootstrap bootstrap = new XioServerBootstrap(serverConfig, serverState)
         .addToPipeline(new XioTcpProxyPipeline(server.addressBound()))
         .channelConfig(ChannelConfiguration.serverConfig(1, 1))
-        .endpoint(new XioRandomServerEndpoint())
       ;
       try (XioServer proxy = bootstrap.build()) {
         client.connect(proxy.instrumentation().addressBound());

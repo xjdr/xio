@@ -5,7 +5,6 @@ import com.xjeffrose.xio.handler.XioHttp404Handler;
 import com.xjeffrose.xio.helpers.ClientHelper;
 import com.xjeffrose.xio.pipeline.XioHttpPipeline;
 import com.xjeffrose.xio.pipeline.XioPipelineFragment;
-import com.xjeffrose.xio.server.XioRandomServerEndpoint;
 import com.xjeffrose.xio.server.XioServer;
 import com.xjeffrose.xio.server.XioServerConfig;
 import com.xjeffrose.xio.server.XioServerState;
@@ -17,7 +16,6 @@ public class XioServerBootstrapFunctionalTest {
 
   @Test
   public void testServe404() {
-    XioRandomServerEndpoint endpoint = new XioRandomServerEndpoint();
     XioServerConfig serverConfig = XioServerConfig.fromConfig("xio.exampleServer");
     XioServerState serverState = XioServerState.fromConfig("xio.exampleApplication");
 
@@ -31,10 +29,9 @@ public class XioServerBootstrapFunctionalTest {
         }
       }))
       .channelConfig(ChannelConfiguration.serverConfig(1, 1))
-      .endpoint(endpoint)
     ;
     try (XioServer server = bootstrap.build()) {
-      Response response = ClientHelper.request("http://" + endpoint.hostAndPort() + "/");
+      Response response = ClientHelper.http(server.instrumentation().addressBound());
       assertEquals(response.code(), 404);
       assertEquals(server.running(), true);
     }

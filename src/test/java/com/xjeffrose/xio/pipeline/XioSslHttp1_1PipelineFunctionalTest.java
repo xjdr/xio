@@ -8,12 +8,10 @@ import com.xjeffrose.xio.bootstrap.ChannelConfiguration;
 import com.xjeffrose.xio.bootstrap.XioServerBootstrap;
 import com.xjeffrose.xio.helpers.HttpProxyServer;
 import com.xjeffrose.xio.helpers.HttpsProxyServer;
-import com.xjeffrose.xio.server.XioRandomServerEndpoint;
 import com.xjeffrose.xio.server.XioServer;
 import com.xjeffrose.xio.server.XioServerConfig;
 import com.xjeffrose.xio.server.XioServerState;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -31,7 +29,6 @@ public class XioSslHttp1_1PipelineFunctionalTest extends Assert {
     XioServerBootstrap bootstrap = new XioServerBootstrap(serverConfig, serverState)
       .addToPipeline(new XioSslHttp1_1Pipeline(() -> new SampleHandler()))
       .channelConfig(ChannelConfiguration.serverConfig(1, 1))
-      .endpoint(new XioRandomServerEndpoint())
     ;
     try (XioServer server = bootstrap.build()) {
       InetSocketAddress address = server.instrumentation().addressBound();
@@ -68,7 +65,6 @@ public class XioSslHttp1_1PipelineFunctionalTest extends Assert {
       XioServerBootstrap bootstrap = new XioServerBootstrap(serverConfig, serverState)
         .addToPipeline(new XioSslHttp1_1Pipeline(new HttpProxyServer(testServer.boundAddress())))
         .channelConfig(ChannelConfiguration.serverConfig(1, 1))
-        .endpoint(new XioRandomServerEndpoint())
       ;
 
       try (XioServer server = bootstrap.build()) {
@@ -93,7 +89,6 @@ public class XioSslHttp1_1PipelineFunctionalTest extends Assert {
     XioServerBootstrap bootstrap = new XioServerBootstrap(serverConfig, serverState)
       .addToPipeline(new XioSslHttp1_1Pipeline(new HttpsProxyServer(uri)))
       .channelConfig(ChannelConfiguration.serverConfig(1, 1))
-      .endpoint(new XioRandomServerEndpoint())
       ;
 
     try (XioServer server = bootstrap.build()) {
