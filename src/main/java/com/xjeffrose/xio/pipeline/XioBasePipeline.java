@@ -9,7 +9,6 @@ import com.xjeffrose.xio.server.XioConnectionLimiter;
 import com.xjeffrose.xio.server.XioDeterministicRuleEngine;
 import com.xjeffrose.xio.server.XioResponseClassifier;
 import com.xjeffrose.xio.server.XioServerConfig;
-import com.xjeffrose.xio.server.XioServerDef;
 import com.xjeffrose.xio.server.XioServerLimits;
 import com.xjeffrose.xio.server.XioServerState;
 import com.xjeffrose.xio.server.XioService;
