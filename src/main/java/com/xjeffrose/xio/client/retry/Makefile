@@ -1,7 +1,7 @@
 .PHONY: check-syntax
 
 export PROJECT_ROOT=$(shell git rev-parse --show-toplevel)
-export TARGETDIR := $(PROJECT_ROOT)/target/
+export TARGET_DIR := $(PROJECT_ROOT)/target/
 
 include $(PROJECT_ROOT)/*.mk
 

@@ -19,4 +19,4 @@ fi
 TEST_CLASSES=$(${PROJECT_ROOT}/scripts/file2class ${TEST_FILES})
 echo "Testing ${TEST_CLASSES}"
 # run junit
-${JAVA} -cp ${CLASSPATH_COMPILE}:${TARGETDIR} org.junit.runner.JUnitCore ${TEST_CLASSES}
+${JAVA} -cp ${CLASSPATH_COMPILE}:${TARGET_DIR} org.junit.runner.JUnitCore ${TEST_CLASSES}
