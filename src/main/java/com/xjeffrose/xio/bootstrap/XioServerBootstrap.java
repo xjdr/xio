@@ -21,7 +21,7 @@ public class XioServerBootstrap {
 
   private final XioPipelineAssembler pipelineAssembler;
 
-  private ChannelConfiguration channelConfig;
+  private ServerChannelConfiguration channelConfig;
 
   public XioServerBootstrap(XioServerConfig config, XioServerState state) {
     serverBootstrap = new ServerBootstrap();
@@ -41,7 +41,7 @@ public class XioServerBootstrap {
     return this;
   }
 
-  public XioServerBootstrap channelConfig(ChannelConfiguration channelConfig) {
+  public XioServerBootstrap channelConfig(ServerChannelConfiguration channelConfig) {
     this.channelConfig = channelConfig;
     return this;
   }

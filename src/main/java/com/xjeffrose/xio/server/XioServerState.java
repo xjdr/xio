@@ -3,6 +3,7 @@ package com.xjeffrose.xio.server;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.xjeffrose.xio.bootstrap.ChannelConfiguration;
+import com.xjeffrose.xio.bootstrap.ServerChannelConfiguration;
 import com.xjeffrose.xio.core.ChannelStatistics;
 import com.xjeffrose.xio.core.ZkClient;
 import io.netty.channel.group.ChannelGroup;
@@ -14,7 +15,7 @@ public class XioServerState {
   private final ZkClient zkClient;
   private final ChannelGroup allChannels = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
   private final ChannelStatistics channelStatistics;
-  private final ChannelConfiguration channelConfiguration;
+  private final ServerChannelConfiguration channelConfiguration;
 
   public XioServerState(ZkClient zkClient, ChannelStatistics channelStatistics) {
     this.zkClient = zkClient;
@@ -44,7 +45,7 @@ public class XioServerState {
     return channelStatistics;
   }
 
-  public ChannelConfiguration channelConfiguration() {
+  public ServerChannelConfiguration channelConfiguration() {
     return channelConfiguration;
   }
 
