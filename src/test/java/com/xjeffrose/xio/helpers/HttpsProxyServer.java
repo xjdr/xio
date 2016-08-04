@@ -1,5 +1,6 @@
 package com.xjeffrose.xio.helpers;
 
+import com.xjeffrose.xio.client.ChannelConfiguration;
 import com.xjeffrose.xio.server.XioServerConfig;
 import com.xjeffrose.xio.server.XioServerState;
 import io.netty.bootstrap.Bootstrap;
@@ -85,9 +86,11 @@ public class HttpsProxyServer extends ProxyServer {
 
     @Override
     protected ChannelFuture connectToDestination(EventLoop loop, ChannelHandler handler) {
+      ChannelConfiguration config = ChannelConfiguration.clientConfig(loop);
+
       Bootstrap b = new Bootstrap();
-      b.channel(NioSocketChannel.class);
-      b.group(loop);
+      b.channel(config.channel());
+      b.group(config.group());
       b.handler(new ChannelInitializer() {
         public void initChannel(Channel channel) {
           channel.pipeline()

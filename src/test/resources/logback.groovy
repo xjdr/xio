@@ -12,4 +12,4 @@ appender("CONSOLE", ConsoleAppender) {
   }
 }
 
-root(DEBUG, ["CONSOLE"])
+root(ERROR, ["CONSOLE"])
