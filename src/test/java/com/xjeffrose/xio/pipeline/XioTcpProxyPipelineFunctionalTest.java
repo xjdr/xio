@@ -24,7 +24,6 @@ public class XioTcpProxyPipelineFunctionalTest extends Assert {
       server.bind(new InetSocketAddress("127.0.0.1", 0));
       XioServerBootstrap bootstrap = new XioServerBootstrap(serverConfig, serverState)
         .addToPipeline(new XioTcpProxyPipeline(server.addressBound()))
-        .channelConfig(ChannelConfiguration.serverConfig(1, 1))
       ;
       try (XioServer proxy = bootstrap.build()) {
         client.connect(proxy.instrumentation().addressBound());
@@ -48,7 +47,6 @@ public class XioTcpProxyPipelineFunctionalTest extends Assert {
       server.bind(new InetSocketAddress("127.0.0.1", 0));
       XioServerBootstrap bootstrap = new XioServerBootstrap(serverConfig, serverState)
         .addToPipeline(new XioTcpProxyPipeline(server.addressBound()))
-        .channelConfig(ChannelConfiguration.serverConfig(1, 1))
       ;
       try (XioServer proxy = bootstrap.build()) {
         client.connect(proxy.instrumentation().addressBound());

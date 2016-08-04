@@ -19,7 +19,6 @@ public class XioServerBootstrapUnitTest extends Assert {
 
     XioServerBootstrap bootstrap = new XioServerBootstrap(serverConfig, serverState)
       .addToPipeline(new XioHttp1_1Pipeline())
-      .channelConfig(ChannelConfiguration.serverConfig(1, 1))
     ;
 
     XioServer server = bootstrap.build();
@@ -34,7 +33,6 @@ public class XioServerBootstrapUnitTest extends Assert {
 
     XioServerBootstrap bootstrap = new XioServerBootstrap(serverConfig, serverState)
       .addToPipeline(new XioHttp2Pipeline())
-      .channelConfig(ChannelConfiguration.serverConfig(1, 1))
     ;
 
     XioServer server = bootstrap.build();
@@ -49,7 +47,6 @@ public class XioServerBootstrapUnitTest extends Assert {
 
     XioServerBootstrap bootstrap = new XioServerBootstrap(serverConfig, serverState)
       .addToPipeline(new XioEchoPipeline())
-      .channelConfig(ChannelConfiguration.serverConfig(1, 1))
     ;
 
     XioServer server = bootstrap.build();

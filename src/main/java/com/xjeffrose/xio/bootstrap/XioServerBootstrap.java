@@ -27,6 +27,7 @@ public class XioServerBootstrap {
     serverBootstrap = new ServerBootstrap();
     pipelineAssembler = new XioPipelineAssembler(config, state);
     bindAddress(config.getBindAddress());
+    channelConfig(state.channelConfiguration());
   }
 
   public XioServerBootstrap addToPipeline(XioPipelineFragment fragment) {

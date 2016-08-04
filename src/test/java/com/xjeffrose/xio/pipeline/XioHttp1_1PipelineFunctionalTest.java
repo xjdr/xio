@@ -23,7 +23,6 @@ public class XioHttp1_1PipelineFunctionalTest extends Assert {
 
     XioServerBootstrap bootstrap = new XioServerBootstrap(serverConfig, serverState)
       .addToPipeline(new XioHttp1_1Pipeline(() -> new SampleHandler()))
-      .channelConfig(ChannelConfiguration.serverConfig(1, 1))
     ;
     try (XioServer server = bootstrap.build()) {
       InetSocketAddress address = server.instrumentation().addressBound();

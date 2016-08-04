@@ -25,7 +25,6 @@ public class Server implements AutoCloseable {
     routes = RouteConfig.fromConfig("trailhead.routes", config);
     bootstrap = new XioServerBootstrap(serverConfig, serverState)
       .addToPipeline(new XioHttp1_1Pipeline(new Http1ProxyFragment(routes)))
-      .channelConfig(ChannelConfiguration.serverConfig(1, 1))
     ;
   }
 
