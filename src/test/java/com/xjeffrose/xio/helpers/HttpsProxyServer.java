@@ -90,7 +90,7 @@ public class HttpsProxyServer extends ProxyServer {
 
       Bootstrap b = new Bootstrap();
       b.channel(config.channel());
-      b.group(config.group());
+      b.group(config.workerGroup());
       b.handler(new ChannelInitializer() {
         public void initChannel(Channel channel) {
           channel.pipeline()
