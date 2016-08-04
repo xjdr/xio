@@ -42,6 +42,11 @@ public class XioServerPipelineUnitTest {
       public ChannelHandler getCodecHandler() {
         return new XioNoOpHandler();
       }
+
+      @Override
+      public ChannelHandler getApplicationHandler() {
+        return new XioNoOpHandler();
+      }
     };
     ChannelPipeline pipeline = mock(ChannelPipeline.class);
     server.buildHandlers(serverConfig, serverState, pipeline);
@@ -63,5 +68,6 @@ public class XioServerPipelineUnitTest {
     inOrder.verify(pipeline, times(1)).addLast(eq("xioService"), isA(XioService.class));
     inOrder.verify(pipeline, times(1)).addLast(eq("xioResponseClassifier"), isA(XioResponseClassifier.class));
     inOrder.verify(pipeline, times(1)).addLast(eq("exceptionLogger"), isA(XioExceptionLogger.class));
+    inOrder.verify(pipeline, times(1)).addLast(eq("applicationHandler"), isA(XioNoOpHandler.class));
   }
 }

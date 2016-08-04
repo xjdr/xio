@@ -39,4 +39,10 @@ public class XioServerPipeline extends XioBasePipeline {
   public String applicationProtocol() {
     return null;
   }
+
+  @Override
+  public ChannelHandler getApplicationHandler() {
+    return null;
+  }
+
 }

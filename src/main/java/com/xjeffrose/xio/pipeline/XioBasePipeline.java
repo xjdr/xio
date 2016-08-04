@@ -30,6 +30,8 @@ abstract public class XioBasePipeline implements XioPipelineFragment {
 
   abstract public String applicationProtocol();
 
+  abstract public ChannelHandler getApplicationHandler();
+
   public void buildHandlers(XioServerConfig config, XioServerState state, ChannelPipeline pipeline) {
     // TODO(CK): pull globalConnectionLimiter from state
     pipeline.addLast("globalConnectionLimiter", globalConnectionLimiter); // TODO(JR): Need to make this config
@@ -62,5 +64,9 @@ abstract public class XioBasePipeline implements XioPipelineFragment {
     // See https://finagle.github.io/blog/2016/02/09/response-classification
     pipeline.addLast("xioResponseClassifier", new XioResponseClassifier(true)); /// TODO(JR): This is a maybe
     pipeline.addLast("exceptionLogger", new XioExceptionLogger());
+    ChannelHandler applicationHandler = getApplicationHandler();
+    if (applicationHandler != null) {
+      pipeline.addLast("applicationHandler", applicationHandler);
+    }
   }
 }
