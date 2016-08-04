@@ -4,12 +4,12 @@ import com.xjeffrose.xio.client.loadbalancer.Node;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.util.concurrent.Future;
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.Closeable;
 import java.io.IOException;
 
-@Log4j
+@Slf4j
 abstract public class XioClient implements Closeable {
 
   protected final Bootstrap bootstrap;

@@ -18,10 +18,10 @@
 package com.xjeffrose.xio.SSL;
 
 import java.security.PrivateKey;
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 import sun.security.x509.X509CertImpl;
 
-@Log4j
+@Slf4j
 public final class X509Certificate {
 
 

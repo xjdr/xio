@@ -1,11 +1,11 @@
 package com.xjeffrose.xio.client.retry;
 
 import java.util.concurrent.TimeUnit;
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-@Log4j
+@Slf4j
 public class RetryForever implements RetryPolicy {
 
 

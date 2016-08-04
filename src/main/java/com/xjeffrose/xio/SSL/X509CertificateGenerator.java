@@ -34,12 +34,12 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.RSAPrivateCrtKeySpec;
 import java.security.spec.RSAPublicKeySpec;
 import java.util.Base64;
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 import sun.security.util.DerInputStream;
 import sun.security.util.DerValue;
 import sun.security.x509.X509CertImpl;
 
-@Log4j
+@Slf4j
 public final class X509CertificateGenerator {
 
 

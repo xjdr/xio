@@ -20,13 +20,13 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.http.HttpClientCodec;
 import lombok.experimental.Accessors;
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 import lombok.Setter;
 
 import java.net.InetSocketAddress;
 import java.util.function.Supplier;
 
-@Log4j
+@Slf4j
 @Accessors(fluent = true)
 public class XioClientBootstrap {
 

@@ -1,9 +1,9 @@
 package com.xjeffrose.xio.server;
 
 import io.netty.channel.Channel;
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 
-@Log4j
+@Slf4j
 public class XioServer implements AutoCloseable {
 
   private Channel serverChannel;

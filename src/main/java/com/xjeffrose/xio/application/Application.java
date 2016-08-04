@@ -3,11 +3,11 @@ package com.xjeffrose.xio.application;
 import com.xjeffrose.xio.server.XioServer;
 import com.xjeffrose.xio.server.XioServerInstrumentation;
 import lombok.Getter;
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
 
-@Log4j
+@Slf4j
 public class Application implements AutoCloseable {
 
   private final Map<String, XioServer> servers;

@@ -14,9 +14,9 @@ import io.netty.handler.ssl.SslHandler;
 import io.netty.util.Attribute;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 
-@Log4j
+@Slf4j
 public class XioChannelProxy extends ChannelDuplexHandler {
 
   private final Channel inboundChannel;

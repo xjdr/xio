@@ -5,10 +5,10 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.group.ChannelGroup;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 
 
-@Log4j
+@Slf4j
 public class ShutdownUtil {
 
 

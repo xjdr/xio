@@ -5,9 +5,9 @@ import java.net.ConnectException;
 import java.net.UnknownHostException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 
-@Log4j
+@Slf4j
 public class RetryLoop {
   private static final RetrySleeper sleeper = new RetrySleeper() {
     @Override

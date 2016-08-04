@@ -26,11 +26,11 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
 import io.netty.util.ReferenceCountUtil;
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 
 import java.net.InetSocketAddress;
 
-@Log4j
+@Slf4j
 public class Http1ProxyHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
 
   private RouteConfig.ProxyTo determineProxyTo(FullHttpRequest request) {

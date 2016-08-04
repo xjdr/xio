@@ -3,9 +3,9 @@ package com.xjeffrose.xio.client.loadbalancer;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.HttpRequest;
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 
-@Log4j
+@Slf4j
 public class NodeECV extends ChannelInboundHandlerAdapter {
 
 

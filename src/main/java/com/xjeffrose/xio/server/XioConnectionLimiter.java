@@ -4,10 +4,10 @@ import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import java.util.concurrent.atomic.AtomicInteger;
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 
 @ChannelHandler.Sharable
-@Log4j
+@Slf4j
 public class XioConnectionLimiter extends ChannelDuplexHandler {
 
 

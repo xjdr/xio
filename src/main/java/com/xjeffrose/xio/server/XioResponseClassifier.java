@@ -2,9 +2,9 @@ package com.xjeffrose.xio.server;
 
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 
-@Log4j
+@Slf4j
 public class XioResponseClassifier extends ChannelDuplexHandler {
 
   private boolean noOp;
