@@ -2,6 +2,7 @@ package com.xjeffrose.xio.server;
 
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+import com.xjeffrose.xio.SSL.TlsConfig;
 import io.netty.channel.ChannelOption;
 import io.netty.util.Timer;
 
@@ -21,6 +22,7 @@ public class XioServerConfig {
   private String name;
   private InetSocketAddress bindAddress;
   private XioServerLimits limits;
+  private TlsConfig tls;
 
   public XioServerConfig(Config config) {
     bootstrapOptions = null;
@@ -32,6 +34,7 @@ public class XioServerConfig {
     name = config.getString("name");
     bindAddress = new InetSocketAddress(config.getString("settings.bindHost"), config.getInt("settings.bindPort"));
     limits = new XioServerLimits(config.getConfig("limits"));
+    tls = new TlsConfig(config.getConfig("settings.tls"));
   }
 
   static public XioServerConfig fromConfig(String key, Config config) {
@@ -94,4 +97,13 @@ public class XioServerConfig {
   public int getWorkerThreadCount() {
     return workerThreadCount;
   }
+
+  public String getCert() {
+    return tls.getCert();
+  }
+
+  public String getKey() {
+    return tls.getKey();
+  }
+
 }

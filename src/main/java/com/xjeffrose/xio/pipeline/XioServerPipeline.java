@@ -1,7 +1,9 @@
 package com.xjeffrose.xio.pipeline;
 
 import com.xjeffrose.xio.core.XioIdleDisconnectHandler;
+import com.xjeffrose.xio.server.XioServerConfig;
 import com.xjeffrose.xio.server.XioServerLimits;
+import com.xjeffrose.xio.server.XioServerState;
 import io.netty.channel.ChannelHandler;
 
 public class XioServerPipeline extends XioBasePipeline {
@@ -9,18 +11,22 @@ public class XioServerPipeline extends XioBasePipeline {
   public XioServerPipeline() {
   }
 
-  public ChannelHandler getEncryptionHandler() {
+  @Override
+  public ChannelHandler getEncryptionHandler(XioServerConfig config, XioServerState state) {
     return null;
   }
 
+  @Override
   public ChannelHandler getAuthenticationHandler() {
     return null;
   }
 
+  @Override
   public ChannelHandler getCodecHandler() {
     return null;
   }
 
+  @Override
   public ChannelHandler getIdleDisconnectHandler(XioServerLimits limits) {
     return new XioIdleDisconnectHandler(
       limits.maxReadIdleTime(),
@@ -29,6 +35,7 @@ public class XioServerPipeline extends XioBasePipeline {
     );
   }
 
+  @Override
   public String applicationProtocol() {
     return null;
   }

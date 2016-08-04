@@ -20,7 +20,7 @@ abstract public class XioBasePipeline implements XioPipelineFragment {
 
   protected static final XioConnectionLimiter globalConnectionLimiter = new XioConnectionLimiter(15000);
 
-  abstract public ChannelHandler getEncryptionHandler();
+  abstract public ChannelHandler getEncryptionHandler(XioServerConfig config, XioServerState state);
 
   abstract public ChannelHandler getAuthenticationHandler();
 
@@ -38,7 +38,7 @@ abstract public class XioBasePipeline implements XioPipelineFragment {
     pipeline.addLast("l4BehavioralRuleEngine", new XioBehavioralRuleEngine(state.zkClient(), true)); // TODO(JR): Need to make this config
     pipeline.addLast("connectionContext", new ConnectionContextHandler());
     pipeline.addLast("globalChannelStatistics", state.channelStatistics());
-    ChannelHandler encryptionHandler = getEncryptionHandler();
+    ChannelHandler encryptionHandler = getEncryptionHandler(config, state);
     if (encryptionHandler != null) {
       pipeline.addLast("encryptionHandler", encryptionHandler);
     }
