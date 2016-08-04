@@ -278,21 +278,24 @@ class Dependency(object):
 
 project_object_model = Project(
   dependencies=Dependencies(
-    Dependency('com.google.code.findbugs', 'jsr305', '3.0.1'),
+    Dependency('com.google.code.findbugs', 'jsr305', '3.0.1', 'compile'),
     Dependency('com.google.guava', 'guava', '19.0'),
+    Dependency('com.squareup.okhttp', 'okhttp', '2.4.0', 'test'),
+    Dependency('com.typesafe', 'config', '1.3.0'),
     Dependency('io.netty', 'netty-all', '4.1.0.Final'),
-    Dependency('io.netty', 'netty-tcnative', '1.1.33.Fork17'),
-    Dependency('io.airlift', 'units', '0.128'),
+#    Dependency('io.netty', 'netty-tcnative', '1.1.33.Fork17'),
+    Dependency('io.netty', 'netty-tcnative-boringssl-static', '1.1.33.Fork17'),
+    Dependency('junit', 'junit', '4.12', 'test'),
+    Dependency('log4j', 'log4j', '1.2.17', 'provided'),
     Dependency('org.apache.curator', 'curator-framework', '3.1.0'),
     Dependency('org.apache.curator', 'curator-recipes', '3.1.0'),
-    Dependency('junit', 'junit', '4.12', 'test'),
-    Dependency('org.mockito', 'mockito-all', '1.10.19', 'test'),
+    Dependency('org.apache.curator', 'curator-test', '3.2.0', 'test'),
+    Dependency('org.apache.thrift', 'libthrift', '0.9.3'),
     Dependency('org.eclipse.jetty', 'jetty-server', '9.3.1.v20150714', 'test'),
-    Dependency('com.squareup.okhttp', 'okhttp', '2.4.0', 'test'),
-    Dependency('log4j', 'log4j', '1.2.17', 'provided'),
-    Dependency('com.puppycrawl.tools', 'checkstyle', '6.19'),
-    Dependency('org.eclipse.jdt.core.compiler', 'ecj', '4.5.1'),
-    Dependency('io.netty', 'netty-tcnative-boringssl-static', '1.1.33.Fork17'),
+    Dependency('org.mockito', 'mockito-all', '1.10.19', 'test'),
+    Dependency('org.projectlombok', 'lombok', '1.16.8', 'compile'),
+    Dependency('com.puppycrawl.tools', 'checkstyle', '6.19', 'test'),
+    Dependency('org.eclipse.jdt.core.compiler', 'ecj', '4.5.1', 'test'),
   )
 )
 
