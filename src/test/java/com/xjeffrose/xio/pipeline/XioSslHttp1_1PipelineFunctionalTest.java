@@ -66,6 +66,7 @@ public class XioSslHttp1_1PipelineFunctionalTest extends Assert {
       ;
 
       try (XioServer server = bootstrap.build()) {
+        try {
         InetSocketAddress address = server.instrumentation().addressBound();
         Response response = ClientHelper.https(address);
 
@@ -73,6 +74,10 @@ public class XioSslHttp1_1PipelineFunctionalTest extends Assert {
         assertEquals(200, response.code());
         assertEquals("Jetty(9.3.1.v20150714)", response.header("Server"));
         assertEquals("CONGRATS!\n", response.body().string());
+        } catch (Exception e) {
+          Sysem.out.println("OH WHAT A TERRIBLE DAY!!");
+          e.printStackTrace();
+        }
       }
     }
   }

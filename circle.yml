@@ -9,7 +9,7 @@ dependencies:
     - ~/.m2
 test:
   override:
-    - mvn test
+    - mvn -Dtest=com.xjeffrose.xio.pipeline.XioSslHttp1_1PipelineFunctionalTest test
   post:
     - mkdir -p $CIRCLE_TEST_REPORTS/junit/
     - find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} $CIRCLE_TEST_REPORTS/junit/ \;
