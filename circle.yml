@@ -9,7 +9,7 @@ dependencies:
     - ~/.m2
 test:
   override:
-    - mvn package javadoc.jar
+    - mvn package javadoc:jar
   post:
     - cp target/xio*jar $CIRCLE_ARTIFACTS
     - mkdir -p $CIRCLE_TEST_REPORTS/junit/
