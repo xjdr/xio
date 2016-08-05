@@ -28,7 +28,6 @@ public class XioSslHttp1_1PipelineFunctionalTest extends Assert {
 
     XioServerBootstrap bootstrap = new XioServerBootstrap(serverConfig, serverState)
       .addToPipeline(new XioSslHttp1_1Pipeline(() -> new SampleHandler()))
-      .channelConfig(ChannelConfiguration.serverConfig(1, 1))
     ;
     try (XioServer server = bootstrap.build()) {
       InetSocketAddress address = server.instrumentation().addressBound();
@@ -64,7 +63,6 @@ public class XioSslHttp1_1PipelineFunctionalTest extends Assert {
 
       XioServerBootstrap bootstrap = new XioServerBootstrap(serverConfig, serverState)
         .addToPipeline(new XioSslHttp1_1Pipeline(new HttpProxyServer(testServer.boundAddress())))
-        .channelConfig(ChannelConfiguration.serverConfig(1, 1))
       ;
 
       try (XioServer server = bootstrap.build()) {
@@ -88,7 +86,6 @@ public class XioSslHttp1_1PipelineFunctionalTest extends Assert {
 
     XioServerBootstrap bootstrap = new XioServerBootstrap(serverConfig, serverState)
       .addToPipeline(new XioSslHttp1_1Pipeline(new HttpsProxyServer(uri)))
-      .channelConfig(ChannelConfiguration.serverConfig(1, 1))
       ;
 
     try (XioServer server = bootstrap.build()) {

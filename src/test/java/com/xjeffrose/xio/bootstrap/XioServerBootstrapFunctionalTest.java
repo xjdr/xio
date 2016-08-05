@@ -28,7 +28,6 @@ public class XioServerBootstrapFunctionalTest {
           pipeline.addLast(new XioHttp404Handler());
         }
       }))
-      .channelConfig(ChannelConfiguration.serverConfig(1, 1))
     ;
     try (XioServer server = bootstrap.build()) {
       Response response = ClientHelper.http(server.instrumentation().addressBound());

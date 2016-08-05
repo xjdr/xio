@@ -1,5 +1,8 @@
 package com.xjeffrose.xio.pipeline;
 
+import com.xjeffrose.xio.SSL.XioSecurityHandlerImpl;
+import com.xjeffrose.xio.server.XioServerConfig;
+import com.xjeffrose.xio.server.XioServerState;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelHandler;
 import io.netty.handler.ssl.SslContext;
@@ -31,7 +34,9 @@ public class XioSslHttp1_1Pipeline extends XioHttp1_1Pipeline {
     return "ssl-http/1.1";
   }
 
-  public ChannelHandler getEncryptionHandler() {
+  public ChannelHandler getEncryptionHandler(XioServerConfig config, XioServerState state) {
+    return new XioSecurityHandlerImpl(config.getCert(), config.getKey()).getEncryptionHandler();
+    /*
     try {
       SelfSignedCertificate ssc = new SelfSignedCertificate();
       SslContext sslCtx =  SslContextBuilder
@@ -45,6 +50,7 @@ public class XioSslHttp1_1Pipeline extends XioHttp1_1Pipeline {
       log.error("Couldn't build encryption handler", e);
       return null;
     }
+    */
   }
 
 }

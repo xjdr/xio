@@ -1,5 +1,4 @@
 export PROJECT_ROOT=$(shell pwd)
-export TARGETDIR := $(PROJECT_ROOT)/target
 export TARGET_DIR := $(PROJECT_ROOT)/target
 
 # thrift
@@ -151,7 +150,7 @@ repl:
 	@javarepl
 
 run: compile
-	java -cp $(CLASSPATH_COMPILE):$(TARGETDIR) $(MAIN_CLASS)
+	java -cp $(CLASSPATH_COMPILE):$(TARGET_DIR) $(MAIN_CLASS)
 
 test: compile
 	scripts/run-test $$(find src/test -name "*Test.java")

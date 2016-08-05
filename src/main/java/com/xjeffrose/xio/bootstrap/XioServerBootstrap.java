@@ -21,12 +21,13 @@ public class XioServerBootstrap {
 
   private final XioPipelineAssembler pipelineAssembler;
 
-  private ChannelConfiguration channelConfig;
+  private ServerChannelConfiguration channelConfig;
 
   public XioServerBootstrap(XioServerConfig config, XioServerState state) {
     serverBootstrap = new ServerBootstrap();
     pipelineAssembler = new XioPipelineAssembler(config, state);
     bindAddress(config.getBindAddress());
+    channelConfig(state.channelConfiguration());
   }
 
   public XioServerBootstrap addToPipeline(XioPipelineFragment fragment) {
@@ -40,7 +41,7 @@ public class XioServerBootstrap {
     return this;
   }
 
-  public XioServerBootstrap channelConfig(ChannelConfiguration channelConfig) {
+  public XioServerBootstrap channelConfig(ServerChannelConfiguration channelConfig) {
     this.channelConfig = channelConfig;
     return this;
   }

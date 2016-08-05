@@ -10,7 +10,12 @@ public class XioServerInstrumentation {
   public XioServerInstrumentation() {
   }
 
+  @Deprecated
   public InetSocketAddress addressBound() {
+    return addressBound;
+  }
+
+  public InetSocketAddress boundAddress() {
     return addressBound;
   }
 

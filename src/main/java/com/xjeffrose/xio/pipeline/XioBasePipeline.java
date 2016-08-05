@@ -20,7 +20,7 @@ abstract public class XioBasePipeline implements XioPipelineFragment {
 
   protected static final XioConnectionLimiter globalConnectionLimiter = new XioConnectionLimiter(15000);
 
-  abstract public ChannelHandler getEncryptionHandler();
+  abstract public ChannelHandler getEncryptionHandler(XioServerConfig config, XioServerState state);
 
   abstract public ChannelHandler getAuthenticationHandler();
 
@@ -30,6 +30,8 @@ abstract public class XioBasePipeline implements XioPipelineFragment {
 
   abstract public String applicationProtocol();
 
+  abstract public ChannelHandler getApplicationHandler();
+
   public void buildHandlers(XioServerConfig config, XioServerState state, ChannelPipeline pipeline) {
     // TODO(CK): pull globalConnectionLimiter from state
     pipeline.addLast("globalConnectionLimiter", globalConnectionLimiter); // TODO(JR): Need to make this config
@@ -38,7 +40,7 @@ abstract public class XioBasePipeline implements XioPipelineFragment {
     pipeline.addLast("l4BehavioralRuleEngine", new XioBehavioralRuleEngine(state.zkClient(), true)); // TODO(JR): Need to make this config
     pipeline.addLast("connectionContext", new ConnectionContextHandler());
     pipeline.addLast("globalChannelStatistics", state.channelStatistics());
-    ChannelHandler encryptionHandler = getEncryptionHandler();
+    ChannelHandler encryptionHandler = getEncryptionHandler(config, state);
     if (encryptionHandler != null) {
       pipeline.addLast("encryptionHandler", encryptionHandler);
     }
@@ -62,5 +64,9 @@ abstract public class XioBasePipeline implements XioPipelineFragment {
     // See https://finagle.github.io/blog/2016/02/09/response-classification
     pipeline.addLast("xioResponseClassifier", new XioResponseClassifier(true)); /// TODO(JR): This is a maybe
     pipeline.addLast("exceptionLogger", new XioExceptionLogger());
+    ChannelHandler applicationHandler = getApplicationHandler();
+    if (applicationHandler != null) {
+      pipeline.addLast("applicationHandler", applicationHandler);
+    }
   }
 }

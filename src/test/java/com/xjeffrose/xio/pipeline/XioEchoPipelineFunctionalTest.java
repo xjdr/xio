@@ -19,7 +19,6 @@ public class XioEchoPipelineFunctionalTest extends Assert {
 
     XioServerBootstrap bootstrap = new XioServerBootstrap(serverConfig, serverState)
       .addToPipeline(new XioEchoPipeline())
-      .channelConfig(ChannelConfiguration.serverConfig(1, 1))
     ;
 
     try (XioServer server = bootstrap.build(); EchoClient client = new EchoClient()) {
@@ -38,7 +37,6 @@ public class XioEchoPipelineFunctionalTest extends Assert {
 
     XioServerBootstrap bootstrap = new XioServerBootstrap(serverConfig, serverState)
       .addToPipeline(new XioEchoPipeline())
-      .channelConfig(ChannelConfiguration.serverConfig(1, 1))
     ;
 
     try (XioServer server = bootstrap.build(); EchoClient client = new EchoClient()) {

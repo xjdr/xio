@@ -50,7 +50,6 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import javax.net.ssl.SSLException;
-import org.apache.log4j.Logger;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -58,7 +57,6 @@ import static org.junit.Assert.assertTrue;
 
 
 public class XioServerFunctionalTest {
-  private static final Logger log = Logger.getLogger(XioServerFunctionalTest.class.getName());
 
   public static final XioTimer timer = new XioTimer("Test Timer", (long) 100, TimeUnit.MILLISECONDS, 100);
 

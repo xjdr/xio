@@ -1,42 +1,69 @@
 package com.xjeffrose.xio.bootstrap;
 
+import io.netty.channel.Channel;
+import io.netty.channel.EventLoop;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.ServerChannel;
 import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollServerSocketChannel;
+import io.netty.channel.epoll.EpollSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.channel.socket.nio.NioSocketChannel;
 
 /**
- * This class will configure two EventLoopGroups and a Channel for use
- * by a server. It will try to use Epoll if it's available.
+ * Utility class used to build ClientChannelConfiguration and ServerChannelConfiguration.
  */
 public class ChannelConfiguration {
 
-  private final EventLoopGroup bossGroup;
-  private final EventLoopGroup workerGroup;
-  private final Class<? extends ServerChannel> channelClass;
+  /**
+   * This method will configure a worker EventLoopGroup and a Channel
+   * for use by a client. It will try to use Epoll if it's available.
+   */
+  static public ClientChannelConfiguration clientConfig(int workerThreads) {
+    EventLoopGroup workerGroup;
+    Class<? extends Channel> channelClass;
+    if (Epoll.isAvailable()) {
+      workerGroup = new EpollEventLoopGroup(workerThreads);
+      channelClass = EpollSocketChannel.class;
+    } else {
+      workerGroup = new NioEventLoopGroup(workerThreads);
+      channelClass = NioSocketChannel.class;
+    }
 
-  private ChannelConfiguration(EventLoopGroup bossGroup, EventLoopGroup workerGroup, Class<? extends ServerChannel> channelClass) {
-    this.bossGroup = bossGroup;
-    this.workerGroup = workerGroup;
-    this.channelClass = channelClass;
+    return new ClientChannelConfiguration(workerGroup, channelClass);
   }
 
-  public EventLoopGroup bossGroup() {
-    return bossGroup;
+  /**
+   * This method will configure a worker EventLoopGroup and a Channel
+   * for use by a client. It will try to use the correct SocketChannel
+   * for the provided workerGroup.
+   */
+  static public ClientChannelConfiguration clientConfig(EventLoopGroup workerGroup) {
+    EventLoopGroup parent = workerGroup;
+    if (parent instanceof EventLoop) {
+      parent = ((EventLoop)workerGroup).parent();
+    }
+    Class<? extends Channel> channelClass;
+    if (parent instanceof EpollEventLoopGroup) {
+      channelClass = EpollSocketChannel.class;
+    } else if (parent instanceof NioEventLoopGroup) {
+      channelClass = NioSocketChannel.class;
+    } else {
+      throw new RuntimeException("Unsupported EventLoopGroup " + workerGroup.getClass());
+    }
+
+    return new ClientChannelConfiguration(workerGroup, channelClass);
   }
 
-  public EventLoopGroup workerGroup() {
-    return workerGroup;
-  }
 
-  public Class<? extends ServerChannel> channel() {
-    return channelClass;
-  }
-
-  static public ChannelConfiguration serverConfig(int bossThreads, int workerThreads) {
+  /**
+   * This method will configure a boss EventLoopGroup, a worker
+   * EventLoopGroup and a ServerChannel for use by a server. It will
+   * try to use Epoll if it's available.
+   */
+  static public ServerChannelConfiguration serverConfig(int bossThreads, int workerThreads) {
     EventLoopGroup bossGroup;
     EventLoopGroup workerGroup;
     Class<? extends ServerChannel> channelClass;
@@ -50,6 +77,6 @@ public class ChannelConfiguration {
       channelClass = NioServerSocketChannel.class;
     }
 
-    return new ChannelConfiguration(bossGroup, workerGroup, channelClass);
+    return new ServerChannelConfiguration(bossGroup, workerGroup, channelClass);
   }
 }

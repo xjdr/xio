@@ -6,9 +6,9 @@ import org.apache.curator.framework.state.ConnectionState;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 
-@Log4j
+@Slf4j
 public class XioLeaderSelectorListener implements LeaderSelectorListener {
 
   private Lock lock = new ReentrantLock();

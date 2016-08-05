@@ -9,7 +9,8 @@ dependencies:
     - ~/.m2
 test:
   override:
-    - mvn test
+    - mvn package javadoc:jar
   post:
+    - cp target/xio*jar pom.xml $CIRCLE_ARTIFACTS
     - mkdir -p $CIRCLE_TEST_REPORTS/junit/
     - find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} $CIRCLE_TEST_REPORTS/junit/ \;
