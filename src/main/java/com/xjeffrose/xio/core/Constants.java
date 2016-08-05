@@ -9,5 +9,6 @@ public class Constants {
   public static final AttributeKey<Channel> CLIENT_OUTBOUND_CHANNEL = AttributeKey.valueOf("client_outbound_channel");
   public static final AttributeKey<String> OCC_REQUESTOR_USERNAME = AttributeKey.valueOf("occ_requestor_username");
   public static final AttributeKey<Node> PICKED_OUTBOUND_NODE = AttributeKey.valueOf("picked_outbound_node");
+  public static final AttributeKey<Long> TIMESTAMP = AttributeKey.valueOf("timestamp");
 
 }
