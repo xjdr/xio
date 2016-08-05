@@ -14,7 +14,7 @@ import org.apache.zookeeper.CreateMode;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class ZkClient {
+public class ZkClient implements ConfigurationProvider {
 
 
   private LeaderSelector leaderSelector;
@@ -39,9 +39,8 @@ public class ZkClient {
     client = CuratorFrameworkFactory.newClient(connectionString, retryPolicy);
   }
 
-  public void register(String NODE_LIST_PATH, String ip, int port, @Nullable byte[] data) {
+  public void register(String NODE_LIST_PATH, InetSocketAddress address, @Nullable byte[] data) {
     try {
-      InetSocketAddress address = new InetSocketAddress(ip, port);
       client
         .create()
         .creatingParentsIfNeeded()
@@ -54,12 +53,23 @@ public class ZkClient {
     }
   }
 
+  public void register(String NODE_LIST_PATH, String ip, int port, @Nullable byte[] data) {
+    register(NODE_LIST_PATH, new InetSocketAddress(ip, port), data);
+  }
+
+  public void register(String path, InetSocketAddress address) {
+    register(path, address, null);
+  }
+
   public void electLeader(String ELECTION_PATH, LeaderSelectorListener listener) {
     leaderSelector = new LeaderSelector(client, ELECTION_PATH, listener);
 
     leaderSelector.autoRequeue();
     leaderSelector.start();
 
+  }
+
+  public void electLeader(String path) {
   }
 
   public void start() throws InterruptedException {
