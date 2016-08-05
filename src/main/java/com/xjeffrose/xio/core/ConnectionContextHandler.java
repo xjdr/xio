@@ -12,6 +12,7 @@ public class ConnectionContextHandler extends ChannelDuplexHandler {
   @Override
   public void channelActive(ChannelHandlerContext ctx) throws Exception {
     super.channelActive(ctx);
+    ctx.channel().attr(Constants.TIMESTAMP).set(System.nanoTime());
 
     XioConnectionContext context = new XioConnectionContext();
     context.setRemoteAddress(ctx.channel().remoteAddress());
@@ -27,5 +28,13 @@ public class ConnectionContextHandler extends ChannelDuplexHandler {
   @Override
   public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
     ctx.fireChannelReadComplete();
+  }
+
+  public static Long calculateTimetook(ChannelHandlerContext ctx) {
+      Long startTime = ctx.channel().attr(Constants.TIMESTAMP).getAndRemove();
+      if(startTime == null) {
+          return 0L;
+      }
+      return System.nanoTime() - startTime;
   }
 }
