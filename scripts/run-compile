@@ -1,0 +1,55 @@
+#!/bin/bash
+# -Xlint:all
+# -Xlint:auxiliaryclass
+# -Xlint:cast
+# -Xlint:classfile
+# -Xlint:deprecation
+# -Xlint:dep-ann
+# -Xlint:divzero
+# -Xlint:empty
+# -Xlint:fallthrough
+# -Xlint:finally
+# -Xlint:options
+# -Xlint:overloads
+# -Xlint:overrides
+# -Xlint:path
+# -Xlint:processing
+# -Xlint:rawtypes
+# -Xlint:serial
+# -Xlint:static
+# -Xlint:try
+# -Xlint:unchecked
+# -Xlint:varargs
+# -Xlint:-auxiliaryclass
+# -Xlint:-cast
+# -Xlint:-classfile
+# -Xlint:-deprecation
+# -Xlint:-dep-ann
+# -Xlint:-divzero
+# -Xlint:-empty
+# -Xlint:-fallthrough
+# -Xlint:-finally
+# -Xlint:-options
+# -Xlint:-overloads
+# -Xlint:-overrides
+# -Xlint:-path
+# -Xlint:-processing
+# -Xlint:-rawtypes
+# -Xlint:-serial
+# -Xlint:-static
+# -Xlint:-try
+# -Xlint:-unchecked
+# -Xlint:-varargs
+# -Xlint:none
+
+
+LINT_ARGS="-Xlint:all -Xlint:-deprecation, -Xlint:-unchecked -Xlint:-rawtypes -Xlint:-serial"
+DISABLE_JAVA9_DEPRECATION_WARNING="-XDignore.symbol.file"
+JAVAC_ARGS="${LINT_ARGS} ${DISABLE_JAVA9_DEPRECATION_WARNING} -source 1.8 -target 1.8"
+PROJECT_CLASSPATH="${CLASSPATH_COMPILE}:${TARGET_DIR}"
+[[ -z "${DEBUG}" ]] || echo "Classpath ${PROJECT_CLASSPATH}" | tr ':' '\n'
+if [ $NOINFER ]; then
+  javac -cp ${PROJECT_CLASSPATH} -d ${TARGET_DIR} ${JAVAC_ARGS} "$@"
+else
+  infer -a tracing --infer_cache /tmp/infer_cache -o /tmp/infer -- javac -cp ${PROJECT_CLASSPATH} -d ${TARGET_DIR} ${JAVAC_ARGS} "$@"
+fi

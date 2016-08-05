@@ -6,10 +6,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.log4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class Route {
-  private static final Logger log = Logger.getLogger(Route.class);
+
 
   private static final Pattern keywordPattern = Pattern.compile("(:\\w+)");
   private final Pattern pathPattern;

@@ -4,10 +4,11 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.logging.LoggingHandler;
-import org.apache.log4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class XioMessageLogger extends LoggingHandler {
-  private static final Logger log = Logger.getLogger(XioMessageLogger.class);
+
   private static final char[] BYTE2CHAR;
 
   static {

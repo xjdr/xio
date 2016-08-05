@@ -10,12 +10,7 @@ import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
 import com.xjeffrose.xio.EchoClient;
 import com.xjeffrose.xio.EchoServer;
-import com.xjeffrose.xio.client.HttpClientChannel;
-import com.xjeffrose.xio.client.HttpClientConnector;
-import com.xjeffrose.xio.client.Listener;
 import com.xjeffrose.xio.client.XioClient;
-import com.xjeffrose.xio.client.XioClientChannel;
-import com.xjeffrose.xio.client.XioClientConfig;
 import com.xjeffrose.xio.client.retry.BoundedExponentialBackoffRetry;
 import com.xjeffrose.xio.core.BBtoHttpResponse;
 import com.xjeffrose.xio.core.TcpCodec;
@@ -23,19 +18,11 @@ import com.xjeffrose.xio.core.XioAggregatorFactory;
 import com.xjeffrose.xio.core.XioCodecFactory;
 import com.xjeffrose.xio.core.XioException;
 import com.xjeffrose.xio.core.XioNoOpHandler;
-import com.xjeffrose.xio.core.XioNoOpSecurityFactory;
-import com.xjeffrose.xio.core.XioSecurityFactory;
-import com.xjeffrose.xio.core.XioSecurityHandlers;
 import com.xjeffrose.xio.core.XioTimer;
 import com.xjeffrose.xio.core.XioTransportException;
 import com.xjeffrose.xio.fixtures.OkHttpUnsafe;
 import com.xjeffrose.xio.fixtures.SimpleTestServer;
-import com.xjeffrose.xio.fixtures.TcpClient;
-import com.xjeffrose.xio.fixtures.XioTestProcessorFactory;
 import com.xjeffrose.xio.fixtures.XioTestSecurityFactory;
-import com.xjeffrose.xio.processor.XioProcessor;
-import com.xjeffrose.xio.processor.XioProcessorFactory;
-import io.airlift.units.Duration;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.buffer.Unpooled;
@@ -63,7 +50,6 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import javax.net.ssl.SSLException;
-import org.apache.log4j.Logger;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -71,10 +57,15 @@ import static org.junit.Assert.assertTrue;
 
 
 public class XioServerFunctionalTest {
-  private static final Logger log = Logger.getLogger(XioServerFunctionalTest.class.getName());
 
   public static final XioTimer timer = new XioTimer("Test Timer", (long) 100, TimeUnit.MILLISECONDS, 100);
 
+  @Test
+  public void test() {
+  }
+  // reproduced in XioEchoPipelineFunctionalTest.java
+  // reproduced in XioTcpProxyPipelineFunctionalTest.java
+  /*
   @Test
   public void testComplexServerConfigurationTCP() throws Exception {
     EchoServer tcpServer = new EchoServer(9002);
@@ -169,7 +160,10 @@ public class XioServerFunctionalTest {
 
         );
   }
+  */
 
+  // reproduced in XioHttp1_1PipelineFunctionalTest.java
+  /*
   @Test
   public void testComplexServerConfigurationHttp() throws Exception {
     XioServerDef serverDef = new XioServerDefBuilder()
@@ -260,7 +254,10 @@ public class XioServerFunctionalTest {
       }
     });
   }
+  */
 
+  // Reproduced in XioSslHttp1_1PipelineFunctionalTest.java
+  /*
   @Test
   public void testComplexServerConfigurationHttps() throws Exception {
     XioServerDef serverDef = new XioServerDefBuilder()
@@ -348,8 +345,11 @@ public class XioServerFunctionalTest {
       }
     });
   }
+  */
 
 
+  // Reproduced in XioSslHttp1_1PipelineFunctionalTest.java
+  /*
   @Test
   public void testSimpleProxy() throws Exception {
     SimpleTestServer testServer = new SimpleTestServer(8089);
@@ -406,7 +406,7 @@ public class XioServerFunctionalTest {
                         HttpHeaders.HOST, "localhost:8089",
                         HttpHeaders.USER_AGENT, "xio/0.7.8",
                         HttpHeaders.CONTENT_TYPE, "application/text",
-                        HttpHeaders.ACCEPT_ENCODING, "*/*"
+                        HttpHeaders.ACCEPT_ENCODING, "* / *"
                     );
 
                     httpClientChannel.setHeaders(headerMap);
@@ -535,8 +535,11 @@ public class XioServerFunctionalTest {
       }
     });
   }
+  */
 
 
+  // Reproduced in XioSslHttp1_1PipelineFunctionalTest.java
+  /*
   @Test
   public void testComplexProxy() throws Exception {
 
@@ -622,7 +625,7 @@ public class XioServerFunctionalTest {
                         HttpHeaders.HOST, "www.paypal.com",
                         HttpHeaders.USER_AGENT, "xio/0.7.8",
                         HttpHeaders.CONTENT_TYPE, "application/text",
-                        HttpHeaders.ACCEPT_ENCODING, "*/*"
+                        HttpHeaders.ACCEPT_ENCODING, "* /*"
                     );
 
                     httpClientChannel.setHeaders(headerMap);
@@ -749,5 +752,6 @@ public class XioServerFunctionalTest {
       }
     });
   }
+  */
 
 }

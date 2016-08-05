@@ -1,10 +1,9 @@
 package com.xjeffrose.xio.fixtures;
 
 import com.xjeffrose.xio.core.XioNoOpHandler;
-import com.xjeffrose.xio.core.XioSecurityFactory;
-import com.xjeffrose.xio.core.XioSecurityHandlers;
+import com.xjeffrose.xio.server.XioSecurityFactory;
+import com.xjeffrose.xio.server.XioSecurityHandlers;
 import com.xjeffrose.xio.server.XioServerConfig;
-import com.xjeffrose.xio.server.XioServerDef;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelHandler;
 import io.netty.handler.ssl.SslContext;
@@ -16,33 +15,6 @@ import java.security.cert.CertificateException;
 import javax.net.ssl.SSLException;
 
 public class XioTestSecurityFactory implements XioSecurityFactory {
-  @Override
-  public XioSecurityHandlers getSecurityHandlers(XioServerDef def, XioServerConfig serverConfig) {
-    return new XioSecurityHandlers() {
-      @Override
-      public ChannelHandler getAuthenticationHandler() {
-        return new XioNoOpHandler();
-      }
-
-      @Override
-      public ChannelHandler getEncryptionHandler() {
-        try {
-          SelfSignedCertificate ssc = new SelfSignedCertificate();
-          SslContext sslCtx =  SslContextBuilder
-              .forServer(ssc.certificate(), ssc.privateKey())
-              .sslProvider(SslProvider.OPENSSL)
-              .build();
-
-          return sslCtx.newHandler(new PooledByteBufAllocator());
-
-        } catch (SSLException | CertificateException e) {
-          e.printStackTrace();
-        }
-        return null;
-      }
-    };
-  }
-
   @Override
   public XioSecurityHandlers getSecurityHandlers() {
     return new XioSecurityHandlers() {
@@ -72,4 +44,3 @@ public class XioTestSecurityFactory implements XioSecurityFactory {
     };
   }
 }
-

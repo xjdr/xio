@@ -2,7 +2,6 @@ package com.xjeffrose.xio.core;
 
 
 import com.google.common.base.Preconditions;
-import com.xjeffrose.xio.server.XioConnectionContext;
 import io.netty.channel.Channel;
 import io.netty.util.AttributeKey;
 

@@ -1,11 +1,12 @@
 package com.xjeffrose.xio.client.retry;
 
 import java.util.Random;
-import org.apache.log4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 
 
+@Slf4j
 public class ExponentialBackoffRetry extends SleepingRetry {
-  private static final Logger log = Logger.getLogger(ExponentialBackoffRetry.class);
+
 
   private static final int MAX_RETRIES_LIMIT = 29;
   private static final int DEFAULT_MAX_SLEEP_MS = Integer.MAX_VALUE;
