@@ -36,6 +36,8 @@ abstract public class XioBasePipeline implements XioPipelineFragment {
     // TODO(CK): pull globalConnectionLimiter from state
     pipeline.addLast("globalConnectionLimiter", globalConnectionLimiter); // TODO(JR): Need to make this config
     pipeline.addLast("serviceConnectionLimiter", new XioConnectionLimiter(config.limits().maxConnections()));
+    ChannelHandler idleDisconnectHandler = getIdleDisconnectHandler(config.limits());
+    pipeline.addLast("idleDisconnectHandler", idleDisconnectHandler);
     pipeline.addLast("l4DeterministicRuleEngine", new XioDeterministicRuleEngine(state.zkClient(), true)); // TODO(JR): Need to make this config
     pipeline.addLast("l4BehavioralRuleEngine", new XioBehavioralRuleEngine(state.zkClient(), true)); // TODO(JR): Need to make this config
     pipeline.addLast("connectionContext", new ConnectionContextHandler());
@@ -59,8 +61,6 @@ abstract public class XioBasePipeline implements XioPipelineFragment {
       pipeline.addLast("authHandler", authHandler);
     }
     pipeline.addLast("xioService", new XioService());
-    ChannelHandler idleDisconnectHandler = getIdleDisconnectHandler(config.limits());
-    pipeline.addLast("idleDisconnectHandler", idleDisconnectHandler);
     // See https://finagle.github.io/blog/2016/02/09/response-classification
     pipeline.addLast("xioResponseClassifier", new XioResponseClassifier(true)); /// TODO(JR): This is a maybe
     pipeline.addLast("exceptionLogger", new XioExceptionLogger());

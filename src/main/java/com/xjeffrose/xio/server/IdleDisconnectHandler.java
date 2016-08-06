@@ -11,6 +11,7 @@ public class IdleDisconnectHandler extends IdleStateHandler {
 
   @Override
   protected void channelIdle(ChannelHandlerContext ctx, IdleStateEvent evt) throws Exception {
-    ctx.channel().close();
+//    ctx.channel().close();
+    ctx.fireUserEventTriggered(evt);
   }
 }
