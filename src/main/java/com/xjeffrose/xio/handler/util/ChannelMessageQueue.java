@@ -37,9 +37,8 @@ public class ChannelMessageQueue<C, M> {
    * @param ctx the context for the message being added
    * @param msg the message being added to the queue
    * @return boolean true if provided to consumer
-   * @throws Exception
    */
-  public boolean addMessage(C ctx, M msg) throws Exception {
+  public boolean addMessage(C ctx, M msg) {
     if (streaming) {
       consumer.accept(ctx, msg);
     } else {
