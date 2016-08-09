@@ -1,11 +1,8 @@
 package com.xjeffrose.xio.client.asyncretry;
 
 import io.netty.channel.EventLoopGroup;
-import io.netty.channel.ConnectTimeoutException;
-import java.net.ConnectException;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.AtomicInteger;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -14,9 +11,10 @@ public class AsyncRetryLoop {
   private final EventLoopGroup eventLoopGroup;
   private final long delay;
   private final TimeUnit unit;
-  private int attemptCount = 0;
+  private final AtomicInteger attemptCount = new AtomicInteger(0);
 
-  public AsyncRetryLoop(int attemptLimit, EventLoopGroup eventLoopGroup, long delay, TimeUnit unit) {
+  public AsyncRetryLoop(int attemptLimit, EventLoopGroup eventLoopGroup, long delay,
+    TimeUnit unit) {
     this.attemptLimit = attemptLimit;
     this.eventLoopGroup = eventLoopGroup;
     this.delay = delay;
@@ -24,8 +22,7 @@ public class AsyncRetryLoop {
   }
 
   public void attempt(Runnable action) {
-    attemptCount++;
-    if (attemptCount == 1) {
+    if (attemptCount.incrementAndGet() == 1) {
       action.run();
     } else {
       eventLoopGroup.schedule(action, delay, unit);
@@ -33,6 +30,6 @@ public class AsyncRetryLoop {
   }
 
   public boolean canRetry() {
-    return attemptCount < attemptLimit;
+    return attemptCount.get() < attemptLimit;
   }
 }
