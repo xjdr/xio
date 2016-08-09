@@ -119,7 +119,7 @@ public class Node implements Closeable {
                 promise.setSuccess(null);
               } else {
                 log.error("Write error: ", channelFuture.cause());
-                promise.setFailure(future.cause());
+                promise.setFailure(channelFuture.cause());
               }
             }
           });
