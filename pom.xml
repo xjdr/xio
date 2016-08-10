@@ -278,11 +278,19 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.2</version>
+                    <version>3.5.1</version>
                     <configuration>
+                        <fork>true</fork>
                         <source>1.8</source>
                         <target>1.8</target>
-                        <compilerArgument>-XDignore.symbol.file</compilerArgument>
+                        <compilerArgs>
+                          <arg>-XDignore.symbol.file</arg>
+                          <arg>-Xlint:all</arg>
+                          <arg>-Xlint:-deprecation</arg>
+                          <arg>-Xlint:-unchecked</arg>
+                          <arg>-Xlint:-rawtypes</arg>
+                          <arg>-Xlint:-serial</arg>
+                        </compilerArgs>
                     </configuration>
                 </plugin>
                 <plugin>
