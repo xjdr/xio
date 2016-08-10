@@ -23,6 +23,7 @@ public class XioServerConfig {
   private InetSocketAddress bindAddress;
   private XioServerLimits limits;
   private TlsConfig tls;
+  private final boolean useMessageLogger;
 
   public XioServerConfig(Config config) {
     bootstrapOptions = null;
@@ -35,6 +36,7 @@ public class XioServerConfig {
     bindAddress = new InetSocketAddress(config.getString("settings.bindHost"), config.getInt("settings.bindPort"));
     limits = new XioServerLimits(config.getConfig("limits"));
     tls = new TlsConfig(config.getConfig("settings.tls"));
+    useMessageLogger = config.getBoolean("settings.useMessageLogger");
   }
 
   static public XioServerConfig fromConfig(String key, Config config) {
@@ -56,6 +58,7 @@ public class XioServerConfig {
     this.bossThreadCount = bossThreadCount;
     this.workerExecutor = workerExecutor;
     this.workerThreadCount = workerThreadCount;
+    this.useMessageLogger = false;
   }
 
   public InetSocketAddress getBindAddress() {
@@ -104,6 +107,10 @@ public class XioServerConfig {
 
   public String getKey() {
     return tls.getKey();
+  }
+
+  public boolean useMessageLogger() {
+    return useMessageLogger;
   }
 
 }

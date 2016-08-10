@@ -43,7 +43,7 @@
 # -Xlint:none
 
 
-LINT_ARGS="-Xlint:all -Xlint:-deprecation, -Xlint:-unchecked -Xlint:-rawtypes -Xlint:-serial"
+LINT_ARGS="-Xlint:all -Xlint:-deprecation -Xlint:-unchecked -Xlint:-rawtypes -Xlint:-serial"
 DISABLE_JAVA9_DEPRECATION_WARNING="-XDignore.symbol.file"
 JAVAC_ARGS="${LINT_ARGS} ${DISABLE_JAVA9_DEPRECATION_WARNING} -source 1.8 -target 1.8"
 PROJECT_CLASSPATH="${CLASSPATH_COMPILE}:${TARGET_DIR}"
