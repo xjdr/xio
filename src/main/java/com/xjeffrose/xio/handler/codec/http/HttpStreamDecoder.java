@@ -1,6 +1,6 @@
 package com.xjeffrose.xio.handler.codec.http;
 
-import com.xjeffrose.xio.handler.util.ChannelMessageQueue;
+import com.xjeffrose.xio.handler.util.ContextualMessageQueue;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
@@ -27,16 +27,15 @@ public class HttpStreamDecoder extends HttpObjectAggregator {
     new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.CONTINUE,
       Unpooled.EMPTY_BUFFER);
 
-  private final ChannelMessageQueue<List<Object>, Object> messageQueue;
+  private final ContextualMessageQueue<List<Object>, Object> messageQueue;
 
   public HttpStreamDecoder(int maxContentLength) {
     super(maxContentLength);
-    messageQueue = new ChannelMessageQueue<>(List::add);
+    messageQueue = new ContextualMessageQueue<>(List::add);
   }
 
   @Override
-  protected Object newContinueResponse(HttpMessage httpMessage, int i,
-    ChannelPipeline channelPipeline) {
+  protected Object newContinueResponse(HttpMessage httpMessage, int i, ChannelPipeline pipeline) {
     if (HttpUtil.is100ContinueExpected(httpMessage)) {
       return CONTINUE.retainedDuplicate();
     }
@@ -56,8 +55,8 @@ public class HttpStreamDecoder extends HttpObjectAggregator {
   @Override
   protected FullHttpMessage beginAggregation(HttpMessage httpMessage, ByteBuf byteBuf)
     throws Exception {
-    String transferEncoding = httpMessage.headers().get(HttpHeaderNames.TRANSFER_ENCODING);
-    FullHttpMessage fullMessage = super.beginAggregation(httpMessage, byteBuf);
+    final String transferEncoding = httpMessage.headers().get(HttpHeaderNames.TRANSFER_ENCODING);
+    final FullHttpMessage fullMessage = super.beginAggregation(httpMessage, byteBuf);
     if (transferEncoding != null) {
       // Restore the transfer encoding here, we will remove 'chunked' in finishAggregation if needed.
       httpMessage.headers().set(HttpHeaderNames.TRANSFER_ENCODING, transferEncoding);
@@ -75,7 +74,7 @@ public class HttpStreamDecoder extends HttpObjectAggregator {
 
   private void resetQueue() {
     // Need to release queued messages that won't be sent since they were retained in decode.
-    messageQueue.forEach((out, msg) -> ReferenceCountUtil.release(msg));
+    messageQueue.forEachMessage(ReferenceCountUtil::release);
     messageQueue.reset();
   }
 
@@ -89,7 +88,7 @@ public class HttpStreamDecoder extends HttpObjectAggregator {
   protected void decode(final ChannelHandlerContext ctx, HttpObject msg, List<Object> out)
     throws Exception {
     ReferenceCountUtil.retain(msg);
-    boolean streaming = messageQueue.addMessage(out, msg);
+    final boolean streaming = messageQueue.addContextualMessage(out, msg);
     if (!streaming) {
       super.decode(ctx, msg, out);
     }
