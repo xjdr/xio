@@ -46,7 +46,9 @@ abstract public class XioBasePipeline implements XioPipelineFragment {
     if (encryptionHandler != null) {
       pipeline.addLast("encryptionHandler", encryptionHandler);
     }
-    pipeline.addLast("messageLogger", new XioMessageLogger()); // THIS IS FOR DEBUG ONLY AND SHOULD BE REMOVED OTHERWISE
+    if (config.useMessageLogger()) {
+      pipeline.addLast("messageLogger", new XioMessageLogger());
+    }
     ChannelHandler codecHandler = getCodecHandler();
     if (codecHandler != null) {
       pipeline.addLast("codec", codecHandler);
