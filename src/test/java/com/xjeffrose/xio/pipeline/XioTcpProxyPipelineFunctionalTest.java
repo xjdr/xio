@@ -17,16 +17,14 @@ public class XioTcpProxyPipelineFunctionalTest extends Assert {
 
   @Test
   public void testProxyServer() {
-    XioServerConfig serverConfig = XioServerConfig.fromConfig("xio.exampleServer");
-    XioServerState serverState = XioServerState.fromConfig("xio.exampleApplication");
 
     try (EchoClient client = new EchoClient(); EchoServer server = new EchoServer()) {
       server.bind(new InetSocketAddress("127.0.0.1", 0));
-      XioServerBootstrap bootstrap = new XioServerBootstrap(serverConfig, serverState)
+      XioServerBootstrap bootstrap = XioServerBootstrap.fromConfig("xio.testApplication")
         .addToPipeline(new XioTcpProxyPipeline(server.addressBound()))
       ;
       try (XioServer proxy = bootstrap.build()) {
-        client.connect(proxy.instrumentation().addressBound());
+        client.connect(proxy.getInstrumentation().addressBound());
         server.accept();
         String payload = "test message";
         client.send(payload);
@@ -40,16 +38,14 @@ public class XioTcpProxyPipelineFunctionalTest extends Assert {
 
   @Test
   public void testEchoServerLargePayload() {
-    XioServerConfig serverConfig = XioServerConfig.fromConfig("xio.exampleServer");
-    XioServerState serverState = XioServerState.fromConfig("xio.exampleApplication");
 
     try (EchoClient client = new EchoClient(); EchoServer server = new EchoServer()) {
       server.bind(new InetSocketAddress("127.0.0.1", 0));
-      XioServerBootstrap bootstrap = new XioServerBootstrap(serverConfig, serverState)
+      XioServerBootstrap bootstrap = XioServerBootstrap.fromConfig("xio.testApplication")
         .addToPipeline(new XioTcpProxyPipeline(server.addressBound()))
       ;
       try (XioServer proxy = bootstrap.build()) {
-        client.connect(proxy.instrumentation().addressBound());
+        client.connect(proxy.getInstrumentation().addressBound());
         server.accept();
         int n = 800;
         String payload = "Netty rocks!";

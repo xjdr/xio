@@ -21,7 +21,7 @@ public class Application implements AutoCloseable {
   }
 
   public XioServerInstrumentation instrumentation(String server) {
-    return servers.get(server).instrumentation();
+    return servers.get(server).getInstrumentation();
   }
 
   public void close() {

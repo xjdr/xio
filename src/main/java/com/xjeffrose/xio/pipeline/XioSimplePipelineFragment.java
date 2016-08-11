@@ -1,5 +1,6 @@
 package com.xjeffrose.xio.pipeline;
 
+import com.xjeffrose.xio.application.ApplicationState;
 import com.xjeffrose.xio.server.XioServerConfig;
 import com.xjeffrose.xio.server.XioServerState;
 import io.netty.channel.ChannelPipeline;
@@ -21,7 +22,7 @@ public class XioSimplePipelineFragment implements XioPipelineFragment {
     return null;
   }
 
-  public void buildHandlers(XioServerConfig config, XioServerState state, ChannelPipeline pipeline) {
+  public void buildHandlers(ApplicationState appState, XioServerConfig config, XioServerState state, ChannelPipeline pipeline) {
     pipeline.addLast(pipelineLabel, factory.build());
   }
 }
