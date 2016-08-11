@@ -35,22 +35,10 @@ public class XioSslHttp1_1Pipeline extends XioHttp1_1Pipeline {
   }
 
   public ChannelHandler getEncryptionHandler(XioServerConfig config, XioServerState state) {
-    return new XioSecurityHandlerImpl(config.getCert(), config.getKey()).getEncryptionHandler();
-    /*
-    try {
-      SelfSignedCertificate ssc = new SelfSignedCertificate();
-      SslContext sslCtx =  SslContextBuilder
-        .forServer(ssc.certificate(), ssc.privateKey())
-        .sslProvider(SslProvider.OPENSSL)
-        .build();
-
-      return sslCtx.newHandler(new PooledByteBufAllocator());
-
-    } catch (SSLException | CertificateException e) {
-      log.error("Couldn't build encryption handler", e);
-      return null;
-    }
-    */
+    return new XioSecurityHandlerImpl(
+      config.getTls().getCert(),
+      config.getTls().getKey()
+    ).getEncryptionHandler();
   }
 
 }

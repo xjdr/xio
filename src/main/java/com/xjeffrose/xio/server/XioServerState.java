@@ -26,7 +26,12 @@ public class XioServerState {
   public XioServerState(Config config) {
     zkClient = new ZkClient(config.getString("settings.zookeeperCluster"));
     channelStatistics = new ChannelStatistics(allChannels);
-    channelConfiguration = ChannelConfiguration.serverConfig(config.getInt("settings.bossThreads"), config.getInt("settings.workerThreads"));
+    channelConfiguration = ChannelConfiguration.serverConfig(
+      config.getInt("settings.bossThreads"),
+      config.getString("settings.bossNameFormat"),
+      config.getInt("settings.workerThreads"),
+      config.getString("settings.workerNameFormat")
+    );
   }
 
   static public XioServerState fromConfig(String key, Config config) {

@@ -13,8 +13,6 @@ public class XioServerConfigUnitTest extends Assert {
   public void testLoadWithConfig() {
     Config config = ConfigFactory.load();
     XioServerConfig serverConfig = new XioServerConfig(config.getConfigList("xio.servers").get(0));
-    assertEquals(5, serverConfig.getBossThreadCount());
-    assertEquals(10, serverConfig.getWorkerThreadCount());
     assertEquals(new InetSocketAddress("127.0.0.1", 0), serverConfig.getBindAddress());
     assertEquals("example", serverConfig.getName());
   }
