@@ -1,5 +1,8 @@
 package com.xjeffrose.xio.bootstrap;
 
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
+import com.xjeffrose.xio.application.ApplicationState;
 import com.xjeffrose.xio.pipeline.XioPipelineAssembler;
 import com.xjeffrose.xio.pipeline.XioPipelineFragment;
 import com.xjeffrose.xio.server.XioServer;
@@ -21,13 +24,33 @@ public class XioServerBootstrap {
 
   private final XioPipelineAssembler pipelineAssembler;
 
+  private final XioServerConfig config;
+
+  private final XioServerState state;
+
   private ServerChannelConfiguration channelConfig;
 
-  public XioServerBootstrap(XioServerConfig config, XioServerState state) {
+  public XioServerBootstrap(ApplicationState appState, XioServerConfig config, XioServerState state) {
     serverBootstrap = new ServerBootstrap();
-    pipelineAssembler = new XioPipelineAssembler(config, state);
+    pipelineAssembler = new XioPipelineAssembler(appState, config, state);
+    this.config = config;
+    this.state = state;
     bindAddress(config.getBindAddress());
-    channelConfig(state.channelConfiguration());
+    channelConfig(appState.getChannelConfiguration());
+  }
+
+  static public XioServerBootstrap fromConfig(String key, Config config) {
+    Config servers = config.getConfig(key).getConfig("servers");
+    String firstServer = servers.root().entrySet().iterator().next().getKey();
+    return new XioServerBootstrap(
+      ApplicationState.fromConfig(key, config),
+      XioServerConfig.fromConfig(firstServer, servers),
+      XioServerState.fromConfig(firstServer, servers)
+    );
+  }
+
+  static public XioServerBootstrap fromConfig(String key) {
+    return fromConfig(key, ConfigFactory.load());
   }
 
   public XioServerBootstrap addToPipeline(XioPipelineFragment fragment) {
@@ -60,6 +83,6 @@ public class XioServerBootstrap {
       log.error("Couldn't bind channel", future.cause());
       throw new RuntimeException(future.cause());
     }
-    return new XioServer(future.channel(), instrumentation);
+    return new XioServer(future.channel(), instrumentation, config, state);
   }
 }

@@ -41,4 +41,5 @@ public class XioServerConfig {
   static public XioServerConfig fromConfig(String key) {
     return fromConfig(key, ConfigFactory.load());
   }
+
 }

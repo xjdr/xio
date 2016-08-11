@@ -18,14 +18,11 @@ public class XioHttp1_1PipelineFunctionalTest extends Assert {
 
   @Test
   public void testProxyServer() throws IOException {
-    XioServerConfig serverConfig = XioServerConfig.fromConfig("xio.exampleServer");
-    XioServerState serverState = XioServerState.fromConfig("xio.exampleApplication");
-
-    XioServerBootstrap bootstrap = new XioServerBootstrap(serverConfig, serverState)
+    XioServerBootstrap bootstrap = XioServerBootstrap.fromConfig("xio.testApplication")
       .addToPipeline(new XioHttp1_1Pipeline(() -> new SampleHandler()))
     ;
     try (XioServer server = bootstrap.build()) {
-      InetSocketAddress address = server.instrumentation().addressBound();
+      InetSocketAddress address = server.getInstrumentation().addressBound();
       Response response = ClientHelper.http(address);
 
       String expectedResponse = "WELCOME TO THE WILD WILD WEB SERVER\r\n" +

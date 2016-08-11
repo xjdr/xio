@@ -1,5 +1,6 @@
 package com.xjeffrose.xio.pipeline;
 
+import com.xjeffrose.xio.application.ApplicationState;
 import com.xjeffrose.xio.server.XioServerConfig;
 import com.xjeffrose.xio.server.XioServerState;
 import io.netty.channel.ChannelHandler;
@@ -30,10 +31,10 @@ public class XioHttp1_1Pipeline extends XioServerPipeline {
     return new HttpServerCodec();
   }
 
-  public void buildHandlers(XioServerConfig config, XioServerState state, ChannelPipeline pipeline) {
-    super.buildHandlers(config, state, pipeline);
+  public void buildHandlers(ApplicationState appState, XioServerConfig config, XioServerState state, ChannelPipeline pipeline) {
+    super.buildHandlers(appState, config, state, pipeline);
     if (fragment != null) {
-      fragment.buildHandlers(config, state, pipeline);
+      fragment.buildHandlers(appState, config, state, pipeline);
     }
   }
 

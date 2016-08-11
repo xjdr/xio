@@ -1,5 +1,6 @@
 package com.xjeffrose.xio.pipeline;
 
+import com.xjeffrose.xio.application.ApplicationState;
 import com.xjeffrose.xio.core.ChannelStatistics;
 import com.xjeffrose.xio.core.ConnectionContextHandler;
 import com.xjeffrose.xio.core.XioExceptionLogger;
@@ -32,16 +33,16 @@ abstract public class XioBasePipeline implements XioPipelineFragment {
 
   abstract public ChannelHandler getApplicationHandler();
 
-  public void buildHandlers(XioServerConfig config, XioServerState state, ChannelPipeline pipeline) {
+  public void buildHandlers(ApplicationState appState, XioServerConfig config, XioServerState state, ChannelPipeline pipeline) {
     // TODO(CK): pull globalConnectionLimiter from state
     pipeline.addLast("globalConnectionLimiter", globalConnectionLimiter); // TODO(JR): Need to make this config
     pipeline.addLast("serviceConnectionLimiter", new XioConnectionLimiter(config.getLimits().maxConnections()));
     ChannelHandler idleDisconnectHandler = getIdleDisconnectHandler(config.getLimits());
     pipeline.addLast("idleDisconnectHandler", idleDisconnectHandler);
-    pipeline.addLast("l4DeterministicRuleEngine", new XioDeterministicRuleEngine(state.zkClient(), true)); // TODO(JR): Need to make this config
-    pipeline.addLast("l4BehavioralRuleEngine", new XioBehavioralRuleEngine(state.zkClient(), true)); // TODO(JR): Need to make this config
+    pipeline.addLast("l4DeterministicRuleEngine", new XioDeterministicRuleEngine(appState.getZkClient(), true)); // TODO(JR): Need to make this config
+    pipeline.addLast("l4BehavioralRuleEngine", new XioBehavioralRuleEngine(appState.getZkClient(), true)); // TODO(JR): Need to make this config
     pipeline.addLast("connectionContext", new ConnectionContextHandler());
-    pipeline.addLast("globalChannelStatistics", state.channelStatistics());
+    pipeline.addLast("globalChannelStatistics", state.getChannelStatistics());
     ChannelHandler encryptionHandler = getEncryptionHandler(config, state);
     if (encryptionHandler != null) {
       pipeline.addLast("encryptionHandler", encryptionHandler);
@@ -55,9 +56,9 @@ abstract public class XioBasePipeline implements XioPipelineFragment {
     } else {
       throw new RuntimeException("No codec configured");
     }
-    pipeline.addLast("l7DeterministicRuleEngine", new XioDeterministicRuleEngine(state.zkClient(), true)); // TODO(JR): Need to make this config
-    pipeline.addLast("l7BehavioralRuleEngine", new XioBehavioralRuleEngine(state.zkClient(), true)); // TODO(JR): Need to make this config
-    pipeline.addLast("webApplicationFirewall", new XioWebApplicationFirewall(state.zkClient(), true)); // TODO(JR): Need to make this config
+    pipeline.addLast("l7DeterministicRuleEngine", new XioDeterministicRuleEngine(appState.getZkClient(), true)); // TODO(JR): Need to make this config
+    pipeline.addLast("l7BehavioralRuleEngine", new XioBehavioralRuleEngine(appState.getZkClient(), true)); // TODO(JR): Need to make this config
+    pipeline.addLast("webApplicationFirewall", new XioWebApplicationFirewall(appState.getZkClient(), true)); // TODO(JR): Need to make this config
     ChannelHandler authHandler = getAuthenticationHandler();
     if (authHandler != null) {
       pipeline.addLast("authHandler", authHandler);

@@ -1,5 +1,6 @@
 package com.xjeffrose.xio.pipeline;
 
+import com.xjeffrose.xio.application.ApplicationState;
 import com.xjeffrose.xio.core.ChannelStatistics;
 import com.xjeffrose.xio.core.ConnectionContextHandler;
 import com.xjeffrose.xio.core.XioExceptionLogger;
@@ -23,8 +24,9 @@ public class XioServerPipelineUnitTest {
 
   @Test
   public void verifyHandlers() {
-    XioServerConfig serverConfig = XioServerConfig.fromConfig("xio.exampleServer");
-    XioServerState serverState = XioServerState.fromConfig("xio.exampleApplication");
+    ApplicationState appState = ApplicationState.fromConfig("xio.testApplication");
+    XioServerConfig serverConfig = XioServerConfig.fromConfig("xio.testApplication.servers.testServer");
+    XioServerState serverState = XioServerState.fromConfig("xio.testApplication.servers.testServer");
 
     // Build class under test
     XioServerPipeline server = new XioServerPipeline() {
@@ -49,14 +51,14 @@ public class XioServerPipelineUnitTest {
       }
     };
     ChannelPipeline pipeline = mock(ChannelPipeline.class);
-    server.buildHandlers(serverConfig, serverState, pipeline);
+    server.buildHandlers(appState, serverConfig, serverState, pipeline);
     InOrder inOrder = inOrder(pipeline);
     inOrder.verify(pipeline, times(1)).addLast(eq("globalConnectionLimiter"), isA(XioConnectionLimiter.class));
     inOrder.verify(pipeline, times(1)).addLast(eq("serviceConnectionLimiter"), isA(XioConnectionLimiter.class));
     inOrder.verify(pipeline, times(1)).addLast(eq("l4DeterministicRuleEngine"), isA(XioDeterministicRuleEngine.class));
     inOrder.verify(pipeline, times(1)).addLast(eq("l4BehavioralRuleEngine"), isA(XioBehavioralRuleEngine.class));
     inOrder.verify(pipeline, times(1)).addLast(eq("connectionContext"), isA(ConnectionContextHandler.class));
-    inOrder.verify(pipeline, times(1)).addLast(eq("globalChannelStatistics"), eq(serverState.channelStatistics()));
+    inOrder.verify(pipeline, times(1)).addLast(eq("globalChannelStatistics"), eq(serverState.getChannelStatistics()));
     inOrder.verify(pipeline, times(1)).addLast(eq("encryptionHandler"), isA(XioNoOpHandler.class));
 
     inOrder.verify(pipeline, times(1)).addLast(eq("messageLogger"), isA(XioMessageLogger.class));

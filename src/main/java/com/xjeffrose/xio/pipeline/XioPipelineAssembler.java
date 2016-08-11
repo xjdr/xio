@@ -1,5 +1,6 @@
 package com.xjeffrose.xio.pipeline;
 
+import com.xjeffrose.xio.application.ApplicationState;
 import com.xjeffrose.xio.server.XioServerConfig;
 import com.xjeffrose.xio.server.XioServerInstrumentation;
 import com.xjeffrose.xio.server.XioServerState;
@@ -10,11 +11,13 @@ import java.util.ArrayList;
 
 public class XioPipelineAssembler {
 
+  private final ApplicationState appState;
   private final XioServerConfig config;
   private final XioServerState state;
   private final List<XioPipelineFragment> fragments;
 
-  public XioPipelineAssembler(XioServerConfig config, XioServerState state) {
+  public XioPipelineAssembler(ApplicationState appState, XioServerConfig config, XioServerState state) {
+    this.appState = appState;
     this.config = config;
     this.state = state;
     fragments = new ArrayList<XioPipelineFragment>();
@@ -26,7 +29,7 @@ public class XioPipelineAssembler {
 
   public void buildHandlers(ChannelPipeline pipeline) {
     for (XioPipelineFragment fragment : fragments) {
-      fragment.buildHandlers(config, state, pipeline);
+      fragment.buildHandlers(appState, config, state, pipeline);
     }
   }
 

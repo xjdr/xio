@@ -14,15 +14,12 @@ public class XioEchoPipelineFunctionalTest extends Assert {
 
   @Test
   public void testEchoServer() {
-    XioServerConfig serverConfig = XioServerConfig.fromConfig("xio.exampleServer");
-    XioServerState serverState = XioServerState.fromConfig("xio.exampleApplication");
-
-    XioServerBootstrap bootstrap = new XioServerBootstrap(serverConfig, serverState)
+    XioServerBootstrap bootstrap = XioServerBootstrap.fromConfig("xio.testApplication")
       .addToPipeline(new XioEchoPipeline())
     ;
 
     try (XioServer server = bootstrap.build(); EchoClient client = new EchoClient()) {
-      client.connect(server.instrumentation().addressBound());
+      client.connect(server.getInstrumentation().addressBound());
       String payload = "test message";
       client.send(payload);
       String response = client.recv();
@@ -32,15 +29,12 @@ public class XioEchoPipelineFunctionalTest extends Assert {
 
   @Test
   public void testEchoServerLargePayload() {
-    XioServerConfig serverConfig = XioServerConfig.fromConfig("xio.exampleServer");
-    XioServerState serverState = XioServerState.fromConfig("xio.exampleApplication");
-
-    XioServerBootstrap bootstrap = new XioServerBootstrap(serverConfig, serverState)
+    XioServerBootstrap bootstrap = XioServerBootstrap.fromConfig("xio.testApplication")
       .addToPipeline(new XioEchoPipeline())
     ;
 
     try (XioServer server = bootstrap.build(); EchoClient client = new EchoClient()) {
-      client.connect(server.instrumentation().addressBound());
+      client.connect(server.getInstrumentation().addressBound());
       int n = 800;
       String payload = "Netty rocks!";
       StringBuilder builder = new StringBuilder(n * payload.length());
