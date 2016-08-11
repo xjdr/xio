@@ -12,7 +12,7 @@ public class XioTlsServerPipeline extends XioServerPipeline {
 
   @Override
   public ChannelHandler getEncryptionHandler(XioServerConfig config, XioServerState state) {
-    return new XioSecurityHandlerImpl(config.getCert(), config.getKey()).getEncryptionHandler();
+    return new XioSecurityHandlerImpl(config.getTls().getCert(), config.getTls().getKey()).getEncryptionHandler();
   }
 
 }

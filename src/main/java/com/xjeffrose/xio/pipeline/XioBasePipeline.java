@@ -35,8 +35,8 @@ abstract public class XioBasePipeline implements XioPipelineFragment {
   public void buildHandlers(XioServerConfig config, XioServerState state, ChannelPipeline pipeline) {
     // TODO(CK): pull globalConnectionLimiter from state
     pipeline.addLast("globalConnectionLimiter", globalConnectionLimiter); // TODO(JR): Need to make this config
-    pipeline.addLast("serviceConnectionLimiter", new XioConnectionLimiter(config.limits().maxConnections()));
-    ChannelHandler idleDisconnectHandler = getIdleDisconnectHandler(config.limits());
+    pipeline.addLast("serviceConnectionLimiter", new XioConnectionLimiter(config.getLimits().maxConnections()));
+    ChannelHandler idleDisconnectHandler = getIdleDisconnectHandler(config.getLimits());
     pipeline.addLast("idleDisconnectHandler", idleDisconnectHandler);
     pipeline.addLast("l4DeterministicRuleEngine", new XioDeterministicRuleEngine(state.zkClient(), true)); // TODO(JR): Need to make this config
     pipeline.addLast("l4BehavioralRuleEngine", new XioBehavioralRuleEngine(state.zkClient(), true)); // TODO(JR): Need to make this config
@@ -46,7 +46,7 @@ abstract public class XioBasePipeline implements XioPipelineFragment {
     if (encryptionHandler != null) {
       pipeline.addLast("encryptionHandler", encryptionHandler);
     }
-    if (config.useMessageLogger()) {
+    if (config.isMessageLoggerEnabled()) {
       pipeline.addLast("messageLogger", new XioMessageLogger());
     }
     ChannelHandler codecHandler = getCodecHandler();
