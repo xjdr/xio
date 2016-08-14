@@ -58,15 +58,28 @@ public class Node implements Closeable {
     this(toInetAddress(hostAndPort), bootstrap);
   }
 
-  public Node(SocketAddress address, Bootstrap bootstrap) {
+  public Node(InetSocketAddress address, Bootstrap bootstrap) {
     this(address, ImmutableList.of(), 0, "", Protocol.TCP, false, bootstrap);
   }
 
-  public Node(SocketAddress address, int weight, Bootstrap bootstrap) {
+  public Node(InetSocketAddress address, int weight, Bootstrap bootstrap) {
     this(address, ImmutableList.of(), weight, "", Protocol.TCP, false, bootstrap);
   }
 
-  public Node(SocketAddress address, ImmutableList<String> filters, int weight, String serviceName, Protocol proto, boolean ssl, Bootstrap bootstrap) {
+  public Node(InetSocketAddress address, ImmutableList<String> filters, int weight, String serviceName, Protocol proto, boolean ssl, Bootstrap bootstrap) {
+    this(address, filters, weight, serviceName, proto, ssl, bootstrap,
+      // TODO(CK): This be passed in, we're not really taking advantage of pooling
+      new XioConnectionPool(bootstrap, new AsyncRetryLoopFactory() {
+        @Override
+        public AsyncRetryLoop buildLoop(EventLoopGroup eventLoopGroup) {
+          return new AsyncRetryLoop(3, bootstrap.config().group(), 1, TimeUnit.SECONDS);
+        }
+      })
+    );
+  }
+
+
+  public Node(SocketAddress address, ImmutableList<String> filters, int weight, String serviceName, Protocol proto, boolean ssl, Bootstrap bootstrap, XioConnectionPool connectionPool) {
     this.address = address;
     this.proto = proto;
     this.ssl = ssl;
@@ -74,13 +87,7 @@ public class Node implements Closeable {
     this.filters = ImmutableList.copyOf(filters);
     this.weight = weight;
     this.serviceName = serviceName;
-    // TODO(CK): This be passed in, we're not really taking advantage of pooling
-    this.connectionPool = new XioConnectionPool(bootstrap, new AsyncRetryLoopFactory() {
-      @Override
-      public AsyncRetryLoop buildLoop(EventLoopGroup eventLoopGroup) {
-        return new AsyncRetryLoop(3, bootstrap.config().group(), 1, TimeUnit.SECONDS);
-      }
-    });
+    this.connectionPool = connectionPool;
     eventLoopGroup = bootstrap.config().group();
   }
 
@@ -121,6 +128,7 @@ public class Node implements Closeable {
                 log.error("Write error: ", channelFuture.cause());
                 promise.setFailure(channelFuture.cause());
               }
+              connectionPool.release(channel);
             }
           });
         } else {
