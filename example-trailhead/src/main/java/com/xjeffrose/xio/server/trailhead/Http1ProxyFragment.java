@@ -1,5 +1,6 @@
 package com.xjeffrose.xio.server.trailhead;
 
+import com.xjeffrose.xio.application.ApplicationState;
 import com.xjeffrose.xio.pipeline.XioPipelineFragment;
 import com.xjeffrose.xio.server.XioServerConfig;
 import com.xjeffrose.xio.server.XioServerState;
@@ -29,7 +30,7 @@ public class Http1ProxyFragment implements XioPipelineFragment {
     return null;
   }
 
-  public void buildHandlers(XioServerConfig config, XioServerState state, ChannelPipeline pipeline) {
+  public void buildHandlers(ApplicationState appState, XioServerConfig config, XioServerState state, ChannelPipeline pipeline) {
     pipeline.addLast(new HttpObjectAggregator(1));
     pipeline.addLast(new Http1ProxyHandler(routes.copy()));
   }
