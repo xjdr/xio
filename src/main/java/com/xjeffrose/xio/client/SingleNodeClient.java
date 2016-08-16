@@ -8,16 +8,14 @@ import java.net.InetSocketAddress;
 
 public class SingleNodeClient extends XioClient {
 
-  private final InetSocketAddress address;
   private final Node node;
 
   public SingleNodeClient(InetSocketAddress address, Bootstrap bootstrap) {
     super(bootstrap);
-    this.address = address;
-    this.node = buildNode();
+    this.node = buildNode(address, bootstrap);
   }
 
-  public Node buildNode() {
+  public Node buildNode(InetSocketAddress address, Bootstrap bootstrap) {
     return new Node(address, bootstrap);
   }
 

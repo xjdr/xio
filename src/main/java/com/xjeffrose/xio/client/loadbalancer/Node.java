@@ -54,6 +54,10 @@ public class Node implements Closeable {
   private final EventLoopGroup eventLoopGroup;
   private double load;
 
+  protected EventLoopGroup eventLoopGroup() {
+    return eventLoopGroup;
+  }
+
   public Node(HostAndPort hostAndPort, Bootstrap bootstrap) {
     this(toInetAddress(hostAndPort), bootstrap);
   }
