@@ -10,12 +10,16 @@ import java.util.Map;
 @Slf4j
 public class Application implements AutoCloseable {
 
+  @Getter
+  private final ApplicationConfig config;
+
   private final Map<String, XioServer> servers;
 
   @Getter
   private final ApplicationState state;
 
-  public Application(Map<String, XioServer> servers, ApplicationState state) {
+  public Application(ApplicationConfig config, Map<String, XioServer> servers, ApplicationState state) {
+    this.config = config;
     this.servers = servers;
     this.state = state;
   }
