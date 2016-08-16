@@ -34,11 +34,13 @@ public class XioClientBootstrap {
   private Supplier<ChannelHandler> applicationProtocol;
   @Setter
   private ChannelHandler handler;
+  @Setter boolean usePool;
   private ChannelConfiguration channelConfig;
 
   public XioClientBootstrap(ChannelConfiguration channelConfig) {
     this.channelConfig = channelConfig;
     bootstrap = buildBootstrap();
+    usePool = false;
   }
 
   public XioClientBootstrap(EventLoopGroup group) {
@@ -78,7 +80,11 @@ public class XioClientBootstrap {
     bootstrap.handler(buildInitializer());
     if (address != null) {
       bootstrap.remoteAddress(address);
-      return new SingleNodeClient(address, bootstrap);
+      if (usePool) {
+        return new SingleNodeClient(address, bootstrap);
+      } else {
+        return new SingleUnpooledNodeClient(address, bootstrap);
+      }
     } else if (distributor != null) {
       return new MultiNodeClient(distributor, bootstrap);
     } else {

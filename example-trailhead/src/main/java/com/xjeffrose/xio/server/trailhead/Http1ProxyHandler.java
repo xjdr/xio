@@ -19,9 +19,13 @@ import io.netty.channel.EventLoop;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.HttpContent;
+import io.netty.handler.codec.http.HttpObject;
 import io.netty.handler.codec.http.HttpObjectAggregator;
+import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpRequestEncoder;
 import io.netty.handler.codec.http.HttpServerCodec;
+import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
@@ -31,51 +35,28 @@ import lombok.extern.slf4j.Slf4j;
 import java.net.InetSocketAddress;
 
 @Slf4j
-public class Http1ProxyHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
+public class Http1ProxyHandler extends SimpleChannelInboundHandler<HttpObject> {
 
-  private RouteConfig.ProxyTo determineProxyTo(FullHttpRequest request) {
-    for(Route route : routes.keySet()) {
-      if (route.matches(request.uri())) {
-        return routes.get(route);
-      }
-    }
-    return null;
-  }
+  private final UrlRouter router;
+  private RouteProvider route;
+  private RouteUpdateProvider updater;
 
-  private XioClient client;
-  private final ImmutableMap<Route, RouteConfig.ProxyTo> routes;
-
-  public Http1ProxyHandler(ImmutableMap<Route, RouteConfig.ProxyTo> routes) {
-    this.routes = routes;
+  public Http1ProxyHandler(UrlRouter router) {
+    this.router = router;
   }
 
   @Override
-  public final void channelRead0(final ChannelHandlerContext ctx, FullHttpRequest msg) throws Exception {
-    FullHttpRequest req = ReferenceCountUtil.retain(msg);
-
-    ctx.pipeline().remove(HttpObjectAggregator.class);
-    ctx.pipeline().get(HttpServerCodec.class).removeInboundHandler();
-    ctx.pipeline().get(HttpServerCodec.class).removeOutboundHandler();
-
-    RouteConfig.ProxyTo proxyTo = determineProxyTo(req);
-
-    if (proxyTo == null) {
-      System.out.println("I GIVE UP!!!");
-    } else {
-      req.setUri(proxyTo.urlPath);
+  public final void channelRead0(final ChannelHandlerContext ctx, HttpObject msg) throws Exception {
+    if (msg instanceof HttpRequest) {
+      HttpRequest req = (HttpRequest)msg;
+      log.info("Received Request {}", req);
+      route = router.get(req);
+      updater = route.handle(req, ctx);
+    } else if (msg instanceof LastHttpContent) {
+      updater.update((LastHttpContent)msg);
+    } else if (msg instanceof HttpContent) {
+      updater.update((HttpContent)msg);
     }
-
-    req.headers().set("Host", proxyTo.host);
-
-    client = new XioClientBootstrap(ctx.channel().eventLoop())
-      .address(proxyTo.address)
-      .ssl(proxyTo.needSSL)
-      .applicationProtocol(() -> new HttpRequestEncoder())
-      .handler(new RawBackendHandler(ctx))
-      .build()
-    ;
-
-    client.write(req);
   }
 
   @Override
@@ -85,8 +66,8 @@ public class Http1ProxyHandler extends SimpleChannelInboundHandler<FullHttpReque
 
   @Override
   public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-    if (client != null) {
-      client.close();
+    if (route != null) {
+      route.close();
     }
   }
 

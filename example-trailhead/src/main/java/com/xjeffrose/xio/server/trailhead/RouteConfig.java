@@ -9,32 +9,15 @@ import java.util.Map;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
+
 public class RouteConfig {
 
-  static public class ProxyTo {
-    InetSocketAddress address;
-    String host;
-    String url;
-    String urlPath;
-    boolean needSSL;
-
-    public ProxyTo(InetSocketAddress address, String host, String url, String urlPath, boolean needSSL) {
-      this.address = address;
-      this.host = host;
-      this.url = url;
-      this.urlPath = urlPath;
-      this.needSSL = needSSL;
-    }
-  }
-
-
-  Map<Route, ProxyTo> routes = new LinkedHashMap<>();
-
+  Map<Route, ProxyConfig> routes = new LinkedHashMap<>();
 
   public RouteConfig() {
   }
 
-  ImmutableMap<Route, ProxyTo> copy() {
+  ImmutableMap<Route, ProxyConfig> copy() {
     return ImmutableMap.copyOf(routes);
   }
 
@@ -47,6 +30,7 @@ public class RouteConfig {
       int port;
       int defaultPort;
       boolean needSSL = false;
+      boolean standardPort = false;
       try {
         URL parsedUrl = new URL(url);
         host = parsedUrl.getHost();
@@ -65,16 +49,21 @@ public class RouteConfig {
             throw new RuntimeException("Invalid port");
           } else {
             port = defaultPort;
+            standardPort = true;
           }
         }
       } catch (MalformedURLException e) {
         throw new RuntimeException(e);
       }
-      System.out.println("Entry: " + entry);
+
+      String hostHeader = host;
+      if (!standardPort) {
+        hostHeader += ":" + port;
+      }
 
       InetSocketAddress address = new InetSocketAddress(host, port);
-      ProxyTo proxyTo = new ProxyTo(address, host, url, urlPath, needSSL);
-      routes.put(Route.build(item.getKey()), proxyTo);
+      ProxyConfig proxyConfig = new ProxyConfig(address, hostHeader, url, urlPath, needSSL);
+      routes.put(Route.build(item.getKey()), proxyConfig);
     });
   }
 
