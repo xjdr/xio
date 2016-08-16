@@ -8,22 +8,22 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 
 // [X] parse request
-//      * for now parse the entire request
-//      * in the future parse just the header and pass through the content
+//      * [X] for now parse the entire request
+//      * [X] in the future parse just the header and pass through the content
 // [X] determine url
-//      * for now just grab matching url and proxy
-//      * in the future use substring match or regex
+//      * [X] for now just grab matching url and proxy
+//      * [ ] in the future use substring match or regex
 // [X] map url to config use server.Route.java
 // [X] proxy or error
 // [X] proxy logic
-//      * now just read/write/flush
-//      * later do some sweet channel piping
+//      * [X] now just read/write/flush
+//      * [ ] later do some sweet channel piping
 public class Http1ProxyFragment implements XioPipelineFragment {
 
-  private final RouteConfig routes;
+  private final UrlRouter router;
 
-  public Http1ProxyFragment(RouteConfig routes) {
-    this.routes = routes;
+  public Http1ProxyFragment(UrlRouter router) {
+    this.router = router;
   }
 
   public String applicationProtocol() {
@@ -31,8 +31,7 @@ public class Http1ProxyFragment implements XioPipelineFragment {
   }
 
   public void buildHandlers(ApplicationState appState, XioServerConfig config, XioServerState state, ChannelPipeline pipeline) {
-    pipeline.addLast(new HttpObjectAggregator(1));
-    pipeline.addLast(new Http1ProxyHandler(routes.copy()));
+    pipeline.addLast(new Http1ProxyHandler(router));
   }
 
 }
