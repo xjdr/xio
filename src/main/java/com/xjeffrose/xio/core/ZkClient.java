@@ -1,17 +1,23 @@
 package com.xjeffrose.xio.core;
 
-import java.nio.charset.Charset;
-import java.net.InetSocketAddress;
-import java.util.List;
 import javax.annotation.Nullable;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
+import org.apache.curator.framework.recipes.cache.NodeCache;
+import org.apache.curator.framework.recipes.cache.NodeCacheListener;
 import org.apache.curator.framework.recipes.leader.LeaderSelector;
 import org.apache.curator.framework.recipes.leader.LeaderSelectorListener;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.zookeeper.CreateMode;
-import lombok.extern.slf4j.Slf4j;
+
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.nio.charset.Charset;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Slf4j
 public class ZkClient implements ConfigurationProvider {
@@ -21,6 +27,7 @@ public class ZkClient implements ConfigurationProvider {
   private final XioLeaderSelectorListener leaderListener = new XioLeaderSelectorListener();
   private CuratorFramework client;
   private String connectionString;
+  private Map<String, NodeCache> nodeCaches = new HashMap<>();
 
   public ZkClient(CuratorFramework client) {
     this.client = client;
@@ -72,9 +79,29 @@ public class ZkClient implements ConfigurationProvider {
   public void electLeader(String path) {
   }
 
+
+  public void startNodeCache(NodeCache cache) {
+    try {
+      cache.start();
+    } catch (Exception e) {
+      log.error("Error starting nodeCache {}", cache, e);
+      throw new RuntimeException(e);
+    }
+  }
+
   public void start() throws InterruptedException {
     client.start();
     client.blockUntilConnected();
+    nodeCaches.values().forEach(this::startNodeCache);
+  }
+
+  public void stopNodeCache(NodeCache cache) {
+    try {
+      cache.close();
+    } catch (IOException e) {
+      log.error("Error stopping nodeCache {}", cache, e);
+      throw new RuntimeException(e);
+    }
   }
 
   public void stop() throws Exception {
@@ -82,6 +109,7 @@ public class ZkClient implements ConfigurationProvider {
     if (leaderSelector != null) {
       leaderSelector.close();
     }
+    nodeCaches.values().forEach(this::stopNodeCache);
     client.close();
   }
 
@@ -148,5 +176,28 @@ public class ZkClient implements ConfigurationProvider {
 
   public String getConnectionString() {
     return connectionString;
+  }
+
+  private NodeCache getOrCreateNodeCache(String path) {
+    NodeCache cache;
+
+    if (nodeCaches.containsKey(path)) {
+      cache = nodeCaches.get(path);
+    } else {
+      cache = new NodeCache(client, path);
+      nodeCaches.put(path, cache);
+    }
+    return cache;
+  }
+
+  public void registerUpdater(ConfigurationUpdater updater) {
+    NodeCache cache = getOrCreateNodeCache(updater.getPath());
+
+    cache.getListenable().addListener(new NodeCacheListener() {
+      @Override
+      public void nodeChanged() {
+        updater.update(cache.getCurrentData().getData());
+      }
+    });
   }
 }
