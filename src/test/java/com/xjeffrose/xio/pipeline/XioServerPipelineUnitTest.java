@@ -6,6 +6,7 @@ import com.xjeffrose.xio.core.ConnectionContextHandler;
 import com.xjeffrose.xio.core.XioExceptionLogger;
 import com.xjeffrose.xio.core.XioMessageLogger;
 import com.xjeffrose.xio.core.XioNoOpHandler;
+import com.xjeffrose.xio.filter.IpFilter;
 import com.xjeffrose.xio.server.XioBehavioralRuleEngine;
 import com.xjeffrose.xio.server.XioConnectionLimiter;
 import com.xjeffrose.xio.server.XioDeterministicRuleEngine;
@@ -55,7 +56,7 @@ public class XioServerPipelineUnitTest {
     InOrder inOrder = inOrder(pipeline);
     inOrder.verify(pipeline, times(1)).addLast(eq("globalConnectionLimiter"), isA(XioConnectionLimiter.class));
     inOrder.verify(pipeline, times(1)).addLast(eq("serviceConnectionLimiter"), isA(XioConnectionLimiter.class));
-    inOrder.verify(pipeline, times(1)).addLast(eq("l4DeterministicRuleEngine"), isA(XioDeterministicRuleEngine.class));
+    inOrder.verify(pipeline, times(1)).addLast(eq("l4DeterministicRuleEngine"), isA(IpFilter.class));
     inOrder.verify(pipeline, times(1)).addLast(eq("l4BehavioralRuleEngine"), isA(XioBehavioralRuleEngine.class));
     inOrder.verify(pipeline, times(1)).addLast(eq("connectionContext"), isA(ConnectionContextHandler.class));
     inOrder.verify(pipeline, times(1)).addLast(eq("globalChannelStatistics"), eq(serverState.getChannelStatistics()));
