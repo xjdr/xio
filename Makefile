@@ -107,6 +107,13 @@ $(TARGET_DIR)/%.class: $(JAVA_SRC_DIR)/%.java
 
 -include $(PROJECT_DEP)
 
+# copy main resources into the target dir
+
+MAIN_RESOURCES = $(shell cd src/main; find resources -type f -print | sed -e 's+resources+$(TARGET_DIR)+')
+
+$(MAIN_RESOURCES): $(TARGET_DIR)/% : src/main/resources/%
+	cp $< $@
+
 # copy test resources into the target dir
 
 TEST_RESOURCES = $(shell cd src/test; find resources -type f -print | sed -e 's+resources+$(TARGET_DIR)+')
@@ -114,14 +121,7 @@ TEST_RESOURCES = $(shell cd src/test; find resources -type f -print | sed -e 's+
 $(TEST_RESOURCES): $(TARGET_DIR)/% : src/test/resources/%
 	cp $< $@
 
-# copy example resources into the target dir
-
-EXAMPLE_RESOURCES = $(shell cd src/example; find resources -type f -print | sed -e 's+resources+$(TARGET_DIR)+')
-
-$(EXAMPLE_RESOURCES): $(TARGET_DIR)/% : src/example/resources/%
-	cp $< $@
-
-RESOURCES := $(TEST_RESOURCES) $(EXAMPLE_RESOURCES)
+RESOURCES := $(MAIN_RESOURCES) $(TEST_RESOURCES)
 
 # phonies
 
