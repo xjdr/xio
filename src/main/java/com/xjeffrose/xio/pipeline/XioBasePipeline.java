@@ -5,6 +5,7 @@ import com.xjeffrose.xio.core.ChannelStatistics;
 import com.xjeffrose.xio.core.ConnectionContextHandler;
 import com.xjeffrose.xio.core.XioExceptionLogger;
 import com.xjeffrose.xio.core.XioMessageLogger;
+import com.xjeffrose.xio.filter.IpFilter;
 import com.xjeffrose.xio.server.XioBehavioralRuleEngine;
 import com.xjeffrose.xio.server.XioConnectionLimiter;
 import com.xjeffrose.xio.server.XioDeterministicRuleEngine;
@@ -39,7 +40,7 @@ abstract public class XioBasePipeline implements XioPipelineFragment {
     pipeline.addLast("serviceConnectionLimiter", new XioConnectionLimiter(config.getLimits().maxConnections()));
     ChannelHandler idleDisconnectHandler = getIdleDisconnectHandler(config.getLimits());
     pipeline.addLast("idleDisconnectHandler", idleDisconnectHandler);
-    pipeline.addLast("l4DeterministicRuleEngine", new XioDeterministicRuleEngine(appState.getZkClient(), true)); // TODO(JR): Need to make this config
+    pipeline.addLast("l4DeterministicRuleEngine", new IpFilter(appState.getIpFilterConfig()));
     pipeline.addLast("l4BehavioralRuleEngine", new XioBehavioralRuleEngine(appState.getZkClient(), true)); // TODO(JR): Need to make this config
     pipeline.addLast("connectionContext", new ConnectionContextHandler());
     pipeline.addLast("globalChannelStatistics", state.getChannelStatistics());

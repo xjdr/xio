@@ -52,4 +52,9 @@ final public class IpAddressDeterministicRuleEngineConfig implements Marshallabl
   public void putBytes(Unmarshaller unmarshaller, byte[] data) {
     unmarshaller.unmarshall(this, data);
   }
+
+  public void clear() {
+    blacklistIps.clear();
+    whitelistIps.clear();
+  }
 }
