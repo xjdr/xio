@@ -31,4 +31,8 @@ abstract public class UpdateMessage {
   static public UpdateMessage addIpRule(InetAddress address, RuleType ruleType) {
     return new IpRuleUpdate(UpdateType.Add, address, ruleType);
   }
+
+  static public UpdateMessage removeIpRule(InetAddress address) {
+    return new IpRuleUpdate(UpdateType.Remove, address, RuleType.blacklist);
+  }
 }

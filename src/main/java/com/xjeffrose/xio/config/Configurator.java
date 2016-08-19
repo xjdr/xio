@@ -82,7 +82,7 @@ public class Configurator implements Runnable {
           log.debug("address {}", address.getHostAddress());
           RuleType ruleType = rules.get(address);
           if (ruleType != null && ruleType.equals(ipRule.getRuleType())) {
-            return new Result(false, "address already on " + ruleType);
+            return new Result(false, "address " + address.getHostAddress() + " already on " + ruleType);
           } else {
             workLoad.put(UpdateMessage.addIpRule(address, ipRule.getRuleType()));
             rules.put(address, ipRule.getRuleType());
@@ -98,6 +98,20 @@ public class Configurator implements Runnable {
 
       @Override
       public Result removeIpRule(IpRule ipRule) throws org.apache.thrift.TException {
+        log.info("remove {}", ipRule);
+        try {
+          InetAddress address = InetAddress.getByAddress(ipRule.getIpAddress());
+          log.debug("address {}", address.getHostAddress());
+          if (!rules.containsKey(address)) {
+            return new Result(false, "nothing to remove for address " + address.getHostAddress());
+          } else {
+            workLoad.put(UpdateMessage.removeIpRule(address));
+            rules.remove(address);
+          }
+        } catch(UnknownHostException | InterruptedException e) {
+          log.error("addIpRule couldn't add {}", ipRule, e);
+          return new Result(false, e.getMessage());
+        }
         return new Result(true, "");
       }
     };
