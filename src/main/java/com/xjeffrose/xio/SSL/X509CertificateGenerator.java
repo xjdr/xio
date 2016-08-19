@@ -59,14 +59,14 @@ public final class X509CertificateGenerator {
   }
 
     public static DERKeySpec parseDERKeySpec(String rawKeyString) {
-    try {
-      // Base64 decode the data
-      Base64.Decoder b64decoder = Base64.getDecoder();
-      byte[] encoded = b64decoder.decode(
-          rawKeyString.replace("-----BEGIN RSA PRIVATE KEY-----\n", "")
-              .replace("-----END RSA PRIVATE KEY-----\n", "")
-              .replace("\n", "")
-      );
+      try {
+        // Base64 decode the data
+        Base64.Decoder b64decoder = Base64.getDecoder();
+        byte[] encoded = b64decoder.decode(
+          rawKeyString.replace("-----BEGIN RSA PRIVATE KEY-----", "")
+            .replace("-----END RSA PRIVATE KEY-----", "")
+            .replace(System.getProperty("line.separator"), "")
+        );
 
       DerInputStream derReader = new DerInputStream(encoded);
       DerValue[] seq = derReader.getSequence(0);
