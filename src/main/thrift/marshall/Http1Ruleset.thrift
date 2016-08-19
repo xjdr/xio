@@ -1,4 +1,5 @@
 namespace java com.xjeffrose.xio.marshall.thrift
+namespace py configurator.thriftgen.Http1Ruleset
 
 enum Http1Version {
   HTTP_1_0 = 0,

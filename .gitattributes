@@ -1,0 +1,5 @@
+src/main/java/com/xjeffrose/xio/config/thrift/*.java -diff
+src/main/java/com/xjeffrose/xio/marshall/thrift/*.java -diff
+
+configuration-client/configurator/thriftgen/*/*.py -diff
+configuration-client/configurator/thriftgen/*/*-remote -diff

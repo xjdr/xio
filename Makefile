@@ -3,12 +3,22 @@ export TARGET_DIR := $(PROJECT_ROOT)/target
 
 # thrift
 
-THRIFT_DIR = src/main/java/com/xjeffrose/xio/marshall/thrift
-THRIFT_SRC = $(shell cd src/main/thrift; ls *.thrift)
-THRIFT_OUT = $(THRIFT_SRC:%.thrift=$(THRIFT_DIR)/%.java)
+THRIFT_MARSHALL_SRC = $(shell cd src/main/thrift/marshall; ls *.thrift)
+THRIFT_MARSHALL_DIR_JAVA = src/main/java/com/xjeffrose/xio/marshall/thrift
+THRIFT_CONFIGURATOR_SRC = $(shell cd src/main/thrift/configurator; ls *.thrift)
+THRIFT_CONFIGURATOR_DIR_JAVA = src/main/java/com/xjeffrose/xio/config/thrift
+THRIFT_OUT_JAVA = $(THRIFT_MARSHALL_SRC:%.thrift=$(THRIFT_MARSHALL_DIR)/%.java) $(THRIFT_CONFIGURATOR_SRC:%.thrift=$(THRIFT_CONFIGURATOR_DIR)/%.java)
 
-$(THRIFT_DIR)/%.java: src/main/thrift/%.thrift
+$(THRIFT_MARSHALL_DIR_JAVA)/%.java: src/main/thrift/marshall/%.thrift
 	thrift --gen java -out src/main/java $<
+
+$(THRIFT_CONFIGURATOR_DIR_JAVA)/%.java: src/main/thrift/configurator/%.thrift
+	thrift --gen java -out src/main/java $<
+
+THRIFT_CONFIGURATOR_DIR_PY = configuration-client/configurator/thriftgen
+THRIFT_OUT_PY = $(THRIFT_CONFIGURATOR_SRC:%.thrift=$(THRIFT_CONFIGURATOR_DIR_PY)/%/ttypes.py)
+$(THRIFT_CONFIGURATOR_DIR_PY)/%/ttypes.py: src/main/thrift/configurator/%.thrift
+	thrift --gen py -out configuration-client $<
 
 JAVAC = javac
 JFLAGS = -g
@@ -155,4 +165,4 @@ run: compile
 test: compile
 	scripts/run-test $$(find src/test -name "*Test.java")
 
-thrift: $(THRIFT_OUT)
+thrift: $(THRIFT_OUT_JAVA) $(THRIFT_OUT_PY)
