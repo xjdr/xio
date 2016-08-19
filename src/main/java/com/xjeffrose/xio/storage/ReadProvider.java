@@ -13,8 +13,14 @@ public abstract class ReadProvider {
 
   public abstract byte[] read(String keyName);
 
-  public void read(Marshallable message) {
-    message.putBytes(unmarshaller, read(message.keyName()));
+  public abstract boolean exists(String keyName);
+
+  public boolean read(Marshallable message) {
+    if (exists(message.keyName())) {
+      message.putBytes(unmarshaller, read(message.keyName()));
+      return true;
+    }
+    return false;
   }
 
 }
