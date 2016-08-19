@@ -33,6 +33,15 @@ final public class IpAddressDeterministicRuleEngineConfig implements Marshallabl
     }
   }
 
+  public void remove(InetAddress address) {
+    if (blacklistIps.contains(address)) {
+      blacklistIps.remove(address);
+    }
+    if (whitelistIps.contains(address)) {
+      whitelistIps.remove(address);
+    }
+  }
+
   public ImmutableSet<InetAddress> getBlacklistIps() {
     return ImmutableSet.copyOf(blacklistIps);
   }
@@ -56,5 +65,9 @@ final public class IpAddressDeterministicRuleEngineConfig implements Marshallabl
   public void clear() {
     blacklistIps.clear();
     whitelistIps.clear();
+  }
+
+  public long size() {
+    return blacklistIps.size() + whitelistIps.size();
   }
 }
