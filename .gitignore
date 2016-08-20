@@ -22,3 +22,7 @@ release.properties
 
 Generated.mk
 depend
+
+### python
+*.pyc
+*.pyo

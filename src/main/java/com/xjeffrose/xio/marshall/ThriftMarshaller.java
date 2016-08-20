@@ -21,6 +21,7 @@ import org.apache.thrift.protocol.TCompactProtocol;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 public class ThriftMarshaller implements Marshaller {
@@ -42,10 +43,12 @@ public class ThriftMarshaller implements Marshaller {
   public byte[] marshall(HostnameDeterministicRuleEngineConfig config) {
     HostnameRuleset message = new HostnameRuleset();
 
+    message.setBlacklistHosts(new HashSet<String>());
     for (String address : config.getBlacklistHosts()) {
       message.addToBlacklistHosts(address);
     }
 
+    message.setWhitelistHosts(new HashSet<String>());
     for (String address : config.getWhitelistHosts()) {
       message.addToWhitelistHosts(address);
     }
@@ -113,10 +116,12 @@ public class ThriftMarshaller implements Marshaller {
   public byte[] marshall(Http1DeterministicRuleEngineConfig config) {
     Http1Ruleset message = new Http1Ruleset();
 
+    message.setBlacklistRules(new HashSet<Http1Rule>());
     for (Http1DeterministicRuleEngineConfig.Rule rule : config.getBlacklistRules()) {
       message.addToBlacklistRules(build(rule));
     }
 
+    message.setWhitelistRules(new HashSet<Http1Rule>());
     for (Http1DeterministicRuleEngineConfig.Rule rule : config.getWhitelistRules()) {
       message.addToWhitelistRules(build(rule));
     }
@@ -127,10 +132,12 @@ public class ThriftMarshaller implements Marshaller {
   public byte[] marshall(IpAddressDeterministicRuleEngineConfig config) {
     IpRuleset message = new IpRuleset();
 
+    message.setBlacklistIps(new HashSet<ByteBuffer>());
     for (InetAddress address : config.getBlacklistIps()) {
       message.addToBlacklistIps(ByteBuffer.wrap(address.getAddress()));
     }
 
+    message.setWhitelistIps(new HashSet<ByteBuffer>());
     for (InetAddress address : config.getWhitelistIps()) {
       message.addToWhitelistIps(ByteBuffer.wrap(address.getAddress()));
     }
