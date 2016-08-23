@@ -127,6 +127,7 @@ public class Configurator implements Runnable {
 
   public void close() {
     timer.cancel();
+    server.stop();
   }
 
   public void run() {
@@ -134,7 +135,8 @@ public class Configurator implements Runnable {
     try {
       serverTransport = new TServerSocket(bindAddress);
       server = new TSimpleServer(new Args(serverTransport).processor(processor));
-      server.serve();
+      server.serve(); // blocks until stop() is called.
+      // TODO(CK): handle remaining workload
     } catch (TTransportException e) {
       log.error("Couldn't start Configurator {}", this, e);
     }
