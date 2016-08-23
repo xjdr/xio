@@ -7,7 +7,7 @@ THRIFT_MARSHALL_SRC = $(shell cd src/main/thrift/marshall; ls *.thrift)
 THRIFT_MARSHALL_DIR_JAVA = src/main/java/com/xjeffrose/xio/marshall/thrift
 THRIFT_CONFIGURATOR_SRC = $(shell cd src/main/thrift/configurator; ls *.thrift)
 THRIFT_CONFIGURATOR_DIR_JAVA = src/main/java/com/xjeffrose/xio/config/thrift
-THRIFT_OUT_JAVA = $(THRIFT_MARSHALL_SRC:%.thrift=$(THRIFT_MARSHALL_DIR)/%.java) $(THRIFT_CONFIGURATOR_SRC:%.thrift=$(THRIFT_CONFIGURATOR_DIR)/%.java)
+THRIFT_OUT_JAVA = $(THRIFT_MARSHALL_SRC:%.thrift=$(THRIFT_MARSHALL_DIR_JAVA)/%.java) $(THRIFT_CONFIGURATOR_SRC:%.thrift=$(THRIFT_CONFIGURATOR_DIR_JAVA)/%.java)
 
 $(THRIFT_MARSHALL_DIR_JAVA)/%.java: src/main/thrift/marshall/%.thrift
 	thrift --gen java -out src/main/java $<
