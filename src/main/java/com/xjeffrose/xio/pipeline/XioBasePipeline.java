@@ -5,10 +5,10 @@ import com.xjeffrose.xio.core.ChannelStatistics;
 import com.xjeffrose.xio.core.ConnectionContextHandler;
 import com.xjeffrose.xio.core.XioExceptionLogger;
 import com.xjeffrose.xio.core.XioMessageLogger;
+import com.xjeffrose.xio.filter.Http1Filter;
 import com.xjeffrose.xio.filter.IpFilter;
 import com.xjeffrose.xio.server.XioBehavioralRuleEngine;
 import com.xjeffrose.xio.server.XioConnectionLimiter;
-import com.xjeffrose.xio.server.XioDeterministicRuleEngine;
 import com.xjeffrose.xio.server.XioResponseClassifier;
 import com.xjeffrose.xio.server.XioServerConfig;
 import com.xjeffrose.xio.server.XioServerLimits;
@@ -57,7 +57,7 @@ abstract public class XioBasePipeline implements XioPipelineFragment {
     } else {
       throw new RuntimeException("No codec configured");
     }
-    pipeline.addLast("l7DeterministicRuleEngine", new XioDeterministicRuleEngine(appState.getZkClient(), true)); // TODO(JR): Need to make this config
+    pipeline.addLast("l7DeterministicRuleEngine", new Http1Filter(appState.getHttp1FilterConfig()));
     pipeline.addLast("l7BehavioralRuleEngine", new XioBehavioralRuleEngine(appState.getZkClient(), true)); // TODO(JR): Need to make this config
     pipeline.addLast("webApplicationFirewall", new XioWebApplicationFirewall(appState.getZkClient(), true)); // TODO(JR): Need to make this config
     ChannelHandler authHandler = getAuthenticationHandler();

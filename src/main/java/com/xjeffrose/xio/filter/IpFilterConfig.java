@@ -4,11 +4,13 @@ import com.google.common.collect.ImmutableSet;
 import com.xjeffrose.xio.config.IpAddressDeterministicRuleEngineConfig;
 import com.xjeffrose.xio.core.ConfigurationUpdater;
 import com.xjeffrose.xio.marshall.ThriftUnmarshaller;
+import lombok.EqualsAndHashCode;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.function.Consumer;
 
+@EqualsAndHashCode
 public class IpFilterConfig {
 
   static public class Updater implements ConfigurationUpdater {

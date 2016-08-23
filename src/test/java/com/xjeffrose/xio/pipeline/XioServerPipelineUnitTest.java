@@ -6,10 +6,10 @@ import com.xjeffrose.xio.core.ConnectionContextHandler;
 import com.xjeffrose.xio.core.XioExceptionLogger;
 import com.xjeffrose.xio.core.XioMessageLogger;
 import com.xjeffrose.xio.core.XioNoOpHandler;
+import com.xjeffrose.xio.filter.Http1Filter;
 import com.xjeffrose.xio.filter.IpFilter;
 import com.xjeffrose.xio.server.XioBehavioralRuleEngine;
 import com.xjeffrose.xio.server.XioConnectionLimiter;
-import com.xjeffrose.xio.server.XioDeterministicRuleEngine;
 import com.xjeffrose.xio.server.XioResponseClassifier;
 import com.xjeffrose.xio.server.XioServerConfig;
 import com.xjeffrose.xio.server.XioServerState;
@@ -64,7 +64,7 @@ public class XioServerPipelineUnitTest {
 
     inOrder.verify(pipeline, times(1)).addLast(eq("messageLogger"), isA(XioMessageLogger.class));
     inOrder.verify(pipeline, times(1)).addLast(eq("codec"), isA(XioNoOpHandler.class));
-    inOrder.verify(pipeline, times(1)).addLast(eq("l7DeterministicRuleEngine"), isA(XioDeterministicRuleEngine.class));
+    inOrder.verify(pipeline, times(1)).addLast(eq("l7DeterministicRuleEngine"), isA(Http1Filter.class));
     inOrder.verify(pipeline, times(1)).addLast(eq("l7BehavioralRuleEngine"), isA(XioBehavioralRuleEngine.class));
     inOrder.verify(pipeline, times(1)).addLast(eq("webApplicationFirewall"), isA(XioWebApplicationFirewall.class));
     inOrder.verify(pipeline, times(1)).addLast(eq("authHandler"), isA(XioNoOpHandler.class));
