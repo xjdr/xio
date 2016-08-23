@@ -36,13 +36,13 @@ public class ZooKeeperWriteProviderFunctionalTest extends Assert {
       RetryPolicy retryPolicy = new RetryOneTime(1);
       try(CuratorFramework client = CuratorFrameworkFactory.newClient(server.getConnectString(), retryPolicy)) {
         client.start();
-        String path = "/some/path/to/nodes";
+        String path = "/some/path/to/nodes/hostRules";
 
-        ZooKeeperWriteProvider provider = new ZooKeeperWriteProvider(marshaller, client, path);
+        ZooKeeperWriteProvider provider = new ZooKeeperWriteProvider(marshaller, client);
 
-        provider.write(config);
+        provider.write(path, config);
 
-        byte[] data = client.getData().forPath(path + "/" + config.keyName());
+        byte[] data = client.getData().forPath(path);
         ThriftUnmarshaller unmarshaller = new ThriftUnmarshaller();
         HostnameDeterministicRuleEngineConfig read = new HostnameDeterministicRuleEngineConfig();
         unmarshaller.unmarshall(read, data);
@@ -75,13 +75,13 @@ public class ZooKeeperWriteProviderFunctionalTest extends Assert {
       RetryPolicy retryPolicy = new RetryOneTime(1);
       try(CuratorFramework client = CuratorFrameworkFactory.newClient(server.getConnectString(), retryPolicy)) {
         client.start();
-        String path = "/some/path/to/nodes";
+        String path = "/some/path/to/nodes/http1Rules";
 
-        ZooKeeperWriteProvider provider = new ZooKeeperWriteProvider(marshaller, client, path);
+        ZooKeeperWriteProvider provider = new ZooKeeperWriteProvider(marshaller, client);
 
-        provider.write(config);
+        provider.write(path, config);
 
-        byte[] data = client.getData().forPath(path + "/" + config.keyName());
+        byte[] data = client.getData().forPath(path);
         ThriftUnmarshaller unmarshaller = new ThriftUnmarshaller();
         Http1DeterministicRuleEngineConfig read = new Http1DeterministicRuleEngineConfig();
         unmarshaller.unmarshall(read, data);
@@ -106,13 +106,13 @@ public class ZooKeeperWriteProviderFunctionalTest extends Assert {
       RetryPolicy retryPolicy = new RetryOneTime(1);
       try(CuratorFramework client = CuratorFrameworkFactory.newClient(server.getConnectString(), retryPolicy)) {
         client.start();
-        String path = "/some/path/to/nodes";
+        String path = "/some/path/to/nodes/ipRules";
 
-        ZooKeeperWriteProvider provider = new ZooKeeperWriteProvider(marshaller, client, path);
+        ZooKeeperWriteProvider provider = new ZooKeeperWriteProvider(marshaller, client);
 
-        provider.write(config);
+        provider.write(path, config);
 
-        byte[] data = client.getData().forPath(path + "/" + config.keyName());
+        byte[] data = client.getData().forPath(path);
         ThriftUnmarshaller unmarshaller = new ThriftUnmarshaller();
         IpAddressDeterministicRuleEngineConfig read = new IpAddressDeterministicRuleEngineConfig();
         unmarshaller.unmarshall(read, data);

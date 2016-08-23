@@ -8,30 +8,24 @@ import org.apache.curator.framework.CuratorFramework;
 public class ZooKeeperReadProvider extends ReadProvider {
 
   private CuratorFramework client;
-  private String path;
 
-  public ZooKeeperReadProvider(Unmarshaller unmarshaller, CuratorFramework client, String path) {
+  public ZooKeeperReadProvider(Unmarshaller unmarshaller, CuratorFramework client) {
     super(unmarshaller);
     this.client = client;
-    this.path = path;
   }
 
-  private String key(String keyName) {
-    return path + "/" + keyName;
-  }
-
-  public boolean exists(String keyName) {
+  public boolean exists(String key) {
     try {
-      return client.checkExists().forPath(key(keyName)) != null;
+      return client.checkExists().forPath(key) != null;
     } catch (Exception e) {
-      log.error("Couldn't determine if node exists for path '{}'", key(keyName), e);
+      log.error("Couldn't determine if node exists for path '{}'", key, e);
       return false;
     }
   }
 
-  public byte[] read(String keyName) {
+  public byte[] read(String key) {
     try {
-      return client.getData().forPath(key(keyName));
+      return client.getData().forPath(key);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }

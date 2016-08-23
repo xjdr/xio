@@ -1,5 +1,6 @@
 package com.xjeffrose.xio.config;
 
+import com.typesafe.config.Config;
 import com.xjeffrose.xio.config.thrift.ConfigurationService;
 import com.xjeffrose.xio.config.thrift.IpRule;
 import com.xjeffrose.xio.config.thrift.Result;
@@ -139,24 +140,20 @@ public class Configurator implements Runnable {
     }
   }
 
-  public static Configurator build(String zkCluster) {
-    String storagePath = "/xio/rules";
+  public static Configurator build(String zkCluster, Config config) {
     CuratorFramework client = CuratorFrameworkFactory.newClient(zkCluster, new RetryOneTime(2000));
     client.start();
-    ZooKeeperWriteProvider zkWriter = new ZooKeeperWriteProvider(new ThriftMarshaller(), client, storagePath);
-    ZooKeeperReadProvider zkReader = new ZooKeeperReadProvider(new ThriftUnmarshaller(), client, storagePath);
-    Ruleset rules = new Ruleset();
+    ZooKeeperWriteProvider zkWriter = new ZooKeeperWriteProvider(new ThriftMarshaller(), client);
+    ZooKeeperReadProvider zkReader = new ZooKeeperReadProvider(new ThriftUnmarshaller(), client);
+
+    Ruleset rules = new Ruleset(config);
     rules.read(zkReader);
     ZooKeeperUpdateHandler zkUpdater = new ZooKeeperUpdateHandler(zkWriter, rules);
-    ZooKeeperValidator zkValidator = new ZooKeeperValidator(zkReader, rules);
+    ZooKeeperValidator zkValidator = new ZooKeeperValidator(zkReader, rules, config);
     Duration updateInterval = Duration.ofSeconds(5);
     InetSocketAddress serverAddress = new InetSocketAddress("localhost", 9999);
     Configurator server = new Configurator(zkUpdater, updateInterval, serverAddress, zkValidator);
     return server;
   }
 
-  public static void main(String[] args) {
-    Configurator server = build("127.0.0.1:2181");
-    server.start();
-  }
 }

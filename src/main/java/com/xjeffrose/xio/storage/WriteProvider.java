@@ -11,10 +11,10 @@ public abstract class WriteProvider {
     this.marshaller = marshaller;
   }
 
-  public abstract void write(String className, byte[] bytes);
+  public abstract void write(String key, byte[] bytes);
 
-  public void write(Marshallable message) {
-    write(message.keyName(), message.getBytes(marshaller));
+  public void write(String key, Marshallable message) {
+    write(key, message.getBytes(marshaller));
   }
 
 }
