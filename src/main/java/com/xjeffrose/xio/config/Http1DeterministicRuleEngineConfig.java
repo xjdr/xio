@@ -123,4 +123,8 @@ public class Http1DeterministicRuleEngineConfig implements Marshallable {
     blacklistRules.clear();
     whitelistRules.clear();
   }
+
+  public long size() {
+    return blacklistRules.size() + whitelistRules.size();
+  }
 }
