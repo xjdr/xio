@@ -1,5 +1,6 @@
 package com.xjeffrose.xio.server;
 
+import com.typesafe.config.ConfigFactory;
 import com.xjeffrose.xio.config.Configurator;
 import org.apache.curator.test.TestingServer;
 
@@ -11,7 +12,7 @@ public class Main {
   public Main() throws Exception {
     zkServer = new TestingServer(2181, true);
 
-    server = Configurator.build(zkServer.getConnectString());
+    server = Configurator.build(zkServer.getConnectString(), ConfigFactory.load().getConfig("xio.exampleApplication.settings.configurationManager"));
   }
 
   public void run() throws Exception {
