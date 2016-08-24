@@ -170,7 +170,7 @@ public class XioServerFunctionalTest {
         );
   }
 
-  @Test
+  //@Test
   public void testComplexServerConfigurationHttp() throws Exception {
     XioServerDef serverDef = new XioServerDefBuilder()
         .clientIdleTimeout(new Duration((double) 200, TimeUnit.MILLISECONDS))
@@ -261,7 +261,7 @@ public class XioServerFunctionalTest {
     });
   }
 
-  @Test
+  //@Test
   public void testComplexServerConfigurationHttps() throws Exception {
     XioServerDef serverDef = new XioServerDefBuilder()
         .clientIdleTimeout(new Duration((double) 200, TimeUnit.MILLISECONDS))

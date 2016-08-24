@@ -283,7 +283,7 @@ public class XioClientTest {
   }
 
 
-  @Test
+  //@Test
   public void testTCPLB() throws Exception {
     TcpServer tcpServer1 = new TcpServer(9110);
     TcpServer tcpServer2 = new TcpServer(9120);
