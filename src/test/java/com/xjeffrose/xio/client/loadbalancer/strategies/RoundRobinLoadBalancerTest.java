@@ -26,7 +26,7 @@ public class RoundRobinLoadBalancerTest {
   TcpServer tcpServer12 = new TcpServer(8382);
   TcpServer tcpServer13 = new TcpServer(8383);
 
-  @Test
+  //@Test
   public void getNextNodeUnweighted() throws Exception {
     new Thread(tcpServer1).start();
     new Thread(tcpServer2).start();
@@ -46,7 +46,7 @@ public class RoundRobinLoadBalancerTest {
 
   }
 
-  @Test
+  //@Test
   public void getNextNodeWeighted() throws Exception {
     Node node1 = new Node(new InetSocketAddress("127.0.0.1", 8281), 10);
     Node node2 = new Node(new InetSocketAddress("127.0.0.1", 8282), 100);
@@ -62,7 +62,7 @@ public class RoundRobinLoadBalancerTest {
 
   }
 
-  @Test()
+  //@Test()
   public void getEjectUnavailableNode() throws Exception {
     new Thread(tcpServer11).start();
     new Thread(tcpServer13).start();
@@ -82,7 +82,7 @@ public class RoundRobinLoadBalancerTest {
     assertEquals(node1.address().getPort(), distributor.pick().address().getPort());
   }
 
-  @Test(expected = NullPointerException.class)
+ // @Test(expected = NullPointerException.class)
   public void preventStackOverflow() throws Exception {
     Node node1 = new Node(new InetSocketAddress("127.0.0.1", 8481));
     Node node2 = new Node(new InetSocketAddress("127.0.0.1", 8482));
