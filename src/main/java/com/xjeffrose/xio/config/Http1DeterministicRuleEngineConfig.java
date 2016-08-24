@@ -119,6 +119,15 @@ public class Http1DeterministicRuleEngineConfig implements Marshallable {
     unmarshaller.unmarshall(this, data);
   }
 
+  public void remove(Rule rule) {
+    if (blacklistRules.contains(rule)) {
+      blacklistRules.remove(rule);
+    }
+    if (whitelistRules.contains(rule)) {
+      whitelistRules.remove(rule);
+    }
+  }
+
   public void clear() {
     blacklistRules.clear();
     whitelistRules.clear();

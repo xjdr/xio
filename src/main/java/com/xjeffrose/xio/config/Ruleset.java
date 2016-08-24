@@ -1,11 +1,13 @@
 package com.xjeffrose.xio.config;
 
 import com.typesafe.config.Config;
+import com.xjeffrose.xio.config.thrift.RuleType;
 import com.xjeffrose.xio.storage.ReadProvider;
 import com.xjeffrose.xio.storage.WriteProvider;
-import lombok.EqualsAndHashCode;
 
-@EqualsAndHashCode
+import java.net.InetAddress;
+import java.util.Map;
+
 public class Ruleset {
 
   static public class Markable<T> {
@@ -73,7 +75,33 @@ public class Ruleset {
     return ipRules.mutate();
   }
 
-  public Http1DeterministicRuleEngineConfig mutateHttpRules() {
+  public void populateIpRules(Map<InetAddress, RuleType> rules) {
+    for (InetAddress address : ipRules.get().getBlacklistIps()) {
+      rules.put(address, RuleType.blacklist);
+    }
+
+    for (InetAddress address : ipRules.get().getWhitelistIps()) {
+      rules.put(address, RuleType.whitelist);
+    }
+  }
+
+  public void populateHttp1Rules(Map<Http1DeterministicRuleEngineConfig.Rule, RuleType> rules) {
+    for (Http1DeterministicRuleEngineConfig.Rule rule : http1Rules.get().getBlacklistRules()) {
+      rules.put(rule, RuleType.blacklist);
+    }
+
+    for (Http1DeterministicRuleEngineConfig.Rule rule : http1Rules.get().getWhitelistRules()) {
+      rules.put(rule, RuleType.whitelist);
+    }
+  }
+
+  public Http1DeterministicRuleEngineConfig mutateHttp1Rules() {
     return http1Rules.mutate();
+  }
+
+  public boolean equals(Ruleset other) {
+    return other.ipRules.get().equals(ipRules.get()) &&
+      other.http1Rules.get().equals(http1Rules.get())
+      ;
   }
 }

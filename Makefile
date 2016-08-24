@@ -16,8 +16,11 @@ $(THRIFT_CONFIGURATOR_DIR_JAVA)/%.java: src/main/thrift/configurator/%.thrift
 	thrift --gen java -out src/main/java $<
 
 THRIFT_CONFIGURATOR_DIR_PY = configuration-client/configurator/thriftgen
-THRIFT_OUT_PY = $(THRIFT_CONFIGURATOR_SRC:%.thrift=$(THRIFT_CONFIGURATOR_DIR_PY)/%/ttypes.py)
+THRIFT_OUT_PY = $(THRIFT_MARSHALL_SRC:%.thrift=$(THRIFT_CONFIGURATOR_DIR_PY)/%/ttypes.py) $(THRIFT_CONFIGURATOR_SRC:%.thrift=$(THRIFT_CONFIGURATOR_DIR_PY)/%/ttypes.py)
 $(THRIFT_CONFIGURATOR_DIR_PY)/%/ttypes.py: src/main/thrift/configurator/%.thrift
+	thrift --gen py -out configuration-client $<
+
+$(THRIFT_CONFIGURATOR_DIR_PY)/%/ttypes.py: src/main/thrift/marshall/%.thrift
 	thrift --gen py -out configuration-client $<
 
 JAVAC = javac

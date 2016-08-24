@@ -63,7 +63,7 @@ public class ThriftUnmarshaller implements Unmarshaller {
 
   }
 
-  private HttpMethod build(Http1Method method) {
+  static private HttpMethod build(Http1Method method) {
     if (method != null) {
       switch(method) {
       case CONNECT:
@@ -89,7 +89,7 @@ public class ThriftUnmarshaller implements Unmarshaller {
     return null;
   }
 
-  private HttpVersion build(Http1Version version) {
+  static private HttpVersion build(Http1Version version) {
     if (version != null) {
       switch(version) {
       case HTTP_1_0:
@@ -101,7 +101,7 @@ public class ThriftUnmarshaller implements Unmarshaller {
     return null;
   }
 
-  private HashMultimap<String, String> build(List<Http1HeaderTuple> headers) {
+  static private HashMultimap<String, String> build(List<Http1HeaderTuple> headers) {
     if (headers != null && headers.size() > 0) {
       HashMultimap<String, String> result = HashMultimap.create();
 
@@ -114,7 +114,7 @@ public class ThriftUnmarshaller implements Unmarshaller {
     return null;
   }
 
-  private Http1DeterministicRuleEngineConfig.Rule build(Http1Rule rule) {
+  static public Http1DeterministicRuleEngineConfig.Rule build(Http1Rule rule) {
     return new Http1DeterministicRuleEngineConfig.Rule(
       build(rule.getMethod()),
       rule.getUri(),

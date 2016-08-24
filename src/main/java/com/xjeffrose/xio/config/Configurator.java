@@ -7,6 +7,7 @@ import com.xjeffrose.xio.config.thrift.Result;
 import com.xjeffrose.xio.config.thrift.RuleType;
 import com.xjeffrose.xio.marshall.ThriftMarshaller;
 import com.xjeffrose.xio.marshall.ThriftUnmarshaller;
+import com.xjeffrose.xio.marshall.thrift.Http1Rule;
 import com.xjeffrose.xio.storage.ZooKeeperReadProvider;
 import com.xjeffrose.xio.storage.ZooKeeperWriteProvider;
 import lombok.extern.slf4j.Slf4j;
@@ -20,13 +21,9 @@ import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TServerTransport;
 import org.apache.thrift.transport.TTransportException;
 
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.TimerTask;
 import java.util.Timer;
 import java.util.concurrent.BlockingQueue;
@@ -43,7 +40,8 @@ public class Configurator implements Runnable {
   private final ConfigurationService.Processor<ConfigurationService.Iface> processor;
   private TServerTransport serverTransport;
   private TServer server;
-  private final Map<InetAddress, RuleType> rules = new HashMap<>();
+  private final IpRules ipRules;
+  private final Http1Rules http1Rules;
   private final BlockingQueue<UpdateMessage> workLoad = new LinkedBlockingQueue<>();
   private final Timer timer = new Timer("Configurator update thread", true);
   private final TimerTask timerTask = new TimerTask() {
@@ -68,56 +66,46 @@ public class Configurator implements Runnable {
     }
   }
 
-  public Configurator(UpdateHandler storage, Duration updateInterval, InetSocketAddress bindAddress, ZooKeeperValidator zkValidator) {
+  private ConfigurationService.Iface newService() {
+    return new ConfigurationService.Iface() {
+      @Override
+      public Result addIpRule(IpRule ipRule, RuleType ruleType) throws org.apache.thrift.TException {
+        log.info("addIpRule {} {}", ipRule, ruleType);
+        return ipRules.add(ipRule, ruleType, workLoad);
+      }
+
+      @Override
+      public Result removeIpRule(IpRule ipRule) throws org.apache.thrift.TException {
+        log.info("removeIpRule {}", ipRule);
+        return ipRules.remove(ipRule, workLoad);
+      }
+
+
+      @Override
+      public Result addHttp1Rule(Http1Rule http1Rule, RuleType ruleType) throws org.apache.thrift.TException {
+        log.info("addHttp1Rule {} {}", http1Rule, ruleType);
+        return http1Rules.add(http1Rule, ruleType, workLoad);
+      }
+
+      @Override
+      public Result removeHttp1Rule(Http1Rule http1Rule) throws org.apache.thrift.TException {
+        log.info("removeHttp1Rule {}", http1Rule);
+        return http1Rules.remove(http1Rule, workLoad);
+      }
+
+    };
+  }
+
+  public Configurator(UpdateHandler storage, Duration updateInterval, InetSocketAddress bindAddress, Ruleset existing, ZooKeeperValidator zkValidator) {
     this.storage = storage;
     this.updateInterval = updateInterval;
     this.bindAddress = bindAddress;
     this.zkValidator = zkValidator;
     serverThread = new Thread(this, "Configurator server thread");
-    service = new ConfigurationService.Iface() {
-      @Override
-      public Result addIpRule(IpRule ipRule) throws org.apache.thrift.TException {
-        log.info("add {}", ipRule);
-        try {
-          InetAddress address = InetAddress.getByAddress(ipRule.getIpAddress());
-          log.debug("address {}", address.getHostAddress());
-          RuleType ruleType = rules.get(address);
-          if (ruleType != null && ruleType.equals(ipRule.getRuleType())) {
-            return new Result(false, "address " + address.getHostAddress() + " already on " + ruleType);
-          } else {
-            workLoad.put(UpdateMessage.addIpRule(address, ipRule.getRuleType()));
-            rules.put(address, ipRule.getRuleType());
-            log.debug("rules {}", rules);
-          }
-        } catch(UnknownHostException | InterruptedException e) {
-          log.error("addIpRule couldn't add {}", ipRule, e);
-          return new Result(false, e.getMessage());
-        }
-
-        return new Result(true, "");
-      }
-
-      @Override
-      public Result removeIpRule(IpRule ipRule) throws org.apache.thrift.TException {
-        log.info("remove {}", ipRule);
-        try {
-          InetAddress address = InetAddress.getByAddress(ipRule.getIpAddress());
-          log.debug("address {}", address.getHostAddress());
-          if (!rules.containsKey(address)) {
-            return new Result(false, "nothing to remove for address " + address.getHostAddress());
-          } else {
-            workLoad.put(UpdateMessage.removeIpRule(address));
-            rules.remove(address);
-          }
-        } catch(UnknownHostException | InterruptedException e) {
-          log.error("addIpRule couldn't add {}", ipRule, e);
-          return new Result(false, e.getMessage());
-        }
-        return new Result(true, "");
-      }
-    };
-
+    service = newService();
     processor = new ConfigurationService.Processor<>(service);
+    ipRules = new IpRules(existing);
+    http1Rules = new Http1Rules(existing);
   }
 
   public void start() {
@@ -154,7 +142,7 @@ public class Configurator implements Runnable {
     ZooKeeperValidator zkValidator = new ZooKeeperValidator(zkReader, rules, config);
     Duration updateInterval = Duration.ofSeconds(5);
     InetSocketAddress serverAddress = new InetSocketAddress("localhost", 9999);
-    Configurator server = new Configurator(zkUpdater, updateInterval, serverAddress, zkValidator);
+    Configurator server = new Configurator(zkUpdater, updateInterval, serverAddress, rules, zkValidator);
     return server;
   }
 
