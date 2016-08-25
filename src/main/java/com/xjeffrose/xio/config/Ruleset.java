@@ -42,10 +42,14 @@ public class Ruleset {
   private final String ipFilterPath;
   private final String http1FilterPath;
 
+  public Ruleset() {
+    ipFilterPath = "";
+    http1FilterPath = "";
+  }
+
   public Ruleset(Config config) {
     ipFilterPath = config.getString("ipFilter.path");
     http1FilterPath = config.getString("http1Filter.path");
-
   }
 
   public long write(WriteProvider writer) {

@@ -5,6 +5,7 @@ import com.xjeffrose.xio.config.thrift.ConfigurationService;
 import com.xjeffrose.xio.config.thrift.IpRule;
 import com.xjeffrose.xio.config.thrift.Result;
 import com.xjeffrose.xio.config.thrift.RuleType;
+import com.xjeffrose.xio.core.ZooKeeperClientFactory;
 import com.xjeffrose.xio.marshall.ThriftMarshaller;
 import com.xjeffrose.xio.marshall.ThriftUnmarshaller;
 import com.xjeffrose.xio.marshall.thrift.Http1Rule;
@@ -12,8 +13,6 @@ import com.xjeffrose.xio.storage.ZooKeeperReadProvider;
 import com.xjeffrose.xio.storage.ZooKeeperWriteProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.curator.framework.CuratorFramework;
-import org.apache.curator.framework.CuratorFrameworkFactory;
-import org.apache.curator.retry.RetryOneTime;
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TServer.Args;
 import org.apache.thrift.server.TSimpleServer;
@@ -114,8 +113,9 @@ public class Configurator implements Runnable {
   }
 
   public void close() {
-    timer.cancel();
-    server.stop();
+    timerTask.cancel(); // cancels the task in flight
+    timer.cancel(); // cancels the timer thread
+    server.stop(); // stops the thrift server
   }
 
   public void run() {
@@ -124,25 +124,46 @@ public class Configurator implements Runnable {
       serverTransport = new TServerSocket(bindAddress);
       server = new TSimpleServer(new Args(serverTransport).processor(processor));
       server.serve(); // blocks until stop() is called.
-      // TODO(CK): handle remaining workload
+      // timer and timer task should be stopped at this point
+      writeToStorage();
     } catch (TTransportException e) {
       log.error("Couldn't start Configurator {}", this, e);
     }
   }
 
-  public static Configurator build(String zkCluster, Config config) {
-    CuratorFramework client = CuratorFrameworkFactory.newClient(zkCluster, new RetryOneTime(2000));
+  public static class NullConfigurator extends Configurator {
+    NullConfigurator() {
+      super(null, null, null, new Ruleset(), null);
+    }
+
+    @Override
+    public void start() {
+    }
+    @Override
+    public void close() {
+    }
+
+  }
+
+  public static Configurator build(Config config) {
+    Config configurationUpdateServer = config.getConfig("configurationUpdateServer");
+    if (configurationUpdateServer.getBoolean("enabled") == false) {
+      return new NullConfigurator();
+    }
+    CuratorFramework client = new ZooKeeperClientFactory(config.getConfig("zookeeper")).newClient();
     client.start();
     ZooKeeperWriteProvider zkWriter = new ZooKeeperWriteProvider(new ThriftMarshaller(), client);
     ZooKeeperReadProvider zkReader = new ZooKeeperReadProvider(new ThriftUnmarshaller(), client);
 
-    Ruleset rules = new Ruleset(config);
+    Config configurationManager = config.getConfig("configurationManager");
+    Ruleset rules = new Ruleset(configurationManager);
     rules.read(zkReader);
     ZooKeeperUpdateHandler zkUpdater = new ZooKeeperUpdateHandler(zkWriter, rules);
-    ZooKeeperValidator zkValidator = new ZooKeeperValidator(zkReader, rules, config);
-    Duration updateInterval = Duration.ofSeconds(5);
-    InetSocketAddress serverAddress = new InetSocketAddress("localhost", 9999);
-    Configurator server = new Configurator(zkUpdater, updateInterval, serverAddress, rules, zkValidator);
+    ZooKeeperValidator zkValidator = new ZooKeeperValidator(zkReader, rules, configurationManager);
+
+    Duration writeInterval = configurationUpdateServer.getDuration("writeInterval");
+    InetSocketAddress serverAddress = new InetSocketAddress(configurationUpdateServer.getString("bindIp"), configurationUpdateServer.getInt("bindPort"));
+    Configurator server = new Configurator(zkUpdater, writeInterval, serverAddress, rules, zkValidator);
     return server;
   }
 

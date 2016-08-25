@@ -6,6 +6,7 @@ import com.xjeffrose.xio.application.Application;
 import com.xjeffrose.xio.application.ApplicationConfig;
 import com.xjeffrose.xio.application.ApplicationState;
 import com.xjeffrose.xio.bootstrap.ChannelConfiguration;
+import com.xjeffrose.xio.config.Configurator;
 import com.xjeffrose.xio.server.XioServer;
 import com.xjeffrose.xio.server.XioServerConfig;
 import com.xjeffrose.xio.server.XioServerState;
@@ -50,7 +51,10 @@ public class ApplicationBootstrap {
   public Application build() {
     Map<String, XioServer> servers = new HashMap<>();
     serverBootstraps.forEach((k, v) -> servers.put(k, v.build()));
-    return new Application(config, servers, state);
+    state.getZkClient().start();
+    Configurator configurator = Configurator.build(config.settings());
+    configurator.start();
+    return new Application(config, servers, state, configurator);
   }
 
 }

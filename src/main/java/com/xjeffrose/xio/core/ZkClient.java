@@ -89,10 +89,14 @@ public class ZkClient implements ConfigurationProvider {
     }
   }
 
-  public void start() throws InterruptedException {
-    client.start();
-    client.blockUntilConnected();
-    nodeCaches.values().forEach(this::startNodeCache);
+  public void start() {
+    try {
+      client.start();
+      client.blockUntilConnected();
+      nodeCaches.values().forEach(this::startNodeCache);
+    } catch(InterruptedException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   public void stopNodeCache(NodeCache cache) {

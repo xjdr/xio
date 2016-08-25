@@ -24,7 +24,7 @@ public class ApplicationState {
   private final AtomicReference<Http1FilterConfig> http1FilterConfig;
 
   public ApplicationState(Config config) {
-    zkClient = new ZkClient(config.getString("settings.zookeeperCluster"));
+    zkClient = new ZkClient(config.getString("settings.zookeeper.cluster"));
     channelConfiguration = ChannelConfiguration.serverConfig(
       config.getInt("settings.bossThreads"),
       config.getString("settings.bossNameFormat"),
