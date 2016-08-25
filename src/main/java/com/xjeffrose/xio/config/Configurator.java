@@ -13,8 +13,6 @@ import com.xjeffrose.xio.storage.ZooKeeperReadProvider;
 import com.xjeffrose.xio.storage.ZooKeeperWriteProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.curator.framework.CuratorFramework;
-import org.apache.curator.framework.CuratorFrameworkFactory;
-import org.apache.curator.retry.RetryOneTime;
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TServer.Args;
 import org.apache.thrift.server.TSimpleServer;
@@ -133,7 +131,25 @@ public class Configurator implements Runnable {
     }
   }
 
-  public static Configurator build(String zkCluster, Config config) {
+  public static class NullConfigurator extends Configurator {
+    NullConfigurator() {
+      super(null, null, null, null, null);
+    }
+
+    @Override
+    public void start() {
+    }
+    @Override
+    public void close() {
+    }
+
+  }
+
+  public static Configurator build(Config config) {
+    Config configurationUpdateServer = config.getConfig("configurationUpdateServer");
+    if (configurationUpdateServer.getBoolean("enabled") == false) {
+      return new NullConfigurator();
+    }
     CuratorFramework client = new ZooKeeperClientFactory(config.getConfig("zookeeper")).newClient();
     client.start();
     ZooKeeperWriteProvider zkWriter = new ZooKeeperWriteProvider(new ThriftMarshaller(), client);
@@ -144,11 +160,10 @@ public class Configurator implements Runnable {
     rules.read(zkReader);
     ZooKeeperUpdateHandler zkUpdater = new ZooKeeperUpdateHandler(zkWriter, rules);
     ZooKeeperValidator zkValidator = new ZooKeeperValidator(zkReader, rules, configurationManager);
-    // TODO(CK): configure update interval from config
-    Duration updateInterval = Duration.ofSeconds(5);
-    // TODO(CK): configure thrift server from config
-    InetSocketAddress serverAddress = new InetSocketAddress("localhost", 9999);
-    Configurator server = new Configurator(zkUpdater, updateInterval, serverAddress, rules, zkValidator);
+
+    Duration writeInterval = configurationUpdateServer.getDuration("writeInterval");
+    InetSocketAddress serverAddress = new InetSocketAddress(configurationUpdateServer.getString("bindIp"), configurationUpdateServer.getInt("bindPort"));
+    Configurator server = new Configurator(zkUpdater, writeInterval, serverAddress, rules, zkValidator);
     return server;
   }
 
