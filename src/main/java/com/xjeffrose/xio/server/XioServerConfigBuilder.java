@@ -2,7 +2,6 @@ package com.xjeffrose.xio.server;
 
 import com.google.common.base.Strings;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.xjeffrose.xio.core.XioTimer;
 import io.netty.util.Timer;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;
@@ -20,7 +19,7 @@ public class XioServerConfigBuilder extends XioConfigBuilderBase<XioServerConfig
 
     return new XioServerConfig(
         getBootstrapOptions(),
-        timer != null ? timer : new XioTimer(threadNamePattern("")),
+        timer,
         bossExecutor != null ? bossExecutor : buildDefaultBossExecutor(),
         bossThreadCount,
         workerExecutor != null ? workerExecutor : buildDefaultWorkerExecutor(),

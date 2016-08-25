@@ -11,19 +11,14 @@ import com.xjeffrose.xio.processor.XioSimpleProcessor;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.DefaultHttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.util.AttributeKey;
-import io.netty.util.ReferenceCounted;
 import io.netty.util.Timeout;
-import io.netty.util.Timer;
-import io.netty.util.TimerTask;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -34,13 +29,10 @@ public class XioDispatcher extends ChannelInboundHandlerAdapter {
   private static final Logger log = Logger.getLogger(XioServerTransport.class.getName());
 
   private final XioProcessorFactory processorFactory;
-  private final long taskTimeoutMillis;
-  private final Timer taskTimeoutTimer;
   private final int queuedResponseLimit;
   private final Map<Integer, Object> responseMap = new HashMap<>();
   private final AtomicInteger dispatcherSequenceId = new AtomicInteger(0);
   private final AtomicInteger lastResponseWrittenId = new AtomicInteger(0);
-  private final long requestStart;
   private XioProcessor processor;
 
   private RequestContext requestContext;
@@ -51,9 +43,6 @@ public class XioDispatcher extends ChannelInboundHandlerAdapter {
     this.config = config;
     this.processorFactory = def.getProcessorFactory();
     this.queuedResponseLimit = def.getQueuedResponseLimit();
-    this.taskTimeoutMillis = (def.getTaskTimeout() == null ? 0 : def.getTaskTimeout().toMillis());
-    this.taskTimeoutTimer = (def.getTaskTimeout() == null ? null : config.getTimer());
-    this.requestStart = System.currentTimeMillis();
   }
 
   @Override
@@ -130,29 +119,6 @@ public class XioDispatcher extends ChannelInboundHandlerAdapter {
 
         try {
           try {
-            long timeRemaining = 0;
-            if (taskTimeoutMillis > 0) {
-              long timeElapsed = System.currentTimeMillis() - requestStart;
-              if (timeElapsed >= taskTimeoutMillis) {
-                // TODO(JR): Send (Throw?) timeout exception
-                sendApplicationException(HttpResponseStatus.REQUEST_TIMEOUT, ctx);
-                return;
-              } else {
-                timeRemaining = taskTimeoutMillis - timeElapsed;
-              }
-            }
-
-            if (timeRemaining > 0) {
-              expireTimeout.set(taskTimeoutTimer.newTimeout(new TimerTask() {
-                @Override
-                public void run(Timeout timeout) throws Exception {
-                  if (responseSent.compareAndSet(false, true)) {
-                    sendApplicationException(HttpResponseStatus.REQUEST_TIMEOUT, ctx);
-                    // TODO(JR): Send (Throw?) timeout exception
-                  }
-                }
-              }, timeRemaining, TimeUnit.MILLISECONDS));
-            }
 
             ConnectionContext connectionContext = ConnectionContexts.getContext(ctx.channel());
             requestContext = new XioRequestContext(connectionContext);

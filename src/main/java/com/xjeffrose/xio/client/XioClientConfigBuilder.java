@@ -5,14 +5,12 @@ import com.google.common.base.Strings;
 import com.google.common.net.HostAndPort;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.Inject;
-import com.xjeffrose.xio.server.XioConfigBuilderBase;
 import com.xjeffrose.xio.core.XioNoOpSecurityFactory;
 import com.xjeffrose.xio.core.XioSecurityFactory;
-import com.xjeffrose.xio.core.XioTimer;
+import com.xjeffrose.xio.server.XioConfigBuilderBase;
 import io.netty.util.Timer;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;
-
 
 import static java.util.concurrent.Executors.newCachedThreadPool;
 
@@ -43,13 +41,13 @@ public class XioClientConfigBuilder extends XioConfigBuilderBase<XioClientConfig
     return this;
   }
 
+  public XioSecurityFactory getSecurityFactory() {
+    return securityFactory;
+  }
+
   public XioClientConfigBuilder setSecurityFactory(XioSecurityFactory xioSecurityFactory) {
     this.securityFactory = xioSecurityFactory;
     return this;
-  }
-
-  public XioSecurityFactory getSecurityFactory() {
-    return securityFactory;
   }
 
   public XioClientConfig build() {
@@ -63,7 +61,7 @@ public class XioClientConfigBuilder extends XioConfigBuilderBase<XioClientConfig
     return new XioClientConfig(
         getBootstrapOptions(),
         defaultSocksProxyAddress,
-        timer != null ? timer : new XioTimer(threadNamePattern("")),
+        timer,
         bossExecutor != null ? bossExecutor : buildDefaultBossExecutor(),
         bossThreadCount,
         workerExecutor != null ? workerExecutor : buildDefaultWorkerExecutor(),
