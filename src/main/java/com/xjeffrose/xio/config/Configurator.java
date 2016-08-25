@@ -5,6 +5,7 @@ import com.xjeffrose.xio.config.thrift.ConfigurationService;
 import com.xjeffrose.xio.config.thrift.IpRule;
 import com.xjeffrose.xio.config.thrift.Result;
 import com.xjeffrose.xio.config.thrift.RuleType;
+import com.xjeffrose.xio.core.ZooKeeperClientFactory;
 import com.xjeffrose.xio.marshall.ThriftMarshaller;
 import com.xjeffrose.xio.marshall.ThriftUnmarshaller;
 import com.xjeffrose.xio.marshall.thrift.Http1Rule;
@@ -114,8 +115,9 @@ public class Configurator implements Runnable {
   }
 
   public void close() {
-    timer.cancel();
-    server.stop();
+    timerTask.cancel(); // cancels the task in flight
+    timer.cancel(); // cancels the timer thread
+    server.stop(); // stops the thrift server
   }
 
   public void run() {
@@ -124,23 +126,27 @@ public class Configurator implements Runnable {
       serverTransport = new TServerSocket(bindAddress);
       server = new TSimpleServer(new Args(serverTransport).processor(processor));
       server.serve(); // blocks until stop() is called.
-      // TODO(CK): handle remaining workload
+      // timer and timer task should be stopped at this point
+      writeToStorage();
     } catch (TTransportException e) {
       log.error("Couldn't start Configurator {}", this, e);
     }
   }
 
   public static Configurator build(String zkCluster, Config config) {
-    CuratorFramework client = CuratorFrameworkFactory.newClient(zkCluster, new RetryOneTime(2000));
+    CuratorFramework client = new ZooKeeperClientFactory(config.getConfig("zookeeper")).newClient();
     client.start();
     ZooKeeperWriteProvider zkWriter = new ZooKeeperWriteProvider(new ThriftMarshaller(), client);
     ZooKeeperReadProvider zkReader = new ZooKeeperReadProvider(new ThriftUnmarshaller(), client);
 
-    Ruleset rules = new Ruleset(config);
+    Config configurationManager = config.getConfig("configurationManager");
+    Ruleset rules = new Ruleset(configurationManager);
     rules.read(zkReader);
     ZooKeeperUpdateHandler zkUpdater = new ZooKeeperUpdateHandler(zkWriter, rules);
-    ZooKeeperValidator zkValidator = new ZooKeeperValidator(zkReader, rules, config);
+    ZooKeeperValidator zkValidator = new ZooKeeperValidator(zkReader, rules, configurationManager);
+    // TODO(CK): configure update interval from config
     Duration updateInterval = Duration.ofSeconds(5);
+    // TODO(CK): configure thrift server from config
     InetSocketAddress serverAddress = new InetSocketAddress("localhost", 9999);
     Configurator server = new Configurator(zkUpdater, updateInterval, serverAddress, rules, zkValidator);
     return server;
