@@ -95,9 +95,16 @@
         <!--Mac for Testing, please use linux for production-->
         <dependency>
             <groupId>io.netty</groupId>
-            <artifactId>netty-tcnative</artifactId>
-            <version>1.1.33.Fork15</version>
-            <classifier>${os.detected.classifier}</classifier>
+            <artifactId>netty-tcnative-boringssl-static</artifactId>
+            <version>1.1.33.Fork20</version>
+        </dependency>
+
+        <!-- only x86_64 version -->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-transport-native-epoll</artifactId>
+            <version>4.1.0.CR3</version>
+            <classifier>linux-x86_64</classifier>
         </dependency>
 
         <dependency>

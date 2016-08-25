@@ -20,6 +20,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
+import io.netty.channel.EventLoopGroup;
 import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollServerSocketChannel;
@@ -111,6 +112,14 @@ public class XioServerTransport {
       start(new EpollEventLoopGroup(bossThreadCount), new EpollEventLoopGroup(ioWorkerThreadCount));
     } else {
       start(new NioEventLoopGroup(bossThreadCount), new NioEventLoopGroup(ioWorkerThreadCount));
+    }
+  }
+
+  public void start(EventLoopGroup bossGroup, EventLoopGroup workerGroup) {
+    if (bossGroup instanceof NioEventLoopGroup) {
+      start((NioEventLoopGroup) bossGroup, (NioEventLoopGroup) workerGroup);
+    } else {
+      start((EpollEventLoopGroup) bossGroup, (EpollEventLoopGroup) workerGroup);
     }
   }
 
