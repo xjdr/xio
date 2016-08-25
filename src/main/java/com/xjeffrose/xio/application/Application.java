@@ -1,5 +1,6 @@
 package com.xjeffrose.xio.application;
 
+import com.xjeffrose.xio.config.Configurator;
 import com.xjeffrose.xio.server.XioServer;
 import com.xjeffrose.xio.server.XioServerInstrumentation;
 import lombok.Getter;
@@ -18,10 +19,13 @@ public class Application implements AutoCloseable {
   @Getter
   private final ApplicationState state;
 
-  public Application(ApplicationConfig config, Map<String, XioServer> servers, ApplicationState state) {
+  private final Configurator configurator;
+
+  public Application(ApplicationConfig config, Map<String, XioServer> servers, ApplicationState state, Configurator configurator) {
     this.config = config;
     this.servers = servers;
     this.state = state;
+    this.configurator = configurator;
   }
 
   public XioServerInstrumentation instrumentation(String server) {
@@ -31,6 +35,7 @@ public class Application implements AutoCloseable {
   public void close() {
     log.debug("Closing " + this);
     servers.values().stream().forEach((v) -> v.close());
+    configurator.close();
   }
 
 }

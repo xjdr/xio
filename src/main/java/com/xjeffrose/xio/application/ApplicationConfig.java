@@ -19,4 +19,8 @@ public class ApplicationConfig {
     return config.getConfig("servers").getConfig(server);
   }
 
+  public Config settings() {
+    return config.getConfig("settings");
+  }
+
 }
