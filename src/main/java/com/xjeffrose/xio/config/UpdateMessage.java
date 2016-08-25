@@ -28,11 +28,30 @@ abstract public class UpdateMessage {
     }
   }
 
+  static public class Http1RuleUpdate extends UpdateMessage {
+    Http1RuleUpdate(UpdateType updateType, Http1DeterministicRuleEngineConfig.Rule http1Rule, RuleType ruleType) {
+      super(updateType, http1Rule, ruleType);
+    }
+
+    @Override
+    public void process(UpdateHandler handler) {
+      handler.process(updateType, (Http1DeterministicRuleEngineConfig.Rule)payload, ruleType);
+    }
+  }
+
   static public UpdateMessage addIpRule(InetAddress address, RuleType ruleType) {
     return new IpRuleUpdate(UpdateType.Add, address, ruleType);
   }
 
   static public UpdateMessage removeIpRule(InetAddress address) {
     return new IpRuleUpdate(UpdateType.Remove, address, RuleType.blacklist);
+  }
+
+  static public UpdateMessage addHttp1Rule(Http1DeterministicRuleEngineConfig.Rule http1Rule, RuleType ruleType) {
+    return new Http1RuleUpdate(UpdateType.Add, http1Rule, ruleType);
+  }
+
+  static public UpdateMessage removeHttp1Rule(Http1DeterministicRuleEngineConfig.Rule http1Rule) {
+    return new Http1RuleUpdate(UpdateType.Remove, http1Rule, RuleType.blacklist);
   }
 }

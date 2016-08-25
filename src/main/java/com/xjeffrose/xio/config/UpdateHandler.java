@@ -9,4 +9,6 @@ interface UpdateHandler {
 
   void process(UpdateType updateType, InetAddress address, RuleType ruleType);
 
+  void process(UpdateType updateType, Http1DeterministicRuleEngineConfig.Rule http1Rule, RuleType ruleType);
+
 }

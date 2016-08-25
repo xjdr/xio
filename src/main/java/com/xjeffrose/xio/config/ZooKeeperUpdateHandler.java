@@ -33,4 +33,17 @@ public class ZooKeeperUpdateHandler implements UpdateHandler {
     }
   }
 
+  @Override
+  public void process(UpdateType updateType, Http1DeterministicRuleEngineConfig.Rule http1Rule, RuleType ruleType) {
+    if (updateType == UpdateType.Add) {
+      if (ruleType == RuleType.blacklist) {
+        rules.mutateHttp1Rules().blacklistRule(http1Rule);
+      } else if (ruleType == RuleType.whitelist) {
+        rules.mutateHttp1Rules().whitelistRule(http1Rule);
+      }
+    } else if (updateType == UpdateType.Remove) {
+      rules.mutateHttp1Rules().remove(http1Rule);
+    }
+  }
+
 }

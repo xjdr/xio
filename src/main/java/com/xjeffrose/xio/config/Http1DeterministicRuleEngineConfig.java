@@ -80,6 +80,31 @@ public class Http1DeterministicRuleEngineConfig implements Marshallable {
 
       return matchHeaders(request);
     }
+
+    @Override
+    public String toString() {
+      String headers = "Any";
+      if (this.headers != null) {
+        headers = this.headers.toString();
+      }
+
+      String method = "Any";
+      if (this.method != null) {
+        method = this.method.toString();
+      }
+
+      String version = "Any";
+      if (this.version != null) {
+        version = this.version.toString();
+      }
+
+      String uri = "Any";
+      if (this.uri != null) {
+        uri = this.uri;
+      }
+
+      return "headers: [" + headers + "] method: [" + method + "] version: [" + version + "] uri: [" + uri + "]";
+    }
   }
 
   private final Set<Rule> blacklistRules = new HashSet<>();
@@ -119,8 +144,21 @@ public class Http1DeterministicRuleEngineConfig implements Marshallable {
     unmarshaller.unmarshall(this, data);
   }
 
+  public void remove(Rule rule) {
+    if (blacklistRules.contains(rule)) {
+      blacklistRules.remove(rule);
+    }
+    if (whitelistRules.contains(rule)) {
+      whitelistRules.remove(rule);
+    }
+  }
+
   public void clear() {
     blacklistRules.clear();
     whitelistRules.clear();
+  }
+
+  public long size() {
+    return blacklistRules.size() + whitelistRules.size();
   }
 }

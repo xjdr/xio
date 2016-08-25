@@ -31,17 +31,16 @@ public class ZooKeeperReadProviderFunctionalTest extends Assert {
       RetryPolicy retryPolicy = new RetryOneTime(1);
       try(CuratorFramework client = CuratorFrameworkFactory.newClient(server.getConnectString(), retryPolicy)) {
         client.start();
-        String path = "/some/path/to/nodes";
+        String path = "/some/path/to/nodes/ipRules";
 
         byte[] bytes = marshaller.marshall(config);
-        String key = path + "/" + config.keyName();
-        client.create().orSetData().creatingParentsIfNeeded().forPath(key, bytes);
+        client.create().orSetData().creatingParentsIfNeeded().forPath(path, bytes);
 
         ThriftUnmarshaller unmarshaller = new ThriftUnmarshaller();
-        ZooKeeperReadProvider provider = new ZooKeeperReadProvider(unmarshaller, client, path);
+        ZooKeeperReadProvider provider = new ZooKeeperReadProvider(unmarshaller, client);
 
         IpAddressDeterministicRuleEngineConfig read = new IpAddressDeterministicRuleEngineConfig();
-        provider.read(read);
+        provider.read(path, read);
 
         assertEquals(config, read);
       }

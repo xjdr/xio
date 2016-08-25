@@ -11,13 +11,13 @@ public abstract class ReadProvider {
     this.unmarshaller = unmarshaller;
   }
 
-  public abstract byte[] read(String keyName);
+  public abstract byte[] read(String key);
 
-  public abstract boolean exists(String keyName);
+  public abstract boolean exists(String key);
 
-  public boolean read(Marshallable message) {
-    if (exists(message.keyName())) {
-      message.putBytes(unmarshaller, read(message.keyName()));
+  public boolean read(String key, Marshallable message) {
+    if (exists(key)) {
+      message.putBytes(unmarshaller, read(key));
       return true;
     }
     return false;

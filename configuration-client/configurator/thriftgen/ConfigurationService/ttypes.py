@@ -7,6 +7,8 @@
 #
 
 from thrift.Thrift import TType, TMessageType, TException, TApplicationException
+import configurator.thriftgen.Http1Ruleset.ttypes
+
 
 from thrift.transport import TTransport
 from thrift.protocol import TBinaryProtocol, TProtocol
@@ -35,18 +37,15 @@ class IpRule:
   """
   Attributes:
    - ipAddress
-   - ruleType
   """
 
   thrift_spec = (
     None, # 0
     (1, TType.STRING, 'ipAddress', None, None, ), # 1
-    (2, TType.I32, 'ruleType', None, None, ), # 2
   )
 
-  def __init__(self, ipAddress=None, ruleType=None,):
+  def __init__(self, ipAddress=None,):
     self.ipAddress = ipAddress
-    self.ruleType = ruleType
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -60,11 +59,6 @@ class IpRule:
       if fid == 1:
         if ftype == TType.STRING:
           self.ipAddress = iprot.readString()
-        else:
-          iprot.skip(ftype)
-      elif fid == 2:
-        if ftype == TType.I32:
-          self.ruleType = iprot.readI32()
         else:
           iprot.skip(ftype)
       else:
@@ -81,10 +75,6 @@ class IpRule:
       oprot.writeFieldBegin('ipAddress', TType.STRING, 1)
       oprot.writeString(self.ipAddress)
       oprot.writeFieldEnd()
-    if self.ruleType is not None:
-      oprot.writeFieldBegin('ruleType', TType.I32, 2)
-      oprot.writeI32(self.ruleType)
-      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -95,7 +85,6 @@ class IpRule:
   def __hash__(self):
     value = 17
     value = (value * 31) ^ hash(self.ipAddress)
-    value = (value * 31) ^ hash(self.ruleType)
     return value
 
   def __repr__(self):
