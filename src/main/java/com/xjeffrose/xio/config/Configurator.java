@@ -133,7 +133,7 @@ public class Configurator implements Runnable {
 
   public static class NullConfigurator extends Configurator {
     NullConfigurator() {
-      super(null, null, null, null, null);
+      super(null, null, null, new Ruleset(), null);
     }
 
     @Override
