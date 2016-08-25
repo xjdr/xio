@@ -13,8 +13,7 @@ public class Main {
   public Main() throws Exception {
     zkServer = new TestingServer(2181, true);
 
-    Config override = ConfigFactory.parseString("zookeeper { cluster = \"" + zkServer.getConnectString() + "\" }, configurationUpdateServer { enabled = true }");
-    server = Configurator.build(override.withFallback(ConfigFactory.load().getConfig("xio.exampleApplication.settings")));
+    server = Configurator.build(ConfigFactory.load().getConfig("xio.exampleApplication.settings"));
   }
 
   public void run() throws Exception {
