@@ -4,6 +4,9 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.ExecutionError;
 import com.google.inject.Inject;
 import com.xjeffrose.xio.core.XioMetrics;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.epoll.Epoll;
+import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 
@@ -20,8 +23,8 @@ public class XioBootstrap {
 
   private final XioServerConfig xioServerConfig;
   private Map<XioServerDef, XioServerTransport> transports;
-  private NioEventLoopGroup bossGroup;
-  private NioEventLoopGroup workerGroup;
+  private EventLoopGroup bossGroup;
+  private EventLoopGroup workerGroup;
   private final ChannelGroup allChannels;
 
   @Inject
@@ -42,8 +45,13 @@ public class XioBootstrap {
 
   @PostConstruct
   public void start() {
-    bossGroup = new NioEventLoopGroup(xioServerConfig.getBossThreadCount());
-    workerGroup = new NioEventLoopGroup(xioServerConfig.getWorkerThreadCount());
+
+    bossGroup = Epoll.isAvailable() ?
+        new EpollEventLoopGroup(xioServerConfig.getBossThreadCount()) :
+        new NioEventLoopGroup(xioServerConfig.getBossThreadCount());
+    workerGroup = Epoll.isAvailable() ?
+        new EpollEventLoopGroup(xioServerConfig.getWorkerThreadCount()) :
+        new NioEventLoopGroup(xioServerConfig.getWorkerThreadCount());
     for (XioServerTransport transport : transports.values()) {
       try {
         transport.start(bossGroup, workerGroup);
