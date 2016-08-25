@@ -52,6 +52,7 @@ public class ApplicationBootstrap {
     Map<String, XioServer> servers = new HashMap<>();
     serverBootstraps.forEach((k, v) -> servers.put(k, v.build()));
     Configurator configurator = Configurator.build(config.settings());
+    configurator.start();
     return new Application(config, servers, state, configurator);
   }
 
