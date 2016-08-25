@@ -200,7 +200,7 @@ def http1_subcommand(parent):
     parser.add_argument('--method', choices=sorted(Http1Method._NAMES_TO_VALUES.keys()), default=None)
     parser.add_argument('--version', choices=sorted(['1.0', '1.1']), default=None)
     parser.add_argument('--path', type=str, default=None)
-    parser.add_argument('--headers', nargs='*', type=str, default=None)
+    parser.add_argument('--headers', nargs='*', type=str, default=None, metavar='"Header-Key: Header-Value"')
 
   http1_parser = parent.add_parser('http1')
   http1_commands = http1_parser.add_subparsers()
