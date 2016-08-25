@@ -29,12 +29,13 @@ public class XioServerConfig {
     bootstrapOptions = null;
     name = config.getString("name");
     String address;
-    if (config.hasPath("settings.bindIp")) {
-      address = config.getString("settings.bindIp");
-    } else {
+    if (config.hasPath("settings.bindHost")) {
       address = config.getString("settings.bindHost");
       log.warn("settings.bindHost is deprecated please use settings.bindIp");
+    } else {
+      address = config.getString("settings.bindIp");
     }
+
     bindAddress = new InetSocketAddress(address, config.getInt("settings.bindPort"));
     limits = new XioServerLimits(config.getConfig("limits"));
     tls = new TlsConfig(config.getConfig("settings.tls"));
