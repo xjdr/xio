@@ -197,10 +197,10 @@ def network_subcommand(parent):
 
 def http1_subcommand(parent):
   def common(parser):
-    parser.add_argument('--method', choices=sorted(Http1Method._NAMES_TO_VALUES.keys()), default=None)
-    parser.add_argument('--version', choices=sorted(['1.0', '1.1']), default=None)
-    parser.add_argument('--path', type=str, default=None)
-    parser.add_argument('--headers', nargs='*', type=str, default=None, metavar='"Header-Key: Header-Value"')
+    parser.add_argument('-M', '--method', choices=sorted(Http1Method._NAMES_TO_VALUES.keys()), default=None)
+    parser.add_argument('-V', '--version', choices=sorted(['1.0', '1.1']), default=None)
+    parser.add_argument('-P', '--path', type=str, default=None)
+    parser.add_argument('-H', '--headers', nargs='*', type=str, default=None, metavar='"Header-Key: Header-Value"')
 
   http1_parser = parent.add_parser('http1')
   http1_commands = http1_parser.add_subparsers()
@@ -242,9 +242,12 @@ def connect(args):
 def main():
   args = parse_args()
   client = connect(args)
+  if client is None:
+    return False
   result = args.command(client, args)
-  if not result:
-    sys.exit(1)
+  return result
 
 if __name__ == '__main__':
-  main()
+  result = main()
+  if not result:
+    sys.exit(1)
