@@ -19,10 +19,11 @@ except:
 
 
 class Iface:
-  def addIpRule(self, ipRule):
+  def addIpRule(self, ipRule, ruleType):
     """
     Parameters:
      - ipRule
+     - ruleType
     """
     pass
 
@@ -30,6 +31,21 @@ class Iface:
     """
     Parameters:
      - ipRule
+    """
+    pass
+
+  def addHttp1Rule(self, http1Rule, ruleType):
+    """
+    Parameters:
+     - http1Rule
+     - ruleType
+    """
+    pass
+
+  def removeHttp1Rule(self, http1Rule):
+    """
+    Parameters:
+     - http1Rule
     """
     pass
 
@@ -41,18 +57,20 @@ class Client(Iface):
       self._oprot = oprot
     self._seqid = 0
 
-  def addIpRule(self, ipRule):
+  def addIpRule(self, ipRule, ruleType):
     """
     Parameters:
      - ipRule
+     - ruleType
     """
-    self.send_addIpRule(ipRule)
+    self.send_addIpRule(ipRule, ruleType)
     return self.recv_addIpRule()
 
-  def send_addIpRule(self, ipRule):
+  def send_addIpRule(self, ipRule, ruleType):
     self._oprot.writeMessageBegin('addIpRule', TMessageType.CALL, self._seqid)
     args = addIpRule_args()
     args.ipRule = ipRule
+    args.ruleType = ruleType
     args.write(self._oprot)
     self._oprot.writeMessageEnd()
     self._oprot.trans.flush()
@@ -103,6 +121,70 @@ class Client(Iface):
       return result.success
     raise TApplicationException(TApplicationException.MISSING_RESULT, "removeIpRule failed: unknown result")
 
+  def addHttp1Rule(self, http1Rule, ruleType):
+    """
+    Parameters:
+     - http1Rule
+     - ruleType
+    """
+    self.send_addHttp1Rule(http1Rule, ruleType)
+    return self.recv_addHttp1Rule()
+
+  def send_addHttp1Rule(self, http1Rule, ruleType):
+    self._oprot.writeMessageBegin('addHttp1Rule', TMessageType.CALL, self._seqid)
+    args = addHttp1Rule_args()
+    args.http1Rule = http1Rule
+    args.ruleType = ruleType
+    args.write(self._oprot)
+    self._oprot.writeMessageEnd()
+    self._oprot.trans.flush()
+
+  def recv_addHttp1Rule(self):
+    iprot = self._iprot
+    (fname, mtype, rseqid) = iprot.readMessageBegin()
+    if mtype == TMessageType.EXCEPTION:
+      x = TApplicationException()
+      x.read(iprot)
+      iprot.readMessageEnd()
+      raise x
+    result = addHttp1Rule_result()
+    result.read(iprot)
+    iprot.readMessageEnd()
+    if result.success is not None:
+      return result.success
+    raise TApplicationException(TApplicationException.MISSING_RESULT, "addHttp1Rule failed: unknown result")
+
+  def removeHttp1Rule(self, http1Rule):
+    """
+    Parameters:
+     - http1Rule
+    """
+    self.send_removeHttp1Rule(http1Rule)
+    return self.recv_removeHttp1Rule()
+
+  def send_removeHttp1Rule(self, http1Rule):
+    self._oprot.writeMessageBegin('removeHttp1Rule', TMessageType.CALL, self._seqid)
+    args = removeHttp1Rule_args()
+    args.http1Rule = http1Rule
+    args.write(self._oprot)
+    self._oprot.writeMessageEnd()
+    self._oprot.trans.flush()
+
+  def recv_removeHttp1Rule(self):
+    iprot = self._iprot
+    (fname, mtype, rseqid) = iprot.readMessageBegin()
+    if mtype == TMessageType.EXCEPTION:
+      x = TApplicationException()
+      x.read(iprot)
+      iprot.readMessageEnd()
+      raise x
+    result = removeHttp1Rule_result()
+    result.read(iprot)
+    iprot.readMessageEnd()
+    if result.success is not None:
+      return result.success
+    raise TApplicationException(TApplicationException.MISSING_RESULT, "removeHttp1Rule failed: unknown result")
+
 
 class Processor(Iface, TProcessor):
   def __init__(self, handler):
@@ -110,6 +192,8 @@ class Processor(Iface, TProcessor):
     self._processMap = {}
     self._processMap["addIpRule"] = Processor.process_addIpRule
     self._processMap["removeIpRule"] = Processor.process_removeIpRule
+    self._processMap["addHttp1Rule"] = Processor.process_addHttp1Rule
+    self._processMap["removeHttp1Rule"] = Processor.process_removeHttp1Rule
 
   def process(self, iprot, oprot):
     (name, type, seqid) = iprot.readMessageBegin()
@@ -132,7 +216,7 @@ class Processor(Iface, TProcessor):
     iprot.readMessageEnd()
     result = addIpRule_result()
     try:
-      result.success = self._handler.addIpRule(args.ipRule)
+      result.success = self._handler.addIpRule(args.ipRule, args.ruleType)
       msg_type = TMessageType.REPLY
     except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
       raise
@@ -164,6 +248,44 @@ class Processor(Iface, TProcessor):
     oprot.writeMessageEnd()
     oprot.trans.flush()
 
+  def process_addHttp1Rule(self, seqid, iprot, oprot):
+    args = addHttp1Rule_args()
+    args.read(iprot)
+    iprot.readMessageEnd()
+    result = addHttp1Rule_result()
+    try:
+      result.success = self._handler.addHttp1Rule(args.http1Rule, args.ruleType)
+      msg_type = TMessageType.REPLY
+    except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
+      raise
+    except Exception as ex:
+      msg_type = TMessageType.EXCEPTION
+      logging.exception(ex)
+      result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+    oprot.writeMessageBegin("addHttp1Rule", msg_type, seqid)
+    result.write(oprot)
+    oprot.writeMessageEnd()
+    oprot.trans.flush()
+
+  def process_removeHttp1Rule(self, seqid, iprot, oprot):
+    args = removeHttp1Rule_args()
+    args.read(iprot)
+    iprot.readMessageEnd()
+    result = removeHttp1Rule_result()
+    try:
+      result.success = self._handler.removeHttp1Rule(args.http1Rule)
+      msg_type = TMessageType.REPLY
+    except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
+      raise
+    except Exception as ex:
+      msg_type = TMessageType.EXCEPTION
+      logging.exception(ex)
+      result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+    oprot.writeMessageBegin("removeHttp1Rule", msg_type, seqid)
+    result.write(oprot)
+    oprot.writeMessageEnd()
+    oprot.trans.flush()
+
 
 # HELPER FUNCTIONS AND STRUCTURES
 
@@ -171,15 +293,18 @@ class addIpRule_args:
   """
   Attributes:
    - ipRule
+   - ruleType
   """
 
   thrift_spec = (
     None, # 0
     (1, TType.STRUCT, 'ipRule', (IpRule, IpRule.thrift_spec), None, ), # 1
+    (2, TType.I32, 'ruleType', None, None, ), # 2
   )
 
-  def __init__(self, ipRule=None,):
+  def __init__(self, ipRule=None, ruleType=None,):
     self.ipRule = ipRule
+    self.ruleType = ruleType
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -196,6 +321,11 @@ class addIpRule_args:
           self.ipRule.read(iprot)
         else:
           iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.I32:
+          self.ruleType = iprot.readI32()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -210,6 +340,10 @@ class addIpRule_args:
       oprot.writeFieldBegin('ipRule', TType.STRUCT, 1)
       self.ipRule.write(oprot)
       oprot.writeFieldEnd()
+    if self.ruleType is not None:
+      oprot.writeFieldBegin('ruleType', TType.I32, 2)
+      oprot.writeI32(self.ruleType)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -220,6 +354,7 @@ class addIpRule_args:
   def __hash__(self):
     value = 17
     value = (value * 31) ^ hash(self.ipRule)
+    value = (value * 31) ^ hash(self.ruleType)
     return value
 
   def __repr__(self):
@@ -402,6 +537,281 @@ class removeIpRule_result:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
     oprot.writeStructBegin('removeIpRule_result')
+    if self.success is not None:
+      oprot.writeFieldBegin('success', TType.STRUCT, 0)
+      self.success.write(oprot)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.success)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class addHttp1Rule_args:
+  """
+  Attributes:
+   - http1Rule
+   - ruleType
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.STRUCT, 'http1Rule', (configurator.thriftgen.Http1Ruleset.ttypes.Http1Rule, configurator.thriftgen.Http1Ruleset.ttypes.Http1Rule.thrift_spec), None, ), # 1
+    (2, TType.I32, 'ruleType', None, None, ), # 2
+  )
+
+  def __init__(self, http1Rule=None, ruleType=None,):
+    self.http1Rule = http1Rule
+    self.ruleType = ruleType
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.STRUCT:
+          self.http1Rule = configurator.thriftgen.Http1Ruleset.ttypes.Http1Rule()
+          self.http1Rule.read(iprot)
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.I32:
+          self.ruleType = iprot.readI32()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('addHttp1Rule_args')
+    if self.http1Rule is not None:
+      oprot.writeFieldBegin('http1Rule', TType.STRUCT, 1)
+      self.http1Rule.write(oprot)
+      oprot.writeFieldEnd()
+    if self.ruleType is not None:
+      oprot.writeFieldBegin('ruleType', TType.I32, 2)
+      oprot.writeI32(self.ruleType)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.http1Rule)
+    value = (value * 31) ^ hash(self.ruleType)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class addHttp1Rule_result:
+  """
+  Attributes:
+   - success
+  """
+
+  thrift_spec = (
+    (0, TType.STRUCT, 'success', (Result, Result.thrift_spec), None, ), # 0
+  )
+
+  def __init__(self, success=None,):
+    self.success = success
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 0:
+        if ftype == TType.STRUCT:
+          self.success = Result()
+          self.success.read(iprot)
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('addHttp1Rule_result')
+    if self.success is not None:
+      oprot.writeFieldBegin('success', TType.STRUCT, 0)
+      self.success.write(oprot)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.success)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class removeHttp1Rule_args:
+  """
+  Attributes:
+   - http1Rule
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.STRUCT, 'http1Rule', (configurator.thriftgen.Http1Ruleset.ttypes.Http1Rule, configurator.thriftgen.Http1Ruleset.ttypes.Http1Rule.thrift_spec), None, ), # 1
+  )
+
+  def __init__(self, http1Rule=None,):
+    self.http1Rule = http1Rule
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.STRUCT:
+          self.http1Rule = configurator.thriftgen.Http1Ruleset.ttypes.Http1Rule()
+          self.http1Rule.read(iprot)
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('removeHttp1Rule_args')
+    if self.http1Rule is not None:
+      oprot.writeFieldBegin('http1Rule', TType.STRUCT, 1)
+      self.http1Rule.write(oprot)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.http1Rule)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class removeHttp1Rule_result:
+  """
+  Attributes:
+   - success
+  """
+
+  thrift_spec = (
+    (0, TType.STRUCT, 'success', (Result, Result.thrift_spec), None, ), # 0
+  )
+
+  def __init__(self, success=None,):
+    self.success = success
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 0:
+        if ftype == TType.STRUCT:
+          self.success = Result()
+          self.success.read(iprot)
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('removeHttp1Rule_result')
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.STRUCT, 0)
       self.success.write(oprot)
