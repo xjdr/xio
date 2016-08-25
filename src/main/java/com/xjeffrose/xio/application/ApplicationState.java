@@ -5,6 +5,7 @@ import com.typesafe.config.ConfigFactory;
 import com.xjeffrose.xio.bootstrap.ChannelConfiguration;
 import com.xjeffrose.xio.core.ZkClient;
 import com.xjeffrose.xio.bootstrap.ServerChannelConfiguration;
+import com.xjeffrose.xio.filter.Http1FilterConfig;
 import com.xjeffrose.xio.filter.IpFilterConfig;
 import lombok.Getter;
 
@@ -20,6 +21,8 @@ public class ApplicationState {
 
   private final AtomicReference<IpFilterConfig> ipFilterConfig;
 
+  private final AtomicReference<Http1FilterConfig> http1FilterConfig;
+
   public ApplicationState(Config config) {
     zkClient = new ZkClient(config.getString("settings.zookeeperCluster"));
     channelConfiguration = ChannelConfiguration.serverConfig(
@@ -28,9 +31,15 @@ public class ApplicationState {
       config.getInt("settings.workerThreads"),
       config.getString("settings.workerNameFormat")
     );
-    String path = config.getString("settings.configurationManager.ipFilter.path");
+
+    String ipFilterPath = config.getString("settings.configurationManager.ipFilter.path");
     ipFilterConfig = new AtomicReference<IpFilterConfig>(new IpFilterConfig());
-    zkClient.registerUpdater(new IpFilterConfig.Updater(path, this::setIpFilterConfig));
+    zkClient.registerUpdater(new IpFilterConfig.Updater(ipFilterPath, this::setIpFilterConfig));
+
+    String http1FilterPath = config.getString("settings.configurationManager.http1Filter.path");
+    http1FilterConfig = new AtomicReference<Http1FilterConfig>(new Http1FilterConfig());
+    zkClient.registerUpdater(new Http1FilterConfig.Updater(http1FilterPath, this::setHttp1FilterConfig));
+
   }
 
   static public ApplicationState fromConfig(String key, Config config) {
@@ -47,6 +56,14 @@ public class ApplicationState {
 
   public void setIpFilterConfig(IpFilterConfig newConfig) {
     ipFilterConfig.set(newConfig);
+  }
+
+  public Http1FilterConfig getHttp1FilterConfig() {
+    return http1FilterConfig.get();
+  }
+
+  public void setHttp1FilterConfig(Http1FilterConfig newConfig) {
+    http1FilterConfig.set(newConfig);
   }
 
 }

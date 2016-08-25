@@ -2,6 +2,7 @@ package com.xjeffrose.xio.config;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableList;
 import com.xjeffrose.xio.marshall.Marshallable;
 import com.xjeffrose.xio.marshall.Marshaller;
 import com.xjeffrose.xio.marshall.Unmarshaller;
@@ -98,12 +99,12 @@ public class Http1DeterministicRuleEngineConfig implements Marshallable {
     }
   }
 
-  public ImmutableSet<Rule> getBlacklistRules() {
-    return ImmutableSet.copyOf(blacklistRules);
+  public ImmutableList<Rule> getBlacklistRules() {
+    return ImmutableList.copyOf(blacklistRules);
   }
 
-  public ImmutableSet<Rule> getWhitelistRules() {
-    return ImmutableSet.copyOf(whitelistRules);
+  public ImmutableList<Rule> getWhitelistRules() {
+    return ImmutableList.copyOf(whitelistRules);
   }
 
   public String keyName() {
@@ -116,5 +117,10 @@ public class Http1DeterministicRuleEngineConfig implements Marshallable {
 
   public void putBytes(Unmarshaller unmarshaller, byte[] data) {
     unmarshaller.unmarshall(this, data);
+  }
+
+  public void clear() {
+    blacklistRules.clear();
+    whitelistRules.clear();
   }
 }
