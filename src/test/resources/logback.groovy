@@ -12,4 +12,6 @@ appender("CONSOLE", ConsoleAppender) {
   }
 }
 
+logger("com.xjeffrose.xio.client.RequestMuxerConnectionPool", OFF)
+
 root(ERROR, ["CONSOLE"])

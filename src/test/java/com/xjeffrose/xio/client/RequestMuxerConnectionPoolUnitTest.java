@@ -49,7 +49,6 @@ public class RequestMuxerConnectionPoolUnitTest extends Assert {
     pool.start();
   }
 
-  /*
   @Test(expected=RuntimeException.class)
   public void connectFails() {
     RequestMuxerConnectionPool.Connector flakyConnector = new RequestMuxerConnectionPool.Connector() {
@@ -63,6 +62,5 @@ public class RequestMuxerConnectionPoolUnitTest extends Assert {
     RequestMuxerConnectionPool pool = new RequestMuxerConnectionPool(flakyConnector);
     pool.start();
   }
-  */
 
 }

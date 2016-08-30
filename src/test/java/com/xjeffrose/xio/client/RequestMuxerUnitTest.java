@@ -2,9 +2,13 @@ package com.xjeffrose.xio.client;
 
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 import io.netty.channel.*;
+import io.netty.channel.Channel;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import org.junit.Assert;
@@ -23,27 +27,38 @@ import java.util.concurrent.CountDownLatch;
 import static org.mockito.Mockito.*;
 
 public class RequestMuxerUnitTest extends Assert {
-  @Mock
-  RequestMuxer.Connector connector;
 
-  @Mock
-  ChannelHandler handler;
+  RequestMuxerConnectionPool connectionPool;
 
   RequestMuxer requestMuxer;
+
+  EmbeddedChannel channel;
 
   @Rule
   public MockitoRule mockitoRule = MockitoJUnit.rule();
 
   @Before
   public void setUp() throws Exception {
+    channel = new EmbeddedChannel();
+    Config config = ConfigFactory.load().getConfig("xio.testApplication.settings.requestMuxer");
+    RequestMuxerConnectionPool.Connector connector = new RequestMuxerConnectionPool.Connector() {
+      @Override
+      public ListenableFuture<Channel> connect() {
+        SettableFuture<Channel> result = SettableFuture.create();
+        result.set(channel);
+        return result;
+      }
+    };
+    connectionPool = new RequestMuxerConnectionPool(connector);
+
     requestMuxer = new RequestMuxer(
-      "127.0.0.1:12000",
+      config,
       new NioEventLoopGroup(5,
         new ThreadFactoryBuilder()
          .setNameFormat("chicagoClient-nioEventLoopGroup-%d")
          .build()
       ),
-      connector
+      connectionPool
     );
   }
 
@@ -52,7 +67,7 @@ public class RequestMuxerUnitTest extends Assert {
     SettableFuture<ChannelFuture> f = SettableFuture.create();
     ChannelFuture cf = mock(ChannelFuture.class);
     f.set(cf);
-    when(connector.connect(new InetSocketAddress("127.0.0.1",12000))).thenReturn(f);
+    //    when(connector.connect(new InetSocketAddress("127.0.0.1",12000))).thenReturn(f);
     when(cf.isSuccess()).thenReturn(true);
 
     Channel helper = new EmbeddedChannel(mock(ChannelHandler.class));
