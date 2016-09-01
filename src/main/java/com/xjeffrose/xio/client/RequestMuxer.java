@@ -1,9 +1,11 @@
 package com.xjeffrose.xio.client;
 
+import com.google.common.collect.Queues;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
+import com.google.common.util.concurrent.Uninterruptibles;
 import com.typesafe.config.Config;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -14,13 +16,14 @@ import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 import io.netty.util.concurrent.ScheduledFuture;
 import io.netty.util.internal.PlatformDependent;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.Duration;
 import java.util.Optional;
+import java.util.Queue;
 import javax.annotation.Nullable;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -42,20 +45,23 @@ public class RequestMuxer implements AutoCloseable {
   // TODO(CK): this should be a method
   private final int HIGH_WATER_MARK = CONST * MULT.get();
 
+  private final int messagesPerBatch;
   private final Duration drainMessageQInterval;
   private final Duration multiplierIncrementInterval;
   private final Duration multiplierDecrementInterval;
   private final Duration rebuildConnectionLoopInterval;
+
   private final EventLoopGroup workerLoop;
   private final RequestMuxerConnectionPool connectionPool;
   private final AtomicBoolean isRunning = new AtomicBoolean();
 
-  private final Deque<MuxedMessage> messageQ = PlatformDependent.newConcurrentDeque();
+  private final Queue<MuxedMessage> messageQ = Queues.newConcurrentLinkedQueue();
 
   private AtomicLong counter = new AtomicLong();
   private List<ScheduledFuture> scheduledFutures = Collections.synchronizedList(new ArrayList());
 
   public RequestMuxer(Config config, EventLoopGroup workerLoop, RequestMuxerConnectionPool connectionPool) {
+    messagesPerBatch = config.getInt("messagesPerBatch");
     drainMessageQInterval = config.getDuration("drainMessageQInterval");
     multiplierIncrementInterval = config.getDuration("multiplierIncrementInterval");
     multiplierDecrementInterval = config.getDuration("multiplierDecrementInterval");
@@ -74,21 +80,21 @@ public class RequestMuxer implements AutoCloseable {
     isRunning.set(true);
 
     schedule(drainMessageQInterval, () -> {
-      if (messageQ.size() > 0) {
+      if (counter.get() > 0) {
         drainMessageQ();
       }
     });
 
     schedule(multiplierIncrementInterval, () -> {
       // TODO(CK): fix this
-      if (messageQ.size() > HIGH_WATER_MARK) {
+      if (counter.get() > HIGH_WATER_MARK) {
         MULT.incrementAndGet();
       }
     });
 
     schedule(multiplierDecrementInterval, () -> {
       // TODO(CK): fix this
-      if (messageQ.size() < HIGH_WATER_MARK / 10) {
+      if (counter.get() < HIGH_WATER_MARK / 10) {
         if (MULT.get() > 0) {
           MULT.decrementAndGet();
         }
@@ -106,7 +112,17 @@ public class RequestMuxer implements AutoCloseable {
     for(ScheduledFuture f : scheduledFutures){
       f.cancel(true);
     }
-    // TODO(CK): handle remaining items in the queue
+
+    // wait for scheduled futures to cancel
+    while (scheduledFutures.stream().anyMatch((f) -> !f.isDone())) {
+      Uninterruptibles.sleepUninterruptibly(250, TimeUnit.MILLISECONDS);
+    }
+
+    // handle remaining items in the queue
+    while (counter.get() > 0) {
+      drainMessageQ();
+    }
+
     connectionPool.close();
   }
 
@@ -122,7 +138,7 @@ public class RequestMuxer implements AutoCloseable {
 
     // TODO(CK): fix this
     if (counter.incrementAndGet() > HIGH_WATER_MARK) {
-      messageQ.addLast(new MuxedMessage(sendReq, f));
+      messageQ.add(new MuxedMessage(sendReq, f));
     } else {
       writeMessage(sendReq, f);
     }
@@ -145,32 +161,38 @@ public class RequestMuxer implements AutoCloseable {
   private void drainMessageQ() {
     Optional<Channel> maybeChannel = connectionPool.requestNode();
     maybeChannel.ifPresent((ch) -> {
-      final int snapshot = messageQ.size(); // TODO(CK): is size guaranteed to return a useful value?
       int count = 0;
-      while (snapshot > count) {
-        final MuxedMessage mm = messageQ.pollFirst();
+      for (int i = 0; i < messagesPerBatch; i++) {
+        // TODO(CK): check if channel is still writeable
+        final MuxedMessage mm = messageQ.poll();
         if (mm == null) {
           // we've exhausted the queue
           break;
         }
+
         count++;
         ch.write(mm.getMsg()).addListener(newWriteListener(mm.getF()));
       }
-      // TODO(CK): document why the flush is here
+      // flush here instead of calling writeAndFlush inside of the for loop
+      // this way we queue up a series of writes and flush them all at once
       ch.flush();
-
-      counter.updateAndGet((i) -> i - snapshot);
+      final int written = count;
+      counter.updateAndGet(i -> i - written);
     });
   }
 
   private void writeMessage(Object sendReq, SettableFuture<Void> f) {
-    connectionPool.requestNode().ifPresent((ch) -> {
-      ch.writeAndFlush(sendReq).addListener(newWriteListener(f));
+    Optional<Channel> maybeChannel = connectionPool.requestNode();
+    if (maybeChannel.isPresent()) {
+      maybeChannel.get().writeAndFlush(sendReq).addListener(newWriteListener(f));
       counter.decrementAndGet();
-    });
+    } else {
+      // No channel available, queue this write
+      messageQ.add(new MuxedMessage(sendReq, f));
+    }
   }
 
-  @Data
+  @Value
   private class MuxedMessage {
     private final Object msg;
     private final SettableFuture<Void> f;

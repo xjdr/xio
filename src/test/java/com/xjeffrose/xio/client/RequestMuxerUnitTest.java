@@ -5,12 +5,15 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.google.common.util.concurrent.Uninterruptibles;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import io.netty.channel.*;
 import io.netty.channel.Channel;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
+import lombok.Getter;
+import lombok.Setter;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -19,6 +22,8 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
+import java.util.ArrayList;
+import java.util.List;
 import javax.annotation.Nullable;
 import java.net.InetSocketAddress;
 import java.util.UUID;
@@ -28,23 +33,29 @@ import static org.mockito.Mockito.*;
 
 public class RequestMuxerUnitTest extends Assert {
 
+  @Setter
+  boolean success = false;
+  @Setter
+  boolean failure = false;
+
   RequestMuxerConnectionPool connectionPool;
 
   RequestMuxer requestMuxer;
 
-  EmbeddedChannel channel;
+  List<EmbeddedChannel> channels = new ArrayList<>();
 
   @Rule
   public MockitoRule mockitoRule = MockitoJUnit.rule();
 
   @Before
   public void setUp() throws Exception {
-    channel = new EmbeddedChannel();
     Config config = ConfigFactory.load().getConfig("xio.testApplication.settings.requestMuxer");
     RequestMuxerConnectionPool.Connector connector = new RequestMuxerConnectionPool.Connector() {
       @Override
       public ListenableFuture<Channel> connect() {
         SettableFuture<Channel> result = SettableFuture.create();
+        EmbeddedChannel channel = new EmbeddedChannel();
+        channels.add(channel);
         result.set(channel);
         return result;
       }
@@ -60,44 +71,37 @@ public class RequestMuxerUnitTest extends Assert {
       ),
       connectionPool
     );
+    requestMuxer.start();
   }
 
   @Test
   public void writeTest() throws Exception{
-    SettableFuture<ChannelFuture> f = SettableFuture.create();
-    ChannelFuture cf = mock(ChannelFuture.class);
-    f.set(cf);
-    //    when(connector.connect(new InetSocketAddress("127.0.0.1",12000))).thenReturn(f);
-    when(cf.isSuccess()).thenReturn(true);
-
-    Channel helper = new EmbeddedChannel(mock(ChannelHandler.class));
-    Channel chMock = spy(helper);
-    ChannelPromise promise = new DefaultChannelPromise(chMock);
-
-    when(cf.channel()).thenReturn(helper);
-    when(chMock.isWritable()).thenReturn(true);
-    requestMuxer.start();
-    Object payload = new Integer(1);
-    SettableFuture<Void> f2 = SettableFuture.create();
-    DefaultChannelPromise cfmock = mock(DefaultChannelPromise.class);
-    when(chMock.writeAndFlush(payload)).thenReturn(promise);
-    promise.setSuccess();
-    when(cfmock.isSuccess()).thenReturn(true);
-    requestMuxer.write(payload, f2);
-    CountDownLatch latch = new CountDownLatch(1);
-    Futures.addCallback(f2, new FutureCallback<Void>() {
+    Integer payload = new Integer(1);
+    ListenableFuture<Void> future = requestMuxer.write(payload);
+    CountDownLatch done = new CountDownLatch(1);
+    Futures.addCallback(future, new FutureCallback<Void>() {
       @Override
-      public void onSuccess(@Nullable Void result) {
-        latch.countDown();
+      public void onSuccess(@Nullable Void v) {
+        setSuccess(true);
+        done.countDown();
       }
 
       @Override
-      public void onFailure(Throwable t) {
-
+      public void onFailure(Throwable throwable) {
+        setFailure(true);
+        done.countDown();
       }
     });
 
-    latch.await();
+    EmbeddedChannel channel = channels.get(0);
+    channel.runPendingTasks();
+    Uninterruptibles.awaitUninterruptibly(done); // block
+    assertTrue(future.isDone());
+    assertFalse(failure);
+    assertTrue(success);
+    Integer written = (Integer)channel.outboundMessages().peek();
+    assertEquals(payload, written);
+    requestMuxer.close();
   }
 
 }
