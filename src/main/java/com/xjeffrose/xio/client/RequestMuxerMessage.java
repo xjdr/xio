@@ -8,6 +8,9 @@ import lombok.Getter;
 @EqualsAndHashCode
 public class RequestMuxerMessage {
 
+  // RequestNoResponse
+  // RequestExpectResponse
+  // Response
   public static enum Op {
     Request,
     Response;
