@@ -45,14 +45,21 @@ public class RequestMuxerConnectionPool implements AutoCloseable {
 
   private final Deque<Channel> connectionQ = PlatformDependent.newConcurrentDeque();
 
+  // TODO(CK): remove and cleanup
   public interface Connector {
     ListenableFuture<Channel> connect();
   }
 
-  private final Connector connector;
+  private final RequestMuxerConnector connector;
   private AtomicBoolean connectionRebuild = new AtomicBoolean(false);
 
+  /*
   public RequestMuxerConnectionPool(Connector connector) {
+    this.connector = connector;
+  }
+  */
+
+  public RequestMuxerConnectionPool(RequestMuxerConnector connector) {
     this.connector = connector;
   }
 
@@ -143,6 +150,7 @@ public class RequestMuxerConnectionPool implements AutoCloseable {
   Optional<Channel> requestNode(){
     Channel channel = connectionQ.pollFirst();
 
+    // TODO(CK): should we check for isWriteable?
     if (channel != null && channel.isActive()) {
       connectionQ.addLast(channel);
       return Optional.of(channel);

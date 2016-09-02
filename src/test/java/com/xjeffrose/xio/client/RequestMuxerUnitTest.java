@@ -10,6 +10,7 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import io.netty.channel.*;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import lombok.Getter;
@@ -50,7 +51,11 @@ public class RequestMuxerUnitTest extends Assert {
   @Before
   public void setUp() throws Exception {
     Config config = ConfigFactory.load().getConfig("xio.testApplication.settings.requestMuxer");
-    RequestMuxerConnectionPool.Connector connector = new RequestMuxerConnectionPool.Connector() {
+    RequestMuxerLocalConnector connector = new RequestMuxerLocalConnector("test-muxer") {
+      @Override
+      protected ChannelHandler responseHandler() {
+        return null;
+      }
       @Override
       public ListenableFuture<Channel> connect() {
         SettableFuture<Channel> result = SettableFuture.create();
@@ -96,6 +101,7 @@ public class RequestMuxerUnitTest extends Assert {
     EmbeddedChannel channel = channels.get(0);
     channel.runPendingTasks();
     Uninterruptibles.awaitUninterruptibly(done); // block
+    channel.runPendingTasks();
     assertTrue(future.isDone());
     assertFalse(failure);
     assertTrue(success);

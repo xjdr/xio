@@ -23,17 +23,17 @@ import java.net.InetSocketAddress;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 
-import static org.mockito.Mockito.*;
-
 public class RequestMuxerConnectionPoolUnitTest extends Assert {
-  RequestMuxerConnectionPool.Connector connector;
-
-  @Rule
-  public MockitoRule mockitoRule = MockitoJUnit.rule();
+  RequestMuxerLocalConnector connector;
 
   @Before
   public void setUp() throws Exception {
-    connector = new RequestMuxerConnectionPool.Connector() {
+    connector = new RequestMuxerLocalConnector("test-connection-pool") {
+      @Override
+      protected ChannelHandler responseHandler() {
+        return null;
+      }
+
       @Override
       public ListenableFuture<Channel> connect() {
         SettableFuture<Channel> result = SettableFuture.create();
@@ -51,7 +51,12 @@ public class RequestMuxerConnectionPoolUnitTest extends Assert {
 
   @Test(expected=RuntimeException.class)
   public void connectFails() {
-    RequestMuxerConnectionPool.Connector flakyConnector = new RequestMuxerConnectionPool.Connector() {
+    RequestMuxerLocalConnector flakyConnector = new RequestMuxerLocalConnector("test-flaky-connection") {
+      @Override
+      protected ChannelHandler responseHandler() {
+        return null;
+      }
+
       @Override
       public ListenableFuture<Channel> connect() {
         SettableFuture<Channel> result = SettableFuture.create();

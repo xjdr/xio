@@ -35,6 +35,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
+// TODO(CK): consider renaming this to something not including Request
 @Slf4j
 public class RequestMuxer implements AutoCloseable {
   // TODO(CK): remove
