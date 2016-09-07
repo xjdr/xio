@@ -2,6 +2,7 @@ package com.xjeffrose.xio.client;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
+import com.xjeffrose.xio.core.FrameLengthCodec;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
@@ -40,14 +41,6 @@ abstract public class RequestMuxerConnector {
     this((SocketAddress)address);
   }
 
-  // TODO(CK): turn this into a class
-  static CombinedChannelDuplexHandler<LengthFieldBasedFrameDecoder, LengthFieldPrepender> newFrameLengthCodec() {
-    return new CombinedChannelDuplexHandler<LengthFieldBasedFrameDecoder, LengthFieldPrepender>(
-      new LengthFieldBasedFrameDecoder(65535, 0, 2, 0, 2),
-      new LengthFieldPrepender(2)
-    );
-  }
-
   abstract protected ChannelHandler responseHandler();
 
   protected ChannelHandler handler() {
@@ -56,7 +49,7 @@ abstract public class RequestMuxerConnector {
       protected void initChannel(Channel channel) {
         channel.pipeline()
           //.addLast(new LoggingHandler(LogLevel.ERROR))
-          .addLast("frame length codec", newFrameLengthCodec())
+          .addLast("frame length codec", new FrameLengthCodec())
           .addLast("muxing protocol codec", new RequestMuxerCodec())
           .addLast("response handler", responseHandler())
           ;
