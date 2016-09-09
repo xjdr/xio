@@ -27,6 +27,10 @@ public class Request {
   final SettableFuture<UUID> writeFuture;
   final Optional<SettableFuture<Response>> maybeResponseFuture;
 
+  public boolean expectsResponse() {
+    return maybeResponseFuture.isPresent();
+  }
+
   public void registerResponseCallback(FutureCallback<Response> callback) {
     registerResponseCallback(callback, MoreExecutors.directExecutor());
   }
