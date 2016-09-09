@@ -1,14 +1,14 @@
-package com.xjeffrose.xio.client;
+package com.xjeffrose.xio.client.mux;
 
 import com.google.common.primitives.Ints;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
 
-public class RequestMuxerEncoder extends MessageToByteEncoder<RequestMuxerMessage> {
+public class Encoder extends extends MessageToByteEncoder<Message> {
 
   @Override
-  protected void encode(ChannelHandlerContext ctx, RequestMuxerMessage msg, ByteBuf out) {
+  protected void encode(ChannelHandlerContext ctx, Message msg, ByteBuf out) {
     // uuid
     out.writeBytes(msg.id.toString().getBytes());
     // op

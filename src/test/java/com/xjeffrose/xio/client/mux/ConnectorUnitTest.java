@@ -1,10 +1,11 @@
-package com.xjeffrose.xio.client;
+package com.xjeffrose.xio.client.mux;
 
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import com.google.common.util.concurrent.Uninterruptibles;
+import com.xjeffrose.xio.core.FrameLengthCodec;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -35,7 +36,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class RequestMuxerConnectorUnitTest extends Assert {
+public class ConnectorUnitTest extends Assert {
 
   LocalServerChannel server;
 
@@ -80,8 +81,8 @@ public class RequestMuxerConnectorUnitTest extends Assert {
         public void initChannel(LocalChannel ch) throws Exception {
           ch.pipeline()
             .addLast("logging handler", new LoggingHandler(LogLevel.INFO))
-            .addLast("frame length codec", RequestMuxerConnector.newFrameLengthCodec())
-            .addLast("muxing protocol codec", new RequestMuxerCodec())
+            .addLast("frame length codec", new FrameLengthCodec())
+            .addLast("muxing protocol codec", new Codec())
             .addLast("server handler", newServerHandler())
             ;
         }
@@ -100,15 +101,15 @@ public class RequestMuxerConnectorUnitTest extends Assert {
 
   @Test
   public void testLocalChannel() throws ExecutionException {
-    AtomicReference<RequestMuxerMessage> responseMessage = new AtomicReference<>();
+    AtomicReference<Message> responseMessage = new AtomicReference<>();
     CountDownLatch latch = new CountDownLatch(1);
-    RequestMuxerConnector connector = new RequestMuxerConnector(address) {
+    Connector connector = new Connector(address) {
       @Override
       protected ChannelHandler responseHandler() {
-        return new SimpleChannelInboundHandler<RequestMuxerMessage>() {
+        return new SimpleChannelInboundHandler<Message>() {
 
           @Override
-          public void channelRead0(ChannelHandlerContext ctx, RequestMuxerMessage msg) throws Exception {
+          public void channelRead0(ChannelHandlerContext ctx, Message msg) throws Exception {
             responseMessage.set(msg);
             latch.countDown();
           }
@@ -153,7 +154,7 @@ public class RequestMuxerConnectorUnitTest extends Assert {
 
     Uninterruptibles.awaitUninterruptibly(done); // block
 
-    RequestMuxerMessage message = new RequestMuxerMessage();
+    Message message = new Message();
     Channel client = Uninterruptibles.getUninterruptibly(future);
     client.writeAndFlush(message).awaitUninterruptibly();
 

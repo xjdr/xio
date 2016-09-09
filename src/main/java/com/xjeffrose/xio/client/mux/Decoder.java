@@ -1,4 +1,4 @@
-package com.xjeffrose.xio.client;
+package com.xjeffrose.xio.client.mux;
 
 import com.google.common.primitives.Ints;
 import io.netty.buffer.ByteBuf;
@@ -7,7 +7,7 @@ import io.netty.handler.codec.ByteToMessageDecoder;
 
 import java.util.List;
 
-public class RequestMuxerDecoder extends ByteToMessageDecoder {
+public class Decoder extends ByteToMessageDecoder {
 
   @Override
   protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) {
@@ -36,6 +36,6 @@ public class RequestMuxerDecoder extends ByteToMessageDecoder {
     byte[] valBytes = new byte[Ints.fromByteArray(valSizeBytes)];
     in.readBytes(valBytes);
 
-    out.add(new RequestMuxerMessage(uuidBytes, opBytes, colFamBytes, keyBytes, valBytes));
+    out.add(new Message(uuidBytes, opBytes, colFamBytes, keyBytes, valBytes));
   }
 }

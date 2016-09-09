@@ -1,4 +1,4 @@
-package com.xjeffrose.xio.client;
+package com.xjeffrose.xio.client.mux;
 
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
@@ -37,7 +37,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 @Slf4j
-public class RequestMuxerConnectionPool implements AutoCloseable {
+public class ConnectionPool implements AutoCloseable {
   // TODO(CK): move to config
   private static final int POOL_SIZE = 4;
 
@@ -45,12 +45,8 @@ public class RequestMuxerConnectionPool implements AutoCloseable {
 
   private final Deque<Channel> connectionQ = PlatformDependent.newConcurrentDeque();
 
-  // TODO(CK): remove and cleanup
-  public interface Connector {
-    ListenableFuture<Channel> connect();
-  }
+  private final Connector connector;
 
-  private final RequestMuxerConnector connector;
   private AtomicBoolean connectionRebuild = new AtomicBoolean(false);
 
   /*
@@ -59,7 +55,7 @@ public class RequestMuxerConnectionPool implements AutoCloseable {
   }
   */
 
-  public RequestMuxerConnectionPool(RequestMuxerConnector connector) {
+  public ConnectionPool(Connector connector) {
     this.connector = connector;
   }
 
@@ -116,7 +112,7 @@ public class RequestMuxerConnectionPool implements AutoCloseable {
     }
   }
 
-  void rebuildConnectionQ() {
+  public void rebuildConnectionQ() {
     if (connectionRebuild.get() == false) {
       return;
     }
@@ -147,7 +143,7 @@ public class RequestMuxerConnectionPool implements AutoCloseable {
     connectionRebuild.set(false);
   }
 
-  Optional<Channel> requestNode(){
+  public Optional<Channel> requestNode(){
     Channel channel = connectionQ.pollFirst();
 
     // TODO(CK): should we check for isWriteable?

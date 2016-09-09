@@ -1,4 +1,4 @@
-package com.xjeffrose.xio.client;
+package com.xjeffrose.xio.client.mux;
 
 import io.netty.channel.Channel;
 import io.netty.channel.EventLoopGroup;
@@ -6,7 +6,7 @@ import io.netty.channel.local.LocalAddress;
 import io.netty.channel.local.LocalChannel;
 import io.netty.channel.local.LocalEventLoopGroup;
 
-abstract public class RequestMuxerLocalConnector extends RequestMuxerConnector {
+abstract public class LocalConnector extends Connector {
 
   @Override
   protected EventLoopGroup group() {
@@ -18,11 +18,11 @@ abstract public class RequestMuxerLocalConnector extends RequestMuxerConnector {
     return LocalChannel.class;
   }
 
-  public RequestMuxerLocalConnector(LocalAddress address) {
+  public LocalConnector(LocalAddress address) {
     super(address);
   }
 
-  public RequestMuxerLocalConnector(String address) {
+  public LocalConnector(String address) {
     this(new LocalAddress(address));
   }
 

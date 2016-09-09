@@ -1,10 +1,12 @@
-package com.xjeffrose.xio.client;
+package com.xjeffrose.xio.client.mux;
 
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.xjeffrose.xio.client.mux.ConnectionPool;
+import com.xjeffrose.xio.client.mux.LocalConnector;
 import io.netty.channel.*;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -23,12 +25,12 @@ import java.net.InetSocketAddress;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 
-public class RequestMuxerConnectionPoolUnitTest extends Assert {
-  RequestMuxerLocalConnector connector;
+public class ConnectionPoolUnitTest extends Assert {
+  LocalConnector connector;
 
   @Before
   public void setUp() throws Exception {
-    connector = new RequestMuxerLocalConnector("test-connection-pool") {
+    connector = new LocalConnector("test-connection-pool") {
       @Override
       protected ChannelHandler responseHandler() {
         return null;
@@ -45,13 +47,13 @@ public class RequestMuxerConnectionPoolUnitTest extends Assert {
 
   @Test
   public void connectSucceeds() throws Exception {
-    RequestMuxerConnectionPool pool = new RequestMuxerConnectionPool(connector);
+    ConnectionPool pool = new ConnectionPool(connector);
     pool.start();
   }
 
   @Test(expected=RuntimeException.class)
   public void connectFails() {
-    RequestMuxerLocalConnector flakyConnector = new RequestMuxerLocalConnector("test-flaky-connection") {
+    LocalConnector flakyConnector = new LocalConnector("test-flaky-connection") {
       @Override
       protected ChannelHandler responseHandler() {
         return null;
@@ -64,7 +66,7 @@ public class RequestMuxerConnectionPoolUnitTest extends Assert {
         return result;
       }
     };
-    RequestMuxerConnectionPool pool = new RequestMuxerConnectionPool(flakyConnector);
+    ConnectionPool pool = new ConnectionPool(flakyConnector);
     pool.start();
   }
 

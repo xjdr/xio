@@ -1,4 +1,4 @@
-package com.xjeffrose.xio.client;
+package com.xjeffrose.xio.client.mux;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
@@ -22,22 +22,22 @@ import io.netty.handler.logging.LoggingHandler;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 
-abstract public class RequestMuxerConnector {
+abstract public class Connector {
 
   private final SocketAddress address;
 
   private final Bootstrap baseBootstrap;
 
-  private RequestMuxerConnector(SocketAddress address) {
+  private Connector(SocketAddress address) {
     this.address = address;
     baseBootstrap = buildBootstrap();
   }
 
-  public RequestMuxerConnector(InetSocketAddress address) {
+  public Connector(InetSocketAddress address) {
     this((SocketAddress)address);
   }
 
-  public RequestMuxerConnector(LocalAddress address) {
+  public Connector(LocalAddress address) {
     this((SocketAddress)address);
   }
 
@@ -50,7 +50,7 @@ abstract public class RequestMuxerConnector {
         channel.pipeline()
           //.addLast(new LoggingHandler(LogLevel.ERROR))
           .addLast("frame length codec", new FrameLengthCodec())
-          .addLast("muxing protocol codec", new RequestMuxerCodec())
+          .addLast("muxing protocol codec", new Codec())
           .addLast("response handler", responseHandler())
           ;
       }

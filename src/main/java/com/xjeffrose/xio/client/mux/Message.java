@@ -1,4 +1,4 @@
-package com.xjeffrose.xio.client;
+package com.xjeffrose.xio.client.mux;
 
 import com.google.common.primitives.Ints;
 import java.util.UUID;
@@ -6,7 +6,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 @EqualsAndHashCode
-public class RequestMuxerMessage {
+public class Message {
 
   // RequestNoResponse
   // RequestExpectResponse
