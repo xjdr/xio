@@ -8,6 +8,10 @@ import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.SettableFuture;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.typesafe.config.Config;
+import com.xjeffrose.xio.client.mux.ConnectionPool;
+import com.xjeffrose.xio.client.mux.Request;
+import com.xjeffrose.xio.client.mux.RequestResponseCodec;
+import com.xjeffrose.xio.client.mux.Response;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
@@ -48,7 +52,7 @@ public class RequestMuxer implements AutoCloseable {
   private final Duration rebuildConnectionLoopInterval;
 
   private final EventLoopGroup workerLoop;
-  private final RequestMuxerConnectionPool connectionPool;
+  private final ConnectionPool connectionPool;
   private final AtomicBoolean isRunning = new AtomicBoolean();
 
   private final Queue<MuxedMessage> messageQ = Queues.newConcurrentLinkedQueue();
@@ -56,7 +60,7 @@ public class RequestMuxer implements AutoCloseable {
   private AtomicLong counter = new AtomicLong();
   private List<ScheduledFuture<?>> scheduledFutures = Collections.synchronizedList(new ArrayList<>());
 
-  public RequestMuxer(Config config, EventLoopGroup workerLoop, RequestMuxerConnectionPool connectionPool) {
+  public RequestMuxer(Config config, EventLoopGroup workerLoop, ConnectionPool connectionPool) {
     messagesPerBatch = config.getInt("messagesPerBatch");
     drainMessageQInterval = config.getDuration("drainMessageQInterval");
     multiplierIncrementInterval = config.getDuration("multiplierIncrementInterval");
@@ -124,7 +128,7 @@ public class RequestMuxer implements AutoCloseable {
 
   private Request writeOrQueue(Object payload, Request request) {
     if (!isRunning.get()) {
-      request.writeFuture.setException(new IllegalStateException("RequestMuxer has not been started"));
+      request.getWritePromise().setException(new IllegalStateException("RequestMuxer has not been started"));
       return request;
     }
 
@@ -160,7 +164,7 @@ public class RequestMuxer implements AutoCloseable {
       @Override
       public void operationComplete(ChannelFuture future) throws Exception {
         if (future.isSuccess()) {
-          promise.set(request.id);
+          promise.set(request.getId());
         } else {
           promise.setException(future.cause());
         }
@@ -181,7 +185,8 @@ public class RequestMuxer implements AutoCloseable {
         }
 
         count++;
-        ch.write(mm.getMsg()).addListener(newWriteListener(mm.request.writeFuture, mm.request));
+        RequestResponseCodec.prepareRequest(ch, mm.request);
+        ch.write(mm.getMsg()).addListener(newWriteListener(mm.request.getWritePromise(), mm.request));
       }
       // flush here instead of calling writeAndFlush inside of the for loop
       // this way we queue up a series of writes and flush them all at once
@@ -194,7 +199,8 @@ public class RequestMuxer implements AutoCloseable {
   private void writeMessage(Object payload, Request request) {
     Optional<Channel> maybeChannel = connectionPool.requestNode();
     if (maybeChannel.isPresent()) {
-      maybeChannel.get().writeAndFlush(payload).addListener(newWriteListener(request.writeFuture, request));
+      RequestResponseCodec.prepareRequest(maybeChannel.get(), request);
+      maybeChannel.get().writeAndFlush(payload).addListener(newWriteListener(request.getWritePromise(), request));
       counter.decrementAndGet();
     } else {
       // No channel available, queue this write
@@ -208,48 +214,5 @@ public class RequestMuxer implements AutoCloseable {
     final Request request;
   }
 
-  public class Request {
-    @Getter
-    private final UUID id;
-    final SettableFuture<UUID> writeFuture;
-    final Optional<SettableFuture<Response>> maybeResponseFuture;
-
-    public void registerResponseCallback(FutureCallback<Response> callback) {
-      registerResponseCallback(callback, MoreExecutors.directExecutor());
-    }
-
-    public void registerResponseCallback(FutureCallback<Response> callback, Executor executor) {
-      if (maybeResponseFuture.isPresent()) {
-        Futures.addCallback(maybeResponseFuture.get(), callback, executor);
-      } else {
-        callback.onFailure(new RuntimeException("Request does not expect a Response"));
-      }
-    }
-
-    public ListenableFuture<UUID> getWriteFuture() {
-      return writeFuture;
-    }
-
-    public ListenableFuture<Response> getResponseFuture() {
-      return maybeResponseFuture.get();
-    }
-    Request(UUID id, SettableFuture<UUID> writeFuture, Optional<SettableFuture<Response>> maybeResponseFuture) {
-      this.id = id;
-      this.writeFuture = writeFuture;
-      this.maybeResponseFuture = maybeResponseFuture;
-    }
-    Request(UUID id, SettableFuture<UUID> writeFuture, SettableFuture<Response> responseFuture) {
-      this(id, writeFuture, Optional.of(responseFuture));
-    }
-    Request(UUID id, SettableFuture<UUID> writeFuture) {
-      this(id, writeFuture, Optional.empty());
-    }
-  }
-
-  @Value
-  public class Response {
-    private final UUID inResponseTo;
-    private final Object payload;
-  }
 
 }
