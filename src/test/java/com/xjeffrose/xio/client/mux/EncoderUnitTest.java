@@ -58,10 +58,7 @@ public class EncoderUnitTest extends Assert {
   }
 
   @Test
-  public void testErrorMultipleByteBufs() {
-    thrown.expect(EncoderException.class);
-    thrown.expectMessage("Can only encode a single payload ByteBuf");
-
+  public void testWriteMultipleByteBufs() {
     Integer payload = new Integer(1);
     ByteBuf buf1 = Unpooled.buffer();
     buf1.writeBytes(Ints.toByteArray(payload));
@@ -69,9 +66,28 @@ public class EncoderUnitTest extends Assert {
     ByteBuf buf2 = Unpooled.buffer();
     buf2.writeBytes(Ints.toByteArray(payload));
 
+    Request request = new Request(UUID.fromString("6566a1c5-b0ec-47a8-8e77-b5173b78873a"), SettableFuture.create());
+    Message message = new Message(request, payload);
+
     channel.writeOutbound(buf1);
     channel.writeOutbound(buf2);
+    channel.writeOutbound(message);
     channel.runPendingTasks();
+
+    ByteBuf encoded = (ByteBuf)channel.outboundMessages().poll();
+    System.out.println("encoded: " + encoded);
+    String expectedEncoded = new StringBuilder()
+      .append("         +-------------------------------------------------+\n")
+      .append("         |  0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f |\n")
+      .append("+--------+-------------------------------------------------+----------------+\n")
+      .append("|00000000| 36 35 36 36 61 31 63 35 2d 62 30 65 63 2d 34 37 |6566a1c5-b0ec-47|\n")
+      .append("|00000010| 61 38 2d 38 65 37 37 2d 62 35 31 37 33 62 37 38 |a8-8e77-b5173b78|\n")
+      .append("|00000020| 38 37 33 61 00 00 00 00 00 00 00 08 00 00 00 01 |873a............|\n")
+      .append("|00000030| 00 00 00 01                                     |....            |\n")
+      .append("+--------+-------------------------------------------------+----------------+")
+      .toString();
+
+    assertEquals("Expected:\n" + expectedEncoded, expectedEncoded, ByteBufUtil.prettyHexDump(encoded));
   }
 
   @Test

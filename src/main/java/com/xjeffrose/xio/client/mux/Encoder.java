@@ -37,9 +37,6 @@ public class Encoder extends ChannelOutboundHandlerAdapter {
         currentMessage = ctx.alloc().compositeBuffer();
         currentHeader = ctx.alloc().buffer(40, 256);
         currentMessage.addComponent(currentHeader);
-      } else {
-        reset();
-        throw new EncoderException("Can only encode a single payload ByteBuf");
       }
 
       currentMessage.addComponent(true, (ByteBuf)msg);
