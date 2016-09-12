@@ -1,4 +1,4 @@
-package com.xjeffrose.xio.client.mux;
+package com.xjeffrose.xio.mux;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;

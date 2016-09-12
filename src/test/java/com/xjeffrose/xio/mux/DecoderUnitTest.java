@@ -1,13 +1,11 @@
-package com.xjeffrose.xio.client.mux;
+package com.xjeffrose.xio.mux;
 
 import com.google.common.primitives.Ints;
-import com.google.common.util.concurrent.SettableFuture;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.codec.DecoderException;
-import io.netty.handler.codec.EncoderException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;

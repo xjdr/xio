@@ -1,4 +1,4 @@
-package com.xjeffrose.xio.client.mux;
+package com.xjeffrose.xio.mux;
 
 import com.google.common.primitives.Ints;
 import io.netty.buffer.ByteBuf;

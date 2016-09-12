@@ -8,23 +8,21 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
-import com.xjeffrose.xio.client.mux.ClientCodec;
-import com.xjeffrose.xio.client.mux.ConnectionPool;
-import com.xjeffrose.xio.client.mux.LocalConnector;
-import com.xjeffrose.xio.client.mux.Request;
-import com.xjeffrose.xio.client.mux.Response;
+import com.xjeffrose.xio.mux.ClientCodec;
+import com.xjeffrose.xio.mux.ConnectionPool;
+import com.xjeffrose.xio.mux.LocalConnector;
+import com.xjeffrose.xio.mux.Request;
+import com.xjeffrose.xio.mux.Response;
 import io.netty.channel.*;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
-import lombok.Getter;
 import lombok.Setter;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
@@ -32,14 +30,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import javax.annotation.Nullable;
-import java.net.InetSocketAddress;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
-
-import static org.mockito.Mockito.*;
 
 public class RequestMuxerUnitTest extends Assert {
 

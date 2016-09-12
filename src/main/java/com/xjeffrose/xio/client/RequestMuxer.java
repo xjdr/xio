@@ -1,23 +1,18 @@
 package com.xjeffrose.xio.client;
 
 import com.google.common.collect.Queues;
-import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.SettableFuture;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.typesafe.config.Config;
-import com.xjeffrose.xio.client.mux.ConnectionPool;
-import com.xjeffrose.xio.client.mux.Message;
-import com.xjeffrose.xio.client.mux.Request;
-import com.xjeffrose.xio.client.mux.Response;
+import com.xjeffrose.xio.mux.ConnectionPool;
+import com.xjeffrose.xio.mux.Message;
+import com.xjeffrose.xio.mux.Request;
+import com.xjeffrose.xio.mux.Response;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.EventLoopGroup;
 import io.netty.util.concurrent.ScheduledFuture;
-import lombok.Getter;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 
@@ -25,7 +20,6 @@ import java.time.Duration;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.UUID;
-import java.util.concurrent.Executor;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

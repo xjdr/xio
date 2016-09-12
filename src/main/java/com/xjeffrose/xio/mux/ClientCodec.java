@@ -1,4 +1,4 @@
-package com.xjeffrose.xio.client.mux;
+package com.xjeffrose.xio.mux;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Maps;
@@ -15,7 +15,7 @@ import java.util.UUID;
 @Slf4j
 public class ClientCodec extends ChannelDuplexHandler {
 
-  private static AttributeKey<Map<UUID, Request>> KEY = AttributeKey.newInstance("com.xjeffrose.xio.client.mux.RequestMap");
+  private static AttributeKey<Map<UUID, Request>> KEY = AttributeKey.newInstance("com.xjeffrose.xio.mux.RequestMap");
 
   private Object currentPayload;
   private boolean error = false;

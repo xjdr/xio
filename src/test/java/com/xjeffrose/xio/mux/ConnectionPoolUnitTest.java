@@ -1,25 +1,14 @@
-package com.xjeffrose.xio.client.mux;
+package com.xjeffrose.xio.mux;
 
-import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.xjeffrose.xio.client.mux.ConnectionPool;
-import com.xjeffrose.xio.client.mux.LocalConnector;
 import io.netty.channel.*;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
 import io.netty.channel.embedded.EmbeddedChannel;
-import io.netty.channel.nio.NioEventLoopGroup;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.slf4j.Logger;
@@ -28,11 +17,6 @@ import static org.mockito.Matchers.any;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.when;
-
-import javax.annotation.Nullable;
-import java.net.InetSocketAddress;
-import java.util.UUID;
-import java.util.concurrent.CountDownLatch;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ConnectionPool.class, LoggerFactory.class})
