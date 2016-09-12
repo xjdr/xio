@@ -2,29 +2,65 @@ package com.xjeffrose.xio.client.mux;
 
 import com.google.common.primitives.Ints;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.CompositeByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.MessageToByteEncoder;
+import io.netty.channel.ChannelOutboundHandlerAdapter;
+import io.netty.channel.ChannelPromise;
+import io.netty.handler.codec.EncoderException;
 
-public class Encoder extends extends MessageToByteEncoder<Message> {
+public class Encoder extends ChannelOutboundHandlerAdapter {
 
-  @Override
-  protected void encode(ChannelHandlerContext ctx, Message msg, ByteBuf out) {
+  private CompositeByteBuf currentMessage;
+  private ByteBuf currentHeader;
+  private boolean error = false;
+
+  private void encodeMessage(Message msg, int payloadSize, ByteBuf out) {
     // uuid
     out.writeBytes(msg.id.toString().getBytes());
     // op
     out.writeBytes(Ints.toByteArray(msg.op.ordinal()));
-    // colFamSize
-    out.writeBytes(Ints.toByteArray(msg.colFam.getBytes().length));
-    // colFam
-    out.writeBytes(msg.colFam.getBytes());
-    // keySize
-    out.writeBytes(Ints.toByteArray(msg.key.getBytes().length));
-    // key
-    out.writeBytes(msg.key.getBytes());
-    // valSize
-    out.writeBytes(Ints.toByteArray(msg.val.getBytes().length));
-    // val
-    out.writeBytes(msg.val.getBytes());
+    // payloadSize
+    out.writeBytes(Ints.toByteArray(payloadSize));
+  }
+
+  private void reset() {
+    currentMessage = null;
+    currentHeader = null;
+    error = false;
+  }
+
+  @Override
+  public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
+
+    if (msg instanceof ByteBuf) {
+      if (currentMessage == null) {
+        currentMessage = ctx.alloc().compositeBuffer();
+        currentHeader = ctx.alloc().buffer(40, 256);
+        currentMessage.addComponent(currentHeader);
+      } else {
+        reset();
+        throw new EncoderException("Can only encode a single payload ByteBuf");
+      }
+
+      currentMessage.addComponent(true, (ByteBuf)msg);
+    } else if (msg instanceof Message) {
+      if (error) {
+        reset();
+        throw new EncoderException("Can only encode Message or ByteBuf");
+      }
+      if (currentMessage == null) {
+        reset();
+        throw new EncoderException("Encoder received Message without anything to encode");
+      }
+
+      encodeMessage((Message)msg, currentMessage.readableBytes(), currentHeader);
+      currentMessage.addComponent(true, 0, currentHeader);
+
+      ctx.write(currentMessage, promise);
+      reset();
+    } else {
+      error = true;
+    }
   }
 
 }
