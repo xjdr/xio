@@ -4,8 +4,10 @@ import com.google.common.primitives.Ints;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
+import io.netty.handler.codec.DecoderException;
 
 import java.util.List;
+import java.util.UUID;
 
 public class Decoder extends ByteToMessageDecoder {
 
@@ -14,28 +16,23 @@ public class Decoder extends ByteToMessageDecoder {
     // uuid
     byte[] uuidBytes = new byte[36];
     in.readBytes(uuidBytes);
+    UUID id = UUID.fromString(new String(uuidBytes));
+
     // op
     byte[] opBytes = new byte[4];
     in.readBytes(opBytes);
-    // colFamSize
-    byte[] colFamSizeBytes = new byte[4];
-    in.readBytes(colFamSizeBytes);
-    // colFam
-    byte[] colFamBytes = new byte[Ints.fromByteArray(colFamSizeBytes)];
-    in.readBytes(colFamBytes);
-    // keySize
-    byte[] keySizeBytes = new byte[4];
-    in.readBytes(keySizeBytes);
-    // key
-    byte[] keyBytes = new byte[Ints.fromByteArray(keySizeBytes)];
-    in.readBytes(keyBytes);
-    // valSize
-    byte[] valSizeBytes = new byte[4];
-    in.readBytes(valSizeBytes);
-    // val
-    byte[] valBytes = new byte[Ints.fromByteArray(valSizeBytes)];
-    in.readBytes(valBytes);
+    Message.Op op = Message.Op.fromBytes(opBytes);
 
-    out.add(new Message(uuidBytes, opBytes, colFamBytes, keyBytes, valBytes));
+    // payloadSize
+    byte[] payloadSizeBytes = new byte[4];
+    in.readBytes(payloadSizeBytes);
+    int payloadSize = Ints.fromByteArray(payloadSizeBytes);
+
+    if (in.readableBytes() < payloadSize) {
+      throw new DecoderException("Not enough bytes available to decode payload");
+    }
+
+    out.add(in.readSlice(payloadSize).retain());
+    out.add(Message.buildResponse(id, op));
   }
 }
