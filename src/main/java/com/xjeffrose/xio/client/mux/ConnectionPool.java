@@ -49,12 +49,6 @@ public class ConnectionPool implements AutoCloseable {
 
   private AtomicBoolean connectionRebuild = new AtomicBoolean(false);
 
-  /*
-  public RequestMuxerConnectionPool(Connector connector) {
-    this.connector = connector;
-  }
-  */
-
   public ConnectionPool(Connector connector) {
     this.connector = connector;
   }
