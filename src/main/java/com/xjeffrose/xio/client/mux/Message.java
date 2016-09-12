@@ -5,20 +5,33 @@ import java.util.UUID;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
+/**
+ * Message(Request, Payload) - Request
+ * Message(UUID) - Response
+ */
 @EqualsAndHashCode
 public class Message {
 
-  // RequestNoResponse
-  // RequestExpectResponse
-  // Response
   public static enum Op {
-    Request,
+    RequestNoResponse,
+    RequestExpectResponse,
     Response;
 
     public static Op fromBytes(byte[] opBytes) {
       return Op.values()[Ints.fromByteArray(opBytes)];
     }
+
+    public byte toByte() {
+      return (byte)ordinal();
+    }
+
+    public static Op fromByte(byte ordinal) {
+      return Op.values()[ordinal];
+    }
   }
+
+  @Getter
+  final Request request;
 
   @Getter
   final UUID id;
@@ -27,28 +40,32 @@ public class Message {
   final Op op;
 
   @Getter
-  final String colFam;
+  final Object payload;
 
-  @Getter
-  final String key;
-
-  @Getter
-  final String val;
-
-  public RequestMuxerMessage() {
-    id = UUID.randomUUID();
-    op = Op.Request;
-    colFam = "";
-    key = "";
-    val = "";
+  public Message(Request request, Object payload) {
+    this.request = request;
+    this.id = request.getId();
+    if (request.expectsResponse()) {
+      op = Op.RequestExpectResponse;
+    } else {
+      op = Op.RequestNoResponse;
+    }
+    this.payload = payload;
   }
 
-  public RequestMuxerMessage(byte[] idBytes, byte[] opBytes, byte[] colFamBytes, byte[] keyBytes, byte[] valBytes) {
-    id = UUID.fromString(new String(idBytes));
-    op = Op.fromBytes(opBytes);
-    colFam = new String(colFamBytes);
-    key = new String(keyBytes);
-    val = new String(valBytes);
+  private Message(UUID id, Op op) {
+    this.id = id;
+    this.op = op;
+    this.payload = null;
+    request = null;
+  }
+
+  static public Message buildResponse(UUID id, Op op) {
+    return new Message(id, op);
+  }
+
+  static public Message buildResponse(UUID id) {
+    return new Message(id, Op.Response);
   }
 
 }
