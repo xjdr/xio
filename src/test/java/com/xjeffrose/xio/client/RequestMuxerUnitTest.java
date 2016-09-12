@@ -8,6 +8,11 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+import com.xjeffrose.xio.client.mux.ClientCodec;
+import com.xjeffrose.xio.client.mux.ConnectionPool;
+import com.xjeffrose.xio.client.mux.LocalConnector;
+import com.xjeffrose.xio.client.mux.Request;
+import com.xjeffrose.xio.client.mux.Response;
 import io.netty.channel.*;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
@@ -27,6 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 import java.net.InetSocketAddress;
 import java.util.UUID;
@@ -42,11 +48,13 @@ public class RequestMuxerUnitTest extends Assert {
   @Setter
   boolean failure = false;
 
-  RequestMuxerConnectionPool connectionPool;
+  ConnectionPool connectionPool;
 
   RequestMuxer requestMuxer;
 
   List<EmbeddedChannel> channels = new ArrayList<>();
+
+  EventLoopGroup group;
 
   @Rule
   public MockitoRule mockitoRule = MockitoJUnit.rule();
@@ -54,7 +62,7 @@ public class RequestMuxerUnitTest extends Assert {
   @Before
   public void setUp() throws Exception {
     Config config = ConfigFactory.load().getConfig("xio.testApplication.settings.requestMuxer");
-    RequestMuxerLocalConnector connector = new RequestMuxerLocalConnector("test-muxer") {
+    LocalConnector connector = new LocalConnector("test-muxer") {
       @Override
       protected ChannelHandler responseHandler() {
         return null;
@@ -63,20 +71,24 @@ public class RequestMuxerUnitTest extends Assert {
       public ListenableFuture<Channel> connect() {
         SettableFuture<Channel> result = SettableFuture.create();
         EmbeddedChannel channel = new EmbeddedChannel();
+        channel.pipeline().addLast(new ClientCodec());
         channels.add(channel);
         result.set(channel);
         return result;
       }
     };
-    connectionPool = new RequestMuxerConnectionPool(connector);
+    // TODO(CK): Override connection pool request node instead of connector.connect
+    connectionPool = new ConnectionPool(connector);
+
+    group = new NioEventLoopGroup(5,
+      new ThreadFactoryBuilder()
+      .setNameFormat("chicagoClient-nioEventLoopGroup-%d")
+      .build()
+    );
 
     requestMuxer = new RequestMuxer(
       config,
-      new NioEventLoopGroup(5,
-        new ThreadFactoryBuilder()
-         .setNameFormat("chicagoClient-nioEventLoopGroup-%d")
-         .build()
-      ),
+      group,
       connectionPool
     );
     requestMuxer.start();
@@ -85,7 +97,7 @@ public class RequestMuxerUnitTest extends Assert {
   @Test
   public void writeTest() throws Exception {
     Integer payload = new Integer(1);
-    RequestMuxer.Request request = requestMuxer.write(payload);
+    Request request = requestMuxer.write(payload);
     CountDownLatch done = new CountDownLatch(1);
     Futures.addCallback(request.getWriteFuture(), new FutureCallback<UUID>() {
       @Override
@@ -113,6 +125,7 @@ public class RequestMuxerUnitTest extends Assert {
     requestMuxer.close();
   }
 
+  // TODO(CK): Refactor this into a helper class
   public <T> Optional<T> maybeGetFrom(Future<T> future) {
     try {
       return Optional.ofNullable(Uninterruptibles.getUninterruptibly(future)); // block
@@ -121,6 +134,7 @@ public class RequestMuxerUnitTest extends Assert {
     }
   }
 
+  // TODO(CK): Refactor this into a helper class
   public <T> void blockingCallback(ListenableFuture<T> future, FutureCallback<T> callback) {
     CountDownLatch done = new CountDownLatch(1);
     Futures.addCallback(future, new FutureCallback<T>() {
@@ -139,19 +153,23 @@ public class RequestMuxerUnitTest extends Assert {
     Uninterruptibles.awaitUninterruptibly(done); // block
   }
 
+  // TODO(CK): Refactor this into a functional test
   @Test
   public void responseTest() {
     Integer payload = new Integer(1);
-    RequestMuxer.Request request = requestMuxer.writeExpectResponse(payload);
+    Request request = requestMuxer.writeExpectResponse(payload);
     CountDownLatch done = new CountDownLatch(1);
+    EmbeddedChannel channel = channels.get(0);
     Optional<UUID> result = maybeGetFrom(request.getWriteFuture());
     assertTrue(result.isPresent());
     result.ifPresent(uuid -> {
-      // TODO(CK): write response
+      // simulate write response
+      Response response = new Response(uuid, payload);
+      request.getResponsePromise().set(response);
       // add callback when the response future comes in
-      blockingCallback(request.getResponseFuture(), new FutureCallback<RequestMuxer.Response>() {
+      blockingCallback(request.getResponseFuture(), new FutureCallback<Response>() {
         @Override
-        public void onSuccess(RequestMuxer.Response response) {
+        public void onSuccess(Response response) {
           setSuccess(true);
         }
 
@@ -161,6 +179,37 @@ public class RequestMuxerUnitTest extends Assert {
         }
       }); // block
     });
+    assertTrue(success);
+    assertFalse(failure);
   }
+
+  // testWrite(payload)
+  // assert request has the correct op
+
+  // testWriteExpectResponse(payload)
+  // assert request has the correct op
+
+  // testWriteMessageHaveChannel
+  // assert message written
+
+  // testWriteMessageNoChannel
+  // assert message queued
+
+  // testDrainMessageQ
+  // assert no more than X messages processed
+
+  // testWriteOrQueueWrites
+  // assert message written
+
+  // testWriteOrQueueQueues
+  // assert message queued
+
+  // testWriteNotRunning
+  // assert promise fails
+
+  // testCloseStopsRunning
+  // testCloseCancelsScheduledTasks
+  // testCloseDrainsMessageQ
+  // testCloseConnectionPoolClosed
 
 }

@@ -9,8 +9,8 @@ import com.google.common.util.concurrent.SettableFuture;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.typesafe.config.Config;
 import com.xjeffrose.xio.client.mux.ConnectionPool;
+import com.xjeffrose.xio.client.mux.Message;
 import com.xjeffrose.xio.client.mux.Request;
-import com.xjeffrose.xio.client.mux.RequestResponseCodec;
 import com.xjeffrose.xio.client.mux.Response;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -33,6 +33,23 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+
+
+/**
+ * write flow:
+ *
+ * write(Payload)
+ * channel.write(RequestMessage<Payload>)
+ * RequestEncoder.encode()
+ * PayloadEncoder.encode()
+ * Encoder.encode()
+ * FrameLengthCodec.encode()
+ *
+ * --
+ * ClientCodec = RequestEncoder, ResponseDecoder
+ * ServerCodec = RequestDecoder, ResponseEncoder
+ *
+ */
 
 // TODO(CK): consider renaming this to something not including Request
 @Slf4j
@@ -126,7 +143,7 @@ public class RequestMuxer implements AutoCloseable {
     connectionPool.close();
   }
 
-  private Request writeOrQueue(Object payload, Request request) {
+  Request writeOrQueue(Object payload, Request request) {
     if (!isRunning.get()) {
       request.getWritePromise().setException(new IllegalStateException("RequestMuxer has not been started"));
       return request;
@@ -172,7 +189,8 @@ public class RequestMuxer implements AutoCloseable {
     };
   }
 
-  private void drainMessageQ() {
+  // TODO(CK): split out some of this complexity?
+  void drainMessageQ() {
     Optional<Channel> maybeChannel = connectionPool.requestNode();
     maybeChannel.ifPresent((ch) -> {
       int count = 0;
@@ -185,8 +203,8 @@ public class RequestMuxer implements AutoCloseable {
         }
 
         count++;
-        RequestResponseCodec.prepareRequest(ch, mm.request);
-        ch.write(mm.getMsg()).addListener(newWriteListener(mm.request.getWritePromise(), mm.request));
+        Message message = new Message(mm.request, mm.msg);
+        ch.write(message).addListener(newWriteListener(mm.request.getWritePromise(), mm.request));
       }
       // flush here instead of calling writeAndFlush inside of the for loop
       // this way we queue up a series of writes and flush them all at once
@@ -196,11 +214,11 @@ public class RequestMuxer implements AutoCloseable {
     });
   }
 
-  private void writeMessage(Object payload, Request request) {
+  void writeMessage(Object payload, Request request) {
     Optional<Channel> maybeChannel = connectionPool.requestNode();
     if (maybeChannel.isPresent()) {
-      RequestResponseCodec.prepareRequest(maybeChannel.get(), request);
-      maybeChannel.get().writeAndFlush(payload).addListener(newWriteListener(request.getWritePromise(), request));
+      Message message = new Message(request, payload);
+      maybeChannel.get().writeAndFlush(message).addListener(newWriteListener(request.getWritePromise(), request));
       counter.decrementAndGet();
     } else {
       // No channel available, queue this write
@@ -213,6 +231,5 @@ public class RequestMuxer implements AutoCloseable {
     final Object msg;
     final Request request;
   }
-
 
 }
