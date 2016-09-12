@@ -112,6 +112,6 @@ public class ClientCodecFunctionalTest extends Assert {
     ByteBuf encoded = (ByteBuf)channel.outboundMessages().poll();
 
     assertTrue("Expected: " + ByteBufUtil.hexDump(expectedLength), ByteBufUtil.equals(expectedLength, length));
-    assertTrue("Expected: " + ByteBufUtil.hexDump(encoded), ByteBufUtil.equals(expectedEncoded, encoded));
+    assertTrue("Expected: " + ByteBufUtil.hexDump(expectedEncoded), ByteBufUtil.equals(expectedEncoded, encoded));
   }
 }

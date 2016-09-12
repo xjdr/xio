@@ -40,7 +40,7 @@ public class ClientCodecUnitTest extends Assert {
     channel = new EmbeddedChannel();
     codec = new ClientCodec();
     channel.pipeline()
-      .addLast(new ClientCodec())
+      .addLast(codec)
     ;
   }
 
