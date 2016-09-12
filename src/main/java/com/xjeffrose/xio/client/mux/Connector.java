@@ -11,13 +11,8 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
-import io.netty.channel.CombinedChannelDuplexHandler;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.local.LocalAddress;
-import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
-import io.netty.handler.codec.LengthFieldPrepender;
-import io.netty.handler.logging.LogLevel;
-import io.netty.handler.logging.LoggingHandler;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -43,6 +38,7 @@ abstract public class Connector {
 
   abstract protected ChannelHandler responseHandler();
 
+  // TODO(CK): get this from the constructor
   protected ChannelHandler handler() {
     return new ChannelInitializer<Channel>() {
       @Override
