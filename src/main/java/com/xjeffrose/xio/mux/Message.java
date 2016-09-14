@@ -53,7 +53,11 @@ public class Message {
     this.payload = payload;
   }
 
-  private Message(UUID id, Op op) {
+  public boolean expectsResponse() {
+    return op == Op.RequestExpectResponse;
+  }
+
+  public Message(UUID id, Op op) {
     this.id = id;
     this.op = op;
     this.payload = null;
