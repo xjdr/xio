@@ -35,6 +35,7 @@ public class Encoder extends ChannelOutboundHandlerAdapter {
     if (msg instanceof ByteBuf) {
       if (currentMessage == null) {
         currentMessage = ctx.alloc().compositeBuffer();
+        currentMessage.retain();
         currentHeader = ctx.alloc().buffer(40, 256);
         currentMessage.addComponent(currentHeader);
       }
