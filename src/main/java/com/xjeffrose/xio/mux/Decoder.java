@@ -32,7 +32,7 @@ public class Decoder extends ByteToMessageDecoder {
       ctx.fireExceptionCaught(new DecoderException("Not enough bytes available to decode payload"));
     }
 
-    out.add(in.readSlice(payloadSize).retain());
-    out.add(Message.buildResponse(id, op));
+    out.add(in.readRetainedSlice(payloadSize));
+    out.add(new Message(id, op));
   }
 }
