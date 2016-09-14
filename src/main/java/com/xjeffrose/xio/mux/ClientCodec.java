@@ -7,6 +7,7 @@ import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.util.AttributeKey;
+import io.netty.util.concurrent.PromiseCombiner;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
@@ -82,7 +83,12 @@ public class ClientCodec extends ChannelDuplexHandler {
       }
       currentPayload = msg;
     }
-    ctx.fireChannelRead(msg);
+  }
+
+  private ChannelPromise write(ChannelHandlerContext ctx, Object msg) {
+    ChannelPromise promise = ctx.newPromise();
+    ctx.write(msg, promise);
+    return promise;
   }
 
   @Override
@@ -93,11 +99,13 @@ public class ClientCodec extends ChannelDuplexHandler {
       if (request.expectsResponse()) {
         setRequest(ctx.channel().attr(KEY).get(), request);
       }
-      ctx.write(message.getPayload(), ctx.voidPromise()); // ignore the result
-      ctx.write(message, promise);
+
+      PromiseCombiner combiner = new PromiseCombiner();
+      combiner.add(write(ctx, message.getPayload()));
+      combiner.add(write(ctx, message));
+      combiner.finish(promise);
     } else {
       throw new RuntimeException("Only Message objects can be written to ClientCodec");
     }
   }
-
 }
