@@ -41,6 +41,7 @@ public class Encoder extends ChannelOutboundHandlerAdapter {
       }
 
       currentMessage.addComponent(true, (ByteBuf)msg);
+      promise.setSuccess();
     } else if (msg instanceof Message) {
       if (error) {
         reset();
