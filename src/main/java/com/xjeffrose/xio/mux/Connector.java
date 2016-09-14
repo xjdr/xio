@@ -11,11 +11,15 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
+import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.local.LocalAddress;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 abstract public class Connector {
 
@@ -36,16 +40,25 @@ abstract public class Connector {
     this((SocketAddress)address);
   }
 
+  protected List<Map.Entry<String, ChannelHandler>> payloadHandlers() {
+    return Arrays.asList();
+  }
 
-  // TODO(CK): get this from the constructor
+  // TODO(CK): get this from the constructor?
   protected ChannelHandler handler() {
     return new ChannelInitializer<Channel>() {
       @Override
       protected void initChannel(Channel channel) {
-        channel.pipeline()
-          //.addLast(new LoggingHandler(LogLevel.ERROR))
+        ChannelPipeline pipeline = channel.pipeline();
+        pipeline
           .addLast("frame length codec", new FrameLengthCodec())
-          .addLast("muxing protocol codec", new Codec())
+          .addLast("mux message codec", new Codec())
+          ;
+        for (Map.Entry<String, ChannelHandler> entry : payloadHandlers()) {
+          pipeline.addLast(entry.getKey(), entry.getValue());
+        }
+        pipeline
+          .addLast("mux client codec", new ClientCodec())
           ;
       }
     };

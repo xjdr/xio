@@ -20,6 +20,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 
@@ -61,6 +64,10 @@ public class ConnectorUnitTest extends Assert {
   public void testConnect() throws ExecutionException {
     EventLoopGroup group = new DefaultEventLoopGroup();
     Connector connector = new Connector(address) {
+      @Override
+      protected List<Map.Entry<String, ChannelHandler>> payloadHandlers() {
+        return Arrays.asList();
+      }
 
       @Override
       protected EventLoopGroup group() {
