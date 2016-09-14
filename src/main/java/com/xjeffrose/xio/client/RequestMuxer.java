@@ -14,7 +14,6 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.EventLoopGroup;
 import io.netty.util.concurrent.ScheduledFuture;
 import lombok.Value;
-import lombok.extern.slf4j.Slf4j;
 
 import java.time.Duration;
 import java.util.Optional;
@@ -39,14 +38,9 @@ import java.util.concurrent.atomic.AtomicLong;
  * Encoder.encode()
  * FrameLengthCodec.encode()
  *
- * --
- * ClientCodec = RequestEncoder, ResponseDecoder
- * ServerCodec = RequestDecoder, ResponseEncoder
- *
  */
 
 // TODO(CK): consider renaming this to something not including Request
-@Slf4j
 public class RequestMuxer implements AutoCloseable {
   // TODO(CK): remove
   private static final int CONST = 1618;
@@ -189,7 +183,9 @@ public class RequestMuxer implements AutoCloseable {
     maybeChannel.ifPresent((ch) -> {
       int count = 0;
       for (int i = 0; i < messagesPerBatch; i++) {
-        // TODO(CK): check if channel is still writeable
+        if (!ch.isActive() || !ch.isOpen() || !ch.isWritable()) {
+          break;
+        }
         final MuxedMessage mm = messageQ.poll();
         if (mm == null) {
           // we've exhausted the queue
