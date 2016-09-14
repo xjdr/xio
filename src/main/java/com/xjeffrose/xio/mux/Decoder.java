@@ -29,7 +29,7 @@ public class Decoder extends ByteToMessageDecoder {
     int payloadSize = Ints.fromByteArray(payloadSizeBytes);
 
     if (in.readableBytes() < payloadSize) {
-      throw new DecoderException("Not enough bytes available to decode payload");
+      ctx.fireExceptionCaught(new DecoderException("Not enough bytes available to decode payload"));
     }
 
     out.add(in.readSlice(payloadSize).retain());
