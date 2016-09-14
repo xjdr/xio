@@ -61,10 +61,6 @@ public class ConnectorUnitTest extends Assert {
   public void testConnect() throws ExecutionException {
     EventLoopGroup group = new DefaultEventLoopGroup();
     Connector connector = new Connector(address) {
-      @Override
-      protected ChannelHandler responseHandler() {
-        return new ChannelInboundHandlerAdapter();
-      }
 
       @Override
       protected EventLoopGroup group() {

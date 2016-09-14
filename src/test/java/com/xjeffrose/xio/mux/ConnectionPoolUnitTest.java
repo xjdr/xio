@@ -31,11 +31,6 @@ public class ConnectionPoolUnitTest extends Assert {
 
     connector = new LocalConnector("test-connection-pool") {
       @Override
-      protected ChannelHandler responseHandler() {
-        return null;
-      }
-
-      @Override
       public ListenableFuture<Channel> connect() {
         SettableFuture<Channel> result = SettableFuture.create();
         result.set(new EmbeddedChannel());
@@ -53,11 +48,6 @@ public class ConnectionPoolUnitTest extends Assert {
   @Test(expected=RuntimeException.class)
   public void connectFails() {
     LocalConnector flakyConnector = new LocalConnector("test-flaky-connection") {
-      @Override
-      protected ChannelHandler responseHandler() {
-        return null;
-      }
-
       @Override
       public ListenableFuture<Channel> connect() {
         SettableFuture<Channel> result = SettableFuture.create();

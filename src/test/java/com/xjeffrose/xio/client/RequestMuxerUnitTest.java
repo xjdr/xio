@@ -57,10 +57,6 @@ public class RequestMuxerUnitTest extends Assert {
     Config config = ConfigFactory.load().getConfig("xio.testApplication.settings.requestMuxer");
     LocalConnector connector = new LocalConnector("test-muxer") {
       @Override
-      protected ChannelHandler responseHandler() {
-        return null;
-      }
-      @Override
       public ListenableFuture<Channel> connect() {
         SettableFuture<Channel> result = SettableFuture.create();
         EmbeddedChannel channel = new EmbeddedChannel();

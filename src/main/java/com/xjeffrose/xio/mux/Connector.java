@@ -36,7 +36,6 @@ abstract public class Connector {
     this((SocketAddress)address);
   }
 
-  abstract protected ChannelHandler responseHandler();
 
   // TODO(CK): get this from the constructor
   protected ChannelHandler handler() {
@@ -47,7 +46,6 @@ abstract public class Connector {
           //.addLast(new LoggingHandler(LogLevel.ERROR))
           .addLast("frame length codec", new FrameLengthCodec())
           .addLast("muxing protocol codec", new Codec())
-          .addLast("response handler", responseHandler())
           ;
       }
     };
