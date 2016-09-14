@@ -1,16 +1,16 @@
 package com.xjeffrose.xio.mux;
 
 import io.netty.channel.Channel;
+import io.netty.channel.DefaultEventLoopGroup;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.local.LocalAddress;
 import io.netty.channel.local.LocalChannel;
-import io.netty.channel.local.LocalEventLoopGroup;
 
 abstract public class LocalConnector extends Connector {
 
   @Override
   protected EventLoopGroup group() {
-    return new LocalEventLoopGroup();
+    return new DefaultEventLoopGroup();
   }
 
   @Override
