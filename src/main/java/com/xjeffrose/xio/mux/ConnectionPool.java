@@ -77,7 +77,7 @@ public class ConnectionPool implements AutoCloseable {
         // TODO(CK): this error needs to get bubbled back up to the requestor
         @Override
         public void onFailure(Throwable throwable) {
-          log.error("Error connecting to ", throwable);
+          log.error("Error connecting to " + connector.address(), throwable);
         }
       });
       Futures.addCallback(result, callback);
