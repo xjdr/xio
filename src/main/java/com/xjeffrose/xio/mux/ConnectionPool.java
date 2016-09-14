@@ -118,8 +118,7 @@ public class ConnectionPool implements AutoCloseable {
   public Optional<Channel> requestNode(){
     Channel channel = connectionQ.pollFirst();
 
-    // TODO(CK): should we check for isWriteable?
-    if (channel != null && channel.isActive()) {
+    if (channel != null && channel.isActive() && channel.isOpen() && channel.isWritable()) {
       connectionQ.addLast(channel);
       return Optional.of(channel);
     }
