@@ -11,6 +11,8 @@ DEP_CURATOR_RECIPES=org.apache.curator:curator-recipes:3.1.0
 DEP_CURATOR_TESTING=org.apache.curator:curator-test:3.2.0
 DEP_JUNIT=junit:junit:4.12
 DEP_MOCKITO=org.mockito:mockito-all:1.10.19
+DEP_POWERMOCK_API=org.powermock:powermock-api-mockito:1.6.5
+DEP_POWERMOCK_JUNIT=org.powermock:powermock-module-junit4:1.6.5
 DEP_JETTY=org.eclipse.jetty:jetty-server:9.3.1.v20150714
 DEP_OKHTTP=com.squareup.okhttp:okhttp:2.4.0
 DEP_LOG4J=log4j:log4j:1.2.17
@@ -31,6 +33,8 @@ DEPS_COMPILE=$(DEP_CONFIG) \
              $(DEP_CURATOR_TESTING) \
              $(DEP_JUNIT) \
              $(DEP_MOCKITO) \
+             $(DEP_POWERMOCK_API) \
+             $(DEP_POWERMOCK_JUNIT) \
              $(DEP_JETTY) \
              $(DEP_OKHTTP) \
              $(DEP_LOG4J)
