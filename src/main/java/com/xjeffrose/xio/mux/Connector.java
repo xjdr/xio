@@ -13,6 +13,7 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
+import io.netty.channel.WriteBufferWaterMark;
 import io.netty.channel.local.LocalAddress;
 
 import java.net.InetSocketAddress;
@@ -68,17 +69,22 @@ abstract public class Connector {
 
   abstract protected Class<? extends Channel> channel();
 
+  protected Bootstrap configure(Bootstrap bootstrap) {
+    return bootstrap;
+  }
+
   private Bootstrap buildBootstrap() {
-    return new Bootstrap()
-      // TODO(CK): move all of these constants out into Config
+    Bootstrap bootstrap = new Bootstrap();
+    // TODO(CK): move all of these constants out into Config
+    bootstrap
       .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 500)
-      .option(ChannelOption.SO_REUSEADDR, true)
       .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-      .option(ChannelOption.WRITE_BUFFER_HIGH_WATER_MARK, 32 * 1024)
-      .option(ChannelOption.WRITE_BUFFER_LOW_WATER_MARK, 8 * 1024)
-      .option(ChannelOption.TCP_NODELAY, true)
+      .option(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(8 * 1024, 32 * 1024))
+      .option(ChannelOption.AUTO_READ, true)
       .group(group())
-      .channel(channel());
+      .channel(channel())
+      ;
+    return configure(bootstrap);
   }
 
   protected Bootstrap cloneBootstrap() {
