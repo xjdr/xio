@@ -91,4 +91,8 @@ abstract public class Connector {
     return promise;
   }
 
+  public SocketAddress address() {
+    return address;
+  }
+
 }
