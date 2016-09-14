@@ -6,7 +6,7 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.local.LocalAddress;
 import io.netty.channel.local.LocalChannel;
 
-abstract public class LocalConnector extends Connector {
+public class LocalConnector extends Connector {
 
   @Override
   protected EventLoopGroup group() {
