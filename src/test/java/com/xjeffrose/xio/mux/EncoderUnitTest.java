@@ -75,7 +75,6 @@ public class EncoderUnitTest extends Assert {
     channel.runPendingTasks();
 
     ByteBuf encoded = (ByteBuf)channel.outboundMessages().poll();
-    System.out.println("encoded: " + encoded);
     String expectedEncoded = new StringBuilder()
       .append("         +-------------------------------------------------+\n")
       .append("         |  0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f |\n")

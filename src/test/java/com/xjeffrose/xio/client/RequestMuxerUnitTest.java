@@ -15,7 +15,6 @@ import com.xjeffrose.xio.mux.Request;
 import com.xjeffrose.xio.mux.Response;
 import io.netty.channel.*;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelHandler;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import lombok.Setter;
