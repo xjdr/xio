@@ -27,6 +27,10 @@ public class ChannelConfiguration {
   /**
    * This method will configure a worker EventLoopGroup and a Channel
    * for use by a client. It will try to use Epoll if it's available.
+   *
+   * @param workerThreads the number of worker {@link Thread}s to allocate
+   * @param workerNameFormat the name format passed to {@link ThreadFactoryBuilder#setNameFormat(String)}
+   * @return a {@link ClientChannelConfiguration}
    */
   static public ClientChannelConfiguration clientConfig(int workerThreads, String workerNameFormat) {
     EventLoopGroup workerGroup;
@@ -46,6 +50,9 @@ public class ChannelConfiguration {
    * This method will configure a worker EventLoopGroup and a Channel
    * for use by a client. It will try to use the correct SocketChannel
    * for the provided workerGroup.
+   *
+   * @param workerGroup an existing {@link EventLoopGroup}
+   * @return a {@link ClientChannelConfiguration}
    */
   static public ClientChannelConfiguration clientConfig(EventLoopGroup workerGroup) {
     EventLoopGroup parent = workerGroup;
@@ -69,6 +76,12 @@ public class ChannelConfiguration {
    * This method will configure a boss EventLoopGroup, a worker
    * EventLoopGroup and a ServerChannel for use by a server. It will
    * try to use Epoll if it's available.
+   *
+   * @param bossThreads the number of {@link Thread}s to allocate for the bossGroup
+   * @param bossNameFormat the name format passed to {@link ThreadFactoryBuilder#setNameFormat(String)}
+   * @param workerThreads the number of worker {@link Thread}s to allocate for the workerGroup
+   * @param workerNameFormat the name format passed to {@link ThreadFactoryBuilder#setNameFormat(String)}
+   * @return a {@link ServerChannelConfiguration}
    */
   static public ServerChannelConfiguration serverConfig(int bossThreads, String bossNameFormat, int workerThreads, String workerNameFormat) {
     EventLoopGroup bossGroup;

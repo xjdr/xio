@@ -12,10 +12,14 @@ Contents:
    :maxdepth: 2
 
    introduction
-   client
+   application
    server
-
-
+   client
+   core
+   configuration
+   examples
+   logging
+   hacking
 
 Indices and tables
 ==================
@@ -23,4 +27,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-

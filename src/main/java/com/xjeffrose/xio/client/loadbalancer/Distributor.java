@@ -82,6 +82,9 @@ public class Distributor implements Closeable {
 
   /**
    * The node returned by UUID.
+   *
+   * @param id the id of the {@link Node} to get
+   * @return the node
    */
   public Node getNodeById(UUID id) {
     return okNodes.get(id);
@@ -89,6 +92,8 @@ public class Distributor implements Closeable {
 
   /**
    * Pick the next node. This is the main load balancer.
+   *
+   * @return the node
    */
   public Node pick() {
     return strategy.getNextNode(pool, okNodes);
@@ -96,6 +101,8 @@ public class Distributor implements Closeable {
 
   /**
    * Rebuild this distributor.
+   *
+   * @return the distributor
    */
   public Distributor rebuild() {
     return new Distributor(pool, strategy, nodeHealthCheck, xioTimer);
@@ -103,6 +110,9 @@ public class Distributor implements Closeable {
 
   /**
    * Rebuild this distributor with a new vector.
+   *
+   * @param list a list of {@link Node}s
+   * @return the distributor
    */
   public Distributor rebuild(ImmutableList<Node> list) {
     return new Distributor(list, strategy, nodeHealthCheck, xioTimer);

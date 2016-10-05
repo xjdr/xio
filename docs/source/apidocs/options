@@ -1,0 +1,27 @@
+-classpath
+'/Users/chrkeating/projects/xio/target/classes:/Users/chrkeating/.m2/repository/commons-logging/commons-logging/1.2/commons-logging-1.2.jar:/Users/chrkeating/.m2/repository/org/apache/curator/curator-framework/3.1.0/curator-framework-3.1.0.jar:/Users/chrkeating/.m2/repository/org/apache/curator/curator-recipes/3.1.0/curator-recipes-3.1.0.jar:/Users/chrkeating/.m2/repository/commons-codec/commons-codec/1.9/commons-codec-1.9.jar:/Users/chrkeating/.m2/repository/org/apache/thrift/libthrift/0.9.3/libthrift-0.9.3.jar:/Users/chrkeating/.m2/repository/io/netty/netty-all/4.1.0.Final/netty-all-4.1.0.Final.jar:/Users/chrkeating/.m2/repository/io/netty/netty-tcnative-boringssl-static/1.1.33.Fork17/netty-tcnative-boringssl-static-1.1.33.Fork17.jar:/Users/chrkeating/.m2/repository/log4j/log4j/1.2.16/log4j-1.2.16.jar:/Users/chrkeating/.m2/repository/org/projectlombok/lombok/1.16.8/lombok-1.16.8.jar:/Users/chrkeating/.m2/repository/commons-cli/commons-cli/1.3.1/commons-cli-1.3.1.jar:/Users/chrkeating/.m2/repository/com/typesafe/config/1.3.0/config-1.3.0.jar:/Users/chrkeating/.m2/repository/net/java/dev/javacc/javacc/5.0/javacc-5.0.jar:/Users/chrkeating/.m2/repository/org/apache/curator/curator-client/3.1.0/curator-client-3.1.0.jar:/Users/chrkeating/.m2/repository/org/apache/httpcomponents/httpcore/4.4.1/httpcore-4.4.1.jar:/Users/chrkeating/.m2/repository/org/apache/zookeeper/zookeeper/3.5.1-alpha/zookeeper-3.5.1-alpha.jar:/Users/chrkeating/.m2/repository/org/apache/httpcomponents/httpclient/4.4.1/httpclient-4.4.1.jar:/Users/chrkeating/.m2/repository/com/google/code/findbugs/jsr305/3.0.1/jsr305-3.0.1.jar:/Users/chrkeating/.m2/repository/org/slf4j/slf4j-api/1.7.21/slf4j-api-1.7.21.jar:/Users/chrkeating/.m2/repository/io/netty/netty/3.7.0.Final/netty-3.7.0.Final.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_92.jdk/Contents/Home/jre/../lib/tools.jar:/Users/chrkeating/.m2/repository/com/google/guava/guava/19.0/guava-19.0.jar'
+-encoding
+'UTF-8'
+-protected
+-quiet
+-source
+'1.8'
+-sourcepath
+'/Users/chrkeating/projects/xio/src/main/java:/Users/chrkeating/projects/xio/target/generated-sources/annotations'
+-author
+-bottom
+'Copyright &#169; 2016. All Rights Reserved.'
+-charset
+'UTF-8'
+-d
+'/Users/chrkeating/projects/xio/target/apidocs'
+-docencoding
+'UTF-8'
+-doctitle
+'xio 0.12.0-SNAPSHOT API'
+-linkoffline
+'http://docs.oracle.com/javase/7/docs/api' '/Users/chrkeating/projects/xio/target/javadoc-bundle-options'
+-use
+-version
+-windowtitle
+'xio 0.12.0-SNAPSHOT API'

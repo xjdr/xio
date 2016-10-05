@@ -28,4 +28,5 @@ depend
 *.pyo
 
 #docs
+docs/.env
 docs/build

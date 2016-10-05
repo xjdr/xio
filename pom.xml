@@ -243,6 +243,7 @@
           <quiet>true</quiet>
           <source>1.8</source>
           <encoding>${project.build.sourceEncoding}</encoding>
+          <excludePackageNames>*.thrift.*</excludePackageNames>
         </configuration>
         <executions>
           <execution>

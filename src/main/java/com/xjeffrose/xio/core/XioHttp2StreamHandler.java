@@ -40,8 +40,11 @@ public class XioHttp2StreamHandler extends ChannelDuplexHandler {
 
   /**
    * If receive a frame with end-of-stream set, send a pre-canned response.
+   *
+   * @param ctx a {@link ChannelHandlerContext}
+   * @param data a {@link Http2DataFrame}
    */
-  public void onDataRead(ChannelHandlerContext ctx, Http2DataFrame data) throws Exception {
+  public void onDataRead(ChannelHandlerContext ctx, Http2DataFrame data) {
     if (data.isEndStream()) {
       sendResponse(ctx, data.content().retain());
     }
@@ -49,9 +52,11 @@ public class XioHttp2StreamHandler extends ChannelDuplexHandler {
 
   /**
    * If receive a frame with end-of-stream set, send a pre-canned response.
+   *
+   * @param ctx a {@link ChannelHandlerContext}
+   * @param headers a {@link Http2HeadersFrame}
    */
-  public void onHeadersRead(ChannelHandlerContext ctx, Http2HeadersFrame headers)
-      throws Exception {
+  public void onHeadersRead(ChannelHandlerContext ctx, Http2HeadersFrame headers) {
     if (headers.isEndStream()) {
       ByteBuf content = ctx.alloc().buffer();
       content.writeBytes(RESPONSE_BYTES);
@@ -62,6 +67,9 @@ public class XioHttp2StreamHandler extends ChannelDuplexHandler {
 
   /**
    * Sends a "Hello World" DATA frame to the client.
+   *
+   * @param ctx a {@link ChannelHandlerContext}
+   * @param payload a {@link ByteBuf}
    */
   private void sendResponse(ChannelHandlerContext ctx, ByteBuf payload) {
     // Send a frame for the response status
@@ -70,5 +78,3 @@ public class XioHttp2StreamHandler extends ChannelDuplexHandler {
     ctx.writeAndFlush(new DefaultHttp2DataFrame(payload, true));
   }
 }
-
-
