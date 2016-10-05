@@ -6,4 +6,4 @@
 brew install python
 cd docs
 virtualenv .env
-.env/bin/pip install sphinx javasphinx
+.env/bin/pip install -r requirements.txt

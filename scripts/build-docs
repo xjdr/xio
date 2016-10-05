@@ -2,6 +2,6 @@
 
 mvn javadoc:javadoc
 rm -fr docs/apidocs
-cp -R target/apidocs docs/source
+cp -R target/apidocs docs/source/javadoc
 . docs/.env/bin/activate
 make -C docs html
