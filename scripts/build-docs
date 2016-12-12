@@ -1,7 +1,7 @@
 #!/bin/bash
 
 mvn javadoc:javadoc
-rm -fr docs/apidocs
+rm -fr docs/source/apidocs
 cp -R target/apidocs docs/source/javadoc
 . docs/.env/bin/activate
 make -C docs html
