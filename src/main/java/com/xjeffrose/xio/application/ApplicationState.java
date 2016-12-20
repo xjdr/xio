@@ -3,6 +3,7 @@ package com.xjeffrose.xio.application;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.xjeffrose.xio.bootstrap.ChannelConfiguration;
+import com.xjeffrose.xio.core.NullZkClient;
 import com.xjeffrose.xio.core.ZkClient;
 import com.xjeffrose.xio.bootstrap.ServerChannelConfiguration;
 import com.xjeffrose.xio.filter.Http1FilterConfig;
@@ -24,13 +25,19 @@ public class ApplicationState {
   private final AtomicReference<Http1FilterConfig> http1FilterConfig;
 
   public ApplicationState(Config config) {
-    zkClient = new ZkClient(config.getString("settings.zookeeper.cluster"));
     channelConfiguration = ChannelConfiguration.serverConfig(
       config.getInt("settings.bossThreads"),
       config.getString("settings.bossNameFormat"),
       config.getInt("settings.workerThreads"),
       config.getString("settings.workerNameFormat")
     );
+
+    String zookeeperCluster = config.getString("settings.zookeeper.cluster");
+    if (zookeeperCluster.isEmpty()) {
+      zkClient = new NullZkClient();
+    } else {
+      zkClient = new ZkClient(zookeeperCluster);
+    }
 
     String ipFilterPath = config.getString("settings.configurationManager.ipFilter.path");
     ipFilterConfig = new AtomicReference<IpFilterConfig>(new IpFilterConfig());

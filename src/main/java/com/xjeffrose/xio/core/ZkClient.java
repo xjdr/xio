@@ -40,6 +40,10 @@ public class ZkClient implements ConfigurationProvider {
     client = CuratorFrameworkFactory.newClient(serverSet, retryPolicy);
   }
 
+  // Used by NullZkClient
+  protected ZkClient() {
+  }
+
   public void rebuild() {
     client.close();
     RetryPolicy retryPolicy = new ExponentialBackoffRetry(1000, 4);
