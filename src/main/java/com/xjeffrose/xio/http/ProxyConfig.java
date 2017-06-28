@@ -1,4 +1,4 @@
-package com.xjeffrose.xio.server.trailhead;
+package com.xjeffrose.xio.http;
 
 import java.net.InetSocketAddress;
 

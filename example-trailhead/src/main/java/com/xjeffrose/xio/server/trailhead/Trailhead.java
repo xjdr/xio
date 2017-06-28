@@ -10,6 +10,10 @@ import com.xjeffrose.xio.server.Route;
 import com.xjeffrose.xio.server.XioServer;
 import com.xjeffrose.xio.server.XioServerConfig;
 import com.xjeffrose.xio.server.XioServerState;
+import com.xjeffrose.xio.http.ProxyConfig;
+import com.xjeffrose.xio.http.RouteProvider;
+import com.xjeffrose.xio.http.SimpleProxyRoute;
+import com.xjeffrose.xio.http.UrlRouter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.LinkedHashMap;
@@ -35,7 +39,8 @@ public class Trailhead implements AutoCloseable {
   }
 
   private XioPipelineFragment proxyFragment() {
-    UrlRouter router = UrlRouter.build(routes, (r) -> buildProviders());
+    //UrlRouter router = UrlRouter.build(routes, (r) -> buildProviders());
+    UrlRouter router = new UrlRouter(buildProviders());
     return new XioHttp1_1Pipeline(new Http1ProxyFragment(router));
   }
 

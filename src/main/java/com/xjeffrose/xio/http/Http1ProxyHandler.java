@@ -1,4 +1,4 @@
-package com.xjeffrose.xio.server.trailhead;
+package com.xjeffrose.xio.http;
 
 import com.google.common.collect.ImmutableMap;
 import com.xjeffrose.xio.client.XioClient;

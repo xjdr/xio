@@ -1,4 +1,4 @@
-package com.xjeffrose.xio.server.trailhead;
+package com.xjeffrose.xio.http;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpRequest;
