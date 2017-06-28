@@ -1,0 +1,51 @@
+* xio 0.13.0
+
+** open tracing
+
+*** set proper semantic tags
+
+**** https://github.com/opentracing/specification/blob/master/semantic_conventions.md
+
+** move concrete trailhead classes into http package
+
+** remove dead build tools
+
+** clean up javadoc linting errors
+
+** add http Recipes
+
+* speeding up maven invocation
+
+** drip
+
+*** https://github.com/ninjudd/drip
+
+*** brew install drip
+
+*** ~/.mavenrc
+
+#+begin_src
+JAVACMD=/usr/local/bin/drip
+JAVA_HOME="$(/usr/libexec/java_home)"
+MAVEN_OPTS="-ea -Xmx512m"
+#+end_src
+
+** JVM startup time appears to be negligable
+
+* maven jvm options per project
+
+** https://maven.apache.org/docs/3.3.1/release-notes.html#JVM_and_Command_Line_Options
+
+* project
+
+** use phabricator?
+
+*** https://www.phacility.com/phabricator/
+
+* Hocon and Config docs
+
+** https://github.com/typesafehub/config/blob/master/HOCON.md
+
+** https://github.com/typesafehub/config/blob/master/README.md
+
+** https://typesafehub.github.io/config/latest/api/index.html
