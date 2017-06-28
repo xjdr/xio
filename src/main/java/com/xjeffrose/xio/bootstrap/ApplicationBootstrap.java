@@ -14,9 +14,11 @@ import com.xjeffrose.xio.server.XioServerState;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.UnaryOperator;
+import lombok.Getter;
 
 public class ApplicationBootstrap {
 
+  @Getter
   private final ApplicationConfig config;
 
   private final ApplicationState state;
