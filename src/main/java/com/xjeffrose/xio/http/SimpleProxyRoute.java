@@ -1,7 +1,10 @@
 package com.xjeffrose.xio.http;
 
+import java.util.Optional;
+
 import com.xjeffrose.xio.client.XioClient;
 import com.xjeffrose.xio.client.XioClientBootstrap;
+import com.xjeffrose.xio.server.Route;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpRequest;
@@ -23,11 +26,13 @@ import lombok.extern.slf4j.Slf4j;
 public class SimpleProxyRoute implements RouteProvider {
 
   private static final AttributeKey<XioClient> key = AttributeKey.newInstance("xio_client");
+  private final Route route;
   private final ProxyConfig config;
   private XioClient client;
 
-  public SimpleProxyRoute(ProxyConfig config) {
+  public SimpleProxyRoute(Route route, ProxyConfig config) {
     this.config = config;
+    this.route = route;
   }
 
   private void buildAndAttach(ChannelHandlerContext ctx) {
@@ -49,7 +54,16 @@ public class SimpleProxyRoute implements RouteProvider {
       ctx.writeAndFlush(new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.CONTINUE));
     }
 
-    request.setUri(config.urlPath);
+    Optional<String> path = route.groups(request.getUri())
+      .entrySet()
+      .stream()
+      .filter(e -> e.getKey().equals("path"))
+      .map(e -> e.getValue())
+      .findFirst();
+
+    path.map(config.urlPath::concat);
+
+    request.setUri(path.orElse(config.urlPath));
 
     request.headers().set("Host", config.hostHeader);
 
