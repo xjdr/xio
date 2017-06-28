@@ -1,9 +1,11 @@
-package com.xjeffrose.xio.server.trailhead;
+package com.xjeffrose.xio.http;
 
 import com.xjeffrose.xio.application.ApplicationState;
 import com.xjeffrose.xio.pipeline.XioPipelineFragment;
 import com.xjeffrose.xio.server.XioServerConfig;
 import com.xjeffrose.xio.server.XioServerState;
+import com.xjeffrose.xio.http.Http1ProxyHandler;
+import com.xjeffrose.xio.http.UrlRouter;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 

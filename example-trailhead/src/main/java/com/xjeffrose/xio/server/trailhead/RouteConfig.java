@@ -3,6 +3,7 @@ package com.xjeffrose.xio.server.trailhead;
 import com.google.common.collect.ImmutableMap;
 import com.typesafe.config.Config;
 import com.xjeffrose.xio.server.Route;
+import com.xjeffrose.xio.http.ProxyConfig;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
