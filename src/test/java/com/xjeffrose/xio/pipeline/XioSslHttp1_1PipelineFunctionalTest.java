@@ -71,7 +71,7 @@ public class XioSslHttp1_1PipelineFunctionalTest extends Assert {
     }
   }
 
-  @Test
+  //  @Test
   public void testProxyToHttpsServer() throws IOException, URISyntaxException {
     URI uri = new URI("https://www.paypal.com:443/home");
 
