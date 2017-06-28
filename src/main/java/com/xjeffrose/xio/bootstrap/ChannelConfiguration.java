@@ -27,6 +27,10 @@ public class ChannelConfiguration {
   /**
    * This method will configure a worker EventLoopGroup and a Channel
    * for use by a client. It will try to use Epoll if it's available.
+   *
+   * @param workerThreads spawn int number of worker threads
+   * @param workerNameFormat uses String to set the worker thread names
+   * @return ClientChannelConfiguration
    */
   static public ClientChannelConfiguration clientConfig(int workerThreads, String workerNameFormat) {
     EventLoopGroup workerGroup;
@@ -46,6 +50,9 @@ public class ChannelConfiguration {
    * This method will configure a worker EventLoopGroup and a Channel
    * for use by a client. It will try to use the correct SocketChannel
    * for the provided workerGroup.
+   *
+   * @param workerGroup uses EventLoopGroup in the ClientChannelConfiguration
+   * @return ClientChannelConfiguration
    */
   static public ClientChannelConfiguration clientConfig(EventLoopGroup workerGroup) {
     EventLoopGroup parent = workerGroup;
@@ -69,6 +76,12 @@ public class ChannelConfiguration {
    * This method will configure a boss EventLoopGroup, a worker
    * EventLoopGroup and a ServerChannel for use by a server. It will
    * try to use Epoll if it's available.
+   *
+   * @param bossThreads spawn in number of boss threads
+   * @param bossNameFormat uses String to the boss thread names
+   * @param workerThreads spawn int number of worker threads
+   * @param workerNameFormat uses String to set the worker thread names
+   * @return ClientChannelConfiguration
    */
   static public ServerChannelConfiguration serverConfig(int bossThreads, String bossNameFormat, int workerThreads, String workerNameFormat) {
     EventLoopGroup bossGroup;
