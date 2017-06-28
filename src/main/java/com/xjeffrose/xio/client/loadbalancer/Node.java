@@ -104,7 +104,7 @@ public class Node implements Closeable {
    * . The current host and port returned as a InetSocketAddress
    */
   public static InetSocketAddress toInetAddress(HostAndPort hostAndPort) {
-    return (hostAndPort == null) ? null : new InetSocketAddress(hostAndPort.getHostText(), hostAndPort.getPort());
+    return (hostAndPort == null) ? null : new InetSocketAddress(hostAndPort.getHost(), hostAndPort.getPort());
   }
 
   public Future<Void> send(Object message) {
