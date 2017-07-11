@@ -3,10 +3,12 @@ package com.xjeffrose.xio.server;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.xjeffrose.xio.core.ChannelStatistics;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import lombok.Getter;
+import lombok.Setter;
 
 public class XioServerState {
 
@@ -15,6 +17,10 @@ public class XioServerState {
 
   @Getter
   private final ChannelStatistics channelStatistics;
+
+  @Getter
+  @Setter
+  private ChannelHandler tracingHandler = null;
 
   public XioServerState(Config config) {
     channelStatistics = new ChannelStatistics(allChannels);

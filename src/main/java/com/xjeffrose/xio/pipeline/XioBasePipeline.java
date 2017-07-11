@@ -18,6 +18,8 @@ import com.xjeffrose.xio.server.XioWebApplicationFirewall;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelPipeline;
 
+import static com.xjeffrose.xio.pipeline.Pipelines.addHandler;
+
 abstract public class XioBasePipeline implements XioPipelineFragment {
 
   protected static final XioConnectionLimiter globalConnectionLimiter = new XioConnectionLimiter(15000);
@@ -57,6 +59,7 @@ abstract public class XioBasePipeline implements XioPipelineFragment {
     } else {
       throw new RuntimeException("No codec configured");
     }
+    addHandler(pipeline, "distributed tracing", state.getTracingHandler());
     pipeline.addLast("l7DeterministicRuleEngine", new Http1Filter(appState.getHttp1FilterConfig()));
     pipeline.addLast("l7BehavioralRuleEngine", new XioBehavioralRuleEngine(appState.getZkClient(), true)); // TODO(JR): Need to make this config
     pipeline.addLast("webApplicationFirewall", new XioWebApplicationFirewall(appState.getZkClient(), true)); // TODO(JR): Need to make this config

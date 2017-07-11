@@ -10,6 +10,7 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
+import io.netty.handler.codec.http.HttpClientCodec;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 import lombok.Setter;
@@ -33,6 +34,8 @@ public class XioClientBootstrap {
   @Setter
   private Supplier<ChannelHandler> applicationProtocol;
   @Setter
+  private Supplier<ChannelHandler> tracingHandler;
+  @Setter
   private ChannelHandler handler;
   @Setter boolean usePool;
   private ChannelConfiguration channelConfig;
@@ -41,6 +44,7 @@ public class XioClientBootstrap {
     this.channelConfig = channelConfig;
     bootstrap = buildBootstrap();
     usePool = false;
+    tracingHandler = () -> null;
   }
 
   public XioClientBootstrap(EventLoopGroup group) {
@@ -49,18 +53,11 @@ public class XioClientBootstrap {
 
   private ChannelInitializer<Channel> buildInitializer() {
     if (proto != null && (proto == Protocol.HTTP || proto == Protocol.HTTPS)) {
-      return new DefaultChannelInitializer(handler, ssl);
-    } else if (applicationProtocol != null) {
-      ChannelInitializer<Channel> result = new DefaultChannelInitializer(handler, ssl) {
-        @Override
-        public ChannelHandler protocolHandler() {
-          return applicationProtocol.get();
-        }
-      };
-      return result;
-    } else {
+      applicationProtocol = () -> new HttpClientCodec();
+    } else if (applicationProtocol == null) {
       throw new RuntimeException("Cannot build initializer, specify either protocol or applicationProtocol");
     }
+    return new DefaultChannelInitializer(handler, ssl, applicationProtocol, tracingHandler);
   }
 
   public Bootstrap buildBootstrap() {

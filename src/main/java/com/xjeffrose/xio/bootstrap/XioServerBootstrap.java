@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
+import java.util.function.Consumer;
 
 public class XioServerBootstrap {
   private static final Logger log = LoggerFactory.getLogger(XioServerBootstrap.class);
@@ -56,6 +57,11 @@ public class XioServerBootstrap {
   public XioServerBootstrap addToPipeline(XioPipelineFragment fragment) {
     // TODO(CK): interrogate fragment for channel options
     pipelineAssembler.addFragment(fragment);
+    return this;
+  }
+
+  public XioServerBootstrap configureServerState(Consumer<XioServerState> configure) {
+    configure.accept(state);
     return this;
   }
 
