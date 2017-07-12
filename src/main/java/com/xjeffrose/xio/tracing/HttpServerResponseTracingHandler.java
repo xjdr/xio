@@ -1,11 +1,10 @@
 package com.xjeffrose.xio.tracing;
 
-import brave.Span;
-import brave.Tracer;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
-import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.util.AttributeKey;
 
@@ -25,19 +24,14 @@ class HttpServerResponseTracingHandler extends ChannelOutboundHandlerAdapter {
       return;
     }
 
-    HttpResponse response = (HttpResponse) msg;
-    Span span = state.responseSpan(ctx);
+    final HttpResponse response = (HttpResponse) msg;
 
-    Throwable error = null;
-    try (Tracer.SpanInScope ws = state.responseSpanInScope(ctx)) {
-      ws.close();
-      ctx.write(msg, promise);
-    } catch (Exception | Error e) {
-      error = e;
-      throw e;
-    } finally {
-      state.getHandler().handleSend(response, error, span);
-    }
+    ctx.write(msg, promise).addListener(new ChannelFutureListener() {
+        @Override
+        public void operationComplete(ChannelFuture future) throws Exception {
+          state.onResponse(ctx, response, future.cause());
+        }
+      });
   }
 
 }

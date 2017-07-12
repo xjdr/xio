@@ -146,9 +146,7 @@ public class HttpClientTracingHandlerIntegrationTest extends ITHttpClient<XioCli
     XioRequest<HttpRequest> request = buildRequest(client, payload);
     Future<Void> future = client.write(request);
     future.awaitUninterruptibly();
-    if (future.cause() != null) {
-      state.getHandler().handleReceive(null, future.cause(), null);
-    } else {
+    if (future.cause() == null) {
       //System.out.println("getting");
       local.get();
       //System.out.println("gotten");

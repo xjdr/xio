@@ -62,11 +62,14 @@ public class HttpServerTracingHandlerIntegrationTest extends ITHttpServer {
       HttpResponseStatus status = OK;
       if (request.uri().startsWith("/foo")) {
       } else if (request.uri().startsWith("/child")) {
-        Span span = this.httpTracing.tracing().tracer().nextSpan().name("child").start();
+
+        Tracer tracer = httpTracing.tracing().tracer();
+
+        Span parent = HttpTracingState.getSpan(ctx);
+        Span span = tracer.newChild(parent.context()).name("child").start();
         //        System.out.println("channelRead0: " + span);
         span.finish();
-        Tracer.SpanInScope inScope = httpTracing.tracing().tracer().withSpanInScope(span);
-        inScope.close();
+
       } else if (request.uri().startsWith("/exception")) {
         throw new IOException("exception");
       } else if (request.uri().startsWith("/async")) {

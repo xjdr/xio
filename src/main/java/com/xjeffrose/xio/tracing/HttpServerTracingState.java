@@ -16,11 +16,7 @@ import lombok.Getter;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 
-class HttpServerTracingState {
-
-  private static final AttributeKey<Tracer> tracer_key = AttributeKey.newInstance("xio_server_tracing_tracer");
-  private static final AttributeKey<Span> span_key = AttributeKey.newInstance("xio_server_tracing_span");
-  private static final AttributeKey<Tracer.SpanInScope> span_in_scope_key = AttributeKey.newInstance("xio_server_tracing_span_in_scope");
+class HttpServerTracingState extends HttpTracingState {
 
   @Getter
   private final Tracer tracer;
@@ -43,54 +39,15 @@ class HttpServerTracingState {
     return headers;
   }
 
-  public static void attachTracer(Channel ch, Tracer tracer) {
-    ch.attr(tracer_key).set(tracer);
-  }
-
-  public static void attachSpan(Channel ch, Span span) {
-    ch.attr(span_key).set(span);
-  }
-
-  public static void attachSpanInScope(Channel ch, Tracer.SpanInScope spanInScope) {
-    ch.attr(span_in_scope_key).set(spanInScope);
-  }
-
-  public Span requestSpan(ChannelHandlerContext ctx, HttpRequest request) {
+  public Span onRequest(ChannelHandlerContext ctx, HttpRequest request) {
     Span span = handler.handleReceive(extractor, addRemoteIp(ctx, request.headers()), request);
-    attachSpan(ctx.channel(), span);
-    attachTracer(ctx.channel(), tracer);
+    setSpan(ctx, span);
 
     return span;
   }
 
-  public Tracer.SpanInScope requestSpanInScope(ChannelHandlerContext ctx, Span span) {
-    Tracer.SpanInScope spanInScope = tracer.withSpanInScope(span);
-    attachSpanInScope(ctx.channel(), spanInScope);
-
-    return spanInScope;
+  public void onResponse(ChannelHandlerContext ctx, HttpResponse response, Throwable error) {
+    handler.handleSend(response, error, getSpan(ctx));
   }
 
-  public static Tracer tracer(Channel ch) {
-    return ch.attr(tracer_key).get();
-  }
-
-  public static Tracer tracer(ChannelHandlerContext ctx) {
-    return tracer(ctx.channel());
-  }
-
-  public static Span responseSpan(Channel ch) {
-    return ch.attr(span_key).get();
-  }
-
-  public static Span responseSpan(ChannelHandlerContext ctx) {
-    return responseSpan(ctx.channel());
-  }
-
-  public static Tracer.SpanInScope responseSpanInScope(Channel ch) {
-    return ch.attr(span_in_scope_key).get();
-  }
-
-  public static Tracer.SpanInScope responseSpanInScope(ChannelHandlerContext ctx) {
-    return responseSpanInScope(ctx.channel());
-  }
 }

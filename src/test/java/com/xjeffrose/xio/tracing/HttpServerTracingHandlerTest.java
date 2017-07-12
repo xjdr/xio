@@ -41,17 +41,17 @@ import org.junit.Before;
 
 public class HttpServerTracingHandlerTest extends Assert {
 
-  public static class ApplicationHandler extends SimpleChannelInboundHandler<HttpRequest> {
+  public class ApplicationHandler extends SimpleChannelInboundHandler<HttpRequest> {
     @Override
     public void channelRead0(ChannelHandlerContext ctx, HttpRequest request) throws Exception {
       ByteBuf content = Unpooled.copiedBuffer("Here is the default content that is returned", CharsetUtil.UTF_8);
       HttpResponseStatus status = OK;
 
-      Tracer tracer = HttpServerTracingState.tracer(ctx);
-      Span span = tracer.nextSpan().name("child").start();
-      Tracer.SpanInScope inScope = Tracing.currentTracer().withSpanInScope(span);
+      Tracer tracer = httpTracing.tracing().tracer();
+
+      Span parent = HttpTracingState.getSpan(ctx);
+      Span span = tracer.newChild(parent.context()).name("child").start();
       span.finish();
-      inScope.close();
 
       DefaultFullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, status, content);
 
