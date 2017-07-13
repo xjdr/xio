@@ -22,7 +22,8 @@ import java.util.function.Supplier;
 @Accessors(fluent = true)
 public class XioClientBootstrap {
 
-  private final Bootstrap bootstrap;
+  private Bootstrap bootstrap;
+  private ChannelConfiguration channelConfig;
   @Setter
   private InetSocketAddress address;
   @Setter
@@ -37,18 +38,38 @@ public class XioClientBootstrap {
   private Supplier<ChannelHandler> tracingHandler;
   @Setter
   private ChannelHandler handler;
-  @Setter boolean usePool;
-  private ChannelConfiguration channelConfig;
+  @Setter
+  boolean usePool;
+
+  private XioClientBootstrap(XioClientBootstrap other) {
+    this.address = other.address;
+    this.distributor = other.distributor;
+    this.ssl = other.ssl;
+    this.proto = other.proto;
+    this.applicationProtocol = other.applicationProtocol;
+    this.tracingHandler = other.tracingHandler;
+    this.handler = other.handler;
+    this.usePool = other.usePool;
+  }
 
   public XioClientBootstrap(ChannelConfiguration channelConfig) {
-    this.channelConfig = channelConfig;
-    bootstrap = buildBootstrap();
-    usePool = false;
-    tracingHandler = () -> null;
+    this();
+    this.channelConfig(channelConfig);
   }
 
   public XioClientBootstrap(EventLoopGroup group) {
     this(ChannelConfiguration.clientConfig(group));
+  }
+
+  public XioClientBootstrap() {
+    usePool = false;
+    tracingHandler = () -> null;
+  }
+
+  public XioClientBootstrap channelConfig(ChannelConfiguration channelConfig) {
+    this.channelConfig = channelConfig;
+    bootstrap = buildBootstrap(channelConfig);
+    return this;
   }
 
   private ChannelInitializer<Channel> buildInitializer() {
@@ -60,7 +81,7 @@ public class XioClientBootstrap {
     return new DefaultChannelInitializer(handler, ssl, applicationProtocol, tracingHandler);
   }
 
-  public Bootstrap buildBootstrap() {
+  public Bootstrap buildBootstrap(ChannelConfiguration channelConfig) {
     return new Bootstrap()
       .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 500)
       .option(ChannelOption.SO_REUSEADDR, true)
@@ -73,6 +94,7 @@ public class XioClientBootstrap {
   }
 
   public XioClient build() {
+    Preconditions.checkNotNull(channelConfig);
     Preconditions.checkNotNull(handler);
     bootstrap.handler(buildInitializer());
     if (address != null) {
@@ -92,4 +114,14 @@ public class XioClientBootstrap {
   public Bootstrap getBootstrap() {
     return bootstrap;
   }
+
+  public XioClientBootstrap clone(ChannelConfiguration channelConfig) {
+    XioClientBootstrap bs = new XioClientBootstrap(this);
+    return bs.channelConfig(channelConfig);
+  }
+
+  public XioClientBootstrap clone(EventLoopGroup group) {
+    return clone(ChannelConfiguration.clientConfig(group));
+  }
+
 }
