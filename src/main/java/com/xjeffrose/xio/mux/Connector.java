@@ -26,11 +26,8 @@ abstract public class Connector {
 
   private final SocketAddress address;
 
-  private final Bootstrap baseBootstrap;
-
   private Connector(SocketAddress address) {
     this.address = address;
-    baseBootstrap = buildBootstrap();
   }
 
   public Connector(InetSocketAddress address) {
@@ -88,7 +85,7 @@ abstract public class Connector {
   }
 
   protected Bootstrap cloneBootstrap() {
-    return baseBootstrap.clone().handler(handler());
+    return buildBootstrap().clone().handler(handler());
   }
 
   protected void connectBootstrap(SettableFuture<Channel> promise) {
