@@ -6,20 +6,22 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
-import io.netty.handler.codec.http.HttpClientCodec;
+import java.util.function.Supplier;
+
+import static com.xjeffrose.xio.pipeline.Pipelines.addHandler;
 
 public class DefaultChannelInitializer extends ChannelInitializer {
 
   private final ChannelHandler handler;
   private final boolean ssl;
+  private final Supplier<ChannelHandler> applicationProtocol;
+  private final Supplier<ChannelHandler> tracingHandler;
 
-  public DefaultChannelInitializer(ChannelHandler handler, boolean ssl) {
+  public DefaultChannelInitializer(ChannelHandler handler, boolean ssl, Supplier<ChannelHandler> applicationProtocol, Supplier<ChannelHandler> tracingHandler) {
     this.handler = handler;
     this.ssl = ssl;
-  }
-
-  public ChannelHandler protocolHandler() {
-    return new HttpClientCodec();
+    this.applicationProtocol = applicationProtocol;
+    this.tracingHandler = tracingHandler;
   }
 
   @Override
@@ -28,7 +30,9 @@ public class DefaultChannelInitializer extends ChannelInitializer {
     if (ssl) {
       cp.addLast("encryptionHandler", new XioSecurityHandlerImpl(true).getEncryptionHandler());
     }
-    cp.addLast("protocolHandler", protocolHandler());
+    addHandler(cp, "protocol handler", applicationProtocol.get());
+    addHandler(cp, "distributed tracing", tracingHandler.get());
+    addHandler(cp, "request encoder", new XioRequestEncoder());
     cp.addLast(new XioIdleDisconnectHandler(60, 60, 60));
     cp.addLast(handler);
   }

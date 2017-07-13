@@ -30,8 +30,12 @@ public class ApplicationBootstrap {
     this.state = state;
   }
 
+  public ApplicationBootstrap(ApplicationConfig config) {
+    this.config = config;
+    this.state = new ApplicationState(config);
+  }
   public ApplicationBootstrap(Config config) {
-    this(new ApplicationConfig(config), new ApplicationState(config));
+    this(new ApplicationConfig(config));
   }
 
   public ApplicationBootstrap(String key, Config config) {

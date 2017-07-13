@@ -75,15 +75,13 @@ public class Route {
 
   public Map<String, String> groups(String path) {
     Matcher matcher = pathPattern.matcher(path);
+    Map<String, String> groups = new HashMap<>();
     if (matcher.matches()) {
-      Map<String, String> groups = new HashMap<>();
       for (String keyword : keywords) {
         groups.put(keyword, matcher.group(keyword));
       }
-      return groups;
-    } else {
-      return null;
     }
+    return groups;
   }
 
   // Let's just assume that if two Route objects have been built

@@ -1,18 +1,34 @@
 * xio 0.13.0
 
-** open tracing
+** must have
 
-*** set proper semantic tags
+*** open tracing
 
-**** https://github.com/opentracing/specification/blob/master/semantic_conventions.md
+**** set proper semantic tags
 
-** move concrete trailhead classes into http package
+***** https://github.com/opentracing/specification/blob/master/semantic_conventions.md
 
-** remove dead build tools
+*** DONE move concrete trailhead classes into http package
 
-** clean up javadoc linting errors
+** nice to have
 
-** add http Recipes
+*** streamline ssl usage
+
+*** better openzipkin/brave integration
+
+**** custom CurrentTraceContext
+
+**** better thread state management
+
+*** remove dead build tools
+
+*** clean up javadoc linting errors
+
+*** add http Recipes
+
+*** better usage of findbugs annotations
+
+**** http://findbugs.sourceforge.net/
 
 * speeding up maven invocation
 

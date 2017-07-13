@@ -10,6 +10,7 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
+import io.netty.handler.codec.http.HttpClientCodec;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 import lombok.Setter;
@@ -21,7 +22,8 @@ import java.util.function.Supplier;
 @Accessors(fluent = true)
 public class XioClientBootstrap {
 
-  private final Bootstrap bootstrap;
+  private Bootstrap bootstrap;
+  private ChannelConfiguration channelConfig;
   @Setter
   private InetSocketAddress address;
   @Setter
@@ -33,37 +35,53 @@ public class XioClientBootstrap {
   @Setter
   private Supplier<ChannelHandler> applicationProtocol;
   @Setter
+  private Supplier<ChannelHandler> tracingHandler;
+  @Setter
   private ChannelHandler handler;
-  @Setter boolean usePool;
-  private ChannelConfiguration channelConfig;
+  @Setter
+  boolean usePool;
+
+  private XioClientBootstrap(XioClientBootstrap other) {
+    this.address = other.address;
+    this.distributor = other.distributor;
+    this.ssl = other.ssl;
+    this.proto = other.proto;
+    this.applicationProtocol = other.applicationProtocol;
+    this.tracingHandler = other.tracingHandler;
+    this.handler = other.handler;
+    this.usePool = other.usePool;
+  }
 
   public XioClientBootstrap(ChannelConfiguration channelConfig) {
-    this.channelConfig = channelConfig;
-    bootstrap = buildBootstrap();
-    usePool = false;
+    this();
+    this.channelConfig(channelConfig);
   }
 
   public XioClientBootstrap(EventLoopGroup group) {
     this(ChannelConfiguration.clientConfig(group));
   }
 
-  private ChannelInitializer<Channel> buildInitializer() {
-    if (proto != null && (proto == Protocol.HTTP || proto == Protocol.HTTPS)) {
-      return new DefaultChannelInitializer(handler, ssl);
-    } else if (applicationProtocol != null) {
-      ChannelInitializer<Channel> result = new DefaultChannelInitializer(handler, ssl) {
-        @Override
-        public ChannelHandler protocolHandler() {
-          return applicationProtocol.get();
-        }
-      };
-      return result;
-    } else {
-      throw new RuntimeException("Cannot build initializer, specify either protocol or applicationProtocol");
-    }
+  public XioClientBootstrap() {
+    usePool = false;
+    tracingHandler = () -> null;
   }
 
-  public Bootstrap buildBootstrap() {
+  public XioClientBootstrap channelConfig(ChannelConfiguration channelConfig) {
+    this.channelConfig = channelConfig;
+    bootstrap = buildBootstrap(channelConfig);
+    return this;
+  }
+
+  private ChannelInitializer<Channel> buildInitializer() {
+    if (proto != null && (proto == Protocol.HTTP || proto == Protocol.HTTPS)) {
+      applicationProtocol = () -> new HttpClientCodec();
+    } else if (applicationProtocol == null) {
+      throw new RuntimeException("Cannot build initializer, specify either protocol or applicationProtocol");
+    }
+    return new DefaultChannelInitializer(handler, ssl, applicationProtocol, tracingHandler);
+  }
+
+  public Bootstrap buildBootstrap(ChannelConfiguration channelConfig) {
     return new Bootstrap()
       .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 500)
       .option(ChannelOption.SO_REUSEADDR, true)
@@ -76,6 +94,7 @@ public class XioClientBootstrap {
   }
 
   public XioClient build() {
+    Preconditions.checkNotNull(channelConfig);
     Preconditions.checkNotNull(handler);
     bootstrap.handler(buildInitializer());
     if (address != null) {
@@ -95,4 +114,14 @@ public class XioClientBootstrap {
   public Bootstrap getBootstrap() {
     return bootstrap;
   }
+
+  public XioClientBootstrap clone(ChannelConfiguration channelConfig) {
+    XioClientBootstrap bs = new XioClientBootstrap(this);
+    return bs.channelConfig(channelConfig);
+  }
+
+  public XioClientBootstrap clone(EventLoopGroup group) {
+    return clone(ChannelConfiguration.clientConfig(group));
+  }
+
 }

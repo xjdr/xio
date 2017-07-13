@@ -153,6 +153,31 @@
     </dependency>
 
     <dependency>
+      <groupId>io.zipkin.brave</groupId>
+      <artifactId>brave-instrumentation-http</artifactId>
+      <version>4.4.0</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.zipkin.brave</groupId>
+      <artifactId>brave-context-slf4j</artifactId>
+      <version>4.5.1</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.zipkin.reporter</groupId>
+      <artifactId>zipkin-sender-okhttp3</artifactId>
+      <version>1.0.0</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.zipkin.brave</groupId>
+      <artifactId>brave-instrumentation-http-tests</artifactId>
+      <version>4.4.0</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-server</artifactId>
       <version>9.3.1.v20150714</version>

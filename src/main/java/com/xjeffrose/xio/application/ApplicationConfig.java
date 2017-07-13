@@ -1,5 +1,9 @@
 package com.xjeffrose.xio.application;
 
+import com.xjeffrose.xio.bootstrap.ChannelConfiguration;
+import com.xjeffrose.xio.bootstrap.ServerChannelConfiguration;
+import com.xjeffrose.xio.core.NullZkClient;
+import com.xjeffrose.xio.core.ZkClient;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigException;
 import lombok.Getter;
@@ -12,10 +16,41 @@ public class ApplicationConfig {
 
   @Getter
   private final String name;
+  @Getter
+  private final int bossThreads;
+  @Getter
+  private final String bossNameFormat;
+  @Getter
+  private final int workerThreads;
+  @Getter
+  private final String workerNameFormat;
+  @Getter
+  private final String zookeeperCluster;
+  @Getter
+  private final String ipFilterPath;
+  @Getter
+  private final String http1FilterPath;
+  @Getter
+  private final String zipkinUrl;
+  @Getter
+  private final float samplingRate;
 
   public ApplicationConfig(Config config) {
     this.config = config;
     name = config.getString("name");
+    bossThreads = config.getInt("settings.bossThreads");
+    bossNameFormat = config.getString("settings.bossNameFormat");
+    workerThreads = config.getInt("settings.workerThreads");
+    workerNameFormat = config.getString("settings.workerNameFormat");
+    zookeeperCluster = config.getString("settings.zookeeper.cluster");
+    ipFilterPath = config.getString("settings.configurationManager.ipFilter.path");
+    http1FilterPath = config.getString("settings.configurationManager.http1Filter.path");
+    zipkinUrl = config.getString("settings.tracing.zipkinUrl");
+    samplingRate = ((Double) config.getDouble("settings.tracing.samplingRate")).floatValue();
+  }
+
+  public static ApplicationConfig fromConfig(String key, Config config) {
+    return new ApplicationConfig(config.getConfig(key));
   }
 
   public Config getServer(String server) {
@@ -37,5 +72,18 @@ public class ApplicationConfig {
   public Config settings() {
     return config.getConfig("settings");
   }
+
+  public ServerChannelConfiguration serverChannelConfig() {
+    return ChannelConfiguration.serverConfig(bossThreads, bossNameFormat, workerThreads, workerNameFormat);
+  }
+
+  public ZkClient zookeeperClient() {
+    if (zookeeperCluster.isEmpty()) {
+      return new NullZkClient();
+    } else {
+      return new ZkClient(zookeeperCluster);
+    }
+  }
+
 
 }
