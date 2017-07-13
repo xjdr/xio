@@ -59,7 +59,7 @@ abstract public class XioBasePipeline implements XioPipelineFragment {
     } else {
       throw new RuntimeException("No codec configured");
     }
-    addHandler(pipeline, "distributed tracing", state.getTracingHandler());
+    addHandler(pipeline, "distributed tracing", state.getTracingHandler().apply(false));
     pipeline.addLast("l7DeterministicRuleEngine", new Http1Filter(appState.getHttp1FilterConfig()));
     pipeline.addLast("l7BehavioralRuleEngine", new XioBehavioralRuleEngine(appState.getZkClient(), true)); // TODO(JR): Need to make this config
     pipeline.addLast("webApplicationFirewall", new XioWebApplicationFirewall(appState.getZkClient(), true)); // TODO(JR): Need to make this config

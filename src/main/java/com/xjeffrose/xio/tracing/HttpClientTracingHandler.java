@@ -2,7 +2,7 @@ package com.xjeffrose.xio.tracing;
 
 import io.netty.channel.CombinedChannelDuplexHandler;
 
-class HttpClientTracingHandler extends CombinedChannelDuplexHandler<HttpClientResponseTracingHandler, HttpClientRequestTracingHandler> {
+public class HttpClientTracingHandler extends CombinedChannelDuplexHandler<HttpClientResponseTracingHandler, HttpClientRequestTracingHandler> {
 
   private static HttpClientResponseTracingHandler buildInbound(HttpClientTracingState state) {
     return new HttpClientResponseTracingHandler(state);

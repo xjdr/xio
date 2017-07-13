@@ -31,9 +31,11 @@ import io.netty.handler.codec.http.DefaultFullHttpRequest;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.DefaultHttpRequest;
 import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpObject;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.util.CharsetUtil;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -87,12 +89,19 @@ public class HttpClientTracingHandlerIntegrationTest extends ITHttpClient<XioCli
   Logger hush = disableJavaLogging();
   CompletableFuture<HttpResponse> local = new CompletableFuture<HttpResponse>();
 
-  public class ApplicationHandler extends SimpleChannelInboundHandler<HttpResponse> {
+  public class ApplicationHandler extends SimpleChannelInboundHandler<HttpObject> {
+
+    HttpResponse response;
 
     @Override
-    public void channelRead0(ChannelHandlerContext ctx, HttpResponse response) throws Exception {
-      //System.out.println("Response: " + response);
-      local.complete(response);
+    public void channelRead0(ChannelHandlerContext ctx, HttpObject object) throws Exception {
+      if (object instanceof HttpResponse) {
+        response = (HttpResponse)object;
+        //System.out.println("Response: " + response);
+      }
+      if (object instanceof LastHttpContent) {
+        local.complete(response);
+      }
     }
 
     @Override
@@ -146,10 +155,10 @@ public class HttpClientTracingHandlerIntegrationTest extends ITHttpClient<XioCli
     XioRequest<HttpRequest> request = buildRequest(client, payload);
     Future<Void> future = client.write(request);
     future.awaitUninterruptibly();
-    if (future.cause() == null) {
-      //System.out.println("getting");
+    try {
       local.get();
-      //System.out.println("gotten");
+    } catch(Exception e) {
+      //System.out.println("caught e: " + e);
     }
   }
 

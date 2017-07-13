@@ -12,6 +12,7 @@ import brave.Tracing;
 import brave.http.HttpTracing;
 import io.netty.buffer.Unpooled;
 import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -22,6 +23,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.CharsetUtil;
 import java.io.IOException;
 import java.util.logging.*;
+import java.util.function.Function;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.EXPECTATION_FAILED;
@@ -107,9 +109,10 @@ public class HttpServerTracingHandlerIntegrationTest extends ITHttpServer {
   protected void init() throws Exception {
 
     HttpServerTracingState state = new HttpServerTracingState(httpTracing, false);
+    Function<Boolean, ChannelHandler> tracingHandler = b -> new HttpServerTracingHandler(state);
     XioServerBootstrap bootstrap = XioServerBootstrap.fromConfig("xio.testApplication")
       .addToPipeline(new XioHttp1_1Pipeline(() -> new BraveHandler(httpTracing)))
-      .configureServerState(s -> s.setTracingHandler(new HttpServerTracingHandler(state)))
+      .configureServerState(s -> s.setTracingHandler(tracingHandler))
     ;
 
     server = bootstrap.build();

@@ -19,6 +19,10 @@ public class HttpTracingState {
     return ctx.channel().attr(span_key).get();
   }
 
+  public static boolean hasSpan(ChannelHandlerContext ctx) {
+    return ctx.channel().attr(span_key).get() != null;
+  }
+
   public static Span popSpan(ChannelHandlerContext ctx) {
     return ctx.channel().attr(span_key).getAndSet(null);
   }
