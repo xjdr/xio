@@ -109,7 +109,6 @@ public class XioService extends ChannelDuplexHandler {
     serviceList.stream().forEach(xs -> {
       ctx.pipeline().addLast(xs);
     });
-    ctx.pipeline().remove(this);
     if (!blockActive) {
       ctx.fireChannelActive();
     }
