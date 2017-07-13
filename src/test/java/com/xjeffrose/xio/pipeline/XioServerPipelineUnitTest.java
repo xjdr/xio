@@ -1,5 +1,8 @@
 package com.xjeffrose.xio.pipeline;
 
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
+import com.xjeffrose.xio.application.ApplicationConfig;
 import com.xjeffrose.xio.application.ApplicationState;
 import com.xjeffrose.xio.core.ChannelStatistics;
 import com.xjeffrose.xio.core.ConnectionContextHandler;
@@ -25,7 +28,8 @@ public class XioServerPipelineUnitTest {
 
   @Test
   public void verifyHandlers() {
-    ApplicationState appState = ApplicationState.fromConfig("xio.testApplication");
+    Config config = ConfigFactory.load();
+    ApplicationState appState = new ApplicationState(ApplicationConfig.fromConfig("xio.testApplication", config));
     XioServerConfig serverConfig = XioServerConfig.fromConfig("xio.testApplication.servers.testServer");
     XioServerState serverState = XioServerState.fromConfig("xio.testApplication.servers.testServer");
 

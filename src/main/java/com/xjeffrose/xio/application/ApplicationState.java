@@ -3,9 +3,8 @@ package com.xjeffrose.xio.application;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.xjeffrose.xio.bootstrap.ChannelConfiguration;
-import com.xjeffrose.xio.core.NullZkClient;
-import com.xjeffrose.xio.core.ZkClient;
 import com.xjeffrose.xio.bootstrap.ServerChannelConfiguration;
+import com.xjeffrose.xio.core.ZkClient;
 import com.xjeffrose.xio.filter.Http1FilterConfig;
 import com.xjeffrose.xio.filter.IpFilterConfig;
 import lombok.Getter;
@@ -24,37 +23,15 @@ public class ApplicationState {
 
   private final AtomicReference<Http1FilterConfig> http1FilterConfig;
 
-  public ApplicationState(Config config) {
-    channelConfiguration = ChannelConfiguration.serverConfig(
-      config.getInt("settings.bossThreads"),
-      config.getString("settings.bossNameFormat"),
-      config.getInt("settings.workerThreads"),
-      config.getString("settings.workerNameFormat")
-    );
+  public ApplicationState(ApplicationConfig config) {
+    channelConfiguration = config.serverChannelConfig();
+    zkClient = config.zookeeperClient();
 
-    String zookeeperCluster = config.getString("settings.zookeeper.cluster");
-    if (zookeeperCluster.isEmpty()) {
-      zkClient = new NullZkClient();
-    } else {
-      zkClient = new ZkClient(zookeeperCluster);
-    }
-
-    String ipFilterPath = config.getString("settings.configurationManager.ipFilter.path");
     ipFilterConfig = new AtomicReference<IpFilterConfig>(new IpFilterConfig());
-    zkClient.registerUpdater(new IpFilterConfig.Updater(ipFilterPath, this::setIpFilterConfig));
+    zkClient.registerUpdater(new IpFilterConfig.Updater(config.getIpFilterPath(), this::setIpFilterConfig));
 
-    String http1FilterPath = config.getString("settings.configurationManager.http1Filter.path");
     http1FilterConfig = new AtomicReference<Http1FilterConfig>(new Http1FilterConfig());
-    zkClient.registerUpdater(new Http1FilterConfig.Updater(http1FilterPath, this::setHttp1FilterConfig));
-
-  }
-
-  static public ApplicationState fromConfig(String key, Config config) {
-    return new ApplicationState(config.getConfig(key));
-  }
-
-  static public ApplicationState fromConfig(String key) {
-    return fromConfig(key, ConfigFactory.load());
+    zkClient.registerUpdater(new Http1FilterConfig.Updater(config.getHttp1FilterPath(), this::setHttp1FilterConfig));
   }
 
   public IpFilterConfig getIpFilterConfig() {

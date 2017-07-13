@@ -2,6 +2,7 @@ package com.xjeffrose.xio.bootstrap;
 
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+import com.xjeffrose.xio.application.ApplicationConfig;
 import com.xjeffrose.xio.application.ApplicationState;
 import com.xjeffrose.xio.pipeline.XioPipelineAssembler;
 import com.xjeffrose.xio.pipeline.XioPipelineFragment;
@@ -44,7 +45,7 @@ public class XioServerBootstrap {
     Config servers = config.getConfig(key).getConfig("servers");
     String firstServer = servers.root().entrySet().iterator().next().getKey();
     return new XioServerBootstrap(
-      ApplicationState.fromConfig(key, config),
+      new ApplicationState(ApplicationConfig.fromConfig(key, config)),
       XioServerConfig.fromConfig(firstServer, servers),
       XioServerState.fromConfig(firstServer, servers)
     );
