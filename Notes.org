@@ -12,6 +12,8 @@
 
 ** nice to have
 
+*** streamline ssl usage
+
 *** better openzipkin/brave integration
 
 **** custom CurrentTraceContext
