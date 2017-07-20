@@ -1,0 +1,158 @@
+#+Title: XIO
+#+Author: Chris Keating and Jeff Rose
+#+Email: Chris.Keating@nordstrom.com and Jeff.Rose@nordstrom.com
+#+REVEAL_ROOT: http://cdn.jsdelivr.net/reveal.js/3.0.0/
+#+REVEAL_PLUGINS: (highlight)
+#+OPTIONS: toc:nil
+#+OPTIONS: num:nil
+
+* XIO - High performance Multithreaded Async I/O for Java 8
+  - questions welcome
+
+* Features
+  - SSL/TLS
+  - application
+  - client
+  - http
+  - mux
+  - server
+  - tracing
+
+* SSL/TLS
+  - accepts x509 certificates
+  - generates self signed certificates
+  - uses native SSL libraries instead of JSSE
+    - OpenSSL
+    - boringssl
+    - configurable at deploy time
+
+* application
+  - dynamic runtime configuration
+    - IP whitelist/blacklist
+    - Web Application Firewall
+  - manages multiple server instances
+  - will use epoll if available
+  - channel statistics
+  - good support for Typesafe/Lightbend Config
+
+* application example
+#+begin_src java
+new ApplicationBootstrap(appConfig)
+  // configure the main server
+  .addServer("nfe-main", (bs) -> {
+    // configure the pipeline
+    bs.addToPipeline(proxyFragment())
+      // setup distributed tracing
+      .configureServerState(this::addServerTracing))
+      // build the application and start receiving connections
+      .build()
+    ;
+#+end_src
+
+* application configuration example
+#+begin_example
+nfe {
+  application {
+    servers {
+      nfe-main {
+        settings {
+          bindIp = "0.0.0.0"
+          bindPort = 80
+        }
+      }
+    }
+  }
+
+  proxy {
+    routes {
+      /api/v1/fives {
+        name = fives
+        version = v1
+        url = "http://172.18.242.20"
+      }
+    }
+  }
+}
+#+end_example
+
+* client
+  - connection pooling
+  - cluster aware
+  - multiple cluster load balancing strategies
+  - multiple retry strategies
+
+* client example
+#+begin_src java
+XioClient client = new XioClientBootstrap()
+  // use an existing EventLoop
+  .channelConfig(ChannelConfiguration.clientConfig(eventLoop))
+  .address(config.address)
+  // enable ssl
+  .ssl(config.needSSL)
+  // HTTP client
+  .applicationProtocol(() -> new HttpClientCodec())
+  // proxy backend
+  .handler(new RawBackendHandler(ctx))
+  // build
+  .build()
+  ;
+
+// send request
+client.write(httpRequest);
+#+end_src
+
+* http
+  - serve http content
+  - request http content
+  - serve proxied http content
+
+* mux
+  - request/response connection multiplexing
+  - uses connection pooling
+  - persistent connections maintained
+  - reduced connection overhead (especially TLS)
+  - higher throughput
+  - lower latency
+
+* server
+  - servers built with common sense defaults
+  - wired into waf, etc.
+  - idle connection handlers
+  - connection limiters
+  - rate limiters
+
+* server example
+#+begin_src java
+// load config from "application.conf"
+XioServer server = XioServerBootstrap.fromConfig("xio.testApplication")
+  // configure pipeline
+  .addToPipeline(new XioHttp1_1Pipeline(() -> new AppHandler())
+  // enable tracing
+  .configureServerState(s -> s.setTracingHandler(tracingHandler))
+  // build and start receiving connections
+  .build()
+  ;
+#+end_src
+
+* tracing
+  - distributed tracing with zipkin
+
+* tracing example
+
+[[./tracing_example.png]]
+
+* Example Apps
+
+** Trailhead - a simple reverse proxy
+
+** Chicago - a key/value store database
+
+** NFE / NLP
+   - Live demo
+
+* File Variables                                                   :noexport:
+#+begin_comment
+Local Variables:
+eval: (load-library "ox-reveal")
+End:
+#+end_comment
