@@ -18,11 +18,12 @@
 package com.xjeffrose.xio.SSL;
 
 import java.security.PrivateKey;
-import org.apache.log4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 import sun.security.x509.X509CertImpl;
 
+@Slf4j
 public final class X509Certificate {
-  private static final Logger log = Logger.getLogger(X509Certificate.class.getName());
+
 
   private final String fqdn;
   private final PrivateKey key;

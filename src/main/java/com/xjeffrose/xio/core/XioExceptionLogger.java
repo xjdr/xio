@@ -4,10 +4,11 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.util.ReferenceCountUtil;
-import org.apache.log4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class XioExceptionLogger extends LoggingHandler {
-  private static final Logger log = Logger.getLogger(XioExceptionLogger.class);
+
 
   @Override
   public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {

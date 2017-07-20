@@ -1,0 +1,2 @@
+py2-ipaddress==3.4.1
+thrift==0.9.3

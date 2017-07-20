@@ -1,0 +1,24 @@
+* XioConnectionPool
+** Connection pooling with retry: what we didn't do
+#+begin_src java
+simpleChannelPool = new SimpleChannelPool(bootstrap, handler, healthCheck) {
+  protected ChannelFuture connectChannel(Bootstrap bs) {
+    ChannelFuture connectResult = bs.connect();
+    return connectResult;
+  }
+};
+#+end_src
+
+Initially connectChannel was considered as a site for implementing
+connection retry. But this was incorrect for two reasons:
+  1. connectChannel returns a ChannelFuture instead of a
+     Future<Channel> so to correctly implement connection retry
+     without blocking we would have to return a ChannelFuture that
+     won't actually have a channel until the future succeeds. This
+     breaks the ChannelFuture contract and would lead to further
+     headaches.
+  2. This site offers no recourse to use an existing connection. For
+     example if the server has reached a connection limit and starts
+     rejecting existing connections. In this case we still have the
+     opportunity to achieve a connection by reusing a connection from
+     the pool.

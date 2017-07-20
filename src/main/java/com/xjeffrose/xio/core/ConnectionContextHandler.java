@@ -1,6 +1,5 @@
 package com.xjeffrose.xio.core;
 
-import com.xjeffrose.xio.server.XioConnectionContext;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.AttributeKey;

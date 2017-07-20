@@ -5,11 +5,12 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.group.ChannelGroup;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
-import org.apache.log4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 
 
+@Slf4j
 public class ShutdownUtil {
-  private static final Logger log = Logger.getLogger(ShutdownUtil.class);
+
 
   public static void shutdownChannelFactory(EventLoopGroup group,
                                             ExecutorService bossExecutor,

@@ -16,19 +16,29 @@ public class RouteTest {
   }
 
   @Test
+  public void testNamedWildcard() throws Exception {
+    Route route = Route.build("/api/people/:*path");
+
+    String path = "/api/people/jimbo/pockets/chaw";
+    assertTrue(route.matches(path));
+
+    assertEquals("jimbo/pockets/chaw", route.groups(path).get("path"));
+  }
+
+  @Test
   public void testPathPattern() throws Exception {
 
     String pathPattern1 = Route
         .build("/api/people/:person")
         .pathPattern().toString();
 
-    assertEquals(pathPattern1, "/api/people/(?<person>[^/]*)[/]?");
+    assertEquals("/api/people/(?<person>[^/]*)[/]?", pathPattern1);
 
     String pathPattern2 = Route
         .build("/api/people/:person/hands/:hand/slap")
         .pathPattern().toString();
 
-    assertEquals(pathPattern2, "/api/people/(?<person>[^/]*)/hands/(?<hand>[^/]*)/slap[/]?");
+    assertEquals("/api/people/(?<person>[^/]*)/hands/(?<hand>[^/]*)/slap[/]?", pathPattern2);
   }
 
   @Test

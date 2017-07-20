@@ -6,17 +6,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.log4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class Route {
-  private static final Logger log = Logger.getLogger(Route.class);
 
-  private static final Pattern keywordPattern = Pattern.compile("(:\\w+)");
+  private static final Pattern keywordPattern = Pattern.compile("(:\\w+|:\\*\\w+)");
+  private final String path;
   private final Pattern pathPattern;
   private final List<String> keywords;
 
-  private Route(Pattern path, List<String> keywords) {
-    this.pathPattern = path;
+  private Route(String path, Pattern pathPattern, List<String> keywords) {
+    this.path = path;
+    this.pathPattern = pathPattern;
     this.keywords = keywords;
   }
 
@@ -33,10 +35,19 @@ public class Route {
           regexPattern.append("/");
           if (keywordPattern.matcher(segment).matches()) {
             String keyword = segment.substring(1);
-            regexPattern
+
+            if (keyword.indexOf("*") == 0) {
+              keyword = keyword.substring(1);
+              regexPattern
+                .append("(?<")
+                .append(keyword)
+                .append(">.*)");
+            } else {
+              regexPattern
                 .append("(?<")
                 .append(keyword)
                 .append(">[^/]*)");
+            }
             keywords.add(keyword);
           } else {
             regexPattern.append(segment);
@@ -51,7 +62,7 @@ public class Route {
 
   public static Route build(String pattern) {
     List<String> keywords = new ArrayList<>();
-    return new Route(compile(pattern, keywords), keywords);
+    return new Route(pattern, compile(pattern, keywords), keywords);
   }
 
   public Pattern pathPattern() {
@@ -64,14 +75,29 @@ public class Route {
 
   public Map<String, String> groups(String path) {
     Matcher matcher = pathPattern.matcher(path);
+    Map<String, String> groups = new HashMap<>();
     if (matcher.matches()) {
-      Map<String, String> groups = new HashMap<>();
       for (String keyword : keywords) {
         groups.put(keyword, matcher.group(keyword));
       }
-      return groups;
-    } else {
-      return null;
     }
+    return groups;
+  }
+
+  // Let's just assume that if two Route objects have been built
+  // from the same path that they will have the same pattern and
+  // keywords.
+
+  @Override
+  public boolean equals(final Object o) {
+    if (o == this) return true;
+    if (!(o instanceof Route)) return false;
+    final Route other = (Route) o;
+    return other.path.equals(path);
+  }
+
+  @Override
+  public int hashCode() {
+    return path.hashCode();
   }
 }

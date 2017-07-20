@@ -2,33 +2,35 @@ package com.xjeffrose.xio.client.loadbalancer;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Ordering;
+import com.xjeffrose.xio.core.XioTimer;
+import io.netty.util.Timeout;
+import io.netty.util.TimerTask;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import org.apache.log4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 
+import java.io.Closeable;
+import java.io.IOException;
 import static com.google.common.base.Preconditions.checkState;
 
 /**
  * Creates a new Distributor to perform load balancing
  */
-public class Distributor {
-  private static final Logger log = Logger.getLogger(Distributor.class);
+@Slf4j
+public class Distributor implements Closeable {
+
+
   private final ImmutableList<Node> pool;
-  private final Map<UUID, Node> okNodes;
+  private final Map<UUID, Node> okNodes = new ConcurrentHashMap<>();
   private final Strategy strategy;
   private final NodeHealthCheck nodeHealthCheck;
-  private ScheduledExecutorService nodeCheckExecutorService;
-  private final String serviceName;
-  private boolean healthCheckEnabled;
+  private final XioTimer xioTimer;
+  private final Timeout refreshTimeout;
 
   private final Ordering<Node> byWeight = Ordering.natural().onResultOf(
       new Function<Node, Integer>() {
@@ -38,86 +40,37 @@ public class Distributor {
       }
   ).reverse();
 
-  public Distributor(ImmutableList<Node> pool, Strategy strategy, NodeHealthCheck nodeHealthCheck, String serviceName) {
-     this(pool,strategy,nodeHealthCheck,serviceName,false);
-  }
-
-  public Distributor(ImmutableList<Node> pool, Strategy strategy, NodeHealthCheck nodeHealthCheck, String serviceName, boolean healthCheckEnabled) {
+  public Distributor(ImmutableList<Node> pool, Strategy strategy, NodeHealthCheck nodeHealthCheck, XioTimer xioTimer) {
     this.nodeHealthCheck = nodeHealthCheck;
+    this.xioTimer = xioTimer;
     this.pool = ImmutableList.copyOf(byWeight.sortedCopy(pool));
     this.strategy = strategy;
-    this.okNodes = new ConcurrentHashMap<>();
-    this.serviceName = serviceName;
-    this.healthCheckEnabled = healthCheckEnabled;
 
     // assume all are reachable before the first health check
     for (Node node : pool) {
       okNodes.put(node.token(), node);
     }
+
     checkState(pool.size() > 0, "Must be at least one reachable node in the pool");
-    if(healthCheckEnabled){
-      nodeCheckExecutorService = Executors.newSingleThreadScheduledExecutor();
-      registerHealthCheck();
-    }
-  }
 
-  private Distributor(ImmutableList<Node> pool, Map<UUID, Node> okNodes, Strategy strategy, NodeHealthCheck nodeHealthCheck, String serviceName){
-    this(pool,okNodes,strategy,nodeHealthCheck,serviceName,false);
-  }
-
-  private Distributor(ImmutableList<Node> pool, Map<UUID, Node> okNodes, Strategy strategy, NodeHealthCheck nodeHealthCheck, String serviceName, boolean healthCheckEnabled){
-    this.nodeHealthCheck = nodeHealthCheck;
-    this.pool = ImmutableList.copyOf(byWeight.sortedCopy(pool));
-    this.strategy = strategy;
-    this.okNodes = ImmutableMap.copyOf(okNodes);
-    this.serviceName= serviceName;
-    this.healthCheckEnabled = healthCheckEnabled;
-    if(healthCheckEnabled){
-      nodeCheckExecutorService = Executors.newSingleThreadScheduledExecutor();
-      registerHealthCheck();
-    }
-
-  }
-
-  private void registerHealthCheck(){
-    Random r = new Random();
-    //node health is scheduled at some random value between 5 and 35 sec.
-    nodeCheckExecutorService.scheduleAtFixedRate(new Runnable(){
-      @Override
-      public void run() {
-        Thread.currentThread().setName("HeatlhCheck-"+serviceName);
-        refreshPool();
-      }
-    },0,r.nextInt(31)+5,TimeUnit.SECONDS);
+    refreshTimeout = xioTimer.newTimeout(timeout -> refreshPool(), 500, TimeUnit.MILLISECONDS);
   }
 
   private void refreshPool() {
     for (Node node : pool) {
-      try {
-        nodeHealthCheck.connect(node, node.getProto(), node.isSSL(), null);
-      }catch (Exception e){
-        //What do we do here ??
-      }
-
+      nodeHealthCheck.connect(node, node.getProto(), node.isSSL(), null);
       if (node.isAvailable()) {
         okNodes.putIfAbsent(node.token(), node);
       } else {
-        log.debug("Node is unreachable: " + node.address().getHostName() + ":" + node.address().getPort());
+        log.error("Node is unreachable: " + node.address().getHostName() + ":" + node.address().getPort());
         okNodes.remove(node.token());
       }
     }
     checkState(okNodes.keySet().size() > 0, "Must be at least one reachable node in the pool");
   }
 
-  public void stop(){
-    if(healthCheckEnabled) {
-      this.nodeCheckExecutorService.shutdownNow();
-      try {
-        this.nodeCheckExecutorService.awaitTermination(200, TimeUnit.MILLISECONDS);
-      } catch (Exception e) {
-        log.error("Forcefully stopping Executor Service");
-      }
-    }
+  public void stop() {
+    refreshTimeout.cancel();
   }
 
   /**
@@ -145,21 +98,14 @@ public class Distributor {
    * Rebuild this distributor.
    */
   public Distributor rebuild() {
-    stop();
-    return new Distributor(pool, strategy, nodeHealthCheck,serviceName, healthCheckEnabled);
-  }
-
-  public Distributor rebuild(ImmutableList<Node> nodes, Map<UUID,Node> okNodes){
-    stop();
-    return new Distributor(nodes, okNodes, this.strategy, this.nodeHealthCheck, serviceName, healthCheckEnabled);
+    return new Distributor(pool, strategy, nodeHealthCheck, xioTimer);
   }
 
   /**
    * Rebuild this distributor with a new vector.
    */
   public Distributor rebuild(ImmutableList<Node> list) {
-    stop();
-    return new Distributor(list, strategy, nodeHealthCheck, serviceName, healthCheckEnabled);
+    return new Distributor(list, strategy, nodeHealthCheck, xioTimer);
   }
 
   public ImmutableList<Node> getPool() {
@@ -173,7 +119,7 @@ public class Distributor {
       nodes.stream()
           .forEach(node -> {
             NodeStat ns = new NodeStat(node);
-            ns.setHealthy(node.isAvailable());
+            ns.setHealthy(okNodes.containsKey(node.token()));
             ns.setUsedForRouting(strategy.okToPick(node));
             nodeStat.add(ns);
           });
@@ -183,6 +129,11 @@ public class Distributor {
 
   public Map<UUID, Node> getOkNodes() {
     return okNodes;
+  }
+
+  @Override
+  public void close() throws IOException {
+    // TODO(CK): Not sure what to close
   }
 
 }
