@@ -10,9 +10,9 @@
 
 *** DONE move concrete trailhead classes into http package
 
-** nice to have
-
 *** streamline ssl usage
+
+** nice to have
 
 *** better openzipkin/brave integration
 
@@ -29,6 +29,11 @@
 *** better usage of findbugs annotations
 
 **** http://findbugs.sourceforge.net/
+
+* Naming conventions
+  - Put Xio in front of a class name to avoid clashing with an existing class name
+    - good example XioServerBootstrap uses netty ServerBootstrap
+    - bad example XioBasePipeline doesn't use anything called BasePipeline and does not clash
 
 * speeding up maven invocation
 
