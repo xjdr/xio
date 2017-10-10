@@ -6,6 +6,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.embedded.EmbeddedChannel;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.net.InetAddress;
@@ -15,28 +16,32 @@ import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.junit.runner.RunWith;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.verify;
+import static org.powermock.api.mockito.PowerMockito.mock;
+import static org.powermock.api.mockito.PowerMockito.mockStatic;
+import static org.powermock.api.mockito.PowerMockito.when;
+
+@RunWith(PowerMockRunner.class)
+@PrepareForTest({IpFilter.class, LoggerFactory.class})
 public class IpFilterUnitTest extends Assert {
 
-  boolean active = false;
-  boolean registered = false;
-  ChannelHandler eventTracker = new ChannelInboundHandlerAdapter() {
-    @Override
-    public void channelActive(ChannelHandlerContext ctx) {
-      setActive();
-    }
+  private boolean eager;
 
-    @Override
-    public void channelRegistered(ChannelHandlerContext ctx) {
-      setRegistered();
-    }
-  };
-
-  void setActive() {
-    active = true;
-  }
-
-  void setRegistered() {
-    registered = true;
+  @Before
+  public void setUp() throws Exception {
+    eager = true;
+    // TODO(CK): This is a bit kludgy, basically we create a new logger for every test
+    // but log is a static member on ipFilter, we should probably just emit events instead
+    // of logging.
+    mockStatic(LoggerFactory.class);
+    Logger logger = mock(Logger.class);
+    when(LoggerFactory.getLogger(any(Class.class))).thenReturn(logger);
   }
 
   @Test
@@ -44,12 +49,11 @@ public class IpFilterUnitTest extends Assert {
     Set<InetAddress> blacklist = new HashSet<InetAddress>();
     blacklist.add(InetAddress.getByName("172.22.10.1"));
     IpFilter ipFilter = new IpFilter(new IpFilterConfig(ImmutableSet.copyOf(blacklist)));
-    EmbeddedChannel chDeny = newEmbeddedInetChannel("172.22.10.1", true, ipFilter, eventTracker);
+    EmbeddedChannel chDeny = newEmbeddedInetChannel("172.22.10.1", true, ipFilter);
     chDeny.runPendingTasks();
     assertFalse(chDeny.isActive());
     assertFalse(chDeny.isOpen());
-    assertFalse(active);
-    assertTrue(registered);
+    verify(ipFilter.getLog()).warn("IpFilter denied blacklisted ip '{}'{}", "172.22.10.1", " (eager)");
   }
 
   @Test
@@ -57,11 +61,11 @@ public class IpFilterUnitTest extends Assert {
     Set<InetAddress> blacklist = new HashSet<InetAddress>();
     blacklist.add(InetAddress.getByName("172.22.10.1"));
     IpFilter ipFilter = new IpFilter(new IpFilterConfig(ImmutableSet.copyOf(blacklist)));
-    EmbeddedChannel chDeny = newEmbeddedInetChannel("172.22.10.1", false, ipFilter, eventTracker);
+    EmbeddedChannel chDeny = newEmbeddedInetChannel("172.22.10.1", false, ipFilter);
+    chDeny.runPendingTasks();
     assertFalse(chDeny.isActive());
     assertFalse(chDeny.isOpen());
-    assertTrue(active);
-    assertTrue(registered);
+    verify(ipFilter.getLog()).warn("IpFilter denied blacklisted ip '{}'{}", "172.22.10.1", "");
   }
 
   @Test
@@ -69,22 +73,31 @@ public class IpFilterUnitTest extends Assert {
     Set<InetAddress> blacklist = new HashSet<InetAddress>();
     blacklist.add(InetAddress.getByName("172.22.10.1"));
     IpFilter ipFilter = new IpFilter(new IpFilterConfig(ImmutableSet.copyOf(blacklist)));
-    EmbeddedChannel chAllow = newEmbeddedInetChannel("172.22.10.2", true, ipFilter, eventTracker);
+    EmbeddedChannel chAllow = newEmbeddedInetChannel("172.22.10.2", true, ipFilter);
+    chAllow.runPendingTasks();
     assertTrue(chAllow.isActive());
     assertTrue(chAllow.isOpen());
-    assertTrue(active);
-    assertTrue(registered);
+    verify(ipFilter.getLog()).info("IpFilter allowed ip '{}'", "172.22.10.2");
   }
+
 
   private EmbeddedChannel newEmbeddedInetChannel(final String ipAddress, boolean issueAddress, ChannelHandler... handlers) {
     return new EmbeddedChannel(handlers) {
+
       @Override
       protected SocketAddress remoteAddress0() {
         InetSocketAddress address = new InetSocketAddress(ipAddress, 5421);
 
-        if (issueAddress) {
+        if (eager && !issueAddress) {
+          // this is channelRegistered and we don't want to issue an address
+          eager = false;
+          return null;
+        } else if (eager && issueAddress) {
+          // this is channelRegistered and we want to issue an address
+          eager = false;
           return address;
-        } else if (registered) {
+        } else if (super.isActive()) {
+          // this is channelActive
           return address;
         }
         return null;

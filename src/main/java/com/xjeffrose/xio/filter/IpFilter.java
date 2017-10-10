@@ -2,9 +2,12 @@ package com.xjeffrose.xio.filter;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.net.InetSocketAddress;
 
+// TODO(CK): emit user events when we filter
+@Slf4j
 public class IpFilter extends ChannelInboundHandlerAdapter {
 
   private final IpFilterConfig config;
@@ -28,7 +31,7 @@ public class IpFilter extends ChannelInboundHandlerAdapter {
    */
   @Override
   public void channelActive(ChannelHandlerContext ctx) throws Exception {
-    filter(ctx, remoteAddress(ctx));
+    filter(ctx, remoteAddress(ctx), false);
     ctx.fireChannelActive();
   }
 
@@ -41,7 +44,7 @@ public class IpFilter extends ChannelInboundHandlerAdapter {
   private void eagerFilter(ChannelHandlerContext ctx) throws Exception {
     InetSocketAddress address = remoteAddress(ctx);
     if (address != null) {
-      filter(ctx, address);
+      filter(ctx, address, true);
     }
   }
 
@@ -50,11 +53,22 @@ public class IpFilter extends ChannelInboundHandlerAdapter {
    * ctx. Otherwise allow the connection to live. In either case
    * remove this handler from the pipeline.
    */
-  private void filter(ChannelHandlerContext ctx, InetSocketAddress address) {
+  private void filter(ChannelHandlerContext ctx, InetSocketAddress address, boolean eager) {
     ctx.pipeline().remove(this);
     if (address == null || config.denied(address)) {
+      String describeEager = "";
+      if (eager) {
+        describeEager = " (eager)";
+      }
+      log.warn("IpFilter denied blacklisted ip '{}'{}", address.getAddress().getHostAddress(), describeEager);
       ctx.close();
+    } else {
+      log.info("IpFilter allowed ip '{}'", address.getAddress().getHostAddress());
     }
   }
 
+  // Only used for testing
+  org.slf4j.Logger getLog() {
+    return log;
+  }
 }
