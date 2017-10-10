@@ -17,8 +17,8 @@ public class XioServerBootstrapFunctionalTest {
 
   @Test
   public void testServe404() {
-    XioServerBootstrap bootstrap = XioServerBootstrap.fromConfig("xio.testApplication")
-      .addToPipeline(new XioHttp1_1Pipeline(new XioPipelineFragment() {
+    XioServerBootstrap bootstrap = XioServerBootstrap.fromConfig("xio.testHttpServer")
+      .addToPipeline(new SmartHttpPipeline(new XioPipelineFragment() {
         public String applicationProtocol() {
           return "";
         }
@@ -29,7 +29,7 @@ public class XioServerBootstrapFunctionalTest {
     ;
     try (XioServer server = bootstrap.build()) {
       Response response = ClientHelper.http(server.getInstrumentation().addressBound());
-      assertEquals(response.code(), 404);
+      assertEquals(404, response.code());
       assertEquals(server.getInstrumentation() != null, true);
     }
   }

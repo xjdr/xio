@@ -31,7 +31,7 @@ public class XioServerPipelineUnitTest {
     Config config = ConfigFactory.load();
     ApplicationState appState = new ApplicationState(ApplicationConfig.fromConfig("xio.testApplication", config));
     XioServerConfig serverConfig = XioServerConfig.fromConfig("xio.testApplication.servers.testServer");
-    XioServerState serverState = XioServerState.fromConfig("xio.testApplication.servers.testServer");
+    XioServerState serverState = new XioServerState(serverConfig);
 
     // Build class under test
     XioServerPipeline server = new XioServerPipeline() {

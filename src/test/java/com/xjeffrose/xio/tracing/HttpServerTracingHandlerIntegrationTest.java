@@ -2,7 +2,7 @@ package com.xjeffrose.xio.tracing;
 
 import com.xjeffrose.xio.bootstrap.XioServerBootstrap;
 import com.xjeffrose.xio.fixtures.SampleHandler;
-import com.xjeffrose.xio.pipeline.XioHttp1_1Pipeline;
+import com.xjeffrose.xio.pipeline.SmartHttpPipeline;
 import com.xjeffrose.xio.server.XioServer;
 
 
@@ -110,8 +110,8 @@ public class HttpServerTracingHandlerIntegrationTest extends ITHttpServer {
 
     HttpServerTracingState state = new HttpServerTracingState(httpTracing, false);
     Function<Boolean, ChannelHandler> tracingHandler = b -> new HttpServerTracingHandler(state);
-    XioServerBootstrap bootstrap = XioServerBootstrap.fromConfig("xio.testApplication")
-      .addToPipeline(new XioHttp1_1Pipeline(() -> new BraveHandler(httpTracing)))
+    XioServerBootstrap bootstrap = XioServerBootstrap.fromConfig("xio.testHttpServer")
+      .addToPipeline(new SmartHttpPipeline(() -> new BraveHandler(httpTracing)))
       .configureServerState(s -> s.setTracingHandler(tracingHandler))
     ;
 

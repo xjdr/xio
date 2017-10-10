@@ -14,7 +14,7 @@ public class XioEchoPipelineFunctionalTest extends Assert {
 
   @Test
   public void testEchoServer() {
-    XioServerBootstrap bootstrap = XioServerBootstrap.fromConfig("xio.testApplication")
+    XioServerBootstrap bootstrap = XioServerBootstrap.fromConfig("xio.testEchoServer")
       .addToPipeline(new XioEchoPipeline())
     ;
 
@@ -29,7 +29,7 @@ public class XioEchoPipelineFunctionalTest extends Assert {
 
   @Test
   public void testEchoServerLargePayload() {
-    XioServerBootstrap bootstrap = XioServerBootstrap.fromConfig("xio.testApplication")
+    XioServerBootstrap bootstrap = XioServerBootstrap.fromConfig("xio.testEchoServer")
       .addToPipeline(new XioEchoPipeline())
     ;
 

@@ -18,8 +18,8 @@ public class XioHttp1_1PipelineFunctionalTest extends Assert {
 
   @Test
   public void testProxyServer() throws IOException {
-    XioServerBootstrap bootstrap = XioServerBootstrap.fromConfig("xio.testApplication")
-      .addToPipeline(new XioHttp1_1Pipeline(() -> new SampleHandler()))
+    XioServerBootstrap bootstrap = XioServerBootstrap.fromConfig("xio.testHttpServer")
+      .addToPipeline(new SmartHttpPipeline(() -> new SampleHandler()))
     ;
     try (XioServer server = bootstrap.build()) {
       InetSocketAddress address = server.getInstrumentation().addressBound();

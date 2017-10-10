@@ -41,13 +41,13 @@ public class XioServerBootstrap {
     channelConfig(appState.getChannelConfiguration());
   }
 
+  // TODO(CK): refactor tests and remove this
   static public XioServerBootstrap fromConfig(String key, Config config) {
-    Config servers = config.getConfig(key).getConfig("servers");
-    String firstServer = servers.root().entrySet().iterator().next().getKey();
+    XioServerConfig serverConfig = XioServerConfig.fromConfig(key, config);
     return new XioServerBootstrap(
-      new ApplicationState(ApplicationConfig.fromConfig(key, config)),
-      XioServerConfig.fromConfig(firstServer, servers),
-      XioServerState.fromConfig(firstServer, servers)
+      new ApplicationState(ApplicationConfig.fromConfig("xio.defaultApplication", ConfigFactory.load())),
+      serverConfig,
+      new XioServerState(serverConfig)
     );
   }
 

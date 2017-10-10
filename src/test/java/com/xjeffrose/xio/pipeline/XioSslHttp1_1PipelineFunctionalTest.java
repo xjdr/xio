@@ -23,8 +23,8 @@ public class XioSslHttp1_1PipelineFunctionalTest extends Assert {
 
   @Test
   public void testServer() throws IOException {
-    XioServerBootstrap bootstrap = XioServerBootstrap.fromConfig("xio.testApplication")
-      .addToPipeline(new XioSslHttp1_1Pipeline(() -> new SampleHandler()))
+    XioServerBootstrap bootstrap = XioServerBootstrap.fromConfig("xio.testHttpsServer")
+      .addToPipeline(new SmartHttpPipeline(() -> new SampleHandler()))
     ;
     try (XioServer server = bootstrap.build()) {
       InetSocketAddress address = server.getInstrumentation().addressBound();
@@ -55,8 +55,8 @@ public class XioSslHttp1_1PipelineFunctionalTest extends Assert {
     try (SimpleTestServer testServer = new SimpleTestServer(0)) {
       testServer.run();
 
-      XioServerBootstrap bootstrap = XioServerBootstrap.fromConfig("xio.testApplication")
-        .addToPipeline(new XioSslHttp1_1Pipeline(new HttpProxyServer(testServer.boundAddress())))
+      XioServerBootstrap bootstrap = XioServerBootstrap.fromConfig("xio.testHttpsServer")
+        .addToPipeline(new SmartHttpPipeline(new HttpProxyServer(testServer.boundAddress())))
       ;
 
       try (XioServer server = bootstrap.build()) {
@@ -72,11 +72,12 @@ public class XioSslHttp1_1PipelineFunctionalTest extends Assert {
   }
 
   //  @Test
+  // TODO(CK): This is actually an integration test and a flaky one at that
   public void testProxyToHttpsServer() throws IOException, URISyntaxException {
     URI uri = new URI("https://www.paypal.com:443/home");
 
-    XioServerBootstrap bootstrap = XioServerBootstrap.fromConfig("xio.testApplication")
-      .addToPipeline(new XioSslHttp1_1Pipeline(new HttpsProxyServer(uri)))
+    XioServerBootstrap bootstrap = XioServerBootstrap.fromConfig("xio.testHttpsServer")
+      .addToPipeline(new SmartHttpPipeline(new HttpsProxyServer(uri)))
       ;
 
     try (XioServer server = bootstrap.build()) {
