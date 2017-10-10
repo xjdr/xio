@@ -40,6 +40,9 @@ public class XioServerConfig {
     limits = new XioServerLimits(config.getConfig("limits"));
     tls = new TlsConfig(config.getConfig("settings.tls"));
     messageLoggerEnabled = config.getBoolean("settings.messageLoggerEnabled");
+    if (!tls.isUseSsl() && tls.isLogInsecureConfig()) {
+      log.warn("Server '{}' has useSsl set to false!", name);
+    }
   }
 
   static public XioServerConfig fromConfig(String key, Config config) {
