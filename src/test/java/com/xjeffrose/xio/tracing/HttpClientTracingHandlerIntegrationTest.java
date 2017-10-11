@@ -2,7 +2,6 @@ package com.xjeffrose.xio.tracing;
 
 import com.xjeffrose.xio.bootstrap.XioServerBootstrap;
 import com.xjeffrose.xio.fixtures.SampleHandler;
-import com.xjeffrose.xio.pipeline.XioHttp1_1Pipeline;
 import com.xjeffrose.xio.client.XioClient;
 import com.xjeffrose.xio.client.XioClientBootstrap;
 import com.xjeffrose.xio.client.loadbalancer.Protocol;

@@ -1,4 +1,4 @@
-package com.xjeffrose.xio.handler;
+package com.xjeffrose.xio.http;
 
 import com.xjeffrose.xio.http.Recipes;
 

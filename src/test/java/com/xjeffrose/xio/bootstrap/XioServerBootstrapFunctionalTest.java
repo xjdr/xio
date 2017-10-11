@@ -2,7 +2,7 @@ package com.xjeffrose.xio.bootstrap;
 
 import com.squareup.okhttp.Response;
 import com.xjeffrose.xio.application.ApplicationState;
-import com.xjeffrose.xio.handler.XioHttp404Handler;
+import com.xjeffrose.xio.http.XioHttp404Handler;
 import com.xjeffrose.xio.helpers.ClientHelper;
 import com.xjeffrose.xio.pipeline.SmartHttpPipeline;
 import com.xjeffrose.xio.pipeline.XioPipelineFragment;

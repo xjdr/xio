@@ -1,4 +1,4 @@
-package com.xjeffrose.xio.handler;
+package com.xjeffrose.xio.http;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
