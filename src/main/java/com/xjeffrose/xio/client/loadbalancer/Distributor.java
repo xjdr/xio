@@ -1,11 +1,14 @@
 package com.xjeffrose.xio.client.loadbalancer;
 
+import static com.google.common.base.Preconditions.checkState;
+
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Ordering;
 import com.xjeffrose.xio.core.XioTimer;
 import io.netty.util.Timeout;
-import io.netty.util.TimerTask;
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -13,10 +16,6 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
-
-import java.io.Closeable;
-import java.io.IOException;
-import static com.google.common.base.Preconditions.checkState;
 
 /**
  * Creates a new Distributor to perform load balancing

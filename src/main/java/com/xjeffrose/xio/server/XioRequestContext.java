@@ -1,5 +1,6 @@
 package com.xjeffrose.xio.server;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.common.collect.Maps;
 import com.xjeffrose.xio.core.ConnectionContext;
@@ -8,8 +9,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentMap;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 public class XioRequestContext implements RequestContext {
   private final ConnectionContext connectionContext;

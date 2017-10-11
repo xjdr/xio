@@ -1,7 +1,8 @@
 package com.xjeffrose.xio.pipeline;
 
+import static com.xjeffrose.xio.pipeline.Pipelines.addHandler;
+
 import com.xjeffrose.xio.application.ApplicationState;
-import com.xjeffrose.xio.core.ChannelStatistics;
 import com.xjeffrose.xio.core.ConnectionContextHandler;
 import com.xjeffrose.xio.core.XioExceptionLogger;
 import com.xjeffrose.xio.core.XioMessageLogger;
@@ -17,8 +18,6 @@ import com.xjeffrose.xio.server.XioService;
 import com.xjeffrose.xio.server.XioWebApplicationFirewall;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelPipeline;
-
-import static com.xjeffrose.xio.pipeline.Pipelines.addHandler;
 
 abstract public class XioBasePipeline implements XioPipelineFragment {
 

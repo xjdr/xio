@@ -6,13 +6,12 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.Uninterruptibles;
 import io.netty.channel.Channel;
 import io.netty.util.internal.PlatformDependent;
-import lombok.extern.slf4j.Slf4j;
-
+import java.util.Deque;
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
-import javax.annotation.Nullable;
-import java.util.Deque;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.annotation.Nullable;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class ConnectionPool implements AutoCloseable {

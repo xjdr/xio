@@ -4,10 +4,9 @@ import com.google.common.collect.ImmutableSet;
 import com.xjeffrose.xio.marshall.Marshallable;
 import com.xjeffrose.xio.marshall.Marshaller;
 import com.xjeffrose.xio.marshall.Unmarshaller;
-import lombok.EqualsAndHashCode;
-
 import java.util.HashSet;
 import java.util.Set;
+import lombok.EqualsAndHashCode;
 
 @EqualsAndHashCode
 public class HostnameDeterministicRuleEngineConfig implements Marshallable {

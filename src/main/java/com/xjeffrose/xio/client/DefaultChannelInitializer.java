@@ -1,5 +1,7 @@
 package com.xjeffrose.xio.client;
 
+import static com.xjeffrose.xio.pipeline.Pipelines.addHandler;
+
 import com.xjeffrose.xio.SSL.XioSecurityHandlerImpl;
 import com.xjeffrose.xio.core.XioIdleDisconnectHandler;
 import io.netty.channel.Channel;
@@ -7,8 +9,6 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import java.util.function.Supplier;
-
-import static com.xjeffrose.xio.pipeline.Pipelines.addHandler;
 
 public class DefaultChannelInitializer extends ChannelInitializer {
 

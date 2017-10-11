@@ -1,7 +1,6 @@
 package com.xjeffrose.xio.server;
 
 import com.typesafe.config.Config;
-
 import java.time.Duration;
 
 public class XioServerLimits {

@@ -1,9 +1,11 @@
 package com.xjeffrose.xio.bootstrap;
 
+import static org.junit.Assert.assertEquals;
+
 import com.squareup.okhttp.Response;
 import com.xjeffrose.xio.application.ApplicationState;
-import com.xjeffrose.xio.http.XioHttp404Handler;
 import com.xjeffrose.xio.helpers.ClientHelper;
+import com.xjeffrose.xio.http.XioHttp404Handler;
 import com.xjeffrose.xio.pipeline.SmartHttpPipeline;
 import com.xjeffrose.xio.pipeline.XioPipelineFragment;
 import com.xjeffrose.xio.server.XioServer;
@@ -11,7 +13,6 @@ import com.xjeffrose.xio.server.XioServerConfig;
 import com.xjeffrose.xio.server.XioServerState;
 import io.netty.channel.ChannelPipeline;
 import org.junit.Test;
-import static org.junit.Assert.assertEquals;
 
 public class XioServerBootstrapFunctionalTest {
 

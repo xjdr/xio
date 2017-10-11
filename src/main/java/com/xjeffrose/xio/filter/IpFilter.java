@@ -2,9 +2,8 @@ package com.xjeffrose.xio.filter;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import lombok.extern.slf4j.Slf4j;
-
 import java.net.InetSocketAddress;
+import lombok.extern.slf4j.Slf4j;
 
 // TODO(CK): emit user events when we filter
 @Slf4j

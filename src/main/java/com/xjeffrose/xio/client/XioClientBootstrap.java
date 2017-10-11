@@ -11,12 +11,11 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.handler.codec.http.HttpClientCodec;
-import lombok.experimental.Accessors;
-import lombok.extern.slf4j.Slf4j;
-import lombok.Setter;
-
 import java.net.InetSocketAddress;
 import java.util.function.Supplier;
+import lombok.Setter;
+import lombok.experimental.Accessors;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Accessors(fluent = true)

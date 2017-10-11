@@ -3,7 +3,6 @@ package com.xjeffrose.xio.pipeline;
 import com.xjeffrose.xio.core.TcpProxyCodec;
 import com.xjeffrose.xio.server.XioServerConfig;
 import io.netty.channel.ChannelHandler;
-
 import java.net.InetSocketAddress;
 
 public class XioTcpProxyPipeline extends XioServerPipeline {

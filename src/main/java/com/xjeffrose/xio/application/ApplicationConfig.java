@@ -1,11 +1,11 @@
 package com.xjeffrose.xio.application;
 
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigException;
 import com.xjeffrose.xio.bootstrap.ChannelConfiguration;
 import com.xjeffrose.xio.bootstrap.ServerChannelConfiguration;
 import com.xjeffrose.xio.core.NullZkClient;
 import com.xjeffrose.xio.core.ZkClient;
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigException;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 

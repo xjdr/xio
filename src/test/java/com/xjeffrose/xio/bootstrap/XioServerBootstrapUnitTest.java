@@ -1,10 +1,9 @@
 package com.xjeffrose.xio.bootstrap;
 
-import com.xjeffrose.xio.bootstrap.XioServerBootstrap;
 import com.xjeffrose.xio.pipeline.SmartHttpPipeline;
 import com.xjeffrose.xio.server.XioServer;
-import org.junit.Test;
 import org.junit.Assert;
+import org.junit.Test;
 
 public class XioServerBootstrapUnitTest extends Assert {
 

@@ -1,6 +1,5 @@
 package com.xjeffrose.xio.core;
 
-
 import java.net.SocketAddress;
 import java.util.Iterator;
 import java.util.Map;

@@ -4,11 +4,10 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.xjeffrose.xio.SSL.TlsConfig;
 import io.netty.channel.ChannelOption;
+import java.net.InetSocketAddress;
+import java.util.Map;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.Map;
-import java.net.InetSocketAddress;
 
 @Slf4j
 public class XioServerConfig {

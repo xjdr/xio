@@ -1,37 +1,33 @@
 package com.xjeffrose.xio.SSL;
 
+import com.google.common.base.Charsets;
+import com.google.common.collect.Lists;
+import com.google.common.io.CharStreams;
+import com.typesafe.config.Config;
 import io.netty.handler.ssl.ApplicationProtocolConfig;
 import io.netty.handler.ssl.ClientAuth;
 import io.netty.handler.ssl.OpenSsl;
 import io.netty.handler.ssl.SslProvider;
-
-import com.typesafe.config.Config;
-import com.google.common.collect.Lists;
-import lombok.Getter;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-
 import java.security.GeneralSecurityException;
 import java.security.KeyFactory;
 import java.security.PrivateKey;
+import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
-import java.security.cert.CertificateException;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.util.List;
 import javax.xml.bind.DatatypeConverter;
-
-import java.net.URL;
-import java.net.URLConnection;
-import java.net.MalformedURLException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import com.google.common.base.Charsets;
-import com.google.common.io.CharStreams;
+import lombok.Getter;
 
 public class TlsConfig {
 

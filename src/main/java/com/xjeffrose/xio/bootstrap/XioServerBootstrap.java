@@ -12,12 +12,10 @@ import com.xjeffrose.xio.server.XioServerInstrumentation;
 import com.xjeffrose.xio.server.XioServerState;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.net.InetSocketAddress;
 import java.util.function.Consumer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class XioServerBootstrap {
   private static final Logger log = LoggerFactory.getLogger(XioServerBootstrap.class);

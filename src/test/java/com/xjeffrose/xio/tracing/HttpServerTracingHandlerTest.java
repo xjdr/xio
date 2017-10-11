@@ -1,5 +1,9 @@
 package com.xjeffrose.xio.tracing;
 
+import static io.netty.handler.codec.http.HttpMethod.GET;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
+
 import brave.Span;
 import brave.Tracer;
 import brave.Tracing;
@@ -8,10 +12,8 @@ import brave.internal.StrictCurrentTraceContext;
 import brave.propagation.CurrentTraceContext;
 import brave.propagation.TraceContext;
 import brave.sampler.Sampler;
-import java.util.concurrent.ConcurrentLinkedDeque;
-
-import io.netty.buffer.Unpooled;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -21,23 +23,11 @@ import io.netty.handler.codec.http.DefaultHttpRequest;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.util.AttributeKey;
 import io.netty.util.CharsetUtil;
-import java.io.IOException;
-
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.EXPECTATION_FAILED;
-import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
-import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
-import static io.netty.handler.codec.http.HttpMethod.GET;
-
-
-import org.junit.Test;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import org.junit.Assert;
-import org.junit.After;
 import org.junit.Before;
-
+import org.junit.Test;
 
 public class HttpServerTracingHandlerTest extends Assert {
 

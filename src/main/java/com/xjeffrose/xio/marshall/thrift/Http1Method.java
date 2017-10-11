@@ -7,9 +7,6 @@
 package com.xjeffrose.xio.marshall.thrift;
 
 
-import java.util.Map;
-import java.util.HashMap;
-import org.apache.thrift.TEnum;
 
 public enum Http1Method implements org.apache.thrift.TEnum {
   CONNECT(0),

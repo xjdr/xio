@@ -1,10 +1,11 @@
 package com.xjeffrose.xio.pipeline;
 
+import static org.mockito.Mockito.*;
+
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.xjeffrose.xio.application.ApplicationConfig;
 import com.xjeffrose.xio.application.ApplicationState;
-import com.xjeffrose.xio.core.ChannelStatistics;
 import com.xjeffrose.xio.core.ConnectionContextHandler;
 import com.xjeffrose.xio.core.XioExceptionLogger;
 import com.xjeffrose.xio.core.XioMessageLogger;
@@ -20,9 +21,8 @@ import com.xjeffrose.xio.server.XioService;
 import com.xjeffrose.xio.server.XioWebApplicationFirewall;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelPipeline;
-import static org.mockito.Mockito.*;
-import org.mockito.InOrder;
 import org.junit.Test;
+import org.mockito.InOrder;
 
 public class XioServerPipelineUnitTest {
 

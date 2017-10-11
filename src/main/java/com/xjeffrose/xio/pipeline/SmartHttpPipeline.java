@@ -1,25 +1,16 @@
 package com.xjeffrose.xio.pipeline;
 
-import com.xjeffrose.xio.SSL.XioSecurityHandlerImpl;
+import com.xjeffrose.xio.application.ApplicationState;
+import com.xjeffrose.xio.http.CodecPlaceholderHandler;
+import com.xjeffrose.xio.http.GentleSslHandler;
+import com.xjeffrose.xio.http.HttpNegotiationHandler;
+import com.xjeffrose.xio.http.HttpsUpgradeHandler;
 import com.xjeffrose.xio.server.XioServerConfig;
 import com.xjeffrose.xio.server.XioServerState;
-import com.xjeffrose.xio.http.GentleSslHandler;
-import com.xjeffrose.xio.http.HttpsUpgradeHandler;
-import com.xjeffrose.xio.http.CodecPlaceholderHandler;
-import com.xjeffrose.xio.http.HttpNegotiationHandler;
-import com.xjeffrose.xio.application.ApplicationState;
-import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.http.HttpServerCodec;
-import io.netty.handler.ssl.SslContext;
-import io.netty.handler.ssl.SslContextBuilder;
-import io.netty.handler.ssl.SslProvider;
-import io.netty.handler.ssl.util.SelfSignedCertificate;
 import lombok.extern.slf4j.Slf4j;
-
-import javax.net.ssl.SSLException;
-import java.security.cert.CertificateException;
 
 /**
  * SmartHttpPipeline does http well.

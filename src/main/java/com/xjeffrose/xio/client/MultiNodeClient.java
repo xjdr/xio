@@ -3,7 +3,6 @@ package com.xjeffrose.xio.client;
 import com.xjeffrose.xio.client.loadbalancer.Distributor;
 import com.xjeffrose.xio.client.loadbalancer.Node;
 import io.netty.bootstrap.Bootstrap;
-
 import java.io.IOException;
 
 public class MultiNodeClient extends XioClient {

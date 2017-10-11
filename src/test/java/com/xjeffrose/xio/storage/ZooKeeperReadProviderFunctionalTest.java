@@ -3,7 +3,7 @@ package com.xjeffrose.xio.storage;
 import com.xjeffrose.xio.config.IpAddressDeterministicRuleEngineConfig;
 import com.xjeffrose.xio.marshall.ThriftMarshaller;
 import com.xjeffrose.xio.marshall.ThriftUnmarshaller;
-import com.xjeffrose.xio.storage.ZooKeeperWriteProvider;
+import java.net.InetAddress;
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
@@ -11,8 +11,6 @@ import org.apache.curator.retry.RetryOneTime;
 import org.apache.curator.test.TestingServer;
 import org.junit.Assert;
 import org.junit.Test;
-
-import java.net.InetAddress;
 
 public class ZooKeeperReadProviderFunctionalTest extends Assert {
 

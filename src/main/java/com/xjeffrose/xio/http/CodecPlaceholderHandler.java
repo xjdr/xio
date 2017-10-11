@@ -1,7 +1,7 @@
 package com.xjeffrose.xio.http;
 
-import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandler;
+import io.netty.channel.ChannelHandlerAdapter;
 
 /**
  * Used as a placeholder when the codec is negotiated by ALPN.

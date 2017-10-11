@@ -11,6 +11,13 @@ import com.xjeffrose.xio.marshall.ThriftUnmarshaller;
 import com.xjeffrose.xio.marshall.thrift.Http1Rule;
 import com.xjeffrose.xio.storage.ZooKeeperReadProvider;
 import com.xjeffrose.xio.storage.ZooKeeperWriteProvider;
+import java.net.InetSocketAddress;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.thrift.server.TServer;
@@ -19,14 +26,6 @@ import org.apache.thrift.server.TSimpleServer;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TServerTransport;
 import org.apache.thrift.transport.TTransportException;
-
-import java.net.InetSocketAddress;
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.TimerTask;
-import java.util.Timer;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 
 @Slf4j
 public class Configurator implements Runnable {

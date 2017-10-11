@@ -1,8 +1,7 @@
 package com.xjeffrose.xio.mux;
 
-import lombok.Value;
-
 import java.util.UUID;
+import lombok.Value;
 
 @Value
 public class Response {

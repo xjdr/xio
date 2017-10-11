@@ -5,12 +5,10 @@ import com.typesafe.config.ConfigFactory;
 import com.xjeffrose.xio.application.Application;
 import com.xjeffrose.xio.application.ApplicationConfig;
 import com.xjeffrose.xio.application.ApplicationState;
-import com.xjeffrose.xio.bootstrap.ChannelConfiguration;
 import com.xjeffrose.xio.config.Configurator;
 import com.xjeffrose.xio.server.XioServer;
 import com.xjeffrose.xio.server.XioServerConfig;
 import com.xjeffrose.xio.server.XioServerState;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.UnaryOperator;

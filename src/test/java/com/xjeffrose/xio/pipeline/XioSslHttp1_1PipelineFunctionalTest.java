@@ -1,23 +1,19 @@
 package com.xjeffrose.xio.pipeline;
 
 import com.squareup.okhttp.Response;
+import com.xjeffrose.xio.bootstrap.XioServerBootstrap;
 import com.xjeffrose.xio.fixtures.SampleHandler;
 import com.xjeffrose.xio.fixtures.SimpleTestServer;
 import com.xjeffrose.xio.helpers.ClientHelper;
-import com.xjeffrose.xio.bootstrap.ChannelConfiguration;
-import com.xjeffrose.xio.bootstrap.XioServerBootstrap;
 import com.xjeffrose.xio.helpers.HttpProxyServer;
 import com.xjeffrose.xio.helpers.HttpsProxyServer;
 import com.xjeffrose.xio.server.XioServer;
-import com.xjeffrose.xio.server.XioServerConfig;
-import com.xjeffrose.xio.server.XioServerState;
-import org.junit.Assert;
-import org.junit.Test;
-
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
+import org.junit.Assert;
+import org.junit.Test;
 
 public class XioSslHttp1_1PipelineFunctionalTest extends Assert {
 

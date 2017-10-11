@@ -1,17 +1,15 @@
 package com.xjeffrose.xio.server;
 
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
-import com.xjeffrose.xio.core.ChannelStatistics;
 import com.xjeffrose.xio.SSL.SslContextFactory;
+import com.xjeffrose.xio.core.ChannelStatistics;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.handler.ssl.SslContext;
 import io.netty.util.concurrent.GlobalEventExecutor;
+import java.util.function.Function;
 import lombok.Getter;
 import lombok.Setter;
-import java.util.function.Function;
 
 public class XioServerState {
 

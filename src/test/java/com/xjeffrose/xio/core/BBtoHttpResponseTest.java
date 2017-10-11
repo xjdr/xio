@@ -1,12 +1,12 @@
 package com.xjeffrose.xio.core;
 
+import static org.junit.Assert.*;
+
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.junit.Test;
-
-import static org.junit.Assert.*;
 
 public class BBtoHttpResponseTest {
 

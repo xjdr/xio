@@ -3,7 +3,6 @@ package com.xjeffrose.xio.client;
 import com.xjeffrose.xio.client.loadbalancer.Node;
 import com.xjeffrose.xio.client.loadbalancer.UnpooledNode;
 import io.netty.bootstrap.Bootstrap;
-
 import java.net.InetSocketAddress;
 
 public class SingleUnpooledNodeClient extends SingleNodeClient {
