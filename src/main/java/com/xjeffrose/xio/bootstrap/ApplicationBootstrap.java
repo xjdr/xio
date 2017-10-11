@@ -48,7 +48,7 @@ public class ApplicationBootstrap {
 
   public ApplicationBootstrap addServer(String server, UnaryOperator<XioServerBootstrap> configure) {
     XioServerConfig serverConfig = new XioServerConfig(config.getServer(server));
-    XioServerState serverState = new XioServerState(config.getServer(server));
+    XioServerState serverState = new XioServerState(serverConfig);
     XioServerBootstrap serverBootstrap = configure.apply(new XioServerBootstrap(state, serverConfig, serverState).channelConfig(state.getChannelConfiguration()));
     serverBootstraps.put(server, serverBootstrap);
     return this;

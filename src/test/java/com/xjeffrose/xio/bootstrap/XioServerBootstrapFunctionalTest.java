@@ -4,7 +4,7 @@ import com.squareup.okhttp.Response;
 import com.xjeffrose.xio.application.ApplicationState;
 import com.xjeffrose.xio.handler.XioHttp404Handler;
 import com.xjeffrose.xio.helpers.ClientHelper;
-import com.xjeffrose.xio.pipeline.XioHttp1_1Pipeline;
+import com.xjeffrose.xio.pipeline.SmartHttpPipeline;
 import com.xjeffrose.xio.pipeline.XioPipelineFragment;
 import com.xjeffrose.xio.server.XioServer;
 import com.xjeffrose.xio.server.XioServerConfig;

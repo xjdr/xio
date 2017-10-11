@@ -6,6 +6,7 @@ import com.xjeffrose.xio.server.XioServerLimits;
 import com.xjeffrose.xio.server.XioServerState;
 import io.netty.channel.ChannelHandler;
 
+// TODO(CK): merge this with XioBasePipeline
 public class XioServerPipeline extends XioBasePipeline {
 
   public XioServerPipeline() {
@@ -22,7 +23,12 @@ public class XioServerPipeline extends XioBasePipeline {
   }
 
   @Override
-  public ChannelHandler getCodecHandler() {
+  public ChannelHandler getCodecNegotiationHandler(XioServerConfig config) {
+    return null;
+  }
+
+  @Override
+  public ChannelHandler getCodecHandler(XioServerConfig config) {
     return null;
   }
 

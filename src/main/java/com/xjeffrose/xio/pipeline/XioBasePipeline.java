@@ -28,7 +28,9 @@ abstract public class XioBasePipeline implements XioPipelineFragment {
 
   abstract public ChannelHandler getAuthenticationHandler();
 
-  abstract public ChannelHandler getCodecHandler();
+  abstract public ChannelHandler getCodecNegotiationHandler(XioServerConfig config);
+
+  abstract public ChannelHandler getCodecHandler(XioServerConfig config);
 
   abstract public ChannelHandler getIdleDisconnectHandler(XioServerLimits limits);
 
@@ -53,7 +55,8 @@ abstract public class XioBasePipeline implements XioPipelineFragment {
     if (config.isMessageLoggerEnabled()) {
       pipeline.addLast("messageLogger", new XioMessageLogger());
     }
-    ChannelHandler codecHandler = getCodecHandler();
+    addHandler(pipeline, "codecNegotiation", getCodecNegotiationHandler(config));
+    ChannelHandler codecHandler = getCodecHandler(config);
     if (codecHandler != null) {
       pipeline.addLast("codec", codecHandler);
     } else {
@@ -67,6 +70,7 @@ abstract public class XioBasePipeline implements XioPipelineFragment {
     if (authHandler != null) {
       pipeline.addLast("authHandler", authHandler);
     }
+    // TODO(CK): XioService is dead, kill this with fire
     pipeline.addLast("xioService", new XioService());
     // See https://finagle.github.io/blog/2016/02/09/response-classification
     pipeline.addLast("xioResponseClassifier", new XioResponseClassifier(true)); /// TODO(JR): This is a maybe
