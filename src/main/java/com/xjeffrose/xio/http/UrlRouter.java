@@ -41,7 +41,7 @@ public class UrlRouter implements HttpRouter {
   }
   */
 
-  public RouteProvider getRouteProvider(HttpRequest request) {
+  public RouteProvider get(HttpRequest request) {
     return determineRoute(request);
   }
 

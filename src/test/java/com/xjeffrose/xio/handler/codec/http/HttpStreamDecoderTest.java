@@ -250,7 +250,7 @@ public class HttpStreamDecoderTest {
     embedder.writeInbound(
       Unpooled.copiedBuffer("GET /max-upload-size HTTP/1.1\r\n\r\n", CharsetUtil.US_ASCII));
 
-    FullHttpRequest request = (FullHttpRequest)embedder.readInbound();
+    FullHttpRequest request = (FullHttpRequest) embedder.readInbound();
     assertEquals(request.method(), HttpMethod.GET);
     assertEquals(request.uri(), "/max-upload-size");
     assertEquals(request.content().readableBytes(), 0);

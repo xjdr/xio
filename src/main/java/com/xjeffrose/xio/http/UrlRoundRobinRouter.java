@@ -34,7 +34,7 @@ public class UrlRoundRobinRouter implements HttpRouter {
   }
 
   @Override
-  public RouteProvider getRouteProvider(HttpRequest request) {
+  public RouteProvider get(HttpRequest request) {
     log.info("selectRouteHosts routes.keySet={}", routes.keySet());
     Route selectedRoute = null;
     ImmutableList<Host> hosts = null;

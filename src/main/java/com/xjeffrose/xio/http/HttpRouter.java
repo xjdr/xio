@@ -4,5 +4,5 @@ import io.netty.handler.codec.http.HttpRequest;
 
 public interface HttpRouter {
 
-  RouteProvider getRouteProvider(HttpRequest request);
+  RouteProvider get(HttpRequest request);
 }

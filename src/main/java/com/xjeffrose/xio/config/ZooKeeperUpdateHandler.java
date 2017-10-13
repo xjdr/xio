@@ -45,5 +45,5 @@ public class ZooKeeperUpdateHandler implements UpdateHandler {
       rules.mutateHttp1Rules().remove(http1Rule);
     }
   }
-  
+
 }
