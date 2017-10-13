@@ -22,6 +22,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpObject;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.CharsetUtil;
@@ -42,36 +43,39 @@ public class HttpServerTracingHandlerIntegrationTest extends ITHttpServer {
 
   XioServer server = null;
 
-  public static class BraveHandler extends SimpleChannelInboundHandler<HttpRequest> {
+  public static class BraveHandler extends SimpleChannelInboundHandler<HttpObject> {
     private final HttpTracing httpTracing;
     public BraveHandler(HttpTracing httpTracing) {
       this.httpTracing = httpTracing;
     }
 
     @Override
-    public void channelRead0(ChannelHandlerContext ctx, HttpRequest request) throws Exception {
-      String content = "Here is the default content that is returned";
-      HttpResponseStatus status = OK;
-      if (request.uri().startsWith("/foo")) {
-      } else if (request.uri().startsWith("/child")) {
+    public void channelRead0(ChannelHandlerContext ctx, HttpObject msg) throws Exception {
+      if (msg instanceof HttpRequest) {
+        HttpRequest request = (HttpRequest)msg;
+        String content = "Here is the default content that is returned";
+        HttpResponseStatus status = OK;
+        if (request.uri().startsWith("/foo")) {
+        } else if (request.uri().startsWith("/child")) {
 
-        Tracer tracer = httpTracing.tracing().tracer();
+          Tracer tracer = httpTracing.tracing().tracer();
 
-        Span parent = HttpTracingState.getSpan(ctx);
-        Span span = tracer.newChild(parent.context()).name("child").start();
-        //        System.out.println("channelRead0: " + span);
-        span.finish();
+          Span parent = HttpTracingState.getSpan(ctx);
+          Span span = tracer.newChild(parent.context()).name("child").start();
+          //        System.out.println("channelRead0: " + span);
+          span.finish();
 
-      } else if (request.uri().startsWith("/exception")) {
-        throw new IOException("exception");
-      } else if (request.uri().startsWith("/async")) {
-      } else if (request.uri().startsWith("/badrequest")) {
-        status = BAD_REQUEST;
-      } else {//not found
-        status = NOT_FOUND;
+        } else if (request.uri().startsWith("/exception")) {
+          throw new IOException("exception");
+        } else if (request.uri().startsWith("/async")) {
+        } else if (request.uri().startsWith("/badrequest")) {
+          status = BAD_REQUEST;
+        } else {//not found
+          status = NOT_FOUND;
+        }
+
+        writeResponse(ctx, status, Unpooled.copiedBuffer(content, CharsetUtil.UTF_8));
       }
-
-      writeResponse(ctx, status, Unpooled.copiedBuffer(content, CharsetUtil.UTF_8));
     }
 
     private void writeResponse(ChannelHandlerContext ctx, HttpResponseStatus responseStatus, ByteBuf content) {

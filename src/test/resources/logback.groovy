@@ -12,4 +12,5 @@ appender("CONSOLE", ConsoleAppender) {
   }
 }
 
+logger("io.netty.channel.DefaultChannelPipeline", DEBUG)
 root(WARN, ["CONSOLE"])
