@@ -49,7 +49,8 @@ public class IpFilterUnitTest extends Assert {
     assertFalse(chDeny.isActive());
     assertFalse(chDeny.isOpen());
     assertFalse(active);
-    assertTrue(registered);
+    // AD: Eager Denial in netty 4.1.14: after closing context, prevents next handler from registering.
+    assertFalse(registered);
   }
 
   @Test
@@ -60,7 +61,8 @@ public class IpFilterUnitTest extends Assert {
     EmbeddedChannel chDeny = newEmbeddedInetChannel("172.22.10.1", false, ipFilter, eventTracker);
     assertFalse(chDeny.isActive());
     assertFalse(chDeny.isOpen());
-    assertTrue(active);
+    // AD: Denial in netty 4.1.14: after closing context, prevents next handler from activating.
+    assertFalse(active);
     assertTrue(registered);
   }
 

@@ -16,7 +16,12 @@ import java.util.function.Consumer;
 public class ContextualMessageQueue<C, M> {
 
   private final BiConsumer<C, M> consumer;
-  private final List<ContextualMessage> contextualMessages = new ArrayList<>();
+  //  private final List<ContextualMessage> contextualMessages = new ArrayList<>();
+  // AD: Prior to netty 4.1.14, the Recycler allowed the same CodecOutputList object to be used in testing so having
+  // a context attached to each message worked.  In reality there is no expectation of having the same CodecOutputList
+  // for each decode call.  The context we are interested in when we startStreaming is the most recent one.
+  private final List<M> messages = new ArrayList<>();
+  private C context;
   private boolean streaming = false;
 
   /**
@@ -41,12 +46,17 @@ public class ContextualMessageQueue<C, M> {
    */
   public boolean addContextualMessage(C ctx, M msg) {
     if (streaming) {
-      if (!contextualMessages.isEmpty()) {
+      if (!messages.isEmpty()) {
         throw new IllegalStateException("Messages found in the queue while streaming.");
       }
       consumer.accept(ctx, msg);
     } else {
-      contextualMessages.add(new ContextualMessage(ctx, msg));
+      // Set context to most recent context.  When startStreaming is called it will consume these messages using
+      // the most recent context.  This is important as the CodecOutputList is new for each decode call, meaning there
+      // will be different contexts for a given channel pipeline.  When streaming is started, the older contexts are
+      // no longer relevant.  Only the most recent one is.
+      context = ctx;
+      messages.add(msg);
     }
     return streaming;
   }
@@ -55,7 +65,7 @@ public class ContextualMessageQueue<C, M> {
    * Clears all contextualMessages and resets to non-streaming mode.
    */
   public void reset() {
-    contextualMessages.clear();
+    messages.clear();
     streaming = false;
   }
 
@@ -67,7 +77,7 @@ public class ContextualMessageQueue<C, M> {
    * @param consumer a BiConsumer that will be fed each context and message pair.
    */
   public void forEach(BiConsumer<C, M> consumer) {
-    contextualMessages.stream().forEach(msg -> consumer.accept(msg.ctx, msg.msg));
+    messages.stream().forEach(msg -> consumer.accept(context, msg));
   }
 
   /**
@@ -76,7 +86,7 @@ public class ContextualMessageQueue<C, M> {
    * @param consumer a Consumer that will be fed each message.
    */
   public void forEachMessage(Consumer<M> consumer) {
-    contextualMessages.stream().forEach(msg -> consumer.accept(msg.msg));
+    messages.stream().forEach(msg -> consumer.accept(msg));
   }
 
   /**
@@ -85,7 +95,7 @@ public class ContextualMessageQueue<C, M> {
    */
   public void startStreaming() {
     forEach(consumer);
-    contextualMessages.clear();
+    messages.clear();
     streaming = true;
   }
 
@@ -97,7 +107,7 @@ public class ContextualMessageQueue<C, M> {
    * @return the number of queued contextualMessages.
    */
   public int size() {
-    return contextualMessages.size();
+    return messages.size();
   }
 
   /**
@@ -109,13 +119,13 @@ public class ContextualMessageQueue<C, M> {
     return streaming;
   }
 
-  private final class ContextualMessage {
-    private final M msg;
-    private final C ctx;
-
-    public ContextualMessage(C ctx, M msg) {
-      this.ctx = ctx;
-      this.msg = msg;
-    }
-  }
+//  private final class ContextualMessage {
+//    private final M msg;
+//    private final C ctx;
+//
+//    public ContextualMessage(C ctx, M msg) {
+//      this.ctx = ctx;
+//      this.msg = msg;
+//    }
+//  }
 }
