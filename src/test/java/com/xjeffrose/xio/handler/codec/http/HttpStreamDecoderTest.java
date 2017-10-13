@@ -5,20 +5,7 @@ import io.netty.buffer.CompositeByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.codec.DecoderResultProvider;
-import io.netty.handler.codec.http.DefaultHttpContent;
-import io.netty.handler.codec.http.DefaultHttpRequest;
-import io.netty.handler.codec.http.DefaultLastHttpContent;
-import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.FullHttpResponse;
-import io.netty.handler.codec.http.HttpContent;
-import io.netty.handler.codec.http.HttpMethod;
-import io.netty.handler.codec.http.HttpRequest;
-import io.netty.handler.codec.http.HttpRequestDecoder;
-import io.netty.handler.codec.http.HttpResponseDecoder;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.HttpUtil;
-import io.netty.handler.codec.http.HttpVersion;
-import io.netty.handler.codec.http.LastHttpContent;
+import io.netty.handler.codec.http.*;
 import io.netty.util.CharsetUtil;
 import java.util.List;
 import org.junit.Test;
@@ -239,8 +226,11 @@ public class HttpStreamDecoderTest {
 
     embedder.writeInbound(Unpooled.copiedBuffer("1234567890\r\n", CharsetUtil.US_ASCII));
 
-    assertNotNull(embedder.inboundMessages().remove());
-    assertNotNull(embedder.inboundMessages().remove());
+    assertNotNull(embedder.readInbound());
+    // AD: netty 4.1.14 upgrade exposed a bug in this flow.  Prior version was always getting the same ChannelCodecOutput
+    // from the Recycler even though this was not expected or guaranteed.  In 4.1.14, the Recycler has had extensive
+    // rework and thus this bug was exposed.  See changes in ContextualMessageQueue for more info.
+    assertNotNull(embedder.readInbound());
     assertNull(embedder.readInbound());
 
     // Keep-alive is on by default in HTTP/1.1, so the connection should be still alive.
