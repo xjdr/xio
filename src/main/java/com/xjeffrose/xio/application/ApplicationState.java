@@ -15,6 +15,8 @@ public class ApplicationState {
   @Getter
   private final ServerChannelConfiguration channelConfiguration;
 
+  // TODO(CK): store ClientChannelConfiguration here as well
+
   private final AtomicReference<IpFilterConfig> ipFilterConfig;
 
   private final AtomicReference<Http1FilterConfig> http1FilterConfig;

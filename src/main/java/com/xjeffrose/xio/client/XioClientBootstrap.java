@@ -1,6 +1,7 @@
 package com.xjeffrose.xio.client;
 
 import com.google.common.base.Preconditions;
+import com.xjeffrose.xio.SSL.SslContextFactory;
 import com.xjeffrose.xio.client.loadbalancer.Distributor;
 import com.xjeffrose.xio.client.loadbalancer.Protocol;
 import io.netty.bootstrap.Bootstrap;
@@ -11,6 +12,7 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.handler.codec.http.HttpClientCodec;
+import io.netty.handler.ssl.SslContext;
 import java.net.InetSocketAddress;
 import java.util.function.Supplier;
 import lombok.Setter;
@@ -23,6 +25,9 @@ public class XioClientBootstrap {
 
   private Bootstrap bootstrap;
   private ChannelConfiguration channelConfig;
+  private ClientConfig config;
+  @Setter
+  private SslContext sslContext;
   @Setter
   private InetSocketAddress address;
   @Setter
@@ -51,6 +56,11 @@ public class XioClientBootstrap {
     this.usePool = other.usePool;
   }
 
+  public XioClientBootstrap() {
+    usePool = false;
+    tracingHandler = () -> null;
+  }
+
   public XioClientBootstrap(ChannelConfiguration channelConfig) {
     this();
     this.channelConfig(channelConfig);
@@ -60,9 +70,10 @@ public class XioClientBootstrap {
     this(ChannelConfiguration.clientConfig(group));
   }
 
-  public XioClientBootstrap() {
-    usePool = false;
-    tracingHandler = () -> null;
+  public XioClientBootstrap(ClientConfig config) {
+    this();
+    this.config = config;
+    sslContext = SslContextFactory.buildClientContext(config.getTls());
   }
 
   public XioClientBootstrap channelConfig(ChannelConfiguration channelConfig) {
@@ -77,7 +88,12 @@ public class XioClientBootstrap {
     } else if (applicationProtocol == null) {
       throw new RuntimeException("Cannot build initializer, specify either protocol or applicationProtocol");
     }
-    return new DefaultChannelInitializer(handler, ssl, applicationProtocol, tracingHandler);
+
+    if (ssl) {
+      sslContext = SslContextFactory.buildServerContext(config.getTls());
+    }
+
+    return new DefaultChannelInitializer(handler, sslContext, applicationProtocol, tracingHandler);
   }
 
   public Bootstrap buildBootstrap(ChannelConfiguration channelConfig) {
@@ -93,8 +109,8 @@ public class XioClientBootstrap {
   }
 
   public XioClient build() {
-    Preconditions.checkNotNull(channelConfig);
-    Preconditions.checkNotNull(handler);
+    Preconditions.checkNotNull(channelConfig, "channelConfig must be defined");
+    Preconditions.checkNotNull(handler, "handler must be defined");
     bootstrap.handler(buildInitializer());
     if (address != null) {
       bootstrap.remoteAddress(address);

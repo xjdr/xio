@@ -13,6 +13,7 @@ import io.netty.channel.socket.nio.NioSocketChannel;
  * This class will configure an EventLoopGroup and a Channel for use
  * by a client. It will try to use Epoll if it's available.
  */
+// TODO(CK): this needs to move into the bootstrap package
 public class ChannelConfiguration {
 
   private final EventLoopGroup workerGroup;

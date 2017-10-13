@@ -14,11 +14,9 @@ public class SslContextFactory {
       .ciphers(config.getCiphers(), SupportedCipherSuiteFilter.INSTANCE)
       .clientAuth(config.getClientAuth())
       .enableOcsp(config.isEnableOcsp())
-      //.keyManager
       .protocols(config.getProtocols())
       .sessionCacheSize(config.getSessionCacheSize())
       .sessionTimeout(config.getSessionTimeout())
-      //.trustManager
       .sslProvider(config.getSslProvider())
       ;
   }
@@ -35,7 +33,10 @@ public class SslContextFactory {
 
   static public SslContext buildClientContext(TlsConfig config) {
     try {
-      return configure(config, SslContextBuilder.forClient()).build();
+      return configure(config, SslContextBuilder.forClient())
+        .keyManager(config.getPrivateKey(), config.getCertificateAndTrustChain())
+        .trustManager(config.getTrustChain())
+        .build();
     } catch (SSLException e) {
       return null;
     }

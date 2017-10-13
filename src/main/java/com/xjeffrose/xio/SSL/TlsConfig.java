@@ -1,9 +1,10 @@
 package com.xjeffrose.xio.SSL;
 
 import com.google.common.base.Charsets;
-import com.google.common.collect.Lists;
+import com.google.common.collect.ImmutableList;
 import com.google.common.io.CharStreams;
 import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 import io.netty.handler.ssl.ApplicationProtocolConfig;
 import io.netty.handler.ssl.ClientAuth;
 import io.netty.handler.ssl.OpenSsl;
@@ -25,6 +26,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.util.ArrayList;
 import java.util.List;
 import javax.xml.bind.DatatypeConverter;
 import lombok.Getter;
@@ -42,7 +44,8 @@ public class TlsConfig {
   // custom getter
   private final X509Certificate certificate;
   @Getter
-  private final List<String> x509TrustChain;
+  private final List<X509Certificate> x509TrustChain;
+  private final ImmutableList<X509Certificate> fullTrustChain;
   @Getter
   private final ApplicationProtocolConfig alpnConfig;
   // custom getter
@@ -94,8 +97,7 @@ public class TlsConfig {
     return readUrlResource(url);
   }
 
-  private static String readPathFromKey(String key, Config config) {
-    String value = config.getString(key);
+  private static String readPathFromValue(String value) {
     if (value.startsWith("classpath:")) {
       return readClasspathResource(value.replace("classpath:", ""));
     }
@@ -108,6 +110,10 @@ public class TlsConfig {
       }
     }
     return readPath(value);
+  }
+
+  private static String readPathFromKey(String key, Config config) {
+    return readPathFromValue(config.getString(key));
   }
 
   /**
@@ -167,12 +173,27 @@ public class TlsConfig {
                                          );
   }
 
+  private static List<X509Certificate> buildTrustChain(List<String> paths) {
+    List<X509Certificate> trustChain = new ArrayList<>();
+
+    for (String path : paths) {
+      trustChain.add(parseX509CertificateFromPem(readPathFromValue(path)));
+    }
+
+    return trustChain;
+  }
+
   public TlsConfig(Config config) {
     useSsl = config.getBoolean("useSsl");
     logInsecureConfig = config.getBoolean("logInsecureConfig");
     privateKey = parsePrivateKeyFromPem(readPathFromKey("privateKeyPath", config));
     certificate = parseX509CertificateFromPem(readPathFromKey("x509CertPath", config));
-    x509TrustChain = null;
+    x509TrustChain = buildTrustChain(config.getStringList("x509TrustChainPaths"));
+    fullTrustChain = new ImmutableList.Builder<X509Certificate>()
+      .add(certificate)
+      .addAll(x509TrustChain)
+      .build();
+
     useOpenSsl = config.getBoolean("useOpenSsl");
     alpnConfig = buildAlpnConfig(config.getConfig("alpn"));
     ciphers = config.getStringList("ciphers");
@@ -182,6 +203,15 @@ public class TlsConfig {
     sessionCacheSize = config.getLong("sessionCacheSize");
     sessionTimeout = config.getLong("sessionTimeout");
   }
+
+  static public TlsConfig fromConfig(String key, Config config) {
+    return new TlsConfig(config.getConfig(key));
+  }
+
+  static public TlsConfig fromConfig(String key) {
+    return fromConfig(key, ConfigFactory.load());
+  }
+
 
   public List<String> getCiphers() {
     if (ciphers.size() == 0) {
@@ -198,7 +228,11 @@ public class TlsConfig {
   }
 
   public X509Certificate[] getCertificateAndTrustChain() {
-    return Lists.asList(certificate, new X509Certificate[0]).toArray(new X509Certificate[0]);
+    return fullTrustChain.toArray(new X509Certificate[0]);
+  }
+
+  public X509Certificate[] getTrustChain() {
+    return x509TrustChain.toArray(new X509Certificate[0]);
   }
 
   public SslProvider getSslProvider() {
