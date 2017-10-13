@@ -66,7 +66,7 @@ public class RoundRobinProxyConfig {
   public RouteProvider getRouteProvider(HttpRequest request) {
     int idx = next.getAndIncrement();
     Host host = hosts.get(idx % hosts.size());
-    System.out.println("get: " + request.uri());
+    System.out.println("getRouteProvider: " + request.uri());
     ProxyConfig proxyConfig = new ProxyConfig(host.address, host.hostHeader, "", "/", host.needSSL);
     return new SimpleProxyRoute(Route.build("/:*path"), proxyConfig, newClient(host.needSSL));
   }

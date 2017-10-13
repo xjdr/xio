@@ -52,32 +52,31 @@ public class SimpleProxyRoute implements RouteProvider {
   }
 
   @Override
-  public RouteUpdateProvider handle(HttpRequest request, ChannelHandlerContext ctx) {
-    ReferenceCountUtil.retain(request);
+  public RouteUpdateProvider handle(HttpRequest payload, ChannelHandlerContext ctx) {
+    ReferenceCountUtil.retain(payload);
     buildAndAttach(ctx);
-    if (HttpUtil.is100ContinueExpected(request)) {
-      ctx.writeAndFlush(
-        new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.CONTINUE));
+    if (HttpUtil.is100ContinueExpected(payload)) {
+      ctx.writeAndFlush(new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.CONTINUE));
     }
 
-    Optional<String> path = route.groups(request.getUri())
+    Optional<String> path = route.groups(payload.getUri())
       .entrySet()
       .stream()
       .filter(e -> e.getKey().equals("path"))
       .map(e -> e.getValue())
       .findFirst();
 
-    request.setUri(path.map(config.urlPath::concat).orElse(config.urlPath));
+    payload.setUri(path.map(config.urlPath::concat).orElse(config.urlPath));
 
-    request.headers().set("Host", config.hostHeader);
+    payload.headers().set("Host", config.hostHeader);
 
-    XioRequest xRequest =
+    XioRequest request =
       HttpTracingState.hasSpan(ctx)
-        ? new XioRequest(request, HttpTracingState.getSpan(ctx).context())
-        : new XioRequest(request, null);
+        ? new XioRequest(payload, HttpTracingState.getSpan(ctx).context())
+        : new XioRequest(payload, null);
 
-    log.info("Requesting {}", request);
-    ctx.channel().attr(key).get().write(xRequest);
+    log.info("Requesting {}", payload);
+    ctx.channel().attr(key).get().write(request);
 
     return new RouteUpdateProvider() {
       @Override
