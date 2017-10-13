@@ -2,11 +2,11 @@ package com.xjeffrose.xio.core;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpServerCodec;
-//import io.netty.handler.codec.http2.Http2MultiplexCodec;
-//import io.netty.handler.codec.http2.Http2StreamChannelBootstrap;
+import io.netty.handler.codec.http2.Http2MultiplexCodec;
+import io.netty.handler.codec.http2.Http2StreamChannelBootstrap;
 import io.netty.handler.ssl.ApplicationProtocolNames;
 import io.netty.handler.ssl.ApplicationProtocolNegotiationHandler;
-//import lombok.val;
+import lombok.val;
 
 
 public class XioHttp2UpgradeHandler extends ApplicationProtocolNegotiationHandler {
@@ -25,10 +25,10 @@ public class XioHttp2UpgradeHandler extends ApplicationProtocolNegotiationHandle
   @Override
   protected void configurePipeline(ChannelHandlerContext ctx, String protocol) throws Exception {
     if (ApplicationProtocolNames.HTTP_2.equals(protocol)) {
-//      val bootstrap = new Http2StreamChannelBootstrap()
-//        .handler(handlerFactory.getHandler())
-//        .group(ctx.channel().eventLoop());
-//      ctx.pipeline().addAfter(ctx.name(), "Http2Handler", new Http2MultiplexCodec(true, bootstrap));
+      val bootstrap = new Http2StreamChannelBootstrap()
+        .handler(handlerFactory.getHandler())
+        .group(ctx.channel().eventLoop());
+      ctx.pipeline().addAfter(ctx.name(), "Http2Handler", new Http2MultiplexCodec(true, bootstrap));
       ctx.pipeline().remove(ctx.handler());
       return;
     }
