@@ -13,15 +13,15 @@
 
 *** DONE move concrete trailhead classes into http package
 
-*** TODO streamline ssl usage
+*** DONE streamline ssl usage
     - server
-      - by default secure http connections unless configured not to
-      - use http 426 to inform cleartext clients that they need to secure
-      - use alpn to negotiate http protocol
+      - [X] by default secure http connections unless configured not to
+      - [X] use http 426 to inform cleartext clients that they need to secure
+      - [X] use alpn to negotiate http protocol
     - client
-      - by default secure http connections unless configured not to
-    - fix performance issues with xio ssl
-    - fail fast if OpenSsl is not available
+      - [X] by default secure http connections unless configured not to
+    - [X] fix performance issues with xio ssl
+    - [X] fail fast if OpenSsl is not available
 
 ** nice to have
 
@@ -46,10 +46,24 @@
 
 **** http://findbugs.sourceforge.net/
 
+*** bump checkstyle version and setup maven to checkstyle
+
+**** clean up links to google styleguide
+
+**** stop vendoring style guide
+
 * Naming conventions
   - Put Xio in front of a class name to avoid clashing with an existing class name
     - good example XioServerBootstrap uses netty ServerBootstrap
     - bad example XioBasePipeline doesn't use anything called BasePipeline and does not clash
+** package naming conventions
+   - com.xjeffrose.xio
+     - core: put common classes here
+       - client: base classes for clients here
+       - server: base classes for servers here
+     - http: put http common classes here
+       - client: http classes for clients here
+       - server: http classes for servers here
 
 * speeding up maven invocation
 
@@ -121,3 +135,11 @@ openssl pkcs8 -in foo.pem -inform PEM -outform PEM -out pkcs8.pem -topk8 -passou
 *** https://en.wikipedia.org/wiki/HTTP/1.1_Upgrade_header
 ** http implementation guidelines
 *** https://http2.github.io/faq/#can-i-implement-http2-without-implementing-http11
+
+* java source code formatting
+
+** google java style formatter
+
+*** https://github.com/google/google-java-format
+
+*** https://github.com/coveo/fmt-maven-plugin
