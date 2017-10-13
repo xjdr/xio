@@ -7,7 +7,7 @@ import io.netty.handler.codec.http.HttpRequest;
 
 import java.util.function.Function;
 
-public class UrlRouter {
+public class UrlRouter implements HttpRouter {
 
   private RouteProvider determineRoute(HttpRequest request) {
     for(Route route : routes.keySet()) {
@@ -41,7 +41,7 @@ public class UrlRouter {
   }
   */
 
-  public RouteProvider get(HttpRequest request) {
+  public RouteProvider getRouteProvider(HttpRequest request) {
     return determineRoute(request);
   }
 

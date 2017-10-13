@@ -21,5 +21,5 @@ service ConfigurationService {
   Result addIpRule(1:IpRule ipRule, 2:RuleType ruleType),
   Result removeIpRule(1:IpRule ipRule),
   Result addHttp1Rule(1:Http1Ruleset.Http1Rule http1Rule, 2:RuleType ruleType),
-  Result removeHttp1Rule(1:Http1Ruleset.Http1Rule http1Rule);
+  Result removeHttp1Rule(1:Http1Ruleset.Http1Rule http1Rule),
 }

@@ -4,10 +4,9 @@ import com.xjeffrose.xio.application.ApplicationState;
 import com.xjeffrose.xio.pipeline.XioPipelineFragment;
 import com.xjeffrose.xio.server.XioServerConfig;
 import com.xjeffrose.xio.server.XioServerState;
-import com.xjeffrose.xio.http.Http1ProxyHandler;
-import com.xjeffrose.xio.http.UrlRouter;
 import io.netty.channel.ChannelPipeline;
-import io.netty.handler.codec.http.HttpObjectAggregator;
+import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 
 // [X] parse request
 //      * [X] for now parse the entire request
@@ -20,11 +19,16 @@ import io.netty.handler.codec.http.HttpObjectAggregator;
 // [X] proxy logic
 //      * [X] now just read/write/flush
 //      * [ ] later do some sweet channel piping
+@Slf4j
 public class Http1ProxyFragment implements XioPipelineFragment {
 
-  private final UrlRouter router;
+  private final HttpRouter router;
 
-  public Http1ProxyFragment(UrlRouter router) {
+  public Http1ProxyFragment() {
+    this.router = null;
+  }
+
+  public Http1ProxyFragment(HttpRouter router) {
     this.router = router;
   }
 
@@ -32,8 +36,9 @@ public class Http1ProxyFragment implements XioPipelineFragment {
     return null;
   }
 
-  public void buildHandlers(ApplicationState appState, XioServerConfig config, XioServerState state, ChannelPipeline pipeline) {
-    pipeline.addLast(new Http1ProxyHandler(router));
+  public void buildHandlers(ApplicationState appState, XioServerConfig config, XioServerState state,
+    ChannelPipeline pipeline) {
+    pipeline.addLast(new Http1ProxyHandler(router != null ? router : appState.getHttpRouter()));
   }
 
 }
