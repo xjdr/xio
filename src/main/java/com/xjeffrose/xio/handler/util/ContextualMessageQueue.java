@@ -16,7 +16,6 @@ import java.util.function.Consumer;
 public class ContextualMessageQueue<C, M> {
 
   private final BiConsumer<C, M> consumer;
-  //  private final List<ContextualMessage> contextualMessages = new ArrayList<>();
   // AD: Prior to netty 4.1.14, the Recycler allowed the same CodecOutputList object to be used in testing so having
   // a context attached to each message worked.  In reality there is no expectation of having the same CodecOutputList
   // for each decode call.  The context we are interested in when we startStreaming is the most recent one.
@@ -118,14 +117,4 @@ public class ContextualMessageQueue<C, M> {
   public boolean isStreaming() {
     return streaming;
   }
-
-//  private final class ContextualMessage {
-//    private final M msg;
-//    private final C ctx;
-//
-//    public ContextualMessage(C ctx, M msg) {
-//      this.ctx = ctx;
-//      this.msg = msg;
-//    }
-//  }
 }
