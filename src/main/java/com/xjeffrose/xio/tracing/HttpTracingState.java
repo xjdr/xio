@@ -2,7 +2,6 @@ package com.xjeffrose.xio.tracing;
 
 import brave.Span;
 import brave.propagation.TraceContext;
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.AttributeKey;
 

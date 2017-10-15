@@ -1,7 +1,6 @@
 package com.xjeffrose.xio.client.loadbalancer;
 
 import com.google.common.collect.ImmutableList;
-
 import java.net.SocketAddress;
 
 public class NodeStat {

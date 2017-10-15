@@ -5,7 +5,6 @@ import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
-
 import java.net.InetSocketAddress;
 
 public class SocketConnector extends Connector {

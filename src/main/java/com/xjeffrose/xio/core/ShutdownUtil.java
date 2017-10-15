@@ -1,12 +1,10 @@
 package com.xjeffrose.xio.core;
 
-
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.group.ChannelGroup;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
-
 
 @Slf4j
 public class ShutdownUtil {

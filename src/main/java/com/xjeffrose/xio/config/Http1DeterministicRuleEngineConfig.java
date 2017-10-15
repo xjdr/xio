@@ -1,7 +1,6 @@
 package com.xjeffrose.xio.config;
 
 import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableList;
 import com.xjeffrose.xio.marshall.Marshallable;
 import com.xjeffrose.xio.marshall.Marshaller;
@@ -9,11 +8,10 @@ import com.xjeffrose.xio.marshall.Unmarshaller;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpVersion;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-
 import java.util.HashSet;
 import java.util.Set;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 
 @EqualsAndHashCode
 public class Http1DeterministicRuleEngineConfig implements Marshallable {

@@ -1,17 +1,16 @@
 package com.xjeffrose.xio.http;
 
+import com.google.common.collect.ImmutableList;
+import com.typesafe.config.Config;
 import com.xjeffrose.xio.client.XioClientBootstrap;
 import com.xjeffrose.xio.server.Route;
-import com.typesafe.config.Config;
-import com.google.common.collect.ImmutableList;
 import io.netty.channel.ChannelHandler;
 import io.netty.handler.codec.http.HttpRequest;
-
+import java.net.InetSocketAddress;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.List;
-import java.net.InetSocketAddress;
 
 public class RoundRobinProxyConfig {
 

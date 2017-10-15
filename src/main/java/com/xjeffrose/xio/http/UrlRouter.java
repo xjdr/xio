@@ -2,10 +2,7 @@ package com.xjeffrose.xio.http;
 
 import com.google.common.collect.ImmutableMap;
 import com.xjeffrose.xio.server.Route;
-import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpRequest;
-
-import java.util.function.Function;
 
 public class UrlRouter {
 

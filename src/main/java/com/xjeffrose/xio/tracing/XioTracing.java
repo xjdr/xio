@@ -1,19 +1,14 @@
 package com.xjeffrose.xio.tracing;
 
-import com.xjeffrose.xio.application.ApplicationConfig;
 import brave.Tracing;
 import brave.context.slf4j.MDCCurrentTraceContext;
 import brave.http.HttpTracing;
-import brave.propagation.TraceContext;
 import brave.sampler.Sampler;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.util.AttributeKey;
+import com.xjeffrose.xio.application.ApplicationConfig;
 import zipkin.Span;
 import zipkin.reporter.AsyncReporter;
 import zipkin.reporter.Reporter;
 import zipkin.reporter.okhttp3.OkHttpSender;
-
 
 public class XioTracing {
 

@@ -5,11 +5,8 @@ import com.xjeffrose.xio.config.Http1DeterministicRuleEngineConfig;
 import com.xjeffrose.xio.core.ConfigurationUpdater;
 import com.xjeffrose.xio.marshall.ThriftUnmarshaller;
 import io.netty.handler.codec.http.HttpRequest;
-import lombok.EqualsAndHashCode;
-
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.util.function.Consumer;
+import lombok.EqualsAndHashCode;
 
 @EqualsAndHashCode
 public class Http1FilterConfig {

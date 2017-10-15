@@ -1,71 +1,41 @@
 package com.xjeffrose.xio.tracing;
 
-import com.xjeffrose.xio.bootstrap.XioServerBootstrap;
-import com.xjeffrose.xio.fixtures.SampleHandler;
-import com.xjeffrose.xio.pipeline.XioHttp1_1Pipeline;
-import com.xjeffrose.xio.client.XioClient;
-import com.xjeffrose.xio.client.XioClientBootstrap;
-import com.xjeffrose.xio.client.loadbalancer.Protocol;
-import com.xjeffrose.xio.client.XioRequest;
-
-import java.net.SocketAddress;
-import java.net.InetSocketAddress;
-
-
-
-import brave.Span;
-import brave.Tracer;
-import brave.Tracing;
-import brave.propagation.TraceContext;
-import brave.propagation.CurrentTraceContext;
-import brave.http.HttpTracing;
-import io.netty.buffer.Unpooled;
-import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.EventLoopGroup;
-import io.netty.util.concurrent.Future;
-import io.netty.handler.codec.http.DefaultFullHttpRequest;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.DefaultHttpRequest;
-import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpObject;
-import io.netty.handler.codec.http.HttpRequest;
-import io.netty.handler.codec.http.HttpResponse;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.LastHttpContent;
-import io.netty.util.CharsetUtil;
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.util.logging.*;
-
-import java.util.concurrent.CompletableFuture;
-
-
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.EXPECTATION_FAILED;
-import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpMethod.GET;
 import static io.netty.handler.codec.http.HttpMethod.POST;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 import static io.netty.util.CharsetUtil.UTF_8;
-
+import static org.junit.Assert.*;
 
 import brave.http.ITHttpClient;
-import org.junit.After;
+import brave.propagation.TraceContext;
+import com.xjeffrose.xio.client.XioClient;
+import com.xjeffrose.xio.client.XioClientBootstrap;
+import com.xjeffrose.xio.client.XioRequest;
+import com.xjeffrose.xio.client.loadbalancer.Protocol;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.handler.codec.http.DefaultFullHttpRequest;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpObject;
+import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.HttpResponse;
+import io.netty.handler.codec.http.LastHttpContent;
+import io.netty.util.concurrent.Future;
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.util.concurrent.CompletableFuture;
+import java.util.logging.*;
 import org.junit.AssumptionViolatedException;
 import org.junit.ComparisonFailure;
-import org.junit.Test;
 import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
-import org.junit.ComparisonFailure;
-import org.junit.AssumptionViolatedException;
-
-import static org.junit.Assert.*;
 
 public class HttpClientTracingHandlerIntegrationTest extends ITHttpClient<XioClient> {
 

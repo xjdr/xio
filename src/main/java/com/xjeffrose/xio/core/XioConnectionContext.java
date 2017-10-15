@@ -1,8 +1,6 @@
 package com.xjeffrose.xio.core;
 
-
 import com.google.common.base.Preconditions;
-import com.xjeffrose.xio.core.ConnectionContext;
 import java.net.SocketAddress;
 import java.util.Collections;
 import java.util.Iterator;

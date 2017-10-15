@@ -3,20 +3,17 @@ package com.xjeffrose.xio.tracing;
 import brave.Span;
 import brave.Tracer;
 import brave.Tracing;
-import brave.propagation.TraceContext;
-import brave.propagation.CurrentTraceContext;
 import brave.http.HttpClientHandler;
 import brave.http.HttpTracing;
-import io.netty.channel.Channel;
+import brave.propagation.CurrentTraceContext;
+import brave.propagation.TraceContext;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
-import io.netty.util.AttributeKey;
-import lombok.Getter;
-
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import lombok.Getter;
 
 public class HttpClientTracingState extends HttpTracingState {
 

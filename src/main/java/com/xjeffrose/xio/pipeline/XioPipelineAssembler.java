@@ -5,9 +5,8 @@ import com.xjeffrose.xio.server.XioServerConfig;
 import com.xjeffrose.xio.server.XioServerInstrumentation;
 import com.xjeffrose.xio.server.XioServerState;
 import io.netty.channel.ChannelPipeline;
-
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 public class XioPipelineAssembler {
 

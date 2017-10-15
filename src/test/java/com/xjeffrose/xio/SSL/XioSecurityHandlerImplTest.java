@@ -1,9 +1,9 @@
 package com.xjeffrose.xio.SSL;
 
+import static org.junit.Assert.*;
+
 import io.netty.channel.ChannelHandler;
 import org.junit.Test;
-
-import static org.junit.Assert.*;
 
 public class XioSecurityHandlerImplTest {
 

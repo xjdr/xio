@@ -1,7 +1,14 @@
 package com.xjeffrose.xio.mux;
 
+import static org.mockito.Matchers.any;
+import static org.powermock.api.mockito.PowerMockito.mock;
+import static org.powermock.api.mockito.PowerMockito.mockStatic;
+import static org.powermock.api.mockito.PowerMockito.when;
+
 import com.google.common.util.concurrent.SettableFuture;
 import io.netty.channel.embedded.EmbeddedChannel;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -12,13 +19,6 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import static org.mockito.Matchers.any;
-import static org.powermock.api.mockito.PowerMockito.mock;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
-import static org.powermock.api.mockito.PowerMockito.when;
-
-import java.util.concurrent.TimeUnit;
-import java.util.UUID;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ClientCodec.class, LoggerFactory.class})

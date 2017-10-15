@@ -43,7 +43,7 @@ import sun.security.x509.X509CertInfo;
 
 //import java.util.logging.Logger;
 
-final class SelfSignedX509CertGenerator {
+final public class SelfSignedX509CertGenerator {
 //  private static final Logger log = Log.getLogger(SelfSignedX509CertGenerator.class.getName());
 
   static final Date NOT_BEFORE = new Date(System.currentTimeMillis() - 86400000L * 365);

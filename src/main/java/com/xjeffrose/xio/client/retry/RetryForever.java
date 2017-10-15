@@ -1,9 +1,9 @@
 package com.xjeffrose.xio.client.retry;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
-
-import static com.google.common.base.Preconditions.checkArgument;
 
 @Slf4j
 public class RetryForever implements RetryPolicy {

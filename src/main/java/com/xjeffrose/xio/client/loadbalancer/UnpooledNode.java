@@ -6,9 +6,8 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.util.concurrent.DefaultPromise;
 import io.netty.util.concurrent.Future;
-import lombok.extern.slf4j.Slf4j;
-
 import java.net.SocketAddress;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class UnpooledNode extends Node {

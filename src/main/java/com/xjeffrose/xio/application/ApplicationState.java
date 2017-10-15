@@ -1,15 +1,11 @@
 package com.xjeffrose.xio.application;
 
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
-import com.xjeffrose.xio.bootstrap.ChannelConfiguration;
 import com.xjeffrose.xio.bootstrap.ServerChannelConfiguration;
 import com.xjeffrose.xio.core.ZkClient;
 import com.xjeffrose.xio.filter.Http1FilterConfig;
 import com.xjeffrose.xio.filter.IpFilterConfig;
-import lombok.Getter;
-
 import java.util.concurrent.atomic.AtomicReference;
+import lombok.Getter;
 
 public class ApplicationState {
 
@@ -18,6 +14,8 @@ public class ApplicationState {
 
   @Getter
   private final ServerChannelConfiguration channelConfiguration;
+
+  // TODO(CK): store ClientChannelConfiguration here as well
 
   private final AtomicReference<IpFilterConfig> ipFilterConfig;
 

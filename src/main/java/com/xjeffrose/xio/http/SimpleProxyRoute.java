@@ -1,27 +1,22 @@
 package com.xjeffrose.xio.http;
 
-import java.util.Optional;
-
 import com.xjeffrose.xio.client.XioClient;
 import com.xjeffrose.xio.client.XioClientBootstrap;
-import com.xjeffrose.xio.server.Route;
 import com.xjeffrose.xio.client.XioRequest;
+import com.xjeffrose.xio.server.Route;
 import com.xjeffrose.xio.tracing.HttpTracingState;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.HttpContent;
-import io.netty.handler.codec.http.HttpObjectAggregator;
-import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpClientCodec;
-import io.netty.handler.codec.http.HttpRequestEncoder;
+import io.netty.handler.codec.http.HttpContent;
+import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.util.AttributeKey;
 import io.netty.util.ReferenceCountUtil;
+import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j

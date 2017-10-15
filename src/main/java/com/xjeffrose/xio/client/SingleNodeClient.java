@@ -2,7 +2,6 @@ package com.xjeffrose.xio.client;
 
 import com.xjeffrose.xio.client.loadbalancer.Node;
 import io.netty.bootstrap.Bootstrap;
-
 import java.io.IOException;
 import java.net.InetSocketAddress;
 

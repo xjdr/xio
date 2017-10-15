@@ -17,7 +17,6 @@
 
 package com.xjeffrose.xio.SSL;
 
-import com.xjeffrose.xio.SSL.X509Certificate;
 import java.security.KeyStore;
 import java.security.cert.Certificate;
 

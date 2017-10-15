@@ -1,20 +1,16 @@
 package com.xjeffrose.xio.pipeline;
 
-import com.xjeffrose.xio.helpers.EchoClient;
-import com.xjeffrose.xio.bootstrap.ChannelConfiguration;
 import com.xjeffrose.xio.bootstrap.XioServerBootstrap;
+import com.xjeffrose.xio.helpers.EchoClient;
 import com.xjeffrose.xio.server.XioServer;
-import com.xjeffrose.xio.server.XioServerConfig;
-import com.xjeffrose.xio.server.XioServerState;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.lang.StringBuilder;
 public class XioEchoPipelineFunctionalTest extends Assert {
 
   @Test
   public void testEchoServer() {
-    XioServerBootstrap bootstrap = XioServerBootstrap.fromConfig("xio.testApplication")
+    XioServerBootstrap bootstrap = XioServerBootstrap.fromConfig("xio.testEchoServer")
       .addToPipeline(new XioEchoPipeline())
     ;
 
@@ -29,7 +25,7 @@ public class XioEchoPipelineFunctionalTest extends Assert {
 
   @Test
   public void testEchoServerLargePayload() {
-    XioServerBootstrap bootstrap = XioServerBootstrap.fromConfig("xio.testApplication")
+    XioServerBootstrap bootstrap = XioServerBootstrap.fromConfig("xio.testEchoServer")
       .addToPipeline(new XioEchoPipeline())
     ;
 

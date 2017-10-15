@@ -1,6 +1,5 @@
 package com.xjeffrose.xio.client.retry;
 
-
 import java.util.concurrent.TimeUnit;
 
 abstract class SleepingRetry implements RetryPolicy {

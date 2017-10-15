@@ -3,7 +3,6 @@ package com.xjeffrose.xio.core;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.handler.timeout.IdleStateHandler;
-
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 

@@ -12,14 +12,18 @@ import io.netty.handler.codec.http.HttpVersion;
 
 public class Http {
 
-  static HttpRequest get(String host, String path) {
+  public static HttpRequest get(String host, String path) {
     HttpHeaders headers = new DefaultHttpHeaders();
     headers.set(HttpHeaderNames.HOST, host);
     headers.set(HttpHeaderNames.CONTENT_LENGTH, 0);
     return new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, path, headers);
   }
 
-  static HttpRequest post(String host, String path, String content) {
+  public static HttpRequest get(String path) {
+    return new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, path);
+  }
+
+  public static HttpRequest post(String host, String path, String content) {
     HttpHeaders headers = new DefaultHttpHeaders();
     headers.set(HttpHeaderNames.HOST, host);
     headers.set(HttpHeaderNames.CONTENT_LENGTH, content.length());

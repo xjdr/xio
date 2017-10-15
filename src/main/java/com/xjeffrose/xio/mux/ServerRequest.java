@@ -1,8 +1,7 @@
 package com.xjeffrose.xio.mux;
 
-import lombok.Getter;
-
 import java.util.UUID;
+import lombok.Getter;
 
 public class ServerRequest {
 

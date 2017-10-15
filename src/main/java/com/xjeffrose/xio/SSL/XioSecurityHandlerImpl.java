@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.net.ssl.KeyManagerFactory;
 
-
 public class XioSecurityHandlerImpl implements XioSecurityHandlers {
   private static final String PASSWORD = "passwordsAreGood";
 
