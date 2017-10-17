@@ -1,6 +1,7 @@
 package com.xjeffrose.xio.core;
 
 import com.typesafe.config.Config;
+import java.util.Arrays;
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
@@ -10,8 +11,6 @@ import org.apache.curator.retry.RetryForever;
 import org.apache.curator.retry.RetryNTimes;
 import org.apache.curator.retry.RetryOneTime;
 import org.apache.curator.retry.RetryUntilElapsed;
-
-import java.util.Arrays;
 
 public class ZooKeeperClientFactory {
   enum ClientRetryPolicy {

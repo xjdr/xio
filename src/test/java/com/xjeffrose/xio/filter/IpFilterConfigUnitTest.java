@@ -1,21 +1,11 @@
 package com.xjeffrose.xio.filter;
 
-import com.google.common.collect.ImmutableSet;
 import com.xjeffrose.xio.config.IpAddressDeterministicRuleEngineConfig;
 import com.xjeffrose.xio.marshall.ThriftMarshaller;
-import io.netty.channel.ChannelHandler;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.channel.embedded.EmbeddedChannel;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import org.junit.Assert;
 import org.junit.Test;
-
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
-import java.net.UnknownHostException;
-import java.util.HashSet;
-import java.util.Set;
 
 public class IpFilterConfigUnitTest extends Assert {
 

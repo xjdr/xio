@@ -2,10 +2,9 @@ package com.xjeffrose.xio.server;
 
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+import java.net.InetSocketAddress;
 import org.junit.Assert;
 import org.junit.Test;
-
-import java.net.InetSocketAddress;
 
 public class XioServerConfigUnitTest extends Assert {
 

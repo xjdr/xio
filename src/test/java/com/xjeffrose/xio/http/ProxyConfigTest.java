@@ -1,7 +1,7 @@
 package com.xjeffrose.xio.http;
 
-import org.junit.Test;
 import org.junit.Assert;
+import org.junit.Test;
 
 public class ProxyConfigTest extends Assert {
 

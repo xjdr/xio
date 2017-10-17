@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.lang.String;
 
 public class FilteredRoundRobinLoadBalancer implements Strategy {
   private final AtomicInteger last = new AtomicInteger();

@@ -1,6 +1,5 @@
 package com.xjeffrose.xio.core;
 
-
 import com.google.common.base.Preconditions;
 import io.netty.channel.Channel;
 import io.netty.util.AttributeKey;

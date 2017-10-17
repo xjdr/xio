@@ -4,7 +4,6 @@ import com.typesafe.config.Config;
 import com.xjeffrose.xio.config.thrift.RuleType;
 import com.xjeffrose.xio.storage.ReadProvider;
 import com.xjeffrose.xio.storage.WriteProvider;
-
 import java.net.InetAddress;
 import java.util.Map;
 

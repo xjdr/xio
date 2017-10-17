@@ -1,25 +1,21 @@
 package com.xjeffrose.xio.pipeline;
 
 import com.squareup.okhttp.Response;
+import com.xjeffrose.xio.bootstrap.XioServerBootstrap;
 import com.xjeffrose.xio.fixtures.SampleHandler;
 import com.xjeffrose.xio.helpers.ClientHelper;
-import com.xjeffrose.xio.bootstrap.ChannelConfiguration;
-import com.xjeffrose.xio.bootstrap.XioServerBootstrap;
 import com.xjeffrose.xio.server.XioServer;
-import com.xjeffrose.xio.server.XioServerConfig;
-import com.xjeffrose.xio.server.XioServerState;
-import org.junit.Assert;
-import org.junit.Test;
-
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import org.junit.Assert;
+import org.junit.Test;
 
 public class XioHttp1_1PipelineFunctionalTest extends Assert {
 
   @Test
   public void testProxyServer() throws IOException {
-    XioServerBootstrap bootstrap = XioServerBootstrap.fromConfig("xio.testApplication")
-      .addToPipeline(new XioHttp1_1Pipeline(() -> new SampleHandler()))
+    XioServerBootstrap bootstrap = XioServerBootstrap.fromConfig("xio.testHttpServer")
+      .addToPipeline(new SmartHttpPipeline(() -> new SampleHandler()))
     ;
     try (XioServer server = bootstrap.build()) {
       InetSocketAddress address = server.getInstrumentation().addressBound();

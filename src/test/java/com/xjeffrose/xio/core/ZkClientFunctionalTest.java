@@ -1,5 +1,7 @@
 package com.xjeffrose.xio.core;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicReference;
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
@@ -8,8 +10,6 @@ import org.apache.curator.test.TestingServer;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicReference;
 public class ZkClientFunctionalTest extends Assert {
 
   @Test

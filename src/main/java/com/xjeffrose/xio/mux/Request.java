@@ -5,12 +5,11 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.SettableFuture;
-import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
-
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.Executor;
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class Request {

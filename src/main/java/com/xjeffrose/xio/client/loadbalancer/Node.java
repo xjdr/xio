@@ -7,16 +7,15 @@ import com.xjeffrose.xio.client.XioConnectionPool;
 import com.xjeffrose.xio.client.asyncretry.AsyncRetryLoop;
 import com.xjeffrose.xio.client.asyncretry.AsyncRetryLoopFactory;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.EventLoopGroup;
-import io.netty.util.concurrent.DefaultProgressivePromise;
 import io.netty.util.concurrent.DefaultPromise;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.FutureListener;
-import io.netty.util.concurrent.Promise;
+import java.io.Closeable;
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.ArrayList;
@@ -26,9 +25,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import lombok.extern.slf4j.Slf4j;
-
-import java.io.Closeable;
-import java.io.IOException;
 
 /**
  * The base type of nodes over which load is balanced. Nodes define the load metric that is used;

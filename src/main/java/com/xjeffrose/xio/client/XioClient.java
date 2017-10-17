@@ -2,17 +2,14 @@ package com.xjeffrose.xio.client;
 
 import com.xjeffrose.xio.client.loadbalancer.Node;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.buffer.ByteBuf;
-import io.netty.util.concurrent.Future;
-import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpHeaderNames;
-import lombok.extern.slf4j.Slf4j;
-import lombok.Getter;
-
+import io.netty.handler.codec.http.HttpRequest;
+import io.netty.util.concurrent.Future;
 import java.io.Closeable;
-import java.io.IOException;
-import java.net.SocketAddress;
 import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 abstract public class XioClient implements Closeable {

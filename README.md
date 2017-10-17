@@ -28,6 +28,6 @@ This project uses the following lombok features:
  * https://projectlombok.org/features/Builder.html
  * https://projectlombok.org/features/Log.html
 
-### git-flow
+### github flow
 
-This project is using git-flow, run `scripts/global-git-flow.sh` to globally configure git-flow
+This project is using github flow: https://guides.github.com/introduction/flow/

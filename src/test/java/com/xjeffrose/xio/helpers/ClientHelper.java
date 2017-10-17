@@ -4,7 +4,6 @@ import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
 import com.xjeffrose.xio.fixtures.OkHttpUnsafe;
-
 import java.io.IOException;
 import java.net.InetSocketAddress;
 

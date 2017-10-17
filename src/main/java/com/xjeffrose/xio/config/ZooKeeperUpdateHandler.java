@@ -2,7 +2,6 @@ package com.xjeffrose.xio.config;
 
 import com.xjeffrose.xio.config.thrift.RuleType;
 import com.xjeffrose.xio.storage.ZooKeeperWriteProvider;
-
 import java.net.InetAddress;
 
 public class ZooKeeperUpdateHandler implements UpdateHandler {

@@ -1,13 +1,12 @@
 package com.xjeffrose.xio.core;
 
+import java.net.InetSocketAddress;
+import java.util.List;
 import javax.annotation.Nullable;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.cache.NodeCache;
 import org.apache.curator.framework.recipes.leader.LeaderSelectorListener;
-
-import java.net.InetSocketAddress;
-import java.util.List;
 
 @Slf4j
 public class NullZkClient extends ZkClient {

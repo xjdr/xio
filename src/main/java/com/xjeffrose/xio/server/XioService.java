@@ -7,10 +7,7 @@ import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.internal.PlatformDependent;
 import java.util.Deque;
-import java.util.concurrent.ConcurrentLinkedDeque;
 import lombok.extern.slf4j.Slf4j;
-
-import static io.netty.handler.timeout.IdleStateEvent.ALL_IDLE_STATE_EVENT;
 
 @Slf4j
 public class XioService extends ChannelDuplexHandler {

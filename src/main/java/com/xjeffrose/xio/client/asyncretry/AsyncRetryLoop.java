@@ -1,11 +1,7 @@
 package com.xjeffrose.xio.client.asyncretry;
 
 import io.netty.channel.EventLoopGroup;
-import io.netty.channel.ConnectTimeoutException;
-import java.net.ConnectException;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j

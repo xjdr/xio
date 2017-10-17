@@ -1,9 +1,9 @@
 package com.xjeffrose.xio.SSL;
 
+import static org.junit.Assert.assertEquals;
+
 import java.security.KeyStore;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
 
 public class KeyStoreFactoryTest {
 

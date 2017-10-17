@@ -1,60 +1,8 @@
 package com.xjeffrose.xio.server;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.net.HttpHeaders;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.ListeningExecutorService;
-import com.google.common.util.concurrent.MoreExecutors;
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.Response;
-import com.xjeffrose.xio.EchoClient;
-import com.xjeffrose.xio.EchoServer;
-import com.xjeffrose.xio.client.XioClient;
-import com.xjeffrose.xio.client.retry.BoundedExponentialBackoffRetry;
-import com.xjeffrose.xio.core.BBtoHttpResponse;
-import com.xjeffrose.xio.core.TcpCodec;
-import com.xjeffrose.xio.core.XioAggregatorFactory;
-import com.xjeffrose.xio.core.XioCodecFactory;
-import com.xjeffrose.xio.core.XioException;
-import com.xjeffrose.xio.core.XioNoOpHandler;
 import com.xjeffrose.xio.core.XioTimer;
-import com.xjeffrose.xio.core.XioTransportException;
-import com.xjeffrose.xio.fixtures.OkHttpUnsafe;
-import com.xjeffrose.xio.fixtures.SimpleTestServer;
-import com.xjeffrose.xio.fixtures.XioTestSecurityFactory;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.PooledByteBufAllocator;
-import io.netty.buffer.Unpooled;
-import io.netty.channel.ChannelHandler;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.epoll.EpollEventLoopGroup;
-import io.netty.channel.group.DefaultChannelGroup;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.HttpObjectAggregator;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.HttpServerCodec;
-import io.netty.handler.codec.http.HttpVersion;
-import io.netty.handler.ssl.SslContext;
-import io.netty.handler.ssl.SslContextBuilder;
-import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
-import java.net.InetSocketAddress;
-import java.net.URI;
-import java.nio.charset.Charset;
-import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-import javax.net.ssl.SSLException;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 
 public class XioServerFunctionalTest {
 

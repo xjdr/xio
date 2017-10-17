@@ -6,7 +6,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http.HttpResponse;
-import io.netty.util.AttributeKey;
 
 class HttpServerResponseTracingHandler extends ChannelOutboundHandlerAdapter {
 

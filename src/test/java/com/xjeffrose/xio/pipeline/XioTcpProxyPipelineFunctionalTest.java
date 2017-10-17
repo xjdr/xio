@@ -1,17 +1,12 @@
 package com.xjeffrose.xio.pipeline;
 
-import com.xjeffrose.xio.helpers.EchoServer;
-import com.xjeffrose.xio.helpers.EchoClient;
-import com.xjeffrose.xio.bootstrap.ChannelConfiguration;
 import com.xjeffrose.xio.bootstrap.XioServerBootstrap;
-import com.xjeffrose.xio.pipeline.XioTcpProxyPipeline;
+import com.xjeffrose.xio.helpers.EchoClient;
+import com.xjeffrose.xio.helpers.EchoServer;
 import com.xjeffrose.xio.server.XioServer;
-import com.xjeffrose.xio.server.XioServerConfig;
-import com.xjeffrose.xio.server.XioServerState;
+import java.net.InetSocketAddress;
 import org.junit.Assert;
 import org.junit.Test;
-
-import java.net.InetSocketAddress;
 
 public class XioTcpProxyPipelineFunctionalTest extends Assert {
 
@@ -20,7 +15,7 @@ public class XioTcpProxyPipelineFunctionalTest extends Assert {
 
     try (EchoClient client = new EchoClient(); EchoServer server = new EchoServer()) {
       server.bind(new InetSocketAddress("127.0.0.1", 0));
-      XioServerBootstrap bootstrap = XioServerBootstrap.fromConfig("xio.testApplication")
+      XioServerBootstrap bootstrap = XioServerBootstrap.fromConfig("xio.testTcpProxyServer")
         .addToPipeline(new XioTcpProxyPipeline(server.addressBound()))
       ;
       try (XioServer proxy = bootstrap.build()) {
@@ -41,7 +36,7 @@ public class XioTcpProxyPipelineFunctionalTest extends Assert {
 
     try (EchoClient client = new EchoClient(); EchoServer server = new EchoServer()) {
       server.bind(new InetSocketAddress("127.0.0.1", 0));
-      XioServerBootstrap bootstrap = XioServerBootstrap.fromConfig("xio.testApplication")
+      XioServerBootstrap bootstrap = XioServerBootstrap.fromConfig("xio.testTcpProxyServer")
         .addToPipeline(new XioTcpProxyPipeline(server.addressBound()))
       ;
       try (XioServer proxy = bootstrap.build()) {

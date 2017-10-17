@@ -8,9 +8,7 @@ import com.xjeffrose.xio.http.HttpRouter;
 import com.xjeffrose.xio.http.UrlRoundRobinRouter;
 import java.util.concurrent.atomic.AtomicReference;
 import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 public class ApplicationState {
 
   @Getter
@@ -18,6 +16,8 @@ public class ApplicationState {
 
   @Getter
   private final ServerChannelConfiguration channelConfiguration;
+
+  // TODO(CK): store ClientChannelConfiguration here as well
 
   private final AtomicReference<IpFilterConfig> ipFilterConfig;
 

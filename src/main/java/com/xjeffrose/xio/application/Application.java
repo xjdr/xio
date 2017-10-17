@@ -3,10 +3,9 @@ package com.xjeffrose.xio.application;
 import com.xjeffrose.xio.config.Configurator;
 import com.xjeffrose.xio.server.XioServer;
 import com.xjeffrose.xio.server.XioServerInstrumentation;
+import java.util.Map;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.Map;
 
 @Slf4j
 public class Application implements AutoCloseable {

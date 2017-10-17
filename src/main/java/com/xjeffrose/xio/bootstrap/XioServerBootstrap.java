@@ -12,12 +12,10 @@ import com.xjeffrose.xio.server.XioServerInstrumentation;
 import com.xjeffrose.xio.server.XioServerState;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.net.InetSocketAddress;
 import java.util.function.Consumer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class XioServerBootstrap {
   private static final Logger log = LoggerFactory.getLogger(XioServerBootstrap.class);
@@ -41,13 +39,13 @@ public class XioServerBootstrap {
     channelConfig(appState.getChannelConfiguration());
   }
 
+  // TODO(CK): refactor tests and remove this
   static public XioServerBootstrap fromConfig(String key, Config config) {
-    Config servers = config.getConfig(key).getConfig("servers");
-    String firstServer = servers.root().entrySet().iterator().next().getKey();
+    XioServerConfig serverConfig = XioServerConfig.fromConfig(key, config);
     return new XioServerBootstrap(
-      new ApplicationState(ApplicationConfig.fromConfig(key, config)),
-      XioServerConfig.fromConfig(firstServer, servers),
-      XioServerState.fromConfig(firstServer, servers)
+      new ApplicationState(ApplicationConfig.fromConfig("xio.defaultApplication", ConfigFactory.load())),
+      serverConfig,
+      new XioServerState(serverConfig)
     );
   }
 
