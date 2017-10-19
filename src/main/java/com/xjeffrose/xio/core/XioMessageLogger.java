@@ -6,6 +6,8 @@ import io.netty.channel.ChannelPromise;
 import io.netty.handler.logging.LoggingHandler;
 import lombok.extern.slf4j.Slf4j;
 
+//TODO(CK): Refactor this logMessageDebug is redundant
+//TODO(CK): Find a use case for this, why not just LoggingHandler?
 @Slf4j
 public class XioMessageLogger extends LoggingHandler {
 
