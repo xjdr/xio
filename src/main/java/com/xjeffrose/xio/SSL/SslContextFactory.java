@@ -25,7 +25,10 @@ public class SslContextFactory {
     try {
       SslContextBuilder builder = SslContextBuilder
         .forServer(config.getPrivateKey(), config.getCertificateAndTrustChain());
-      return configure(config, builder).build();
+      return configure(config, builder)
+        // servers will trust only certs in trust chain
+        .trustManager(config.getTrustChain())
+        .build();
     } catch (SSLException e) {
       return null;
     }
@@ -35,6 +38,7 @@ public class SslContextFactory {
     try {
       return configure(config, SslContextBuilder.forClient())
         .keyManager(config.getPrivateKey(), config.getCertificateAndTrustChain())
+        // clients will trust only certs in trust chain
         .trustManager(config.getTrustChain())
         .build();
     } catch (SSLException e) {
