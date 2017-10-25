@@ -3,6 +3,7 @@ package com.xjeffrose.xio.pipeline;
 import com.xjeffrose.xio.application.ApplicationState;
 import com.xjeffrose.xio.http.CodecPlaceholderHandler;
 import com.xjeffrose.xio.http.GentleSslHandler;
+import com.xjeffrose.xio.http.Http2HandlerBuilder;
 import com.xjeffrose.xio.http.HttpNegotiationHandler;
 import com.xjeffrose.xio.http.HttpsUpgradeHandler;
 import com.xjeffrose.xio.server.XioServerConfig;
@@ -43,9 +44,13 @@ public class SmartHttpPipeline extends XioServerPipeline {
     return "ssl-http/1.1";
   }
 
+  public ChannelHandler buildHttp2Handler() {
+    return new Http2HandlerBuilder().server(true).build();
+  }
+
   public ChannelHandler getCodecNegotiationHandler(XioServerConfig config) {
     if (config.getTls().isUseSsl()) {
-      return new HttpNegotiationHandler();
+      return new HttpNegotiationHandler(this::buildHttp2Handler);
     } else {
       return null;
     }
