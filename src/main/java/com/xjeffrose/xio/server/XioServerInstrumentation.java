@@ -2,6 +2,7 @@ package com.xjeffrose.xio.server;
 
 import java.net.InetSocketAddress;
 
+// TODO(CK): this can be folded into XioServerState
 public class XioServerInstrumentation {
 
   public InetSocketAddress addressBound;
