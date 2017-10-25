@@ -11,7 +11,7 @@ import io.netty.handler.codec.http.LastHttpContent;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class SimpleContentRoute implements RouteProvider {
+public class SimpleContentRoute implements RequestHandler {
 
   private final ContentConfig config;
 
@@ -20,12 +20,12 @@ public class SimpleContentRoute implements RouteProvider {
   }
 
   @Override
-  public RouteUpdateProvider handle(HttpRequest request, ChannelHandlerContext ctx) {
+  public RequestUpdateHandler handle(HttpRequest request, ChannelHandlerContext ctx) {
     if (HttpUtil.is100ContinueExpected(request)) {
       ctx.writeAndFlush(new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.CONTINUE));
     }
 
-    return new RouteUpdateProvider() {
+    return new RequestUpdateHandler() {
       @Override
       public void update(HttpContent content) {
       }

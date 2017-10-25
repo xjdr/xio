@@ -4,10 +4,10 @@ import com.xjeffrose.xio.bootstrap.ServerChannelConfiguration;
 import com.xjeffrose.xio.core.ZkClient;
 import com.xjeffrose.xio.filter.Http1FilterConfig;
 import com.xjeffrose.xio.filter.IpFilterConfig;
-import com.xjeffrose.xio.http.HttpRouter;
-import com.xjeffrose.xio.http.UrlRoundRobinRouter;
-import java.util.concurrent.atomic.AtomicReference;
+import com.xjeffrose.xio.http.Router;
 import lombok.Getter;
+
+import java.util.concurrent.atomic.AtomicReference;
 
 public class ApplicationState {
 
@@ -23,7 +23,7 @@ public class ApplicationState {
 
   private final AtomicReference<Http1FilterConfig> http1FilterConfig;
 
-  private final AtomicReference<HttpRouter> httpRouter;
+  private final AtomicReference<Router> router;
 
   public ApplicationState(ApplicationConfig config) {
     channelConfiguration = config.serverChannelConfig();
@@ -35,7 +35,7 @@ public class ApplicationState {
     http1FilterConfig = new AtomicReference<>(new Http1FilterConfig());
     zkClient.registerUpdater(new Http1FilterConfig.Updater(config.getHttp1FilterPath(), this::setHttp1FilterConfig));
 
-    httpRouter = new AtomicReference<>(new UrlRoundRobinRouter());
+    router = new AtomicReference<>(null);
   }
 
   public IpFilterConfig getIpFilterConfig() {
@@ -54,9 +54,9 @@ public class ApplicationState {
     http1FilterConfig.set(newConfig);
   }
 
-  public HttpRouter getHttpRouter() { return httpRouter.get(); }
+  public Router getRouter() { return router.get(); }
 
-  public void setHttpRouter(HttpRouter router) {
-    this.httpRouter.set(router);
+  public void setRouter(Router router) {
+    this.router.set(router);
   }
 }

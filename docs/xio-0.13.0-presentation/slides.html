@@ -45,7 +45,7 @@
 <ul>
 <li>SSL/TLS</li>
 <li>application</li>
-<li>client</li>
+<li>registryClient</li>
 <li>http</li>
 <li>mux</li>
 <li>server</li>
@@ -144,7 +144,7 @@ nfe {
 </section>
 <section>
 <section id="slide-orgf77101e">
-<h2 id="orgf77101e">client</h2>
+<h2 id="orgf77101e">registryClient</h2>
 <ul>
 <li>connection pooling</li>
 <li>cluster aware</li>
@@ -157,16 +157,16 @@ nfe {
 </section>
 <section>
 <section id="slide-org1b7fe2c">
-<h2 id="org1b7fe2c">client example</h2>
+<h2 id="org1b7fe2c">registryClient example</h2>
 <div class="org-src-container">
 
-<pre><code class="java" >XioClient client = new XioClientBootstrap()
+<pre><code class="java" >XioClient registryClient = new XioClientBootstrap()
   // use an existing EventLoop
   .channelConfig(ChannelConfiguration.clientConfig(eventLoop))
   .address(config.address)
   // enable ssl
   .ssl(config.needSSL)
-  // HTTP client
+  // HTTP registryClient
   .applicationProtocol(() -&gt; new HttpClientCodec())
   // proxy backend
   .handler(new RawBackendHandler(ctx))
@@ -175,7 +175,7 @@ nfe {
   ;
 
 // send request
-client.write(httpRequest);
+registryClient.write(httpRequest);
 </code></pre>
 </div>
 
@@ -306,7 +306,7 @@ theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
 transition: Reveal.getQueryHash().transition || 'default', // default/cube/page/concave/zoom/linear/fade/none
 transitionSpeed: 'default',
 multiplex: {
-    secret: '', // null if client
+    secret: '', // null if registryClient
     id: '', // id, obtained from socket.io server
     url: '' // Location of socket.io server
 },

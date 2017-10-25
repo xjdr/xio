@@ -19,13 +19,13 @@ import io.netty.channel.ChannelPipeline;
 //      * [ ] later do some sweet channel piping
 public class Http1ProxyFragment implements XioPipelineFragment {
 
-  private final HttpRouter router;
+  private final Router router;
 
   public Http1ProxyFragment() {
     this.router = null;
   }
 
-  public Http1ProxyFragment(HttpRouter router) {
+  public Http1ProxyFragment(Router router) {
     this.router = router;
   }
 
@@ -34,7 +34,7 @@ public class Http1ProxyFragment implements XioPipelineFragment {
   }
 
   public void buildHandlers(ApplicationState appState, XioServerConfig config, XioServerState state, ChannelPipeline pipeline) {
-    pipeline.addLast(new Http1ProxyHandler(router != null ? router : appState.getHttpRouter()));
+    pipeline.addLast(new Http1ProxyHandler(router != null ? router : appState.getRouter()));
   }
 
 }

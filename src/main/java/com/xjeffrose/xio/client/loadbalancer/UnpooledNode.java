@@ -22,16 +22,13 @@ public class UnpooledNode extends Node {
 
   private void writeAndFlush(Object message, DefaultPromise<Void> promise) {
     Channel channel = channelResult.channel();
-    channel.writeAndFlush(message).addListener(new ChannelFutureListener() {
-      @Override
-      public void operationComplete(ChannelFuture channelFuture) {
-        if (channelFuture.isSuccess()) {
-          log.debug("write finished for " + message);
-          promise.setSuccess(null);
-        } else {
-          log.error("Write error: ", channelFuture.cause());
-          promise.setFailure(channelFuture.cause());
-        }
+    channel.writeAndFlush(message).addListener((ChannelFutureListener) channelFuture -> {
+      if (channelFuture.isSuccess()) {
+        log.debug("write finished for " + message);
+        promise.setSuccess(null);
+      } else {
+        log.error("Write error: ", channelFuture.cause());
+        promise.setFailure(channelFuture.cause());
       }
     });
   }
@@ -42,21 +39,18 @@ public class UnpooledNode extends Node {
     log.debug("Acquiring Node: " + this);
     if (channelResult == null) {
       channelResult = bootstrap.clone().connect();
-    };
+    }
 
     if (channelResult.isSuccess()) {
       writeAndFlush(message, promise);
     } else {
-      channelResult.addListener(new ChannelFutureListener() {
-        @Override
-        public void operationComplete(ChannelFuture channelFuture) {
-          if (channelFuture.isSuccess()) {
-            log.debug("connection achieved " + message);
-            writeAndFlush(message, promise);
-          } else {
-            log.error("connection error: ", channelFuture.cause());
-            promise.setFailure(channelFuture.cause());
-          }
+      channelResult.addListener((ChannelFutureListener) channelFuture -> {
+        if (channelFuture.isSuccess()) {
+          log.debug("connection achieved " + message);
+          writeAndFlush(message, promise);
+        } else {
+          log.error("connection error: ", channelFuture.cause());
+          promise.setFailure(channelFuture.cause());
         }
       });
     }

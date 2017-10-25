@@ -3,43 +3,30 @@ package com.xjeffrose.xio.http;
 import com.google.common.collect.ImmutableMap;
 import com.xjeffrose.xio.server.Route;
 import io.netty.handler.codec.http.HttpRequest;
+import lombok.Getter;
 
-public class UrlRouter implements HttpRouter {
 
-  private RouteProvider determineRoute(HttpRequest request) {
-    for(Route route : routes.keySet()) {
+public class UrlRouter implements Router {
+
+  @Getter
+  private final ImmutableMap<Route, RequestHandler> routes;
+  private final RequestHandler defaultRoute;
+
+  public UrlRouter(ImmutableMap<Route, RequestHandler> routes) {
+    this.routes = routes;
+    defaultRoute = new HttpStatus404Route();
+  }
+
+  public RequestHandler get(HttpRequest request) {
+    return determineRoute(request);
+  }
+
+  private RequestHandler determineRoute(HttpRequest request) {
+    for (Route route : routes.keySet()) {
       if (route.matches(request.uri())) {
         return routes.get(route);
       }
     }
     return defaultRoute;
   }
-
-  //private final RouteConfig config;
-  private final ImmutableMap<Route, RouteProvider> routes;
-  private final RouteProvider defaultRoute;
-
-  /*
-  private UrlRouter(RouteConfig config, ImmutableMap<Route, RouteProvider> routes) {
-    this.config = config;
-    this.routes = routes;
-    defaultRoute = new HttpStatus404Route();
-  }
-  */
-
-  public UrlRouter(ImmutableMap<Route, RouteProvider> routes) {
-    this.routes = routes;
-    defaultRoute = new HttpStatus404Route();
-  }
-
-  /*
-  public static UrlRouter build(RouteConfig config, Function<RouteConfig, ImmutableMap<Route, RouteProvider>> builder) {
-    return new UrlRouter(config, builder.apply(config));
-  }
-  */
-
-  public RouteProvider get(HttpRequest request) {
-    return determineRoute(request);
-  }
-
 }

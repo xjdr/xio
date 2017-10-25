@@ -10,17 +10,17 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.LastHttpContent;
 
-public class HttpStatus404Route implements RouteProvider {
+public class HttpStatus404Route implements RequestHandler {
 
   public HttpStatus404Route() {
   }
 
   @Override
-  public RouteUpdateProvider handle(HttpRequest request, ChannelHandlerContext ctx) {
+  public RequestUpdateHandler handle(HttpRequest request, ChannelHandlerContext ctx) {
     HttpResponse not_found = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.NOT_FOUND);
     ctx.writeAndFlush(not_found).addListener(ChannelFutureListener.CLOSE);
 
-    return new RouteUpdateProvider() {
+    return new RequestUpdateHandler() {
       @Override
       public void update(HttpContent content) {
       }

@@ -6,18 +6,15 @@ import com.xjeffrose.xio.client.loadbalancer.Distributor;
 import com.xjeffrose.xio.client.loadbalancer.Protocol;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelHandler;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.EventLoopGroup;
+import io.netty.channel.*;
 import io.netty.handler.codec.http.HttpClientCodec;
 import io.netty.handler.ssl.SslContext;
-import java.net.InetSocketAddress;
-import java.util.function.Supplier;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
+
+import java.net.InetSocketAddress;
+import java.util.function.Supplier;
 
 @Slf4j
 @Accessors(fluent = true)
@@ -101,8 +98,7 @@ public class XioClientBootstrap {
       .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 500)
       .option(ChannelOption.SO_REUSEADDR, true)
       .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-      .option(ChannelOption.WRITE_BUFFER_HIGH_WATER_MARK, 32 * 1024)
-      .option(ChannelOption.WRITE_BUFFER_LOW_WATER_MARK, 8 * 1024)
+      .option(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(8 * 1024, 32 * 1024))
       .option(ChannelOption.TCP_NODELAY, true)
       .group(channelConfig.workerGroup())
       .channel(channelConfig.channel());

@@ -11,11 +11,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class Http1ProxyHandler extends SimpleChannelInboundHandler<HttpObject> {
 
-  private final HttpRouter router;
-  private RouteProvider route;
-  private RouteUpdateProvider updater;
+  private final Router router;
+  private RequestHandler route;
+  private RequestUpdateHandler updater;
 
-  public Http1ProxyHandler(HttpRouter router) {
+  public Http1ProxyHandler(Router router) {
     this.router = router;
   }
 

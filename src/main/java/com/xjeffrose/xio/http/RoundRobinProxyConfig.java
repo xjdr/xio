@@ -62,12 +62,12 @@ public class RoundRobinProxyConfig {
     return new XioClientBootstrap().tracingHandler(() -> tracingHandler.apply(tls));
   }
 
-  public RouteProvider getRouteProvider(HttpRequest request) {
+  public RequestHandler getRouteProvider(HttpRequest request) {
     int idx = next.getAndIncrement();
     Host host = hosts.get(idx % hosts.size());
     System.out.println("getRouteProvider: " + request.uri());
-    ProxyConfig proxyConfig = new ProxyConfig(host.address, host.hostHeader, "", "/", host.needSSL);
-    return new SimpleProxyRoute(Route.build("/:*path"), proxyConfig, newClient(host.needSSL));
+    ProxyConfig proxyConfig = new ProxyConfig(host.address, host.hostHeader, "", "/", host.needSSL, false);
+    return new SimpleProxyHandler(Route.build("/:*path"), proxyConfig, newClient(host.needSSL));
   }
 
 }
