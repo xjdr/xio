@@ -2,13 +2,14 @@ package com.xjeffrose.xio.http;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.channel.Channel;
 
 public class RawBackendHandler extends ChannelInboundHandlerAdapter {
 
-  private final ChannelHandlerContext frontend;
+  private final Channel frontend;
 
   public RawBackendHandler(ChannelHandlerContext frontend) {
-    this.frontend = frontend;
+    this.frontend = frontend.channel();
   }
 
   @Override
