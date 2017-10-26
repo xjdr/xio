@@ -95,7 +95,7 @@ public class MutualAuthHandlerUnitTest extends Assert {
 
   @After
   public void tearDown() {
-    group.shutdownGracefully(0, TIMEOUT_MILLIS, TimeUnit.MILLISECONDS).syncUninterruptibly();
+    group.shutdownGracefully(0, 1000, TimeUnit.MILLISECONDS).syncUninterruptibly();
   }
 
 

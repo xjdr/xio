@@ -37,7 +37,6 @@ public class GentleSslHandler extends OptionalSslHandler {
   /*
   @Override
   protected SslHandler newSslHandler(ChannelHandlerContext context, SslContext sslContext) {
-    System.out.println("new ssl");
     return sslContext.newHandler(context.alloc());
   }
   */

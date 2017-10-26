@@ -31,7 +31,6 @@ class HttpClientRequestTracingHandler extends ChannelOutboundHandlerAdapter {
         @Override
         public void operationComplete(ChannelFuture future) throws Exception {
           if (!future.isSuccess()) {
-            //System.out.println("ERROR: " + future.cause());
             state.onError(ctx, future.cause());
           }
         }

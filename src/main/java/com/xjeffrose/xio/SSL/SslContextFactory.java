@@ -3,8 +3,15 @@ package com.xjeffrose.xio.SSL;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.SupportedCipherSuiteFilter;
+import java.io.IOException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.security.cert.*;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import javax.net.ssl.SSLException;
+import javax.net.ssl.TrustManagerFactory;
 
 public class SslContextFactory {
 
@@ -34,15 +41,41 @@ public class SslContextFactory {
     }
   }
 
-  static public SslContext buildClientContext(TlsConfig config) {
+  static public SslContext buildClientContext(TlsConfig config, TrustManagerFactory trustManager) {
     try {
       return configure(config, SslContextBuilder.forClient())
         .keyManager(config.getPrivateKey(), config.getCertificateAndTrustChain())
         // clients will trust only certs in trust chain
-        .trustManager(config.getTrustChain())
+        .trustManager(trustManager)
         .build();
     } catch (SSLException e) {
       return null;
     }
+  }
+
+  static TrustManagerFactory buildTrustManagerFactory(X509Certificate[] certCollection) {
+    try {
+      KeyStore ks = KeyStore.getInstance("JKS");
+      ks.load(null, null);
+
+      int i = 1;
+      for (X509Certificate cert: certCollection) {
+        String alias = Integer.toString(i);
+        ks.setCertificateEntry(alias, cert);
+        i++;
+      }
+
+      TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+
+      trustManagerFactory.init(ks);
+
+      return trustManagerFactory;
+    } catch (NoSuchAlgorithmException | CertificateException | KeyStoreException | IOException e) {
+      return null;
+    }
+  }
+
+  static public SslContext buildClientContext(TlsConfig config) {
+    return buildClientContext(config, buildTrustManagerFactory(config.getTrustChain()));
   }
 }
