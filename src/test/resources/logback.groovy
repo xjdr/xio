@@ -14,3 +14,5 @@ appender("CONSOLE", ConsoleAppender) {
 
 logger("io.netty.channel.DefaultChannelPipeline", DEBUG)
 root(WARN, ["CONSOLE"])
+//TODO(CK): figure out how to set this from the command line
+//root(DEBUG, ["CONSOLE"])

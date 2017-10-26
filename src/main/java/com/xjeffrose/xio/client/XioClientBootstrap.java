@@ -93,7 +93,7 @@ public class XioClientBootstrap {
       sslContext = SslContextFactory.buildServerContext(config.getTls());
     }
 
-    return new DefaultChannelInitializer(handler, sslContext, applicationProtocol, tracingHandler);
+    return new DefaultChannelInitializer(address, handler, sslContext, applicationProtocol, tracingHandler);
   }
 
   public Bootstrap buildBootstrap(ChannelConfiguration channelConfig) {

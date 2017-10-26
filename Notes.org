@@ -52,6 +52,12 @@
 
 **** stop vendoring style guide
 
+*** InetSocketAddress fixed in java7 update
+
+**** https://docs.oracle.com/javase/8/docs/api/java/net/InetSocketAddress.html#getHostString--
+
+**** use getHostString instead of getAddress().getHostName()
+
 * Naming conventions
   - Put Xio in front of a class name to avoid clashing with an existing class name
     - good example XioServerBootstrap uses netty ServerBootstrap
