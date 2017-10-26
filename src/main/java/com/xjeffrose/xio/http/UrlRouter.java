@@ -29,12 +29,4 @@ public class UrlRouter implements Router {
     }
     return defaultRoute;
   }
-
-//  @Override
-//  public String toString() {
-//    return "UrlRouter{" +
-//      "routes=" + routes +
-//      ", defaultRoute=" + defaultRoute +
-//      '}';
-//  }
 }

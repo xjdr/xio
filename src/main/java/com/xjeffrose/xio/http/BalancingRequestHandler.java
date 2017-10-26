@@ -35,12 +35,4 @@ public class BalancingRequestHandler implements RequestHandler {
       }
     });
   }
-
-//  @Override
-//  public String toString() {
-//    return "BalancingRequestHandler{" +
-//      "handlers=" + handlers +
-//      ", next=" + next +
-//      '}';
-//  }
 }

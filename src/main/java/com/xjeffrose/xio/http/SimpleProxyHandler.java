@@ -11,8 +11,6 @@ import io.netty.util.AttributeKey;
 import io.netty.util.ReferenceCountUtil;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
@@ -59,7 +57,7 @@ public class SimpleProxyHandler implements RequestHandler {
       .entrySet()
       .stream()
       .filter(e -> e.getKey().equals("path"))
-      .map(Map.Entry::getValue)
+      .map(e -> e.getValue())
       .findFirst();
 
     if (!config.pathPassthru) {
@@ -104,8 +102,4 @@ public class SimpleProxyHandler implements RequestHandler {
     }
   }
 
-//  @Override
-//  public String toString() {
-//    return "SimpleProxyHandler{" + config + "}";
-//  }
 }
