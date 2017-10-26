@@ -14,7 +14,7 @@ public class UrlRouter implements Router {
 
   public UrlRouter(ImmutableMap<Route, RequestHandler> routes) {
     this.routes = routes;
-    defaultRoute = new HttpStatus404Route();
+    defaultRoute = new HttpStatus404Handler();
   }
 
   public RequestHandler get(HttpRequest request) {

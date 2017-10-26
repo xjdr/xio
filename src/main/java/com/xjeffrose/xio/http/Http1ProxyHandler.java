@@ -22,13 +22,13 @@ public class Http1ProxyHandler extends SimpleChannelInboundHandler<HttpObject> {
   @Override
   public final void channelRead0(final ChannelHandlerContext ctx, HttpObject msg) throws Exception {
     if (router == null) {
+      // Router is null meaning it has not been set yet.
       throw new IllegalStateException("No Router");
     }
     if (msg instanceof HttpRequest) {
       HttpRequest req = (HttpRequest)msg;
       log.info("Received Request {}", req);
       route = router.get(req);
-      log.debug("route: {}", route);
       updater = route.handle(req, ctx);
     } else if (msg instanceof LastHttpContent) {
       updater.update((LastHttpContent)msg);

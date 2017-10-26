@@ -12,7 +12,7 @@
 * Features
   - SSL/TLS
   - application
-  - registryClient
+  - client
   - http
   - mux
   - server
@@ -75,21 +75,21 @@ nfe {
 }
 #+end_example
 
-* registryClient
+* client
   - connection pooling
   - cluster aware
   - multiple cluster load balancing strategies
   - multiple retry strategies
 
-* registryClient example
+* client example
 #+begin_src java
-XioClient registryClient = new XioClientBootstrap()
+XioClient client = new XioClientBootstrap()
   // use an existing EventLoop
   .channelConfig(ChannelConfiguration.clientConfig(eventLoop))
   .address(config.address)
   // enable ssl
   .ssl(config.needSSL)
-  // HTTP registryClient
+  // HTTP client
   .applicationProtocol(() -> new HttpClientCodec())
   // proxy backend
   .handler(new RawBackendHandler(ctx))
@@ -98,7 +98,7 @@ XioClient registryClient = new XioClientBootstrap()
   ;
 
 // send request
-registryClient.write(httpRequest);
+client.write(httpRequest);
 #+end_src
 
 * http

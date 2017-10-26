@@ -103,13 +103,4 @@ public class Route {
   public int hashCode() {
     return path.hashCode();
   }
-
-//  @Override
-//  public String toString() {
-//    return "Route{" +
-//      "path='" + path + '\'' +
-//      ", pathPattern=" + pathPattern +
-//      ", keywords=" + keywords +
-//      '}';
-//  }
 }

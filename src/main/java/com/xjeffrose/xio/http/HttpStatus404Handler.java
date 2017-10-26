@@ -10,9 +10,9 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.LastHttpContent;
 
-public class HttpStatus404Route implements RequestHandler {
+public class HttpStatus404Handler implements RequestHandler {
 
-  public HttpStatus404Route() {
+  public HttpStatus404Handler() {
   }
 
   @Override

@@ -35,6 +35,8 @@ public class ApplicationState {
     http1FilterConfig = new AtomicReference<>(new Http1FilterConfig());
     zkClient.registerUpdater(new Http1FilterConfig.Updater(config.getHttp1FilterPath(), this::setHttp1FilterConfig));
 
+    // Set this to null.  If router is being bootstrapped from here, it will check for null before proceeding.
+    // It is expected that dynamic configuration service will update this as needed.
     router = new AtomicReference<>(null);
   }
 

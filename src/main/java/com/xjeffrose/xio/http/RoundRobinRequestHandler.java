@@ -8,12 +8,17 @@ import lombok.val;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class BalancingRequestHandler implements RequestHandler {
+/**
+ * This uses round robin strategy to delegate request handling to another set of one or more request handlers.
+ * Currently this is performing the load balancing but should probably merged/reworked with client distributor
+ * functionality.
+ */
+public class RoundRobinRequestHandler implements RequestHandler {
   @Getter
   private final ImmutableList<RequestHandler> handlers;
   private final AtomicInteger next = new AtomicInteger();
 
-  public BalancingRequestHandler(ImmutableList<RequestHandler> handlers) {
+  public RoundRobinRequestHandler(ImmutableList<RequestHandler> handlers) {
     this.handlers = handlers;
   }
 
