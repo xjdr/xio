@@ -100,4 +100,8 @@ public class SimpleProxyHandler implements RequestHandler {
     }
   }
 
+  @Override
+  public String toString() {
+    return String.format("%s:%s:%s", config.address.getHostString(), config.address.getPort(),config.address.getHostName());
+  }
 }
