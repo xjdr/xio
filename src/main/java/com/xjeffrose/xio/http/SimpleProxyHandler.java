@@ -6,22 +6,14 @@ import com.xjeffrose.xio.client.XioRequest;
 import com.xjeffrose.xio.server.Route;
 import com.xjeffrose.xio.tracing.HttpTracingState;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.HttpClientCodec;
-import io.netty.handler.codec.http.HttpContent;
-import io.netty.handler.codec.http.HttpRequest;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.HttpUtil;
-import io.netty.handler.codec.http.HttpVersion;
-import io.netty.handler.codec.http.LastHttpContent;
+import io.netty.handler.codec.http.*;
 import io.netty.util.AttributeKey;
 import io.netty.util.ReferenceCountUtil;
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
 import java.util.Optional;
-
-import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class SimpleProxyHandler implements RequestHandler {
@@ -35,7 +27,6 @@ public class SimpleProxyHandler implements RequestHandler {
   private XioClient client;
 
   public SimpleProxyHandler(Route route, ProxyConfig config, XioClientBootstrap bootstrap) {
-    log.info("SimpleProxyHandler: {}", route.pathPattern());
     this.route = route;
     this.config = config;
     this.bootstrap = bootstrap;
@@ -46,7 +37,6 @@ public class SimpleProxyHandler implements RequestHandler {
   }
 
   private void buildAndAttach(ChannelHandlerContext ctx) {
-    log.info("buildAndAttach");
     client = bootstrap.clone(ctx.channel().eventLoop())
       .address(config.address)
       .ssl(config.needSSL)
@@ -114,4 +104,8 @@ public class SimpleProxyHandler implements RequestHandler {
     }
   }
 
+//  @Override
+//  public String toString() {
+//    return "SimpleProxyHandler{" + config + "}";
+//  }
 }
