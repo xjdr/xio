@@ -77,14 +77,12 @@ public class SimpleProxyHandler implements RequestHandler {
     return new RequestUpdateHandler() {
       @Override
       public void update(HttpContent content) {
-        System.out.println("update");
         ReferenceCountUtil.retain(content);
         client.write(content);
       }
 
       @Override
       public void update(LastHttpContent last) {
-        System.out.println("last update");
         ReferenceCountUtil.retain(last);
         client.write(last);
       }

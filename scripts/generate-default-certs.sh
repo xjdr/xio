@@ -9,11 +9,17 @@ INT_CRT_FILE="xio-default-snakeoil-intermediate-x509.pem"
 INT_CSR_FILE="xio-default-snakeoil-intermediate-csr.pem"
 INT_SUBJECT="/C=US/ST=Illinois/L=Chicago/O=Snake Oil/OU=InfoSec/CN=intermediate.snakeoil.com"
 
-HOST_KEY_FILE="xio-default-private-key-pkcs8.pem"
-HOST_RSA_FILE="xio-default-private-key-rsa.pem"
-HOST_CRT_FILE="xio-default-certificate-x509.pem"
-HOST_CSR_FILE="xio-default-certificate-csr.pem"
-HOST_SUBJECT="/C=US/ST=Illinois/L=Chicago/O=Example LLC/OU=InfoSec/CN=example.com"
+SERVER_KEY_FILE="xio-default-server-private-key-pkcs8.pem"
+SERVER_RSA_FILE="xio-default-server-private-key-rsa.pem"
+SERVER_CRT_FILE="xio-default-server-certificate-x509.pem"
+SERVER_CSR_FILE="xio-default-server-certificate-csr.pem"
+SERVER_SUBJECT="/C=US/ST=Illinois/L=Chicago/O=Example LLC/OU=InfoSec/CN=server.example.com"
+
+CLIENT_KEY_FILE="xio-default-client-private-key-pkcs8.pem"
+CLIENT_RSA_FILE="xio-default-client-private-key-rsa.pem"
+CLIENT_CRT_FILE="xio-default-client-certificate-x509.pem"
+CLIENT_CSR_FILE="xio-default-client-certificate-csr.pem"
+CLIENT_SUBJECT="/C=US/ST=Illinois/L=Chicago/O=Example LLC/OU=InfoSec/CN=client.example.com"
 
 mkdir -p target/snakeoil-ca
 
@@ -198,25 +204,43 @@ openssl ca -config openssl.cnf \
         -in csr/$INT_CSR_FILE \
         -out certs/$INT_CRT_FILE
 
-echo "Generating Host"
-# generate host
+echo "Generating Server"
+# generate server
 openssl req -new -nodes -days 3650 \
-        -newkey rsa:2048 -keyout private/$HOST_RSA_FILE \
-        -out csr/$HOST_CSR_FILE -subj "$HOST_SUBJECT"
+        -newkey rsa:2048 -keyout private/$SERVER_RSA_FILE \
+        -out csr/$SERVER_CSR_FILE -subj "$SERVER_SUBJECT"
 
-# sign host
+# sign server
 openssl ca -config openssl.cnf -name CA_intermediate \
         -extensions v3_intermediate_ca \
         -days 3650 -md sha256 -notext -batch \
         -cert certs/$INT_CRT_FILE \
         -keyfile private/$INT_RSA_FILE \
-        -in csr/$HOST_CSR_FILE \
-        -out certs/$HOST_CRT_FILE
+        -in csr/$SERVER_CSR_FILE \
+        -out certs/$SERVER_CRT_FILE
 
-openssl pkcs8 -in private/$HOST_RSA_FILE -inform PEM \
-        -out private/$HOST_KEY_FILE -outform PEM -topk8 -passout pass: -nocrypt
+openssl pkcs8 -in private/$SERVER_RSA_FILE -inform PEM \
+        -out private/$SERVER_KEY_FILE -outform PEM -topk8 -passout pass: -nocrypt
+
+echo "Generating Client"
+# generate client
+openssl req -new -nodes -days 3650 \
+        -newkey rsa:2048 -keyout private/$CLIENT_RSA_FILE \
+        -out csr/$CLIENT_CSR_FILE -subj "$CLIENT_SUBJECT"
+
+# sign client
+openssl ca -config openssl.cnf -name CA_intermediate \
+        -extensions v3_intermediate_ca \
+        -days 3650 -md sha256 -notext -batch \
+        -cert certs/$INT_CRT_FILE \
+        -keyfile private/$INT_RSA_FILE \
+        -in csr/$CLIENT_CSR_FILE \
+        -out certs/$CLIENT_CRT_FILE
+
+openssl pkcs8 -in private/$CLIENT_RSA_FILE -inform PEM \
+        -out private/$CLIENT_KEY_FILE -outform PEM -topk8 -passout pass: -nocrypt
 
 popd
 
 echo "Copying certs"
-cp -v target/snakeoil-ca/private/$HOST_KEY_FILE target/snakeoil-ca/certs/*.pem src/main/resources
+cp -v target/snakeoil-ca/private/$SERVER_KEY_FILE target/snakeoil-ca/private/$CLIENT_KEY_FILE target/snakeoil-ca/certs/*.pem src/main/resources

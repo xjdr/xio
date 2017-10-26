@@ -21,7 +21,6 @@ class HttpClientResponseTracingHandler extends SimpleChannelInboundHandler<HttpR
 
   @Override
   public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-    //System.out.println("exception: " + cause);
     state.onError(ctx, cause);
     ctx.fireExceptionCaught(cause);
   }

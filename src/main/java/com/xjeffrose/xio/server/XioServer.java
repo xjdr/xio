@@ -31,4 +31,8 @@ public class XioServer implements AutoCloseable {
     serverChannel.close();
   }
 
+  public int getPort() {
+    return instrumentation.boundAddress().getPort();
+  }
+
 }
