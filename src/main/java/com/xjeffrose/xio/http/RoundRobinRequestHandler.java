@@ -40,4 +40,9 @@ public class RoundRobinRequestHandler implements RequestHandler {
       }
     });
   }
+
+  @Override
+  public String toString() {
+    return handlers.toString();
+  }
 }
