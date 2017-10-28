@@ -4,6 +4,7 @@ import com.xjeffrose.xio.bootstrap.ServerChannelConfiguration;
 import com.xjeffrose.xio.core.ZkClient;
 import com.xjeffrose.xio.filter.Http1FilterConfig;
 import com.xjeffrose.xio.filter.IpFilterConfig;
+import com.xjeffrose.xio.http.DefaultRouter;
 import com.xjeffrose.xio.http.Router;
 import lombok.Getter;
 
@@ -37,7 +38,7 @@ public class ApplicationState {
 
     // Set this to null.  If router is being bootstrapped from here, it will check for null before proceeding.
     // It is expected that dynamic configuration service will update this as needed.
-    router = new AtomicReference<>(null);
+    router = new AtomicReference<>(new DefaultRouter());
   }
 
   public IpFilterConfig getIpFilterConfig() {
