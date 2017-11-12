@@ -2,6 +2,7 @@ package com.xjeffrose.xio.client;
 
 import static com.xjeffrose.xio.pipeline.Pipelines.addHandler;
 
+import com.xjeffrose.xio.core.XioMessageLogger;
 import com.xjeffrose.xio.core.XioIdleDisconnectHandler;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
@@ -19,6 +20,7 @@ public class DefaultChannelInitializer extends ChannelInitializer {
   private final Supplier<ChannelHandler> applicationProtocol;
   private final Supplier<ChannelHandler> tracingHandler;
 
+  // TODO(CK): this should take a state object similar to XioServer
   public DefaultChannelInitializer(InetSocketAddress address, ChannelHandler handler, SslContext sslContext, Supplier<ChannelHandler> applicationProtocol, Supplier<ChannelHandler> tracingHandler) {
     this.address = address;
     this.handler = handler;
@@ -33,7 +35,10 @@ public class DefaultChannelInitializer extends ChannelInitializer {
     if (sslContext != null) {
       cp.addLast("encryptionHandler", sslContext.newHandler(channel.alloc(), address.getHostString(), address.getPort()));
     }
-    //    addHandler(cp, "message logging", new XioMessageLogger());
+    // TODO(CK): get this from the client config
+    if (false) {
+      addHandler(cp, "message logging", new XioMessageLogger());
+    }
     addHandler(cp, "protocol handler", applicationProtocol.get());
     addHandler(cp, "distributed tracing", tracingHandler.get());
     addHandler(cp, "request encoder", new XioRequestEncoder());
