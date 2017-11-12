@@ -16,10 +16,12 @@ import io.netty.handler.ssl.SslContext;
 import java.net.InetSocketAddress;
 import java.util.function.Supplier;
 import lombok.Setter;
+import lombok.ToString;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@ToString
 @Accessors(fluent = true)
 public class XioClientBootstrap {
 
@@ -46,6 +48,8 @@ public class XioClientBootstrap {
   boolean usePool;
 
   private XioClientBootstrap(XioClientBootstrap other) {
+    this.config = other.config;
+    this.sslContext = other.sslContext;
     this.address = other.address;
     this.distributor = other.distributor;
     this.ssl = other.ssl;
