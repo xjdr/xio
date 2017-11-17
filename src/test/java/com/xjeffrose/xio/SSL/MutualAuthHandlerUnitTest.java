@@ -43,7 +43,7 @@ public class MutualAuthHandlerUnitTest extends Assert {
   public void setUp() throws Exception {
     group = new NioEventLoopGroup(2);
     sslServerContext = SslContextFactory.buildServerContext(TlsConfig.fromConfig("xio.testServer.settings.tls"));
-    sslClientContext = SslContextFactory.buildClientContext(TlsConfig.fromConfig("xio.testClient.settings.tls"));
+    sslClientContext = SslContextFactory.buildClientContext(TlsConfig.fromConfig("xio.h1TestClient.settings.tls"));
 
     server = new ServerBootstrap()
       .group(group)
