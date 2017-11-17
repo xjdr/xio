@@ -36,9 +36,8 @@ public class DefaultChannelInitializer extends ChannelInitializer {
     if (sslContext != null) {
       cp.addLast("encryptionHandler", sslContext.newHandler(channel.alloc(), address.getHostString(), address.getPort()));
     }
-    // TODO(CK): get this from the client config
-    if (false) {
-      addHandler(cp, "message logging", new XioMessageLogger());
+    if (config.isMessageLoggerEnabled()) {
+      addHandler(cp, "message logging", new XioMessageLogger(XioClient.class, config.getName()));
     }
     addHandler(cp, "protocol handler", applicationProtocol.get());
     addHandler(cp, "distributed tracing", tracingHandler.get());

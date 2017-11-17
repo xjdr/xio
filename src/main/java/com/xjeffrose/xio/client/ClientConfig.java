@@ -13,9 +13,11 @@ public class ClientConfig {
   @Getter
   private final Map<ChannelOption<Object>, Object> bootstrapOptions;
   @Getter
-  private String name;
+  private final String name;
   @Getter
-  private TlsConfig tls;
+  private final TlsConfig tls;
+  @Getter
+  private final boolean messageLoggerEnabled;
 
   public ClientConfig(Config config) {
     bootstrapOptions = null;
@@ -24,6 +26,7 @@ public class ClientConfig {
     if (!tls.isUseSsl() && tls.isLogInsecureConfig()) {
       log.warn("Client '{}' has useSsl set to false!", name);
     }
+    messageLoggerEnabled = config.getBoolean("settings.messageLoggerEnabled");
   }
 
   static public ClientConfig fromConfig(String key, Config config) {

@@ -11,6 +11,7 @@ import com.xjeffrose.xio.filter.IpFilter;
 import com.xjeffrose.xio.server.XioBehavioralRuleEngine;
 import com.xjeffrose.xio.server.XioConnectionLimiter;
 import com.xjeffrose.xio.server.XioResponseClassifier;
+import com.xjeffrose.xio.server.XioServer;
 import com.xjeffrose.xio.server.XioServerConfig;
 import com.xjeffrose.xio.server.XioServerLimits;
 import com.xjeffrose.xio.server.XioServerState;
@@ -52,7 +53,7 @@ abstract public class XioBasePipeline implements XioPipelineFragment {
       pipeline.addLast("encryptionHandler", encryptionHandler);
     }
     if (config.isMessageLoggerEnabled()) {
-      pipeline.addLast("messageLogger", new XioMessageLogger());
+      pipeline.addLast("messageLogger", new XioMessageLogger(XioServer.class, config.getName()));
     }
     addHandler(pipeline, "codecNegotiation", getCodecNegotiationHandler(config));
     ChannelHandler codecHandler = getCodecHandler(config);
