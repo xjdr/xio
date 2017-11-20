@@ -36,6 +36,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
+import com.xjeffrose.xio.client.ClientConfig;
 
 public class HttpClientTracingHandlerIntegrationTest extends ITHttpClient<XioClient> {
 
@@ -90,7 +91,7 @@ public class HttpClientTracingHandlerIntegrationTest extends ITHttpClient<XioCli
     //System.out.println("newClient port: " + port);
     state = new HttpClientTracingState(httpTracing, false);
 
-    return new XioClientBootstrap(eventLoopGroup)
+    return new XioClientBootstrap(ClientConfig.fromConfig("xio.h1TestClient"), eventLoopGroup)
       .address(new InetSocketAddress("127.0.0.1", port))
       .ssl(false)
       .proto(Protocol.HTTP)

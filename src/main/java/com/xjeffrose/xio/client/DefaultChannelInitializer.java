@@ -14,19 +14,20 @@ import java.util.function.Supplier;
 
 public class DefaultChannelInitializer extends ChannelInitializer {
 
+  private final ClientConfig config;
   private final InetSocketAddress address;
   private final ChannelHandler handler;
   private final SslContext sslContext;
   private final Supplier<ChannelHandler> applicationProtocol;
   private final Supplier<ChannelHandler> tracingHandler;
 
-  // TODO(CK): this should take a state object similar to XioServer
-  public DefaultChannelInitializer(InetSocketAddress address, ChannelHandler handler, SslContext sslContext, Supplier<ChannelHandler> applicationProtocol, Supplier<ChannelHandler> tracingHandler) {
-    this.address = address;
-    this.handler = handler;
-    this.sslContext = sslContext;
-    this.applicationProtocol = applicationProtocol;
-    this.tracingHandler = tracingHandler;
+  public DefaultChannelInitializer(ClientState state) {
+    this.config = state.config;
+    this.address = state.address;
+    this.handler = state.handler;
+    this.sslContext = state.sslContext;
+    this.applicationProtocol = state.applicationProtocol;
+    this.tracingHandler = state.tracingHandler;
   }
 
   @Override
@@ -35,9 +36,8 @@ public class DefaultChannelInitializer extends ChannelInitializer {
     if (sslContext != null) {
       cp.addLast("encryptionHandler", sslContext.newHandler(channel.alloc(), address.getHostString(), address.getPort()));
     }
-    // TODO(CK): get this from the client config
-    if (false) {
-      addHandler(cp, "message logging", new XioMessageLogger());
+    if (config.isMessageLoggerEnabled()) {
+      addHandler(cp, "message logging", new XioMessageLogger(XioClient.class, config.getName()));
     }
     addHandler(cp, "protocol handler", applicationProtocol.get());
     addHandler(cp, "distributed tracing", tracingHandler.get());

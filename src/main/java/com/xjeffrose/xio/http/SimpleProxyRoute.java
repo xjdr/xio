@@ -34,10 +34,6 @@ public class SimpleProxyRoute implements RouteProvider {
     this.bootstrap = bootstrap;
   }
 
-  public SimpleProxyRoute(Route route, ProxyConfig config) {
-    this(route, config, new XioClientBootstrap());
-  }
-
   private void buildAndAttach(ChannelHandlerContext ctx) {
 
     client = bootstrap.clone(ctx.channel().eventLoop())

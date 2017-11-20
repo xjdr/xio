@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import com.xjeffrose.xio.client.ClientConfig;
 
 public class RoundRobinProxyConfig {
 
@@ -30,10 +31,12 @@ public class RoundRobinProxyConfig {
 
   private final AtomicInteger next = new AtomicInteger();
   private final ImmutableList<Host> hosts;
+  private final ClientConfig clientConfig;
   private final Function<Boolean, ChannelHandler> tracingHandler;
 
-  public RoundRobinProxyConfig(ImmutableList<Host> hosts, Function<Boolean, ChannelHandler> tracingHandler) {
+  public RoundRobinProxyConfig(ImmutableList<Host> hosts, ClientConfig clientConfig, Function<Boolean, ChannelHandler> tracingHandler) {
     this.hosts = hosts;
+    this.clientConfig = clientConfig;
     this.tracingHandler = tracingHandler;
   }
 
@@ -50,16 +53,16 @@ public class RoundRobinProxyConfig {
     return ImmutableList.copyOf(hosts);
   }
 
-  public RoundRobinProxyConfig(Config config, Function<Boolean, ChannelHandler> tracingHandler) {
-    this(parse(config.getConfig("proxy.hosts")), tracingHandler);
+  public RoundRobinProxyConfig(Config config, ClientConfig clientConfig, Function<Boolean, ChannelHandler> tracingHandler) {
+    this(parse(config.getConfig("proxy.hosts")), clientConfig, tracingHandler);
   }
 
-  public static RoundRobinProxyConfig fromConfig(String key, Config config, Function<Boolean, ChannelHandler> tracingHandler) {
-    return new RoundRobinProxyConfig(config.getConfig(key), tracingHandler);
+  public static RoundRobinProxyConfig fromConfig(String key, Config config, ClientConfig clientConfig, Function<Boolean, ChannelHandler> tracingHandler) {
+    return new RoundRobinProxyConfig(config.getConfig(key), clientConfig, tracingHandler);
   }
 
   XioClientBootstrap newClient(boolean tls) {
-    return new XioClientBootstrap().tracingHandler(() -> tracingHandler.apply(tls));
+    return new XioClientBootstrap(clientConfig).tracingHandler(() -> tracingHandler.apply(tls));
   }
 
   public RouteProvider getRouteProvider(HttpRequest request) {

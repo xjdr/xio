@@ -15,6 +15,7 @@ import io.netty.handler.codec.http.HttpClientCodec;
 import io.netty.handler.ssl.SslContext;
 import java.net.InetSocketAddress;
 import java.util.function.Supplier;
+import java.util.function.Function;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
@@ -27,9 +28,8 @@ public class XioClientBootstrap {
 
   private Bootstrap bootstrap;
   private ChannelConfiguration channelConfig;
-  private ClientConfig config;
-  @Setter
-  private SslContext sslContext;
+  private final ClientConfig config;
+  private final SslContext sslContext;
   @Setter
   private InetSocketAddress address;
   @Setter
@@ -42,6 +42,8 @@ public class XioClientBootstrap {
   private Supplier<ChannelHandler> applicationProtocol;
   @Setter
   private Supplier<ChannelHandler> tracingHandler;
+  @Setter
+  private Function<ClientState, ChannelInitializer> initializerFactory;
   @Setter
   private ChannelHandler handler;
   @Setter
@@ -60,24 +62,20 @@ public class XioClientBootstrap {
     this.usePool = other.usePool;
   }
 
-  public XioClientBootstrap() {
+  public XioClientBootstrap(ClientConfig config) {
+    this.config = config;
     usePool = false;
     tracingHandler = () -> null;
-  }
-
-  public XioClientBootstrap(ChannelConfiguration channelConfig) {
-    this();
-    this.channelConfig(channelConfig);
-  }
-
-  public XioClientBootstrap(EventLoopGroup group) {
-    this(ChannelConfiguration.clientConfig(group));
-  }
-
-  public XioClientBootstrap(ClientConfig config) {
-    this();
-    this.config = config;
     sslContext = SslContextFactory.buildClientContext(config.getTls());
+  }
+
+  public XioClientBootstrap(ClientConfig config, ChannelConfiguration channelConfig) {
+    this(config);
+    channelConfig(channelConfig);
+  }
+
+  public XioClientBootstrap(ClientConfig config, EventLoopGroup group) {
+    this(config, ChannelConfiguration.clientConfig(group));
   }
 
   public XioClientBootstrap channelConfig(ChannelConfiguration channelConfig) {
@@ -87,17 +85,24 @@ public class XioClientBootstrap {
   }
 
   private ChannelInitializer<Channel> buildInitializer() {
+    // TODO(CK): This logic should be move outside of XioClientBootstrap to something HTTP related
     if (proto != null && (proto == Protocol.HTTP || proto == Protocol.HTTPS)) {
       applicationProtocol = () -> new HttpClientCodec();
     } else if (applicationProtocol == null) {
       throw new RuntimeException("Cannot build initializer, specify either protocol or applicationProtocol");
     }
 
-    if (ssl) {
-      sslContext = SslContextFactory.buildClientContext(config.getTls());
+    ClientState state = new ClientState(config,
+                                        address,
+                                        handler,
+                                        (ssl ? sslContext : null),
+                                        applicationProtocol,
+                                        tracingHandler);
+    if (initializerFactory != null) {
+      return initializerFactory.apply(state);
     }
 
-    return new DefaultChannelInitializer(address, handler, sslContext, applicationProtocol, tracingHandler);
+    return new DefaultChannelInitializer(state);
   }
 
   public Bootstrap buildBootstrap(ChannelConfiguration channelConfig) {

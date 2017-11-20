@@ -58,7 +58,7 @@ public class GrpcFunctionalTest extends Assert {
         .overrideAuthority(host + ":" + port)
         // this is the default
         //.negotiationType(NegotiationType.TLS)
-        .sslContext(SslContextFactory.buildClientContext(TlsConfig.fromConfig("xio.testClient.settings.tls"), InsecureTrustManagerFactory.INSTANCE))
+        .sslContext(SslContextFactory.buildClientContext(TlsConfig.fromConfig("xio.h2TestClient.settings.tls"), InsecureTrustManagerFactory.INSTANCE))
         .build();
     }
 
@@ -215,7 +215,7 @@ public class GrpcFunctionalTest extends Assert {
 
     InetSocketAddress boundAddress = new InetSocketAddress("127.0.0.1", server.getPort());
 
-    final SslContext sslContext = SslContextFactory.buildClientContext(TlsConfig.fromConfig("xio.testClient.settings.tls"), InsecureTrustManagerFactory.INSTANCE);
+    final SslContext sslContext = SslContextFactory.buildClientContext(TlsConfig.fromConfig("xio.h2TestClient.settings.tls"), InsecureTrustManagerFactory.INSTANCE);
 
     CountDownLatch msgReceived = new CountDownLatch(2);
     Bootstrap client = new Bootstrap()
@@ -303,7 +303,7 @@ public class GrpcFunctionalTest extends Assert {
   public void testGrpcProxyRequest() throws Exception {
     HelloWorldServer server = HelloWorldServer.run();
 
-    final SslContext sslContext = SslContextFactory.buildClientContext(TlsConfig.fromConfig("xio.testClient.settings.tls"), InsecureTrustManagerFactory.INSTANCE);
+    final SslContext sslContext = SslContextFactory.buildClientContext(TlsConfig.fromConfig("xio.h2TestClient.settings.tls"), InsecureTrustManagerFactory.INSTANCE);
 
     InetSocketAddress boundAddress = new InetSocketAddress("127.0.0.1", server.getPort());
 
