@@ -20,6 +20,9 @@ public class MutualAuthHandler extends ChannelInboundHandlerAdapter {
     }
   }
 
+  public void peerIdentityEstablished(ChannelHandlerContext ctx, String identity) {
+  }
+
   @Override
   public void userEventTriggered(ChannelHandlerContext ctx, Object evt) {
     if (evt instanceof SslHandshakeCompletionEvent) {
@@ -35,6 +38,7 @@ public class MutualAuthHandler extends ChannelInboundHandlerAdapter {
         peerIdentity = getPeerIdentity(sslHandler.engine());
       }
       TlsAuthState.setPeerIdentity(ctx, peerIdentity);
+      peerIdentityEstablished(ctx, peerIdentity);
     }
 
     ctx.fireUserEventTriggered(evt);
