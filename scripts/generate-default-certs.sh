@@ -244,3 +244,8 @@ popd
 
 echo "Copying certs"
 cp -v target/snakeoil-ca/private/$SERVER_KEY_FILE target/snakeoil-ca/private/$CLIENT_KEY_FILE target/snakeoil-ca/certs/*.pem src/main/resources
+
+echo "Setup example files"
+openssl pkcs12 -export -out snakeoil.p12 -inkey target/snakeoil-ca/private/$CA_RSA_FILE -in target/snakeoil-ca/certs/$CA_CRT_FILE -passout pass:""
+cat target/snakeoil-ca/certs/$SERVER_CRT_FILE target/snakeoil-ca/certs/$INT_CRT_FILE target/snakeoil-ca/certs/$CA_CRT_FILE  > example-certificate-chain.pem
+cp target/snakeoil-ca/private/$SERVER_KEY_FILE example-private-key.pem
