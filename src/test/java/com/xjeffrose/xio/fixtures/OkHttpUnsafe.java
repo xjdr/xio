@@ -21,7 +21,7 @@ public class OkHttpUnsafe {
   public static KeyManager[] getKeyManagers(TlsConfig config) throws Exception {
     KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
     keystore.load(null, "".toCharArray());
-    keystore.setKeyEntry("server", config.getPrivateKey(), "".toCharArray(), config.getCertificateAndTrustChain());
+    keystore.setKeyEntry("server", config.getPrivateKey(), "".toCharArray(), config.getCertificateAndChain());
     KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
     keyManagerFactory.init(keystore, "".toCharArray());
     return keyManagerFactory.getKeyManagers();
