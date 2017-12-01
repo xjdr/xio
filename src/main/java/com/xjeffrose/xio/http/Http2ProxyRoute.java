@@ -58,7 +58,7 @@ public class Http2ProxyRoute implements Http2RouteProvider {
       while (writeBuffer.size() > 0) {
         Object bufMessage = writeBuffer.remove(0);
 
-        ctx.write(bufMessage).addListener(new ChannelFutureListener() {
+        ctx.writeAndFlush(bufMessage).addListener(new ChannelFutureListener() {
             @Override
             public void operationComplete(ChannelFuture channelFuture) {
               if (channelFuture.isSuccess()) {
@@ -78,7 +78,7 @@ public class Http2ProxyRoute implements Http2RouteProvider {
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
       if (active) {
-        ctx.write(msg, promise);
+        ctx.writeAndFlush(msg, promise);
       } else {
         writeBuffer.add(msg);
       }
