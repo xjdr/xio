@@ -1,64 +1,91 @@
-* config
+* on deck
 
-** TLS - startup configurable
+** DONE Add application codec to base pipeline
 
-*** TODO Load from Typesafe Config, attach to XioServerConfig
+** DONE Add application router to http pipeline
 
-** Circuit Breakers - runtime configurable
+** Add route applicator to http pipeline
 
-** Ip Address - runtime configurable
+** Authorization uses route pipeline
 
-   * Config Class: IpAddressDeterministicRuleEngineConfig
-   * Marshall Classes: ThriftMarshaller / ThriftUnmarshaller
+** Update WAF to use application request object
 
-*** DONE Define Config class
+* backlog
 
-*** DONE Define Marshall classes
+** Update proxy to use application request object
 
-** Host Address - runtime configurable
+* re-file
 
-   * Config Class: HostnameDeterministicRuleEngineConfig
-   * Marshall Classes: ThriftMarshaller / ThriftUnmarshaller
+** todo.md
+   - Create default implementations for each of the most important interfaces
 
-*** DONE Define Config class
+   - Add better tests around config
 
-*** DONE Define Marshall classes
+   - Add better testing around client failure modes
 
-** Layer 4 Behavioral - runtime configurable
+   - Add full HttpParser for BBtoHttpResponse
 
-   * Config Class:
+** config
 
-*** TODO Define Config class
+*** TLS - startup configurable
 
-** Application Codec - startup configurable
+**** TODO Load from Typesafe Config, attach to XioServerConfig
 
-*** TODO Load from Typesafe Config
+*** Circuit Breakers - runtime configurable
 
-** Aggregation & Compression - startup configurable
+*** Ip Address - runtime configurable
 
-*** TODO Load from Typesafe Config
+    * Config Class: IpAddressDeterministicRuleEngineConfig
+    * Marshall Classes: ThriftMarshaller / ThriftUnmarshaller
 
-** Decode Token - startup configurable
+**** DONE Define Config class
 
-*** TODO Load from Typesafe Config
+**** DONE Define Marshall classes
 
-** Http1 Rules - runtime configurable
+*** Host Address - runtime configurable
 
-   * Config Class: Http1DeterministicRuleEngineConfig
-   * Marshall Classes: ThriftMarshaller / ThriftUnmarshaller
+    * Config Class: HostnameDeterministicRuleEngineConfig
+    * Marshall Classes: ThriftMarshaller / ThriftUnmarshaller
 
-*** DONE Define Config class
+**** DONE Define Config class
 
-*** DONE Define Marshall classes
+**** DONE Define Marshall classes
 
-** Layer 7 Behavioral - runtime configurable
+*** Layer 4 Behavioral - runtime configurable
 
-*** TODO Define Config class
+    * Config Class:
 
-** Multiplex Req - startup configurable
+**** TODO Define Config class
 
-*** TODO Load from Typesafe Config
+*** Application Codec - startup configurable
 
-** Persistent Connection Manager - startup configurable
+**** TODO Load from Typesafe Config
 
-*** TODO Load from Typesafe Config
+*** Aggregation & Compression - startup configurable
+
+**** TODO Load from Typesafe Config
+
+*** Decode Token - startup configurable
+
+**** TODO Load from Typesafe Config
+
+*** Http1 Rules - runtime configurable
+
+    * Config Class: Http1DeterministicRuleEngineConfig
+    * Marshall Classes: ThriftMarshaller / ThriftUnmarshaller
+
+**** DONE Define Config class
+
+**** DONE Define Marshall classes
+
+*** Layer 7 Behavioral - runtime configurable
+
+**** TODO Define Config class
+
+*** Multiplex Req - startup configurable
+
+**** TODO Load from Typesafe Config
+
+*** Persistent Connection Manager - startup configurable
+
+**** TODO Load from Typesafe Config
