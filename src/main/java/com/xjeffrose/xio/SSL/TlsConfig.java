@@ -44,8 +44,8 @@ public class TlsConfig {
   // custom getter
   private final X509Certificate certificate;
   @Getter
-  private final List<X509Certificate> x509TrustChain;
-  private final ImmutableList<X509Certificate> fullTrustChain;
+  private final List<X509Certificate> x509TrustedCerts;
+  private final ImmutableList<X509Certificate> x509CertChain;
   @Getter
   private final ApplicationProtocolConfig alpnConfig;
   // custom getter
@@ -173,27 +173,26 @@ public class TlsConfig {
                                          );
   }
 
-  private static List<X509Certificate> buildTrustChain(List<String> paths) {
-    List<X509Certificate> trustChain = new ArrayList<>();
+  private static List<X509Certificate> buildCerts(List<String> paths) {
+    List<X509Certificate> certificates = new ArrayList<>();
 
     for (String path : paths) {
-      trustChain.add(parseX509CertificateFromPem(readPathFromValue(path)));
+      certificates.add(parseX509CertificateFromPem(readPathFromValue(path)));
     }
 
-    return trustChain;
+    return certificates;
   }
 
   public TlsConfig(Config config) {
     useSsl = config.getBoolean("useSsl");
     logInsecureConfig = config.getBoolean("logInsecureConfig");
+    x509TrustedCerts = buildCerts(config.getStringList("x509TrustedCertPaths"));
     privateKey = parsePrivateKeyFromPem(readPathFromKey("privateKeyPath", config));
     certificate = parseX509CertificateFromPem(readPathFromKey("x509CertPath", config));
-    x509TrustChain = buildTrustChain(config.getStringList("x509TrustChainPaths"));
-    fullTrustChain = new ImmutableList.Builder<X509Certificate>()
+    x509CertChain = new ImmutableList.Builder<X509Certificate>()
       .add(certificate)
-      .addAll(x509TrustChain)
+      .addAll(buildCerts(config.getStringList("x509CertChainPaths")))
       .build();
-
     useOpenSsl = config.getBoolean("useOpenSsl");
     alpnConfig = buildAlpnConfig(config.getConfig("alpn"));
     ciphers = config.getStringList("ciphers");
@@ -212,7 +211,6 @@ public class TlsConfig {
     return fromConfig(key, ConfigFactory.load());
   }
 
-
   public List<String> getCiphers() {
     if (ciphers.size() == 0) {
       return null;
@@ -227,12 +225,12 @@ public class TlsConfig {
     return protocols.toArray(new String[0]);
   }
 
-  public X509Certificate[] getCertificateAndTrustChain() {
-    return fullTrustChain.toArray(new X509Certificate[0]);
+  public X509Certificate[] getCertificateAndChain() {
+    return x509CertChain.toArray(new X509Certificate[0]);
   }
 
-  public X509Certificate[] getTrustChain() {
-    return x509TrustChain.toArray(new X509Certificate[0]);
+  public X509Certificate[] getTrustedCerts() {
+    return x509TrustedCerts.toArray(new X509Certificate[0]);
   }
 
   public SslProvider getSslProvider() {

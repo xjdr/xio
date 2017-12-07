@@ -14,7 +14,16 @@ public class MutualAuthHandler extends ChannelInboundHandlerAdapter {
   private String getPeerIdentity(SSLEngine engine) {
     try {
       SSLSession session = engine.getSession();
+      javax.security.cert.X509Certificate[] chain = session.getPeerCertificateChain();
+      if (chain == null || chain.length == 0 || chain[0] == null) {
+        return TlsAuthState.UNAUTHENTICATED;
+      }
+      // double check that the certificate is valid
+      chain[0].checkValidity();
+
       return session.getPeerPrincipal().getName();
+    } catch (javax.security.cert.CertificateExpiredException | javax.security.cert.CertificateNotYetValidException e) {
+      return TlsAuthState.UNAUTHENTICATED;
     } catch (SSLPeerUnverifiedException e) {
       return TlsAuthState.UNAUTHENTICATED;
     }
@@ -43,4 +52,5 @@ public class MutualAuthHandler extends ChannelInboundHandlerAdapter {
 
     ctx.fireUserEventTriggered(evt);
   }
+
 }
