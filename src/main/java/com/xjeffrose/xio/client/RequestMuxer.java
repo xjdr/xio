@@ -26,17 +26,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import lombok.Value;
 
-/**
- * write flow:
- *
- * write(Payload)
- * channel.write(RequestMessage<Payload>)
- * RequestEncoder.encode()
- * PayloadEncoder.encode()
- * Encoder.encode()
- * FrameLengthCodec.encode()
- *
- */
+
+// write flow:
+//
+// write(Payload)
+// channel.write(RequestMessage<Payload>)
+// RequestEncoder.encode()
+// PayloadEncoder.encode()
+// Encoder.encode()
+// FrameLengthCodec.encode()
 
 // TODO(CK): consider renaming this to something not including Request
 public class RequestMuxer implements AutoCloseable {

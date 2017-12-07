@@ -11,16 +11,22 @@ public class ProxyConfig {
   public final String url;
   public final String urlPath;
   public final boolean needSSL;
+  public final boolean pathPassthru;
 
-  public ProxyConfig(InetSocketAddress address, String hostHeader, String url, String urlPath, boolean needSSL) {
+  public ProxyConfig(InetSocketAddress address, String hostHeader, String url, String urlPath, boolean needSSL, boolean pathPassthru) {
     this.address = address;
     this.hostHeader = hostHeader;
     this.url = url;
     this.urlPath = urlPath;
     this.needSSL = needSSL;
+    this.pathPassthru = pathPassthru;
   }
 
   public static ProxyConfig parse(String url) {
+    return parse(url, false);
+  }
+
+  public static ProxyConfig parse(String url, boolean pathPassthru) {
     int defaultPort = -1;
     boolean needSSL = false;
     boolean standardPort = false;
@@ -52,7 +58,7 @@ public class ProxyConfig {
       }
 
       InetSocketAddress address = new InetSocketAddress(host, port);
-      return new ProxyConfig(address, hostHeader, url, urlPath, needSSL);
+      return new ProxyConfig(address, hostHeader, url, urlPath, needSSL, pathPassthru);
     } catch (MalformedURLException e) {
       throw new RuntimeException(e);
     }

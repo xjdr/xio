@@ -97,7 +97,10 @@ public class Node implements Closeable {
   }
 
   /**
-   * . The current host and port returned as a InetSocketAddress
+   * The current host and port returned as a InetSocketAddress
+   *
+   * @param hostAndPort host and port
+   * @return socket address
    */
   public static InetSocketAddress toInetAddress(HostAndPort hostAndPort) {
     return (hostAndPort == null) ? null : new InetSocketAddress(hostAndPort.getHost(), hostAndPort.getPort());
@@ -135,6 +138,8 @@ public class Node implements Closeable {
 
   /**
    * The current load, in units of the active metric.
+   *
+   * @return load
    */
   public double load() {
     return load;
@@ -142,6 +147,8 @@ public class Node implements Closeable {
 
   /**
    * The number of pending requests to this node.
+   *
+   * @return pending size
    */
   public int pending() {
     return pending.size();
@@ -149,6 +156,8 @@ public class Node implements Closeable {
 
   /**
    * A token is a random integer identifying the node. It persists through node updates.
+   *
+   * @return token
    */
   public UUID token() {
     return token;

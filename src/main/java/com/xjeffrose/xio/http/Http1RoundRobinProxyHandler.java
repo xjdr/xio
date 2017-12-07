@@ -12,8 +12,8 @@ import lombok.extern.slf4j.Slf4j;
 public class Http1RoundRobinProxyHandler extends SimpleChannelInboundHandler<HttpObject> {
 
   private final RoundRobinProxyConfig proxyConfig;
-  private RouteProvider route;
-  private RouteUpdateProvider updater;
+  private RequestHandler route;
+  private RequestUpdateHandler updater;
 
   public Http1RoundRobinProxyHandler(RoundRobinProxyConfig proxyConfig) {
     this.proxyConfig = proxyConfig;

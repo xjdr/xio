@@ -3,7 +3,7 @@ package com.xjeffrose.xio.http;
 import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.LastHttpContent;
 
-public interface RouteUpdateProvider {
+public interface RequestUpdateHandler {
 
   void update(HttpContent content);
 

@@ -32,11 +32,7 @@ public class Distributor implements Closeable {
   private final Timeout refreshTimeout;
 
   private final Ordering<Node> byWeight = Ordering.natural().onResultOf(
-      new Function<Node, Integer>() {
-        public Integer apply(Node node) {
-          return node.getWeight();
-        }
-      }
+    (Function<Node, Integer>) node -> node.getWeight()
   ).reverse();
 
   public Distributor(ImmutableList<Node> pool, Strategy strategy, NodeHealthCheck nodeHealthCheck, XioTimer xioTimer) {
@@ -74,6 +70,8 @@ public class Distributor implements Closeable {
 
   /**
    * The vector of pool over which we are currently balancing.
+   *
+   * @return Node list
    */
   private ImmutableList<Node> pool() {
     return pool;
@@ -81,6 +79,9 @@ public class Distributor implements Closeable {
 
   /**
    * The node returned by UUID.
+   *
+   * @param id id
+   * @return Node
    */
   public Node getNodeById(UUID id) {
     return okNodes.get(id);
@@ -88,6 +89,8 @@ public class Distributor implements Closeable {
 
   /**
    * Pick the next node. This is the main load balancer.
+   *
+   * @return Node
    */
   public Node pick() {
     return strategy.getNextNode(pool, okNodes);
@@ -95,6 +98,8 @@ public class Distributor implements Closeable {
 
   /**
    * Rebuild this distributor.
+   *
+   * @return Distributor
    */
   public Distributor rebuild() {
     return new Distributor(pool, strategy, nodeHealthCheck, xioTimer);
@@ -102,6 +107,9 @@ public class Distributor implements Closeable {
 
   /**
    * Rebuild this distributor with a new vector.
+   *
+   * @param list node list
+   * @return Distributor
    */
   public Distributor rebuild(ImmutableList<Node> list) {
     return new Distributor(list, strategy, nodeHealthCheck, xioTimer);

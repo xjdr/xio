@@ -34,25 +34,28 @@ public class Route {
 
       for (String segment : segments) {
         if (!segment.equals("")) {
-          regexPattern.append("/");
           if (keywordPattern.matcher(segment).matches()) {
             String keyword = segment.substring(1);
 
             if (keyword.indexOf("*") == 0) {
               keyword = keyword.substring(1);
               regexPattern
+                .append("[/]?")
                 .append("(?<")
                 .append(keyword)
                 .append(">.*)");
             } else {
               regexPattern
+                .append("/")
                 .append("(?<")
                 .append(keyword)
                 .append(">[^/]*)");
             }
             keywords.add(keyword);
           } else {
-            regexPattern.append(segment);
+            regexPattern
+              .append("/")
+              .append(segment);
           }
         }
       }
@@ -101,5 +104,10 @@ public class Route {
   @Override
   public int hashCode() {
     return path.hashCode();
+  }
+
+  @Override
+  public String toString() {
+    return path;
   }
 }

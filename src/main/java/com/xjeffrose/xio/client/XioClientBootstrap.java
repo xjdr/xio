@@ -11,6 +11,7 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
+import io.netty.channel.WriteBufferWaterMark;
 import io.netty.handler.codec.http.HttpClientCodec;
 import io.netty.handler.ssl.SslContext;
 import java.net.InetSocketAddress;
@@ -110,8 +111,7 @@ public class XioClientBootstrap {
       .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 500)
       .option(ChannelOption.SO_REUSEADDR, true)
       .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-      .option(ChannelOption.WRITE_BUFFER_HIGH_WATER_MARK, 32 * 1024)
-      .option(ChannelOption.WRITE_BUFFER_LOW_WATER_MARK, 8 * 1024)
+      .option(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(8 * 1024, 32 * 1024))
       .option(ChannelOption.TCP_NODELAY, true)
       .group(channelConfig.workerGroup())
       .channel(channelConfig.channel());

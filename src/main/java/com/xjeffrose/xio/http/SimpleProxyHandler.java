@@ -16,30 +16,32 @@ import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.util.AttributeKey;
 import io.netty.util.ReferenceCountUtil;
-import java.util.Optional;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import java.util.Optional;
 
 @Slf4j
-public class SimpleProxyRoute implements RouteProvider {
+public class SimpleProxyHandler implements RequestHandler {
 
   private static final AttributeKey<XioClient> key = AttributeKey.newInstance("xio_client");
+  @Getter
   private final Route route;
+  @Getter
   private final ProxyConfig config;
   private final XioClientBootstrap bootstrap;
   private XioClient client;
 
-  public SimpleProxyRoute(Route route, ProxyConfig config, XioClientBootstrap bootstrap) {
-    this.config = config;
+  public SimpleProxyHandler(Route route, ProxyConfig config, XioClientBootstrap bootstrap) {
     this.route = route;
+    this.config = config;
     this.bootstrap = bootstrap;
   }
 
   private void buildAndAttach(ChannelHandlerContext ctx) {
-
     client = bootstrap.clone(ctx.channel().eventLoop())
       .address(config.address)
       .ssl(config.needSSL)
-      .applicationProtocol(() -> new HttpClientCodec())
+      .applicationProtocol(HttpClientCodec::new)
       .handler(new RawBackendHandler(ctx))
       .build()
     ;
@@ -47,41 +49,41 @@ public class SimpleProxyRoute implements RouteProvider {
   }
 
   @Override
-  public RouteUpdateProvider handle(HttpRequest payload, ChannelHandlerContext ctx) {
+  public RequestUpdateHandler handle(HttpRequest payload, ChannelHandlerContext ctx) {
     ReferenceCountUtil.retain(payload);
     buildAndAttach(ctx);
     if (HttpUtil.is100ContinueExpected(payload)) {
       ctx.writeAndFlush(new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.CONTINUE));
     }
 
-    Optional<String> path = route.groups(payload.getUri())
+    Optional<String> path = route.groups(payload.uri())
       .entrySet()
       .stream()
       .filter(e -> e.getKey().equals("path"))
       .map(e -> e.getValue())
       .findFirst();
 
-    payload.setUri(path.map(config.urlPath::concat).orElse(config.urlPath));
+    if (!config.pathPassthru) {
+      payload.setUri(path.map(config.urlPath::concat).orElse(config.urlPath));
+    }
 
     payload.headers().set("Host", config.hostHeader);
 
-    XioRequest request;
-
-    if (HttpTracingState.hasSpan(ctx)) {
-      request = new XioRequest(payload, HttpTracingState.getSpan(ctx).context());
-    } else {
-      request = new XioRequest(payload, null);
-    }
+    XioRequest request =
+      HttpTracingState.hasSpan(ctx)
+        ? new XioRequest(payload, HttpTracingState.getSpan(ctx).context())
+        : new XioRequest(payload, null);
 
     log.info("Requesting {}", payload);
     ctx.channel().attr(key).get().write(request);
 
-    return new RouteUpdateProvider() {
+    return new RequestUpdateHandler() {
       @Override
       public void update(HttpContent content) {
         ReferenceCountUtil.retain(content);
         client.write(content);
       }
+
       @Override
       public void update(LastHttpContent last) {
         ReferenceCountUtil.retain(last);
@@ -95,10 +97,14 @@ public class SimpleProxyRoute implements RouteProvider {
     if (client != null) {
       try {
         client.close();
-      } catch(java.io.IOException e) {
+      } catch (java.io.IOException e) {
         throw new RuntimeException(e);
       }
     }
   }
 
+  @Override
+  public String toString() {
+    return String.format("%s:%s:%s", config.address.getHostString(), config.address.getPort(),config.address.getHostName());
+  }
 }
