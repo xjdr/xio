@@ -28,25 +28,38 @@ public class SslContextFactory {
       ;
   }
 
-  static public SslContext buildServerContext(TlsConfig config) {
+  static private SslContextBuilder newServerBuilder(TlsConfig config) {
+    return SslContextBuilder.forServer(config.getPrivateKey(), config.getCertificateAndChain());
+  }
+
+  static public SslContext buildServerContext(TlsConfig config, TrustManagerFactory trustManager, boolean allowExpiredClients) {
     try {
-      SslContextBuilder builder = SslContextBuilder
-        .forServer(config.getPrivateKey(), config.getCertificateAndTrustChain());
-      return configure(config, builder)
-        // servers will trust only certs in trust chain
-        .trustManager(config.getTrustChain())
+      return configure(config, newServerBuilder(config))
+        .trustManager(new XioTrustManagerFactory(trustManager, allowExpiredClients))
         .build();
     } catch (SSLException e) {
       return null;
     }
   }
 
+  static public SslContext buildServerContext(TlsConfig config, TrustManagerFactory trustManager) {
+    return buildServerContext(config, trustManager, false);
+  }
+
+  static public SslContext buildServerContext(TlsConfig config, boolean allowExpiredClients) {
+    // servers will trust only certs in trusted certs collection
+    return buildServerContext(config, buildTrustManagerFactory(config.getTrustedCerts()), allowExpiredClients);
+  }
+
+  static public SslContext buildServerContext(TlsConfig config) {
+    return buildServerContext(config, false);
+  }
+
   static public SslContext buildClientContext(TlsConfig config, TrustManagerFactory trustManager) {
     try {
       return configure(config, SslContextBuilder.forClient())
-        .keyManager(config.getPrivateKey(), config.getCertificateAndTrustChain())
-        // clients will trust only certs in trust chain
-        .trustManager(trustManager)
+        .keyManager(config.getPrivateKey(), config.getCertificateAndChain())
+        .trustManager(new XioTrustManagerFactory(trustManager))
         .build();
     } catch (SSLException e) {
       return null;
@@ -76,6 +89,7 @@ public class SslContextFactory {
   }
 
   static public SslContext buildClientContext(TlsConfig config) {
-    return buildClientContext(config, buildTrustManagerFactory(config.getTrustChain()));
+    // clients will trust only certs in trusted certs collection
+    return buildClientContext(config, buildTrustManagerFactory(config.getTrustedCerts()));
   }
 }

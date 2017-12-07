@@ -44,7 +44,7 @@ public class HttpClientBuilder {
 
   HttpClient build() {
     Preconditions.checkNotNull(endpoint, "endpoint must be defined");
-    bootstrap.address(endpoint);
+    bootstrap.address(endpoint).ssl(useSsl);
     return new HttpClient(bootstrap.build(), hostHeader);
   }
 

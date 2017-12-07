@@ -149,3 +149,13 @@ openssl pkcs8 -in foo.pem -inform PEM -outform PEM -out pkcs8.pem -topk8 -passou
 *** https://github.com/google/google-java-format
 
 *** https://github.com/coveo/fmt-maven-plugin
+
+** diff/merge clutter
+
+*** diamond operators
+
+*** javadoc generation
+
+*** java imports sorting
+
+*** channel future listener -> lambda

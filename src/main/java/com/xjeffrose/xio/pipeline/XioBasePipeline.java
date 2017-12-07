@@ -11,6 +11,7 @@ import com.xjeffrose.xio.filter.IpFilter;
 import com.xjeffrose.xio.server.XioBehavioralRuleEngine;
 import com.xjeffrose.xio.server.XioConnectionLimiter;
 import com.xjeffrose.xio.server.XioResponseClassifier;
+import com.xjeffrose.xio.server.XioServer;
 import com.xjeffrose.xio.server.XioServerConfig;
 import com.xjeffrose.xio.server.XioServerLimits;
 import com.xjeffrose.xio.server.XioServerState;
@@ -26,6 +27,8 @@ abstract public class XioBasePipeline implements XioPipelineFragment {
   abstract public ChannelHandler getEncryptionHandler(XioServerConfig config, XioServerState state);
 
   abstract public ChannelHandler getAuthenticationHandler();
+
+  abstract public ChannelHandler getAuthorizationHandler();
 
   abstract public ChannelHandler getCodecNegotiationHandler(XioServerConfig config);
 
@@ -51,8 +54,9 @@ abstract public class XioBasePipeline implements XioPipelineFragment {
     if (encryptionHandler != null) {
       pipeline.addLast("encryptionHandler", encryptionHandler);
     }
+    addHandler(pipeline, "authentication handler", getAuthenticationHandler());
     if (config.isMessageLoggerEnabled()) {
-      pipeline.addLast("messageLogger", new XioMessageLogger());
+      pipeline.addLast("messageLogger", new XioMessageLogger(XioServer.class, config.getName()));
     }
     addHandler(pipeline, "codecNegotiation", getCodecNegotiationHandler(config));
     ChannelHandler codecHandler = getCodecHandler(config);
@@ -65,10 +69,7 @@ abstract public class XioBasePipeline implements XioPipelineFragment {
     pipeline.addLast("l7DeterministicRuleEngine", new Http1Filter(appState.getHttp1FilterConfig()));
     pipeline.addLast("l7BehavioralRuleEngine", new XioBehavioralRuleEngine(appState.getZkClient(), true)); // TODO(JR): Need to make this config
     pipeline.addLast("webApplicationFirewall", new XioWebApplicationFirewall(appState.getZkClient(), true)); // TODO(JR): Need to make this config
-    ChannelHandler authHandler = getAuthenticationHandler();
-    if (authHandler != null) {
-      pipeline.addLast("authHandler", authHandler);
-    }
+    addHandler(pipeline, "authorization handler", getAuthorizationHandler());
     // TODO(CK): XioService is dead, kill this with fire
     pipeline.addLast("xioService", new XioService());
     // See https://finagle.github.io/blog/2016/02/09/response-classification

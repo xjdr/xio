@@ -39,7 +39,7 @@ public class HttpClientFunctionalTest extends Assert {
 
   @Before
   public void setUp() throws Exception {
-    TlsConfig tlsConfig = TlsConfig.fromConfig("xio.testClient.settings.tls");
+    TlsConfig tlsConfig = TlsConfig.fromConfig("xio.h1TestClient.settings.tls");
     server = OkHttpUnsafe.getSslMockWebServer(tlsConfig);
 
     // Schedule some responses.
@@ -64,7 +64,7 @@ public class HttpClientFunctionalTest extends Assert {
           receivedResponse.countDown();
         }
     };
-    ClientConfig config = ClientConfig.fromConfig("xio.testClient");
+    ClientConfig config = ClientConfig.fromConfig("xio.h1TestClient");
     XioClientBootstrap bootstrap = new XioClientBootstrap(config)
       .channelConfig(ChannelConfiguration.clientConfig(1))
       .handler(responseHandler)

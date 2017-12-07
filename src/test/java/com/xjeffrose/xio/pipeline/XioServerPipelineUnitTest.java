@@ -46,6 +46,11 @@ public class XioServerPipelineUnitTest {
       }
 
       @Override
+      public ChannelHandler getAuthorizationHandler() {
+        return new XioNoOpHandler();
+      }
+
+      @Override
       public ChannelHandler getCodecHandler(XioServerConfig config) {
         return new XioNoOpHandler();
       }
@@ -65,13 +70,13 @@ public class XioServerPipelineUnitTest {
     inOrder.verify(pipeline, times(1)).addLast(eq("connectionContext"), isA(ConnectionContextHandler.class));
     inOrder.verify(pipeline, times(1)).addLast(eq("globalChannelStatistics"), eq(serverState.getChannelStatistics()));
     inOrder.verify(pipeline, times(1)).addLast(eq("encryptionHandler"), isA(XioNoOpHandler.class));
-
+    inOrder.verify(pipeline, times(1)).addLast(eq("authentication handler"), isA(XioNoOpHandler.class));
     inOrder.verify(pipeline, times(1)).addLast(eq("messageLogger"), isA(XioMessageLogger.class));
     inOrder.verify(pipeline, times(1)).addLast(eq("codec"), isA(XioNoOpHandler.class));
     inOrder.verify(pipeline, times(1)).addLast(eq("l7DeterministicRuleEngine"), isA(Http1Filter.class));
     inOrder.verify(pipeline, times(1)).addLast(eq("l7BehavioralRuleEngine"), isA(XioBehavioralRuleEngine.class));
     inOrder.verify(pipeline, times(1)).addLast(eq("webApplicationFirewall"), isA(XioWebApplicationFirewall.class));
-    inOrder.verify(pipeline, times(1)).addLast(eq("authHandler"), isA(XioNoOpHandler.class));
+    inOrder.verify(pipeline, times(1)).addLast(eq("authorization handler"), isA(XioNoOpHandler.class));
     inOrder.verify(pipeline, times(1)).addLast(eq("xioService"), isA(XioService.class));
     inOrder.verify(pipeline, times(1)).addLast(eq("xioResponseClassifier"), isA(XioResponseClassifier.class));
     inOrder.verify(pipeline, times(1)).addLast(eq("exceptionLogger"), isA(XioExceptionLogger.class));

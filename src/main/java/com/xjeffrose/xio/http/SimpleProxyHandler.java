@@ -6,7 +6,14 @@ import com.xjeffrose.xio.client.XioRequest;
 import com.xjeffrose.xio.server.Route;
 import com.xjeffrose.xio.tracing.HttpTracingState;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.*;
+import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.HttpClientCodec;
+import io.netty.handler.codec.http.HttpContent;
+import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpUtil;
+import io.netty.handler.codec.http.HttpVersion;
+import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.util.AttributeKey;
 import io.netty.util.ReferenceCountUtil;
 import lombok.Getter;
@@ -28,10 +35,6 @@ public class SimpleProxyHandler implements RequestHandler {
     this.route = route;
     this.config = config;
     this.bootstrap = bootstrap;
-  }
-
-  public SimpleProxyHandler(Route route, ProxyConfig config) {
-    this(route, config, new XioClientBootstrap());
   }
 
   private void buildAndAttach(ChannelHandlerContext ctx) {
