@@ -23,6 +23,11 @@ public class XioServerPipeline extends XioBasePipeline {
   }
 
   @Override
+  public ChannelHandler getAuthorizationHandler() {
+    return null;
+  }
+
+  @Override
   public ChannelHandler getCodecNegotiationHandler(XioServerConfig config) {
     return null;
   }

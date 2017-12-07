@@ -28,6 +28,8 @@ abstract public class XioBasePipeline implements XioPipelineFragment {
 
   abstract public ChannelHandler getAuthenticationHandler();
 
+  abstract public ChannelHandler getAuthorizationHandler();
+
   abstract public ChannelHandler getCodecNegotiationHandler(XioServerConfig config);
 
   abstract public ChannelHandler getCodecHandler(XioServerConfig config);
@@ -52,6 +54,7 @@ abstract public class XioBasePipeline implements XioPipelineFragment {
     if (encryptionHandler != null) {
       pipeline.addLast("encryptionHandler", encryptionHandler);
     }
+    addHandler(pipeline, "authentication handler", getAuthenticationHandler());
     if (config.isMessageLoggerEnabled()) {
       pipeline.addLast("messageLogger", new XioMessageLogger(XioServer.class, config.getName()));
     }
@@ -66,10 +69,7 @@ abstract public class XioBasePipeline implements XioPipelineFragment {
     pipeline.addLast("l7DeterministicRuleEngine", new Http1Filter(appState.getHttp1FilterConfig()));
     pipeline.addLast("l7BehavioralRuleEngine", new XioBehavioralRuleEngine(appState.getZkClient(), true)); // TODO(JR): Need to make this config
     pipeline.addLast("webApplicationFirewall", new XioWebApplicationFirewall(appState.getZkClient(), true)); // TODO(JR): Need to make this config
-    ChannelHandler authHandler = getAuthenticationHandler();
-    if (authHandler != null) {
-      pipeline.addLast("authHandler", authHandler);
-    }
+    addHandler(pipeline, "authorization handler", getAuthorizationHandler());
     // TODO(CK): XioService is dead, kill this with fire
     pipeline.addLast("xioService", new XioService());
     // See https://finagle.github.io/blog/2016/02/09/response-classification
