@@ -31,9 +31,9 @@ import java.util.function.Function;
 import java.util.logging.*;
 import org.junit.After;
 
+/*
 public class HttpServerTracingHandlerIntegrationTest extends ITHttpServer {
 
-  /*
   static Logger disableJavaLogging() {
     Logger logger = Logger.getLogger("okhttp3.mockwebserver.MockWebServer");
     logger.setLevel(Level.WARNING);
@@ -124,5 +124,5 @@ public class HttpServerTracingHandlerIntegrationTest extends ITHttpServer {
       server.close();
     }
   }
-  */
 }
+*/
