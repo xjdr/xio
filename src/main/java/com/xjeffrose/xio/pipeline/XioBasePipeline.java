@@ -15,7 +15,6 @@ import com.xjeffrose.xio.server.XioServer;
 import com.xjeffrose.xio.server.XioServerConfig;
 import com.xjeffrose.xio.server.XioServerLimits;
 import com.xjeffrose.xio.server.XioServerState;
-import com.xjeffrose.xio.server.XioService;
 import com.xjeffrose.xio.server.XioWebApplicationFirewall;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelPipeline;
@@ -70,8 +69,6 @@ abstract public class XioBasePipeline implements XioPipelineFragment {
     pipeline.addLast("l7BehavioralRuleEngine", new XioBehavioralRuleEngine(appState.getZkClient(), true)); // TODO(JR): Need to make this config
     pipeline.addLast("webApplicationFirewall", new XioWebApplicationFirewall(appState.getZkClient(), true)); // TODO(JR): Need to make this config
     addHandler(pipeline, "authorization handler", getAuthorizationHandler());
-    // TODO(CK): XioService is dead, kill this with fire
-    pipeline.addLast("xioService", new XioService());
     // See https://finagle.github.io/blog/2016/02/09/response-classification
     pipeline.addLast("xioResponseClassifier", new XioResponseClassifier(true)); /// TODO(JR): This is a maybe
     pipeline.addLast("exceptionLogger", new XioExceptionLogger());

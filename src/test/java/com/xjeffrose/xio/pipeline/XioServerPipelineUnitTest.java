@@ -17,7 +17,6 @@ import com.xjeffrose.xio.server.XioConnectionLimiter;
 import com.xjeffrose.xio.server.XioResponseClassifier;
 import com.xjeffrose.xio.server.XioServerConfig;
 import com.xjeffrose.xio.server.XioServerState;
-import com.xjeffrose.xio.server.XioService;
 import com.xjeffrose.xio.server.XioWebApplicationFirewall;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelPipeline;
@@ -77,7 +76,6 @@ public class XioServerPipelineUnitTest {
     inOrder.verify(pipeline, times(1)).addLast(eq("l7BehavioralRuleEngine"), isA(XioBehavioralRuleEngine.class));
     inOrder.verify(pipeline, times(1)).addLast(eq("webApplicationFirewall"), isA(XioWebApplicationFirewall.class));
     inOrder.verify(pipeline, times(1)).addLast(eq("authorization handler"), isA(XioNoOpHandler.class));
-    inOrder.verify(pipeline, times(1)).addLast(eq("xioService"), isA(XioService.class));
     inOrder.verify(pipeline, times(1)).addLast(eq("xioResponseClassifier"), isA(XioResponseClassifier.class));
     inOrder.verify(pipeline, times(1)).addLast(eq("exceptionLogger"), isA(XioExceptionLogger.class));
     inOrder.verify(pipeline, times(1)).addLast(eq("applicationHandler"), isA(XioNoOpHandler.class));
