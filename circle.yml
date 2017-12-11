@@ -11,9 +11,9 @@ dependencies:
     - mvn test-compile -DskipTests=true -Dmaven.javadoc.skip=true -B -V
 test:
   override:
-    - mvn test jacoco:report
-    - mvn package javadoc:jar
-    - mvn coveralls:report
+    - mvn test jacoco:report -Dmaven.javadoc.skip=true
+    - mvn package javadoc:jar -Dmaven.javadoc.skip=true
+    - mvn coveralls:report -Dmaven.javadoc.skip=true
   post:
     - cp target/xio*jar pom.xml $CIRCLE_ARTIFACTS
     - mkdir -p $CIRCLE_TEST_REPORTS/junit/
