@@ -4,15 +4,42 @@
 
 ** DONE Add application router to http pipeline
 
-** Add route applicator to http pipeline
+** DONE handle keep alive
+
+** DONE handle content type
+
+** DONE Add route applicator to http pipeline
 
 ** Authorization uses route pipeline
+
+** Http1ServerCodec sets response Transfer-Encoding
+   https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Transfer-Encoding
+
+** Http1ServerCodec sets Content-Length for FullResponse
+   https://tools.ietf.org/html/rfc7230#section-3.3.2
+
+** How to handle http 100 Continue?
 
 ** Update WAF to use application request object
 
 * backlog
 
 ** Update proxy to use application request object
+
+** connection pool that is optimized to worker loop allocation
+   for a worker loop group of size N create at least N connections to the remote endpoint
+
+** get rid of jetty helpers, replace them with MockWebServer
+
+** document immutable object testing concepts
+#+begin_src java
+public class ClassUnderTest {
+  private final Value value;
+  public ClassUnderTest(Value v) {
+    value = preconditions.notNull(v);
+  }
+}
+#+end_src
 
 * re-file
 
