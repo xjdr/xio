@@ -7,12 +7,11 @@ import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpHeaders;
 
 @UnstableApi
-public abstract class Headers
-  implements io.netty.handler.codec.Headers<CharSequence, CharSequence, Headers>,
+public interface Headers
+  extends io.netty.handler.codec.Headers<CharSequence, CharSequence, Headers>,
              Iterable<Entry<CharSequence, CharSequence>> {
 
-
-  public HttpHeaders http1Headers() {
+  default HttpHeaders http1Headers() {
     HttpHeaders result = new DefaultHttpHeaders();
     for (Entry<CharSequence, CharSequence> entry : this) {
       result.add(entry.getKey(), entry.getValue());

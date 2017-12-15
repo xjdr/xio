@@ -3,13 +3,18 @@ package com.xjeffrose.xio.http.internal;
 import io.netty.handler.codec.http.HttpMethod;
 import com.xjeffrose.xio.core.internal.UnstableApi;
 import com.xjeffrose.xio.http.Headers;
-import com.xjeffrose.xio.http.Request;
+import com.xjeffrose.xio.http.StreamingRequest;
 import io.netty.handler.codec.http.HttpRequest;
+import lombok.ToString;
+import io.netty.handler.codec.http.HttpUtil;
+import io.netty.buffer.Unpooled;
+import io.netty.buffer.ByteBuf;
 
 /**
  * Wrap an incoming HttpResponse, for use in a server.
  */
-public class Http1Request extends Request {
+@ToString
+public class Http1Request implements StreamingRequest {
 
   protected final HttpRequest delegate;
   private final Http1Headers headers;
@@ -30,6 +35,12 @@ public class Http1Request extends Request {
   }
   public Headers headers() {
     return headers;
+  }
+  public boolean keepAlive() {
+    return HttpUtil.isKeepAlive(delegate);
+  }
+  public ByteBuf body() {
+    return Unpooled.EMPTY_BUFFER;
   }
 
 }

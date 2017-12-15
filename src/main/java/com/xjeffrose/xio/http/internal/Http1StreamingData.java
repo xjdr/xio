@@ -2,14 +2,17 @@ package com.xjeffrose.xio.http.internal;
 
 import com.xjeffrose.xio.core.internal.UnstableApi;
 import com.xjeffrose.xio.http.Headers;
+import com.xjeffrose.xio.http.StreamingData;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.LastHttpContent;
+import lombok.ToString;
 
 /**
  * Wrap an incoming HttpContent, for use by streaming clients or servers
  */
-public class Http1StreamingData {
+@ToString
+public class Http1StreamingData implements StreamingData {
 
   private final HttpContent content;
   private final boolean eos;

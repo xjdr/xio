@@ -5,24 +5,24 @@ import com.xjeffrose.xio.core.internal.UnstableApi;
 @UnstableApi
 public class HttpBuilders {
 
-  public static FullRequest.Builder newFullRequest() {
-    return FullRequest.builder();
+  public static DefaultFullRequest.Builder newFullRequest() {
+    return DefaultFullRequest.builder();
   }
 
-  public static StreamingRequest.Builder newStreamingRequest() {
-    return StreamingRequest.builder();
+  public static DefaultStreamingRequest.Builder newStreamingRequest() {
+    return DefaultStreamingRequest.builder();
   }
 
-  public static FullResponse.Builder newFullResponse() {
-    return FullResponse.builder();
+  public static DefaultFullResponse.Builder newFullResponse() {
+    return DefaultFullResponse.builder();
   }
 
-  public static StreamingResponse.Builder newStreamingResponse() {
-    return StreamingResponse.builder();
+  public static DefaultStreamingResponse.Builder newStreamingResponse() {
+    return DefaultStreamingResponse.builder();
   }
 
-  public static StreamingData.StreamingDataImpl.Builder newStreamingData() {
-    return StreamingData.StreamingDataImpl.builder();
+  public static DefaultStreamingData.Builder newStreamingData() {
+    return DefaultStreamingData.builder();
   }
 
 }

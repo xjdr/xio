@@ -14,6 +14,17 @@ import io.netty.handler.codec.http.HttpResponse;
  * Value class for representing a streaming outgoing HTTP1/2 Response, for use in a server.
  */
 @UnstableApi
-public interface StreamingResponse extends Response {
+@Builder(builderClassName = "Builder")
+@Accessors(fluent = true)
+@Getter
+public class DefaultStreamingResponse implements StreamingResponse {
+
+  HttpResponseStatus status;
+  Headers headers;
+  /**
+   * Not intended to be called.
+   */
+  @Override
+  public String version() { return ""; }
 
 }
