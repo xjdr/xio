@@ -25,12 +25,18 @@ public class HttpNegotiationHandler extends ApplicationProtocolNegotiationHandle
     ctx.pipeline().replace(CodecPlaceholderHandler.class, "codec", handler);
   }
 
+  private void replaceApplicationCodec(ChannelHandlerContext ctx, ChannelHandler handler) {
+    ctx.pipeline().replace(ApplicationCodecPlaceholderHandler.class, "application codec", handler);
+  }
+
   @Override
   protected void configurePipeline(ChannelHandlerContext ctx, String protocol) throws Exception {
     if (protocol.equals(ApplicationProtocolNames.HTTP_1_1)) {
       replaceCodec(ctx, new HttpServerCodec());
+      replaceApplicationCodec(ctx, new Http1ServerCodec());
     } else if (protocol.equals(ApplicationProtocolNames.HTTP_2)) {
       replaceCodec(ctx, http2Handler.get());
+      // TODO(CK): replaceApplicationCodec(ctx, new Http2ServerCodec());
     } else {
       throw new RuntimeException("Unknown Application Protocol '" + protocol + "'");
     }

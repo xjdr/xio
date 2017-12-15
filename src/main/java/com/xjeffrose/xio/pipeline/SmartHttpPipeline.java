@@ -1,6 +1,7 @@
 package com.xjeffrose.xio.pipeline;
 
 import com.xjeffrose.xio.application.ApplicationState;
+import com.xjeffrose.xio.http.ApplicationCodecPlaceholderHandler;
 import com.xjeffrose.xio.http.CodecPlaceholderHandler;
 import com.xjeffrose.xio.http.GentleSslHandler;
 import com.xjeffrose.xio.http.Http2HandlerBuilder;
@@ -70,6 +71,10 @@ public class SmartHttpPipeline extends XioServerPipeline {
     } else {
       return null;
     }
+  }
+
+  public ChannelHandler getApplicationCodec() {
+    return ApplicationCodecPlaceholderHandler.INSTANCE;
   }
 
   public void buildHandlers(ApplicationState appState, XioServerConfig config, XioServerState state, ChannelPipeline pipeline) {
