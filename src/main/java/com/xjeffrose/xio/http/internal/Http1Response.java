@@ -5,11 +5,15 @@ import com.xjeffrose.xio.core.internal.UnstableApi;
 import com.xjeffrose.xio.http.Headers;
 import com.xjeffrose.xio.http.StreamingResponse;
 import io.netty.handler.codec.http.HttpResponse;
+import io.netty.buffer.Unpooled;
+import io.netty.buffer.ByteBuf;
+import lombok.ToString;
 
 
 /**
  * Wrap an incoming HttpResponse, for use in a client.
  */
+@ToString
 public class Http1Response implements StreamingResponse {
 
   private final HttpResponse delegate;
@@ -30,6 +34,10 @@ public class Http1Response implements StreamingResponse {
 
   public Headers headers() {
     return headers;
+  }
+
+  public ByteBuf body() {
+    return Unpooled.EMPTY_BUFFER;
   }
 
 }
