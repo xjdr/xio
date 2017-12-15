@@ -41,6 +41,10 @@ abstract public class XioBasePipeline implements XioPipelineFragment {
     return null;
   }
 
+  public ChannelHandler getApplicationRouter() {
+    return null;
+  }
+
   abstract public ChannelHandler getApplicationHandler();
 
   public void buildHandlers(ApplicationState appState, XioServerConfig config, XioServerState state, ChannelPipeline pipeline) {
@@ -70,6 +74,7 @@ abstract public class XioBasePipeline implements XioPipelineFragment {
     }
     addHandler(pipeline, "distributed tracing", state.getTracingHandler().apply(false));
     addHandler(pipeline, "application codec", getApplicationCodec());
+    addHandler(pipeline, "application router", getApplicationRouter());
     pipeline.addLast("l7DeterministicRuleEngine", new Http1Filter(appState.getHttp1FilterConfig()));
     pipeline.addLast("l7BehavioralRuleEngine", new XioBehavioralRuleEngine(appState.getZkClient(), true)); // TODO(JR): Need to make this config
     pipeline.addLast("webApplicationFirewall", new XioWebApplicationFirewall(appState.getZkClient(), true)); // TODO(JR): Need to make this config
