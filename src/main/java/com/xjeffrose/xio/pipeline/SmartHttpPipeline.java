@@ -7,6 +7,7 @@ import com.xjeffrose.xio.http.GentleSslHandler;
 import com.xjeffrose.xio.http.Http2HandlerBuilder;
 import com.xjeffrose.xio.http.HttpNegotiationHandler;
 import com.xjeffrose.xio.http.HttpsUpgradeHandler;
+import com.xjeffrose.xio.http.RouteApplicator;
 import com.xjeffrose.xio.server.XioServerConfig;
 import com.xjeffrose.xio.server.XioServerState;
 import io.netty.channel.ChannelHandler;
@@ -75,6 +76,10 @@ public class SmartHttpPipeline extends XioServerPipeline {
 
   public ChannelHandler getApplicationCodec() {
     return ApplicationCodecPlaceholderHandler.INSTANCE;
+  }
+
+  public ChannelHandler getApplicationHandler() {
+    return new RouteApplicator();
   }
 
   public void buildHandlers(ApplicationState appState, XioServerConfig config, XioServerState state, ChannelPipeline pipeline) {
