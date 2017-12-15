@@ -55,6 +55,16 @@ public class XioServerPipelineUnitTest {
       }
 
       @Override
+      public ChannelHandler getApplicationCodec() {
+        return new XioNoOpHandler();
+      }
+
+      @Override
+      public ChannelHandler getApplicationRouter() {
+        return new XioNoOpHandler();
+      }
+
+      @Override
       public ChannelHandler getApplicationHandler() {
         return new XioNoOpHandler();
       }
@@ -72,6 +82,8 @@ public class XioServerPipelineUnitTest {
     inOrder.verify(pipeline, times(1)).addLast(eq("authentication handler"), isA(XioNoOpHandler.class));
     inOrder.verify(pipeline, times(1)).addLast(eq("messageLogger"), isA(XioMessageLogger.class));
     inOrder.verify(pipeline, times(1)).addLast(eq("codec"), isA(XioNoOpHandler.class));
+    inOrder.verify(pipeline, times(1)).addLast(eq("application codec"), isA(XioNoOpHandler.class));
+    inOrder.verify(pipeline, times(1)).addLast(eq("application router"), isA(XioNoOpHandler.class));
     inOrder.verify(pipeline, times(1)).addLast(eq("l7DeterministicRuleEngine"), isA(Http1Filter.class));
     inOrder.verify(pipeline, times(1)).addLast(eq("l7BehavioralRuleEngine"), isA(XioBehavioralRuleEngine.class));
     inOrder.verify(pipeline, times(1)).addLast(eq("webApplicationFirewall"), isA(XioWebApplicationFirewall.class));

@@ -1,6 +1,6 @@
 package com.xjeffrose.xio.pipeline;
 
-import com.squareup.okhttp.Response;
+import okhttp3.Response;
 import com.xjeffrose.xio.bootstrap.XioServerBootstrap;
 import com.xjeffrose.xio.fixtures.SampleHandler;
 import com.xjeffrose.xio.helpers.ClientHelper;
@@ -30,7 +30,7 @@ public class XioHttp1_1PipelineFunctionalTest extends Assert {
         "HEADER: Host = 127.0.0.1:" + address.getPort() + "\r\n" +
         "HEADER: Connection = Keep-Alive\r\n" +
         "HEADER: Accept-Encoding = gzip\r\n" +
-        "HEADER: User-Agent = okhttp/2.4.0\r\n" +
+        "HEADER: User-Agent = okhttp/3.9.1\r\n" +
         "\r\n" +
         "END OF CONTENT\r\n"
       ;
