@@ -8,6 +8,6 @@ public interface Http2RouteProvider {
   // TODO(CK): ChannelHandlerContext should come first
   void handle(Http2Request request, ChannelHandlerContext ctx);
 
-  /** The channel has been closed, cleanup any unused resources */
+  /* The channel has been closed, cleanup any unused resources */
   void close(ChannelHandlerContext ctx);
 }

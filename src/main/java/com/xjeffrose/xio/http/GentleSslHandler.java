@@ -18,7 +18,11 @@ public class GentleSslHandler extends OptionalSslHandler {
 
   private final ChannelHandler cleartextHandler;
 
-  /** cleartextHandler must be Sharable */
+  /**
+   * @param sslContext SslContext context used to build an SslHandler
+   * @param cleartextHandler ChannelHandlerAdapter handler attached to the pipeline when a cleartext
+   *     connection is received; must be Sharable
+   */
   public GentleSslHandler(SslContext sslContext, ChannelHandlerAdapter cleartextHandler) {
     super(sslContext);
     Preconditions.checkArgument(cleartextHandler.isSharable(), "cleartextHandler must be Sharable");
