@@ -6,13 +6,12 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 
+@Builder(builderClassName = "Builder")
+@Accessors(fluent = true)
+@Getter
 @UnstableApi
-public interface StreamingData {
-
-  ByteBuf content();
-
-  boolean endOfStream();
-
-  Headers trailingHeaders();
-
+public class DefaultStreamingData implements StreamingData {
+  ByteBuf content;
+  boolean endOfStream;
+  Headers trailingHeaders;
 }

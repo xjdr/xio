@@ -16,11 +16,10 @@ import java.util.HashSet;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class Http1Headers extends Headers {
+public class Http1Headers implements Headers {
 
   private final HttpHeaders delegate;
   private final ValueConverter<CharSequence> valueConverter = CharSequenceValueConverter.INSTANCE;
-
   public Http1Headers(HttpHeaders delegate) {
     this.delegate = delegate;
   }

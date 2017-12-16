@@ -1,64 +1,118 @@
-* config
+* on deck
 
-** TLS - startup configurable
+** DONE Add application codec to base pipeline
 
-*** TODO Load from Typesafe Config, attach to XioServerConfig
+** DONE Add application router to http pipeline
 
-** Circuit Breakers - runtime configurable
+** DONE handle keep alive
 
-** Ip Address - runtime configurable
+** DONE handle content type
 
-   * Config Class: IpAddressDeterministicRuleEngineConfig
-   * Marshall Classes: ThriftMarshaller / ThriftUnmarshaller
+** DONE Add route applicator to http pipeline
 
-*** DONE Define Config class
+** Authorization uses route pipeline
 
-*** DONE Define Marshall classes
+** Http1ServerCodec sets response Transfer-Encoding
+   https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Transfer-Encoding
 
-** Host Address - runtime configurable
+** Http1ServerCodec sets Content-Length for FullResponse
+   https://tools.ietf.org/html/rfc7230#section-3.3.2
 
-   * Config Class: HostnameDeterministicRuleEngineConfig
-   * Marshall Classes: ThriftMarshaller / ThriftUnmarshaller
+** How to handle http 100 Continue?
 
-*** DONE Define Config class
+** Update WAF to use application request object
 
-*** DONE Define Marshall classes
+* backlog
 
-** Layer 4 Behavioral - runtime configurable
+** Update proxy to use application request object
 
-   * Config Class:
+** connection pool that is optimized to worker loop allocation
+   for a worker loop group of size N create at least N connections to the remote endpoint
 
-*** TODO Define Config class
+** get rid of jetty helpers, replace them with MockWebServer
 
-** Application Codec - startup configurable
+** document immutable object testing concepts
+#+begin_src java
+public class ClassUnderTest {
+  private final Value value;
+  public ClassUnderTest(Value v) {
+    value = preconditions.notNull(v);
+  }
+}
+#+end_src
 
-*** TODO Load from Typesafe Config
+* re-file
 
-** Aggregation & Compression - startup configurable
+** todo.md
+   - Create default implementations for each of the most important interfaces
 
-*** TODO Load from Typesafe Config
+   - Add better tests around config
 
-** Decode Token - startup configurable
+   - Add better testing around client failure modes
 
-*** TODO Load from Typesafe Config
+   - Add full HttpParser for BBtoHttpResponse
 
-** Http1 Rules - runtime configurable
+** config
 
-   * Config Class: Http1DeterministicRuleEngineConfig
-   * Marshall Classes: ThriftMarshaller / ThriftUnmarshaller
+*** TLS - startup configurable
 
-*** DONE Define Config class
+**** TODO Load from Typesafe Config, attach to XioServerConfig
 
-*** DONE Define Marshall classes
+*** Circuit Breakers - runtime configurable
 
-** Layer 7 Behavioral - runtime configurable
+*** Ip Address - runtime configurable
 
-*** TODO Define Config class
+    * Config Class: IpAddressDeterministicRuleEngineConfig
+    * Marshall Classes: ThriftMarshaller / ThriftUnmarshaller
 
-** Multiplex Req - startup configurable
+**** DONE Define Config class
 
-*** TODO Load from Typesafe Config
+**** DONE Define Marshall classes
 
-** Persistent Connection Manager - startup configurable
+*** Host Address - runtime configurable
 
-*** TODO Load from Typesafe Config
+    * Config Class: HostnameDeterministicRuleEngineConfig
+    * Marshall Classes: ThriftMarshaller / ThriftUnmarshaller
+
+**** DONE Define Config class
+
+**** DONE Define Marshall classes
+
+*** Layer 4 Behavioral - runtime configurable
+
+    * Config Class:
+
+**** TODO Define Config class
+
+*** Application Codec - startup configurable
+
+**** TODO Load from Typesafe Config
+
+*** Aggregation & Compression - startup configurable
+
+**** TODO Load from Typesafe Config
+
+*** Decode Token - startup configurable
+
+**** TODO Load from Typesafe Config
+
+*** Http1 Rules - runtime configurable
+
+    * Config Class: Http1DeterministicRuleEngineConfig
+    * Marshall Classes: ThriftMarshaller / ThriftUnmarshaller
+
+**** DONE Define Config class
+
+**** DONE Define Marshall classes
+
+*** Layer 7 Behavioral - runtime configurable
+
+**** TODO Define Config class
+
+*** Multiplex Req - startup configurable
+
+**** TODO Load from Typesafe Config
+
+*** Persistent Connection Manager - startup configurable
+
+**** TODO Load from Typesafe Config

@@ -7,9 +7,13 @@ machine:
 dependencies:
   cache_directories:
     - ~/.m2
+  override:
+    - mvn test-compile -DskipTests=true -Dmaven.javadoc.skip=true -B -V
 test:
   override:
-    - mvn package javadoc:jar
+    - mvn clean verify -Dmaven.javadoc.skip=true -DCOVERAGE=1
+    - mvn package javadoc:jar -Dmaven.javadoc.skip=true
+    - mvn coveralls:report -Dmaven.javadoc.skip=true -DrepoToken=${COVERALLS_REPO_TOKEN}
   post:
     - cp target/xio*jar pom.xml $CIRCLE_ARTIFACTS
     - mkdir -p $CIRCLE_TEST_REPORTS/junit/

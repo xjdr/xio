@@ -137,10 +137,12 @@ public class XioTrustManagerFactoryUnitTest extends Assert {
               assertTrue(cause.getCause().getCause().getCause() instanceof CertPathValidatorException);
               ctx.close();
 
+              /*
               System.out.println("server ctx: " + ctx + " cause: " + cause);
               System.out.println("server cause cause: " + cause.getCause() + " suppressed: " + Arrays.asList(cause.getSuppressed()));
               System.out.println("server cause cause cause: " + cause.getCause().getCause() + " suppressed: " + Arrays.asList(cause.getCause().getSuppressed()));
               System.out.println("server cause cause cause cause: " + cause.getCause().getCause().getCause());
+              */
             }
           });
         }
@@ -170,9 +172,11 @@ public class XioTrustManagerFactoryUnitTest extends Assert {
               assertTrue(cause.getCause() instanceof SSLHandshakeException);
               ctx.close();
               msgReceived.countDown();
+              /*
               System.out.println("ctx: " + ctx + " cause: " + cause);
               System.out.println("client cause cause: " + cause.getCause() + " suppressed: " + Arrays.asList(cause.getSuppressed()));
               System.out.println("client cause cause cause: " + cause.getCause().getCause() + " suppressed: " + Arrays.asList(cause.getCause().getSuppressed()));
+              */
             }
           });
         }

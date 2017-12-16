@@ -1,7 +1,7 @@
 package com.xjeffrose.xio.http;
 
 import com.xjeffrose.xio.core.internal.UnstableApi;
-import com.xjeffrose.xio.http.internal.FullHttp1Request;
+import com.xjeffrose.xio.http.internal.FullHttp1Response;
 import com.xjeffrose.xio.http.internal.Http1Request;
 import com.xjeffrose.xio.http.internal.Http1StreamingData;
 import io.netty.buffer.ByteBuf;
@@ -31,33 +31,39 @@ import io.netty.handler.codec.http.DefaultLastHttpContent;
 import io.netty.util.AttributeKey;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaderValues;
+import com.xjeffrose.xio.http.internal.Http1Response;
+import io.netty.handler.codec.http.DefaultFullHttpRequest;
+import io.netty.handler.codec.http.DefaultHttpRequest;
+import lombok.extern.slf4j.Slf4j;
 
 @UnstableApi
-public class Http1ServerCodec extends ChannelDuplexHandler {
+@Slf4j
+public class Http1ClientCodec extends ChannelDuplexHandler {
 
-  private static final AttributeKey<Request> CHANNEL_REQUEST_KEY = AttributeKey.newInstance("xio_channel_request");
+  private static final AttributeKey<Response> CHANNEL_RESPONSE_KEY = AttributeKey.newInstance("xio_channel_response");
 
-  private static void setChannelRequest(ChannelHandlerContext ctx, Request request) {
-    ctx.channel().attr(CHANNEL_REQUEST_KEY).set(request);
+  private static void setChannelResponse(ChannelHandlerContext ctx, Response response) {
+    ctx.channel().attr(CHANNEL_RESPONSE_KEY).set(response);
   }
 
-  private static Request getChannelRequest(ChannelHandlerContext ctx) {
+  private static Response getChannelResponse(ChannelHandlerContext ctx) {
     // TODO(CK): Deal with null?
-    return ctx.channel().attr(CHANNEL_REQUEST_KEY).get();
+    return ctx.channel().attr(CHANNEL_RESPONSE_KEY).get();
   }
 
-  Request wrapRequest(ChannelHandlerContext ctx, HttpObject msg) {
-    if (msg instanceof FullHttpRequest) {
-      Request request = new FullHttp1Request((FullHttpRequest)msg);
-      setChannelRequest(ctx, request);
-      return request;
-    } else if (msg instanceof HttpRequest) {
-      Request request = new Http1Request((HttpRequest)msg);
-      setChannelRequest(ctx, request);
-      return request;
+  Response wrapResponse(ChannelHandlerContext ctx, HttpObject msg) {
+    log.debug("wrapResponse msg={}", msg);
+    if (msg instanceof FullHttpResponse) {
+      Response response = new FullHttp1Response((FullHttpResponse)msg);
+      setChannelResponse(ctx, response);
+      return response;
+    } else if (msg instanceof HttpResponse) {
+      Response response = new Http1Response((HttpResponse)msg);
+      setChannelResponse(ctx, response);
+      return response;
     } else if (msg instanceof HttpContent) {
-      Request request = new StreamingRequestData(getChannelRequest(ctx), new Http1StreamingData((HttpContent)msg));
-      return request;
+      Response response = new StreamingResponseData(getChannelResponse(ctx), new Http1StreamingData((HttpContent)msg));
+      return response;
     }
     // TODO(CK): throw an exception?
     return null;
@@ -66,24 +72,23 @@ public class Http1ServerCodec extends ChannelDuplexHandler {
   @Override
   public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
     if (msg instanceof HttpObject) {
-      ctx.fireChannelRead(wrapRequest(ctx, (HttpObject)msg));
+      ctx.fireChannelRead(wrapResponse(ctx, (HttpObject)msg));
     } else {
       ctx.fireChannelRead(msg);
     }
   }
 
-  HttpResponse buildResponse(ChannelHandlerContext ctx, Response response) {
-    if (!response.headers().contains(HttpHeaderNames.CONTENT_TYPE)) {
-      response.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/plain; charset=UTF-8");
+  HttpRequest buildRequest(ChannelHandlerContext ctx, Request request) {
+    if (!request.headers().contains(HttpHeaderNames.CONTENT_TYPE)) {
+      request.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/plain; charset=UTF-8");
     }
 
-    Request request = getChannelRequest(ctx);
     if (request.keepAlive()) {
-      response.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
+      request.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
     }
 
-    if (response instanceof FullResponse) {
-      FullResponse full = (FullResponse)response;
+    if (request instanceof FullRequest) {
+      FullRequest full = (FullRequest)request;
       ByteBuf content;
       if (full.body() != null) {
         content = full.body();
@@ -94,23 +99,22 @@ public class Http1ServerCodec extends ChannelDuplexHandler {
         full.headers().setInt(HttpHeaderNames.CONTENT_LENGTH, content.readableBytes());
       }
 
-      setChannelRequest(ctx, null);
+      //Request request = getChannelRequest(ctx);
 
-      return new DefaultFullHttpResponse(HttpVersion.HTTP_1_1,
-                                         full.status(),
-                                         content,
-                                         full.headers().http1Headers(),
-                                         EmptyHttpHeaders.INSTANCE);
+      //setChannelResponse(ctx, null);
+
+      return new DefaultFullHttpRequest(HttpVersion.HTTP_1_1,
+                                        full.method(),
+                                        full.path(),
+                                        content,
+                                        full.headers().http1Headers(),
+                                        EmptyHttpHeaders.INSTANCE);
     } else {
       // TODO(CK): TransferEncoding
-      // We don't know the size of the message payload so set TransferEncoding to chunked
-      if (!response.headers().contains(HttpHeaderNames.TRANSFER_ENCODING)) {
-        response.headers().set(HttpHeaderNames.TRANSFER_ENCODING, HttpHeaderValues.CHUNKED);
-      }
-
-      return new DefaultHttpResponse(HttpVersion.HTTP_1_1,
-                                     response.status(),
-                                     response.headers().http1Headers());
+      return new DefaultHttpRequest(HttpVersion.HTTP_1_1,
+                                    request.method(),
+                                    request.path(),
+                                    request.headers().http1Headers());
     }
   }
 
@@ -120,7 +124,7 @@ public class Http1ServerCodec extends ChannelDuplexHandler {
       if (data.trailingHeaders() != null) {
         last.trailingHeaders().add(data.trailingHeaders().http1Headers());
       }
-      setChannelRequest(ctx, null);
+      //setChannelRequest(ctx, null);
       return last;
     } else {
       return new DefaultHttpContent(data.content());
@@ -129,10 +133,12 @@ public class Http1ServerCodec extends ChannelDuplexHandler {
 
   @Override
   public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
+    log.debug("write: msg={}", msg);
     if (msg instanceof StreamingData) {
       ctx.write(buildContent(ctx, (StreamingData)msg), promise);
-    } else if (msg instanceof Response) {
-      ctx.write(buildResponse(ctx, (Response)msg), promise);
+    } else if (msg instanceof Request) {
+      log.debug("writing request {}", msg);
+      ctx.write(buildRequest(ctx, (Request)msg), promise);
     } else {
       ctx.write(msg, promise);
     }

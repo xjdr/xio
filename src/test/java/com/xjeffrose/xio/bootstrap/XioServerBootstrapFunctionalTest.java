@@ -2,7 +2,7 @@ package com.xjeffrose.xio.bootstrap;
 
 import static org.junit.Assert.assertEquals;
 
-import com.squareup.okhttp.Response;
+import okhttp3.Response;
 import com.xjeffrose.xio.application.ApplicationState;
 import com.xjeffrose.xio.helpers.ClientHelper;
 import com.xjeffrose.xio.http.XioHttp404Handler;

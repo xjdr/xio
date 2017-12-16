@@ -3,22 +3,37 @@ package com.xjeffrose.xio.http;
 import io.netty.handler.codec.http.HttpMethod;
 import com.xjeffrose.xio.core.internal.UnstableApi;
 import io.netty.buffer.ByteBuf;
+import io.netty.handler.codec.http.HttpHeaderNames;
 
 @UnstableApi
-public abstract class Request {
+public interface Request {
 
-  public abstract HttpMethod method();
-  public abstract String path();
-  public abstract String version();
-  public abstract Headers headers();
+  HttpMethod method();
+  String path();
+  String version();
+  Headers headers();
 
-  public boolean hasBody() {
+  default String host() {
+    return headers().get(HttpHeaderNames.HOST).toString();
+  }
+
+  default String host(String defaultValue) {
+    String result = host();
+    if (result == null || result.isEmpty()) {
+      return defaultValue;
+    }
+    return result;
+  }
+
+  default boolean hasBody() {
     return false;
   }
 
-  public ByteBuf body() {
+  default ByteBuf body() {
     return null;
   }
+
+  boolean keepAlive();
 
   /*
   boolean hasBody()

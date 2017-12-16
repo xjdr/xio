@@ -14,6 +14,22 @@ import io.netty.handler.codec.http.HttpMethod;
  * Value class for representing a streaming outgoing HTTP1/2 Request, for use in a client.
  */
 @UnstableApi
-public interface StreamingRequest extends Request {
+@Builder(builderClassName = "Builder")
+@Accessors(fluent = true)
+@Getter
+public class DefaultStreamingRequest implements StreamingRequest {
+
+  HttpMethod method;
+  String path;
+  Headers headers;
+
+  /**
+   * Not intended to be called.
+   */
+  @Override
+  public String version() { return ""; }
+
+  @Override
+  public boolean keepAlive() { return false; }
 
 }

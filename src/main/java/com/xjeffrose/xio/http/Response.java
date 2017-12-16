@@ -2,12 +2,20 @@ package com.xjeffrose.xio.http;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import com.xjeffrose.xio.core.internal.UnstableApi;
+import io.netty.buffer.ByteBuf;
 
 @UnstableApi
-public abstract class Response {
+public interface Response {
 
-  public abstract HttpResponseStatus status();
-  public abstract String version();
-  public abstract Headers headers();
+  HttpResponseStatus status();
+  String version();
+  Headers headers();
+  default boolean hasBody() {
+    return false;
+  }
+
+  default ByteBuf body() {
+    return null;
+  }
 
 }

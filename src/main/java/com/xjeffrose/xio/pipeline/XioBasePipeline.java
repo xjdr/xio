@@ -15,7 +15,6 @@ import com.xjeffrose.xio.server.XioServer;
 import com.xjeffrose.xio.server.XioServerConfig;
 import com.xjeffrose.xio.server.XioServerLimits;
 import com.xjeffrose.xio.server.XioServerState;
-import com.xjeffrose.xio.server.XioService;
 import com.xjeffrose.xio.server.XioWebApplicationFirewall;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelPipeline;
@@ -37,6 +36,14 @@ abstract public class XioBasePipeline implements XioPipelineFragment {
   abstract public ChannelHandler getIdleDisconnectHandler(XioServerLimits limits);
 
   abstract public String applicationProtocol();
+
+  public ChannelHandler getApplicationCodec() {
+    return null;
+  }
+
+  public ChannelHandler getApplicationRouter() {
+    return null;
+  }
 
   abstract public ChannelHandler getApplicationHandler();
 
@@ -66,12 +73,12 @@ abstract public class XioBasePipeline implements XioPipelineFragment {
       throw new RuntimeException("No codec configured");
     }
     addHandler(pipeline, "distributed tracing", state.getTracingHandler().apply(false));
+    addHandler(pipeline, "application codec", getApplicationCodec());
+    addHandler(pipeline, "application router", getApplicationRouter());
     pipeline.addLast("l7DeterministicRuleEngine", new Http1Filter(appState.getHttp1FilterConfig()));
     pipeline.addLast("l7BehavioralRuleEngine", new XioBehavioralRuleEngine(appState.getZkClient(), true)); // TODO(JR): Need to make this config
     pipeline.addLast("webApplicationFirewall", new XioWebApplicationFirewall(appState.getZkClient(), true)); // TODO(JR): Need to make this config
     addHandler(pipeline, "authorization handler", getAuthorizationHandler());
-    // TODO(CK): XioService is dead, kill this with fire
-    pipeline.addLast("xioService", new XioService());
     // See https://finagle.github.io/blog/2016/02/09/response-classification
     pipeline.addLast("xioResponseClassifier", new XioResponseClassifier(true)); /// TODO(JR): This is a maybe
     pipeline.addLast("exceptionLogger", new XioExceptionLogger());
