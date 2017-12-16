@@ -12,5 +12,4 @@ public class RouteApplicator extends SimpleChannelInboundHandler<RoutePartial> {
     log.debug("RouteApplicator {}", msg);
     msg.apply(ctx);
   }
-
 }

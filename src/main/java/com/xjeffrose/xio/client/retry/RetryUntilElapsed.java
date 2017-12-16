@@ -12,7 +12,8 @@ public class RetryUntilElapsed extends SleepingRetry {
 
   @Override
   public boolean allowRetry(int retryCount, long elapsedTimeMs, RetrySleeper sleeper) {
-    return super.allowRetry(retryCount, elapsedTimeMs, sleeper) && (elapsedTimeMs < maxElapsedTimeMs);
+    return super.allowRetry(retryCount, elapsedTimeMs, sleeper)
+        && (elapsedTimeMs < maxElapsedTimeMs);
   }
 
   @Override
@@ -20,4 +21,3 @@ public class RetryUntilElapsed extends SleepingRetry {
     return sleepMsBetweenRetries;
   }
 }
-

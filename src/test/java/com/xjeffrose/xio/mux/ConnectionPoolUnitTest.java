@@ -30,14 +30,15 @@ public class ConnectionPoolUnitTest extends Assert {
     Logger logger = mock(Logger.class);
     when(LoggerFactory.getLogger(any(Class.class))).thenReturn(logger);
 
-    connector = new LocalConnector("test-connection-pool") {
-      @Override
-      public ListenableFuture<Channel> connect() {
-        SettableFuture<Channel> result = SettableFuture.create();
-        result.set(new EmbeddedChannel());
-        return result;
-      }
-    };
+    connector =
+        new LocalConnector("test-connection-pool") {
+          @Override
+          public ListenableFuture<Channel> connect() {
+            SettableFuture<Channel> result = SettableFuture.create();
+            result.set(new EmbeddedChannel());
+            return result;
+          }
+        };
   }
 
   @Test
@@ -46,18 +47,18 @@ public class ConnectionPoolUnitTest extends Assert {
     pool.start();
   }
 
-  @Test(expected=RuntimeException.class)
+  @Test(expected = RuntimeException.class)
   public void connectFails() {
-    LocalConnector flakyConnector = new LocalConnector("test-flaky-connection") {
-      @Override
-      public ListenableFuture<Channel> connect() {
-        SettableFuture<Channel> result = SettableFuture.create();
-        result.setException(new RuntimeException("bad hair day"));
-        return result;
-      }
-    };
+    LocalConnector flakyConnector =
+        new LocalConnector("test-flaky-connection") {
+          @Override
+          public ListenableFuture<Channel> connect() {
+            SettableFuture<Channel> result = SettableFuture.create();
+            result.setException(new RuntimeException("bad hair day"));
+            return result;
+          }
+        };
     ConnectionPool pool = new ConnectionPool(flakyConnector);
     pool.start();
   }
-
 }

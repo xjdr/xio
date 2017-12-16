@@ -8,7 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class RetryForever implements RetryPolicy {
 
-
   private final int retryIntervalMs;
 
   public RetryForever(int retryIntervalMs) {

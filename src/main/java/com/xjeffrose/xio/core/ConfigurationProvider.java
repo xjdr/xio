@@ -26,5 +26,4 @@ public interface ConfigurationProvider {
   public List<String> getChildren(String path);
 
   public void registerUpdater(ConfigurationUpdater updater);
-
 }

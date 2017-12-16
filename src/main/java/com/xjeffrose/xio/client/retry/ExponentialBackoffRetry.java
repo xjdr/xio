@@ -6,7 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ExponentialBackoffRetry extends SleepingRetry {
 
-
   private static final int MAX_RETRIES_LIMIT = 29;
   private static final int DEFAULT_MAX_SLEEP_MS = Integer.MAX_VALUE;
 
@@ -35,7 +34,8 @@ public class ExponentialBackoffRetry extends SleepingRetry {
 
   private static int validateMaxRetries(int maxRetries) {
     if (maxRetries > MAX_RETRIES_LIMIT) {
-      log.warn(String.format("maxRetries too large (%d). Pinning to %d", maxRetries, MAX_RETRIES_LIMIT));
+      log.warn(
+          String.format("maxRetries too large (%d). Pinning to %d", maxRetries, MAX_RETRIES_LIMIT));
       maxRetries = MAX_RETRIES_LIMIT;
     }
     return maxRetries;

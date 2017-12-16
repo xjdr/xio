@@ -9,13 +9,11 @@ public class XioServerBootstrapUnitTest extends Assert {
 
   @Test
   public void buildHttp11Server() {
-    XioServerBootstrap bootstrap = XioServerBootstrap.fromConfig("xio.testHttpsServer")
-      .addToPipeline(new SmartHttpPipeline())
-    ;
+    XioServerBootstrap bootstrap =
+        XioServerBootstrap.fromConfig("xio.testHttpsServer").addToPipeline(new SmartHttpPipeline());
 
     XioServer server = bootstrap.build();
 
     assertEquals("ssl-http/1.1", server.getInstrumentation().applicationProtocol());
   }
-
 }

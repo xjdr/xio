@@ -10,7 +10,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class XioConnectionLimiter extends ChannelDuplexHandler {
 
-
   private final AtomicInteger numConnections;
   private final int maxConnections;
 

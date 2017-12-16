@@ -29,9 +29,8 @@ class XioHttpServerAdapter extends HttpServerAdapter<HttpRequest, HttpResponse> 
 
   @Override
   public String url(HttpRequest request) {
-    StringBuilder url = newBuilder()
-      .append(request.headers().get(HttpHeaderNames.HOST))
-      .append(request.uri());
+    StringBuilder url =
+        newBuilder().append(request.headers().get(HttpHeaderNames.HOST)).append(request.uri());
     return url.toString();
   }
 

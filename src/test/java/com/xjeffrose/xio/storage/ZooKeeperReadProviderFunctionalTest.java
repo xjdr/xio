@@ -27,7 +27,8 @@ public class ZooKeeperReadProviderFunctionalTest extends Assert {
 
       ThriftMarshaller marshaller = new ThriftMarshaller();
       RetryPolicy retryPolicy = new RetryOneTime(1);
-      try(CuratorFramework client = CuratorFrameworkFactory.newClient(server.getConnectString(), retryPolicy)) {
+      try (CuratorFramework client =
+          CuratorFrameworkFactory.newClient(server.getConnectString(), retryPolicy)) {
         client.start();
         String path = "/some/path/to/nodes/ipRules";
 
@@ -44,5 +45,4 @@ public class ZooKeeperReadProviderFunctionalTest extends Assert {
       }
     }
   }
-
 }

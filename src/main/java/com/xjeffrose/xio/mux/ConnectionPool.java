@@ -32,18 +32,19 @@ public class ConnectionPool implements AutoCloseable {
 
   public void start() {
     CountDownLatch done = new CountDownLatch(POOL_SIZE);
-    FutureCallback<Channel> callback = new FutureCallback<Channel>() {
-      @Override
-      public void onSuccess(Channel channels) {
-        done.countDown();
-      }
+    FutureCallback<Channel> callback =
+        new FutureCallback<Channel>() {
+          @Override
+          public void onSuccess(Channel channels) {
+            done.countDown();
+          }
 
-      // TODO(CK): this error needs to get bubbled back up to the requestor
-      @Override
-      public void onFailure(Throwable throwable) {
-        done.countDown();
-      }
-    };
+          // TODO(CK): this error needs to get bubbled back up to the requestor
+          @Override
+          public void onFailure(Throwable throwable) {
+            done.countDown();
+          }
+        };
     buildInitialConnectionQ(callback);
 
     // TODO(CK): handle failures and retry
@@ -67,18 +68,20 @@ public class ConnectionPool implements AutoCloseable {
   private void buildInitialConnectionQ(FutureCallback<Channel> callback) {
     for (int i = 0; i < POOL_SIZE; i++) {
       ListenableFuture<Channel> result = connector.connect();
-      Futures.addCallback(result, new FutureCallback<Channel>() {
-        @Override
-        public void onSuccess(@Nullable Channel channel) {
-          connectionQ.addLast(channel);
-        }
+      Futures.addCallback(
+          result,
+          new FutureCallback<Channel>() {
+            @Override
+            public void onSuccess(@Nullable Channel channel) {
+              connectionQ.addLast(channel);
+            }
 
-        // TODO(CK): this error needs to get bubbled back up to the requestor
-        @Override
-        public void onFailure(Throwable throwable) {
-          log.error("Error connecting to " + connector.address(), throwable);
-        }
-      });
+            // TODO(CK): this error needs to get bubbled back up to the requestor
+            @Override
+            public void onFailure(Throwable throwable) {
+              log.error("Error connecting to " + connector.address(), throwable);
+            }
+          });
       Futures.addCallback(result, callback);
     }
   }
@@ -88,33 +91,38 @@ public class ConnectionPool implements AutoCloseable {
       return;
     }
 
-    connectionQ.stream().forEach(xs -> {
-      Channel channel = xs;
-//      connectionQ.remove(xs);
-      // TODO(CK): change this to a not and get rid of the else
-      if (channel.isActive()) {
-//        connectionQ.addLast(cf);
-      } else {
-        connectionQ.remove(xs);
-        Futures.addCallback(connector.connect(), new FutureCallback<Channel>() {
-          @Override
-          public void onSuccess(@Nullable Channel channel) {
-            connectionQ.addLast(channel);
-          }
+    connectionQ
+        .stream()
+        .forEach(
+            xs -> {
+              Channel channel = xs;
+              //      connectionQ.remove(xs);
+              // TODO(CK): change this to a not and get rid of the else
+              if (channel.isActive()) {
+                //        connectionQ.addLast(cf);
+              } else {
+                connectionQ.remove(xs);
+                Futures.addCallback(
+                    connector.connect(),
+                    new FutureCallback<Channel>() {
+                      @Override
+                      public void onSuccess(@Nullable Channel channel) {
+                        connectionQ.addLast(channel);
+                      }
 
-          // TODO(CK): this error needs to get bubbled back up to the requestor
-          @Override
-          public void onFailure(Throwable throwable) {
-            log.error("Error connecting to ", throwable);
-          }
-        });
-      }
-    });
+                      // TODO(CK): this error needs to get bubbled back up to the requestor
+                      @Override
+                      public void onFailure(Throwable throwable) {
+                        log.error("Error connecting to ", throwable);
+                      }
+                    });
+              }
+            });
 
     connectionRebuild.set(false);
   }
 
-  public Optional<Channel> requestNode(){
+  public Optional<Channel> requestNode() {
     Channel channel = connectionQ.pollFirst();
 
     if (channel != null && channel.isActive() && channel.isOpen() && channel.isWritable()) {
@@ -125,5 +133,4 @@ public class ConnectionPool implements AutoCloseable {
     connectionRebuild.set(true);
     return Optional.empty();
   }
-
 }

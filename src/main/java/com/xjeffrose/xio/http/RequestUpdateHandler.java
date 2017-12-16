@@ -8,5 +8,4 @@ public interface RequestUpdateHandler {
   void update(HttpContent content);
 
   void update(LastHttpContent last);
-
 }

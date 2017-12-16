@@ -55,22 +55,23 @@ public class SSLEngineFactory {
 
   private TrustManager[] trustAnyone() {
     return new TrustManager[] {
-        new X509TrustManager() {
-          @Override
-          public void checkClientTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException {
-          }
+      new X509TrustManager() {
+        @Override
+        public void checkClientTrusted(X509Certificate[] x509Certificates, String s)
+            throws CertificateException {}
 
-          @Override
-          public void checkServerTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException {
-          }
+        @Override
+        public void checkServerTrusted(X509Certificate[] x509Certificates, String s)
+            throws CertificateException {}
 
-          @Override
-          public X509Certificate[] getAcceptedIssuers() {
-            return null;
-          }
+        @Override
+        public X509Certificate[] getAcceptedIssuers() {
+          return null;
         }
+      }
     };
   }
+
   public SSLEngine getEngine() {
     try {
       if (client) {
@@ -78,13 +79,17 @@ public class SSLEngineFactory {
         sslCtx.init(null, trustAnyone(), null);
 
         params = new SSLParameters();
-        params.setProtocols(new String[]{"TLSv1.2"});
+        params.setProtocols(new String[] {"TLSv1.2"});
       } else {
         // Configure SSL.
         if (PRIVATE_KEY == null) {
-          ks = KeyStoreFactory.Generate(SelfSignedX509CertGenerator.generate("example.com"), "passwordsAreGood");
+          ks =
+              KeyStoreFactory.Generate(
+                  SelfSignedX509CertGenerator.generate("example.com"), "passwordsAreGood");
         } else {
-          ks = KeyStoreFactory.Generate(X509CertificateGenerator.generate(PRIVATE_KEY, X509_CERT), password);
+          ks =
+              KeyStoreFactory.Generate(
+                  X509CertificateGenerator.generate(PRIVATE_KEY, X509_CERT), password);
         }
         KeyManagerFactory kmf;
 
@@ -94,7 +99,7 @@ public class SSLEngineFactory {
         sslCtx.init(kmf.getKeyManagers(), null, null);
 
         params = new SSLParameters();
-        params.setProtocols(new String[]{"TLSv1.2"});
+        params.setProtocols(new String[] {"TLSv1.2"});
       }
 
       final SSLEngine engine = sslCtx.createSSLEngine();
@@ -103,13 +108,18 @@ public class SSLEngineFactory {
       engine.setUseClientMode(client);
 
       return engine;
-    } catch (NoSuchAlgorithmException | UnrecoverableKeyException | KeyStoreException | KeyManagementException |
-        CertificateException |IOException | SignatureException | NoSuchProviderException | InvalidKeyException e) {
-//      log.severe("Unable to configure the SSLEngine");
+    } catch (NoSuchAlgorithmException
+        | UnrecoverableKeyException
+        | KeyStoreException
+        | KeyManagementException
+        | CertificateException
+        | IOException
+        | SignatureException
+        | NoSuchProviderException
+        | InvalidKeyException e) {
+      //      log.severe("Unable to configure the SSLEngine");
       System.exit(-1);
       throw new RuntimeException(e);
     }
   }
-
 }
-

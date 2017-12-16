@@ -16,8 +16,7 @@ import lombok.Getter;
 
 public class ApplicationBootstrap {
 
-  @Getter
-  private final ApplicationConfig config;
+  @Getter private final ApplicationConfig config;
 
   private final ApplicationState state;
 
@@ -32,6 +31,7 @@ public class ApplicationBootstrap {
     this.config = config;
     this.state = new ApplicationState(config);
   }
+
   public ApplicationBootstrap(Config config) {
     this(new ApplicationConfig(config));
   }
@@ -44,10 +44,14 @@ public class ApplicationBootstrap {
     this(application, ConfigFactory.load());
   }
 
-  public ApplicationBootstrap addServer(String server, UnaryOperator<XioServerBootstrap> configure) {
+  public ApplicationBootstrap addServer(
+      String server, UnaryOperator<XioServerBootstrap> configure) {
     XioServerConfig serverConfig = new XioServerConfig(config.getServer(server));
     XioServerState serverState = new XioServerState(serverConfig);
-    XioServerBootstrap serverBootstrap = configure.apply(new XioServerBootstrap(state, serverConfig, serverState).channelConfig(state.getChannelConfiguration()));
+    XioServerBootstrap serverBootstrap =
+        configure.apply(
+            new XioServerBootstrap(state, serverConfig, serverState)
+                .channelConfig(state.getChannelConfiguration()));
     serverBootstraps.put(server, serverBootstrap);
     return this;
   }
@@ -60,5 +64,4 @@ public class ApplicationBootstrap {
     configurator.start();
     return new Application(config, servers, state, configurator);
   }
-
 }

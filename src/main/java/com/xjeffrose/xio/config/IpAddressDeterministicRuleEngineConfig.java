@@ -10,13 +10,12 @@ import java.util.Set;
 import lombok.EqualsAndHashCode;
 
 @EqualsAndHashCode
-final public class IpAddressDeterministicRuleEngineConfig implements Marshallable {
+public final class IpAddressDeterministicRuleEngineConfig implements Marshallable {
 
   private final Set<InetAddress> blacklistIps = new HashSet<>();
   private final Set<InetAddress> whitelistIps = new HashSet<>();
 
-  public IpAddressDeterministicRuleEngineConfig() {
-  }
+  public IpAddressDeterministicRuleEngineConfig() {}
 
   public void blacklistIp(InetAddress address) {
     blacklistIps.add(address);

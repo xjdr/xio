@@ -21,7 +21,6 @@ import org.apache.zookeeper.CreateMode;
 @Slf4j
 public class ZkClient implements ConfigurationProvider {
 
-
   private LeaderSelector leaderSelector;
   private final XioLeaderSelectorListener leaderListener = new XioLeaderSelectorListener();
   private CuratorFramework client;
@@ -40,8 +39,7 @@ public class ZkClient implements ConfigurationProvider {
   }
 
   // Used by NullZkClient
-  protected ZkClient() {
-  }
+  protected ZkClient() {}
 
   public void rebuild() {
     client.close();
@@ -52,11 +50,16 @@ public class ZkClient implements ConfigurationProvider {
   public void register(String NODE_LIST_PATH, InetSocketAddress address, @Nullable byte[] data) {
     try {
       client
-        .create()
-        .creatingParentsIfNeeded()
-        .withMode(CreateMode.EPHEMERAL)
-        .forPath(
-          NODE_LIST_PATH + "/" + address.getAddress().getHostAddress() + ":" + address.getPort(), data);
+          .create()
+          .creatingParentsIfNeeded()
+          .withMode(CreateMode.EPHEMERAL)
+          .forPath(
+              NODE_LIST_PATH
+                  + "/"
+                  + address.getAddress().getHostAddress()
+                  + ":"
+                  + address.getPort(),
+              data);
     } catch (Exception e) {
       log.error("Error registering Server", e);
       throw new RuntimeException(e);
@@ -76,12 +79,9 @@ public class ZkClient implements ConfigurationProvider {
 
     leaderSelector.autoRequeue();
     leaderSelector.start();
-
   }
 
-  public void electLeader(String path) {
-  }
-
+  public void electLeader(String path) {}
 
   public void startNodeCache(NodeCache cache) {
     try {
@@ -97,7 +97,7 @@ public class ZkClient implements ConfigurationProvider {
       client.start();
       client.blockUntilConnected();
       nodeCaches.values().forEach(this::startNodeCache);
-    } catch(InterruptedException e) {
+    } catch (InterruptedException e) {
       throw new RuntimeException(e);
     }
   }
@@ -124,7 +124,7 @@ public class ZkClient implements ConfigurationProvider {
     try {
       client.create().creatingParentsIfNeeded().forPath(path, data.getBytes());
     } catch (Exception e) {
-      //throw new RuntimeException(e);
+      // throw new RuntimeException(e);
     }
   }
 
@@ -132,9 +132,9 @@ public class ZkClient implements ConfigurationProvider {
     try {
       return new String(client.getData().forPath(path), Charset.forName("UTF-8"));
     } catch (Exception e) {
-      //TODO: I need to deal with the error better
-//      log.severe("No node for for: " + path);
-//      throw new RuntimeException(e);
+      // TODO: I need to deal with the error better
+      //      log.severe("No node for for: " + path);
+      //      throw new RuntimeException(e);
     }
     return null;
   }
@@ -143,7 +143,7 @@ public class ZkClient implements ConfigurationProvider {
     try {
       client.create().compressed().creatingParentsIfNeeded().forPath(path, data.getBytes());
     } catch (Exception e) {
-      //throw new RuntimeException(e);
+      // throw new RuntimeException(e);
     }
   }
 
@@ -151,7 +151,7 @@ public class ZkClient implements ConfigurationProvider {
     try {
       return new String(client.getData().decompressed().forPath(path), Charset.forName("UTF-8"));
     } catch (Exception e) {
-      //throw new RuntimeException(e);
+      // throw new RuntimeException(e);
     }
     return null;
   }
@@ -160,7 +160,7 @@ public class ZkClient implements ConfigurationProvider {
     try {
       return client.getChildren().forPath(path);
     } catch (Exception e) {
-      //throw new RuntimeException(e);
+      // throw new RuntimeException(e);
     }
     return null;
   }
@@ -169,9 +169,9 @@ public class ZkClient implements ConfigurationProvider {
     try {
       return client.getChildren().forPath(path);
     } catch (Exception e) {
-      //TODO: I need to deal with the error better
-//      log.severe("No node for for: " + path);
-//      throw new RuntimeException(e);
+      // TODO: I need to deal with the error better
+      //      log.severe("No node for for: " + path);
+      //      throw new RuntimeException(e);
     }
     return null;
   }
@@ -200,11 +200,14 @@ public class ZkClient implements ConfigurationProvider {
   public void registerUpdater(ConfigurationUpdater updater) {
     NodeCache cache = getOrCreateNodeCache(updater.getPath());
 
-    cache.getListenable().addListener(new NodeCacheListener() {
-      @Override
-      public void nodeChanged() {
-        updater.update(cache.getCurrentData().getData());
-      }
-    });
+    cache
+        .getListenable()
+        .addListener(
+            new NodeCacheListener() {
+              @Override
+              public void nodeChanged() {
+                updater.update(cache.getCurrentData().getData());
+              }
+            });
   }
 }

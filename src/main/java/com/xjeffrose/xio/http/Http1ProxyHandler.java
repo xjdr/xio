@@ -22,14 +22,14 @@ public class Http1ProxyHandler extends SimpleChannelInboundHandler<HttpObject> {
   @Override
   public final void channelRead0(final ChannelHandlerContext ctx, HttpObject msg) throws Exception {
     if (msg instanceof HttpRequest) {
-      HttpRequest req = (HttpRequest)msg;
+      HttpRequest req = (HttpRequest) msg;
       log.info("Received Request {}", req);
       route = router.get(req);
       updater = route.handle(req, ctx);
     } else if (msg instanceof LastHttpContent) {
-      updater.update((LastHttpContent)msg);
+      updater.update((LastHttpContent) msg);
     } else if (msg instanceof HttpContent) {
-      updater.update((HttpContent)msg);
+      updater.update((HttpContent) msg);
     }
   }
 
@@ -50,5 +50,4 @@ public class Http1ProxyHandler extends SimpleChannelInboundHandler<HttpObject> {
     log.error("exceptionCaught", cause);
     ctx.close();
   }
-
 }

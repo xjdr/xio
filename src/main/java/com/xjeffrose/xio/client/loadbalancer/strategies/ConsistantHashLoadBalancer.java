@@ -12,8 +12,7 @@ import java.util.UUID;
 
 public class ConsistantHashLoadBalancer implements Strategy {
 
-  public ConsistantHashLoadBalancer() {
-  }
+  public ConsistantHashLoadBalancer() {}
 
   @Override
   public boolean okToPick(Node node) {
@@ -30,7 +29,9 @@ public class ConsistantHashLoadBalancer implements Strategy {
     List<String> idStrings = new ArrayList<>();
     okNodes.keySet().stream().forEach(xs -> idStrings.add(xs.toString()));
 
-    RendezvousHash rendezvousHash = new RendezvousHash(Funnels.stringFunnel(Charset.defaultCharset()), idStrings, idStrings.size());
+    RendezvousHash rendezvousHash =
+        new RendezvousHash(
+            Funnels.stringFunnel(Charset.defaultCharset()), idStrings, idStrings.size());
 
     for (Object nodeID : rendezvousHash.get(sessionID.getBytes())) {
       if (nodeID instanceof String) {

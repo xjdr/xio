@@ -42,62 +42,71 @@ public class MutualAuthHandlerUnitTest extends Assert {
   @Before
   public void setUp() throws Exception {
     group = new NioEventLoopGroup(2);
-    sslServerContext = SslContextFactory.buildServerContext(TlsConfig.fromConfig("xio.testServer.settings.tls"));
-    sslClientContext = SslContextFactory.buildClientContext(TlsConfig.fromConfig("xio.h1TestClient.settings.tls"));
+    sslServerContext =
+        SslContextFactory.buildServerContext(TlsConfig.fromConfig("xio.testServer.settings.tls"));
+    sslClientContext =
+        SslContextFactory.buildClientContext(TlsConfig.fromConfig("xio.h1TestClient.settings.tls"));
 
-    server = new ServerBootstrap()
-      .group(group)
-      .channel(NioServerSocketChannel.class)
-      .childHandler(new ChannelInitializer<Channel>() {
-          @Override
-          protected void initChannel(Channel ch) throws Exception {
-            ch.pipeline()
-              .addLast(sslServerContext.newHandler(ch.alloc()))
-              .addLast(new MutualAuthHandler())
-              .addLast(new ChannelInboundHandlerAdapter() {
+    server =
+        new ServerBootstrap()
+            .group(group)
+            .channel(NioServerSocketChannel.class)
+            .childHandler(
+                new ChannelInitializer<Channel>() {
                   @Override
-                  public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-                    assertNotEquals("client is not authenticated", TlsAuthState.UNAUTHENTICATED, TlsAuthState.getPeerIdentity(ctx));
-                    ctx.writeAndFlush(msg);
+                  protected void initChannel(Channel ch) throws Exception {
+                    ch.pipeline()
+                        .addLast(sslServerContext.newHandler(ch.alloc()))
+                        .addLast(new MutualAuthHandler())
+                        .addLast(
+                            new ChannelInboundHandlerAdapter() {
+                              @Override
+                              public void channelRead(ChannelHandlerContext ctx, Object msg)
+                                  throws Exception {
+                                assertNotEquals(
+                                    "client is not authenticated",
+                                    TlsAuthState.UNAUTHENTICATED,
+                                    TlsAuthState.getPeerIdentity(ctx));
+                                ctx.writeAndFlush(msg);
+                              }
+                            });
                   }
-                }
-              )
-            ;
-          }
-        })
-      .localAddress(SERVER_ADDRESS);
+                })
+            .localAddress(SERVER_ADDRESS);
 
     serverChannel = server.bind().syncUninterruptibly().channel();
 
-    boundAddress = (InetSocketAddress)serverChannel.localAddress();
+    boundAddress = (InetSocketAddress) serverChannel.localAddress();
 
-    client = new Bootstrap()
-      .group(group)
-      .channel(NioSocketChannel.class)
-      .handler(new ChannelInitializer<Channel>() {
-          @Override
-          protected void initChannel(Channel ch) throws Exception {
-            ch.pipeline()
-            .addLast(sslClientContext.newHandler(ch.alloc(), boundAddress.getHostString(), boundAddress.getPort()))
-              .addLast(new ChannelInboundHandlerAdapter() {
+    client =
+        new Bootstrap()
+            .group(group)
+            .channel(NioSocketChannel.class)
+            .handler(
+                new ChannelInitializer<Channel>() {
                   @Override
-                  public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-                    msgReceived.countDown();
+                  protected void initChannel(Channel ch) throws Exception {
+                    ch.pipeline()
+                        .addLast(
+                            sslClientContext.newHandler(
+                                ch.alloc(), boundAddress.getHostString(), boundAddress.getPort()))
+                        .addLast(
+                            new ChannelInboundHandlerAdapter() {
+                              @Override
+                              public void channelRead(ChannelHandlerContext ctx, Object msg)
+                                  throws Exception {
+                                msgReceived.countDown();
+                              }
+                            });
                   }
-                }
-              )
-            ;
-          }
-        })
-      .remoteAddress(boundAddress)
-      ;
+                })
+            .remoteAddress(boundAddress);
   }
 
   @After
   public void tearDown() {
     group.shutdownGracefully(0, 1000, TimeUnit.MILLISECONDS).syncUninterruptibly();
   }
-
 
   @Test
   public void testMutualAuth() throws Exception {
@@ -113,5 +122,4 @@ public class MutualAuthHandlerUnitTest extends Assert {
       channel.close().syncUninterruptibly();
     }
   }
-
 }

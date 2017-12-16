@@ -18,11 +18,9 @@ public class XioHttp404Handler extends SimpleChannelInboundHandler<Object> {
 
   @Override
   public void channelReadComplete(ChannelHandlerContext ctx) {
-    FullHttpResponse response = new DefaultFullHttpResponse(
-      HTTP_1_1,
-      NOT_FOUND,
-      Unpooled.copiedBuffer("", CharsetUtil.UTF_8)
-    );
+    FullHttpResponse response =
+        new DefaultFullHttpResponse(
+            HTTP_1_1, NOT_FOUND, Unpooled.copiedBuffer("", CharsetUtil.UTF_8));
     response.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/plain; charset=UTF-8");
 
     // Write the response.
@@ -31,8 +29,7 @@ public class XioHttp404Handler extends SimpleChannelInboundHandler<Object> {
   }
 
   @Override
-  public void channelRead0(ChannelHandlerContext ctx, Object object) {
-  }
+  public void channelRead0(ChannelHandlerContext ctx, Object object) {}
 
   @Override
   public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {

@@ -24,7 +24,6 @@ import sun.security.x509.X509CertImpl;
 @Slf4j
 public final class X509Certificate {
 
-
   private final String fqdn;
   private final PrivateKey key;
   private final X509CertImpl cert;

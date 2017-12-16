@@ -5,11 +5,9 @@ import com.xjeffrose.xio.server.Route;
 import io.netty.handler.codec.http.HttpRequest;
 import lombok.Getter;
 
-
 public class UrlRouter implements Router {
 
-  @Getter
-  private final ImmutableMap<Route, RequestHandler> routes;
+  @Getter private final ImmutableMap<Route, RequestHandler> routes;
   private final RequestHandler defaultRoute;
 
   public UrlRouter(ImmutableMap<Route, RequestHandler> routes) {

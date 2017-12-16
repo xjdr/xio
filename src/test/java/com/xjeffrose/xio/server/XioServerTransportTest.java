@@ -9,42 +9,26 @@ import org.junit.Test;
 public class XioServerTransportTest {
 
   @Before
-  public void setUp() throws Exception {
-
-  }
+  public void setUp() throws Exception {}
 
   @After
-  public void tearDown() throws Exception {
-
-  }
+  public void tearDown() throws Exception {}
 
   @Test
-  public void testStart() throws Exception {
-
-  }
+  public void testStart() throws Exception {}
 
   @Test
-  public void testStart1() throws Exception {
-
-  }
+  public void testStart1() throws Exception {}
 
   @Test
-  public void testStop() throws Exception {
-
-  }
+  public void testStop() throws Exception {}
 
   @Test
-  public void testGetServerChannel() throws Exception {
-
-  }
+  public void testGetServerChannel() throws Exception {}
 
   @Test
-  public void testGetPort() throws Exception {
-
-  }
+  public void testGetPort() throws Exception {}
 
   @Test
-  public void testGetMetrics() throws Exception {
-
-  }
+  public void testGetMetrics() throws Exception {}
 }

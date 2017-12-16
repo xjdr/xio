@@ -37,6 +37,7 @@ public class SampleHandler extends SimpleChannelInboundHandler<Object> {
 
   /** Buffer that stores the response content */
   private final StringBuilder buf = new StringBuilder();
+
   private HttpRequest request;
 
   private static void appendDecoderResult(StringBuilder buf, HttpObject o) {
@@ -141,9 +142,11 @@ public class SampleHandler extends SimpleChannelInboundHandler<Object> {
     // Decide whether to close the connection or not.
     boolean keepAlive = HttpHeaders.isKeepAlive(request);
     // Build the response object.
-    FullHttpResponse response = new DefaultFullHttpResponse(
-        HTTP_1_1, currentObj.getDecoderResult().isSuccess() ? OK : BAD_REQUEST,
-        Unpooled.copiedBuffer(buf.toString(), CharsetUtil.UTF_8));
+    FullHttpResponse response =
+        new DefaultFullHttpResponse(
+            HTTP_1_1,
+            currentObj.getDecoderResult().isSuccess() ? OK : BAD_REQUEST,
+            Unpooled.copiedBuffer(buf.toString(), CharsetUtil.UTF_8));
 
     response.headers().set(CONTENT_TYPE, "text/plain; charset=UTF-8");
 

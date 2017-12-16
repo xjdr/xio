@@ -34,5 +34,4 @@ public class Http2Response<T> {
   public Http2Response newStreamId(int newId) {
     return new Http2Response(newId, payload, eos);
   }
-
 }

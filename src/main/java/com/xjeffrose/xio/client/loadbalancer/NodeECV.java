@@ -8,7 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class NodeECV extends ChannelInboundHandlerAdapter {
 
-
   private final Node node;
   private final Protocol proto;
   private final ECV ecv;
@@ -20,12 +19,10 @@ public class NodeECV extends ChannelInboundHandlerAdapter {
   }
 
   @Override
-  public void channelActive(ChannelHandlerContext ctx) {
-  }
+  public void channelActive(ChannelHandlerContext ctx) {}
 
   @Override
-  public void channelInactive(ChannelHandlerContext ctx) {
-  }
+  public void channelInactive(ChannelHandlerContext ctx) {}
 
   @Override
   public void channelReadComplete(ChannelHandlerContext ctx) {
@@ -45,5 +42,4 @@ public class NodeECV extends ChannelInboundHandlerAdapter {
     node.setAvailable(false);
     ctx.close();
   }
-
 }

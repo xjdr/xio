@@ -17,21 +17,19 @@ public class SocketConnector extends Connector {
   }
 
   @Override
-  protected Class<? extends Channel> channel () {
+  protected Class<? extends Channel> channel() {
     return channelConfig.channel();
   }
 
   @Override
   protected Bootstrap configure(Bootstrap bootstrap) {
     return bootstrap
-      .option(ChannelOption.SO_REUSEADDR, true)
-      .option(ChannelOption.TCP_NODELAY, true)
-      ;
+        .option(ChannelOption.SO_REUSEADDR, true)
+        .option(ChannelOption.TCP_NODELAY, true);
   }
 
   public SocketConnector(InetSocketAddress address, ClientChannelConfiguration channelConfig) {
     super(address);
     this.channelConfig = channelConfig;
   }
-
 }

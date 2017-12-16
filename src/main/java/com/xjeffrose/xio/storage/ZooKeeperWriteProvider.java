@@ -22,5 +22,4 @@ public class ZooKeeperWriteProvider extends WriteProvider {
       throw new RuntimeException(e);
     }
   }
-
 }

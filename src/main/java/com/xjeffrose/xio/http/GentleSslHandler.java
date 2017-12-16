@@ -9,20 +9,16 @@ import io.netty.handler.ssl.SslContext;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * GentleSslHandler will attach an SSL handler to the pipeline if the incoming
- * data is not clear text. Otherwise it will attach a clear text handler. It
- * is expected that the clear text handler will inform the peer to try to
- * communicate again over SSL, then close the connection.
+ * GentleSslHandler will attach an SSL handler to the pipeline if the incoming data is not clear
+ * text. Otherwise it will attach a clear text handler. It is expected that the clear text handler
+ * will inform the peer to try to communicate again over SSL, then close the connection.
  */
-
 @Slf4j
 public class GentleSslHandler extends OptionalSslHandler {
 
   private final ChannelHandler cleartextHandler;
 
-  /**
-   * cleartextHandler must be Sharable
-   */
+  /** cleartextHandler must be Sharable */
   public GentleSslHandler(SslContext sslContext, ChannelHandlerAdapter cleartextHandler) {
     super(sslContext);
     Preconditions.checkArgument(cleartextHandler.isSharable(), "cleartextHandler must be Sharable");

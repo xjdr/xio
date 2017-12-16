@@ -16,5 +16,4 @@ public abstract class WriteProvider {
   public void write(String key, Marshallable message) {
     write(key, message.getBytes(marshaller));
   }
-
 }

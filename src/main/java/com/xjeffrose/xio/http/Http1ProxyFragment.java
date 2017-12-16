@@ -22,8 +22,11 @@ public class Http1ProxyFragment implements XioPipelineFragment {
     return null;
   }
 
-  public void buildHandlers(ApplicationState appState, XioServerConfig config, XioServerState state, ChannelPipeline pipeline) {
+  public void buildHandlers(
+      ApplicationState appState,
+      XioServerConfig config,
+      XioServerState state,
+      ChannelPipeline pipeline) {
     pipeline.addLast(new Http1ProxyHandler(appState.getRouter()));
   }
-
 }

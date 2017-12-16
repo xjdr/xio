@@ -10,14 +10,10 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class ClientConfig {
-  @Getter
-  private final Map<ChannelOption<Object>, Object> bootstrapOptions;
-  @Getter
-  private final String name;
-  @Getter
-  private final TlsConfig tls;
-  @Getter
-  private final boolean messageLoggerEnabled;
+  @Getter private final Map<ChannelOption<Object>, Object> bootstrapOptions;
+  @Getter private final String name;
+  @Getter private final TlsConfig tls;
+  @Getter private final boolean messageLoggerEnabled;
 
   public ClientConfig(Config config) {
     bootstrapOptions = null;
@@ -29,12 +25,11 @@ public class ClientConfig {
     messageLoggerEnabled = config.getBoolean("settings.messageLoggerEnabled");
   }
 
-  static public ClientConfig fromConfig(String key, Config config) {
+  public static ClientConfig fromConfig(String key, Config config) {
     return new ClientConfig(config.getConfig(key));
   }
 
-  static public ClientConfig fromConfig(String key) {
+  public static ClientConfig fromConfig(String key) {
     return fromConfig(key, ConfigFactory.load());
   }
-
 }

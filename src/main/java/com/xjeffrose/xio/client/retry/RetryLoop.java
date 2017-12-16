@@ -9,12 +9,13 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class RetryLoop {
-  private static final RetrySleeper sleeper = new RetrySleeper() {
-    @Override
-    public void sleepFor(long time, TimeUnit unit) throws InterruptedException {
-      unit.sleep(time);
-    }
-  };
+  private static final RetrySleeper sleeper =
+      new RetrySleeper() {
+        @Override
+        public void sleepFor(long time, TimeUnit unit) throws InterruptedException {
+          unit.sleep(time);
+        }
+      };
 
   private final long startTimeMs = System.currentTimeMillis();
   private final RetryPolicy retryPolicy;
@@ -36,7 +37,9 @@ public class RetryLoop {
   }
 
   public static boolean isRetryException(Throwable exception) {
-    if (exception instanceof ConnectException || exception instanceof ConnectTimeoutException || exception instanceof UnknownHostException) {
+    if (exception instanceof ConnectException
+        || exception instanceof ConnectTimeoutException
+        || exception instanceof UnknownHostException) {
       return true;
     }
     return false;

@@ -19,7 +19,5 @@ public class XioWebApplicationFirewall extends XioFirewall {
   }
 
   @Override
-  void runRuleSet(ChannelHandlerContext ctx, Object msg) {
-
-  }
+  void runRuleSet(ChannelHandlerContext ctx, Object msg) {}
 }

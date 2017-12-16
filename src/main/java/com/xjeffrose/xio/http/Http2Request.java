@@ -22,5 +22,4 @@ public class Http2Request<T> {
   public static Http2Request<Http2Headers> build(int streamId, Http2Headers headers) {
     return new Http2Request<Http2Headers>(streamId, headers);
   }
-
 }

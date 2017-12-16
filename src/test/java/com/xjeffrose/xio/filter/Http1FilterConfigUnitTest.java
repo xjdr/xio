@@ -21,16 +21,14 @@ public class Http1FilterConfigUnitTest extends Assert {
 
     HashMultimap<String, String> headers = HashMultimap.create();
     headers.put("User-Agent", "Bad-actor: 1.0");
-    Http1DeterministicRuleEngineConfig.Rule bad = new Http1DeterministicRuleEngineConfig.Rule(
-      HttpMethod.GET,
-      "/path/to/failure",
-      HttpVersion.HTTP_1_0,
-      headers
-    );
+    Http1DeterministicRuleEngineConfig.Rule bad =
+        new Http1DeterministicRuleEngineConfig.Rule(
+            HttpMethod.GET, "/path/to/failure", HttpVersion.HTTP_1_0, headers);
 
     rules.blacklistRule(bad);
 
-    Http1FilterConfig.Updater updater = new Http1FilterConfig.Updater("path", this::setHttp1FilterConfig);
+    Http1FilterConfig.Updater updater =
+        new Http1FilterConfig.Updater("path", this::setHttp1FilterConfig);
     updater.update(marshaller.marshall(rules));
     Http1FilterConfig expected = new Http1FilterConfig(rules.getBlacklistRules());
 
@@ -40,5 +38,4 @@ public class Http1FilterConfigUnitTest extends Assert {
   public void setHttp1FilterConfig(Http1FilterConfig config) {
     this.config = config;
   }
-
 }

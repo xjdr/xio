@@ -19,11 +19,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Opens and maintains some number of connections to a given endpoint.
  *
- * At least 1 valid connection will be available at any point in time
- * assuming that the network hasn't been nuked.
+ * <p>At least 1 valid connection will be available at any point in time assuming that the network
+ * hasn't been nuked.
  *
- * Retry logic will be used to establish a valid connection in a
- * turbulent network.
+ * <p>Retry logic will be used to establish a valid connection in a turbulent network.
  */
 public class XioConnectionPool {
   private final EventLoopGroup eventLoopGroup;
@@ -35,36 +34,38 @@ public class XioConnectionPool {
   private final AtomicInteger releasedCount = new AtomicInteger(0);
   private final AtomicInteger passedHealthCheckCount = new AtomicInteger(0);
   private final AtomicInteger failedHealthCheckCount = new AtomicInteger(0);
-  private final ChannelPoolHandler channelPoolHandler = new ChannelPoolHandler() {
-    @Override
-    public void channelCreated(Channel ch) {
-      channelCount.incrementAndGet();
-      ch.pipeline().addLast(handler);
-    }
+  private final ChannelPoolHandler channelPoolHandler =
+      new ChannelPoolHandler() {
+        @Override
+        public void channelCreated(Channel ch) {
+          channelCount.incrementAndGet();
+          ch.pipeline().addLast(handler);
+        }
 
-    @Override
-    public void channelReleased(Channel ch) {
-      releasedCount.incrementAndGet();
-    }
+        @Override
+        public void channelReleased(Channel ch) {
+          releasedCount.incrementAndGet();
+        }
 
-    @Override
-    public void channelAcquired(Channel ch) {
-      acquiredCount.incrementAndGet();
-    }
-  };
-  private final ChannelHealthChecker channelHealthChecker = new ChannelHealthChecker() {
-    @Override
-    public Future<Boolean> isHealthy(Channel channel) {
-      EventLoop loop = channel.eventLoop();
-      if (channel.isActive()) {
-        passedHealthCheckCount.incrementAndGet();
-        return loop.newSucceededFuture(Boolean.TRUE);
-      } else {
-        failedHealthCheckCount.incrementAndGet();
-        return loop.newSucceededFuture(Boolean.FALSE);
-      }
-    }
-  };
+        @Override
+        public void channelAcquired(Channel ch) {
+          acquiredCount.incrementAndGet();
+        }
+      };
+  private final ChannelHealthChecker channelHealthChecker =
+      new ChannelHealthChecker() {
+        @Override
+        public Future<Boolean> isHealthy(Channel channel) {
+          EventLoop loop = channel.eventLoop();
+          if (channel.isActive()) {
+            passedHealthCheckCount.incrementAndGet();
+            return loop.newSucceededFuture(Boolean.TRUE);
+          } else {
+            failedHealthCheckCount.incrementAndGet();
+            return loop.newSucceededFuture(Boolean.FALSE);
+          }
+        }
+      };
 
   public XioConnectionPool(Bootstrap bootstrap, AsyncRetryLoopFactory retryLoopFactory) {
     Preconditions.checkNotNull(bootstrap);
@@ -76,20 +77,21 @@ public class XioConnectionPool {
 
   private void acquireWithRetry(AsyncRetryLoop retry, DefaultPromise<Channel> result) {
     Future<Channel> poolResult = simpleChannelPool.acquire();
-    poolResult.addListener(new FutureListener<Channel>() {
-      public void operationComplete(Future<Channel> f) {
-        if (f.isSuccess()) {
-          result.setSuccess(f.getNow());
-        } else {
-          // deal with connection failure here.
-          if (retry.canRetry()) {
-            retry.attempt(() -> acquireWithRetry(retry, result));
-          } else {
-            result.setFailure(f.cause());
+    poolResult.addListener(
+        new FutureListener<Channel>() {
+          public void operationComplete(Future<Channel> f) {
+            if (f.isSuccess()) {
+              result.setSuccess(f.getNow());
+            } else {
+              // deal with connection failure here.
+              if (retry.canRetry()) {
+                retry.attempt(() -> acquireWithRetry(retry, result));
+              } else {
+                result.setFailure(f.cause());
+              }
+            }
           }
-        }
-      }
-    });
+        });
   }
 
   public Future<Channel> acquire() {

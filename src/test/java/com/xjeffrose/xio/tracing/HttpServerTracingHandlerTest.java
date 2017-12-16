@@ -34,7 +34,8 @@ public class HttpServerTracingHandlerTest extends Assert {
   public class ApplicationHandler extends SimpleChannelInboundHandler<HttpRequest> {
     @Override
     public void channelRead0(ChannelHandlerContext ctx, HttpRequest request) throws Exception {
-      ByteBuf content = Unpooled.copiedBuffer("Here is the default content that is returned", CharsetUtil.UTF_8);
+      ByteBuf content =
+          Unpooled.copiedBuffer("Here is the default content that is returned", CharsetUtil.UTF_8);
       HttpResponseStatus status = OK;
 
       Tracer tracer = httpTracing.tracing().tracer();
@@ -52,7 +53,6 @@ public class HttpServerTracingHandlerTest extends Assert {
     }
   }
 
-
   ConcurrentLinkedDeque<zipkin.Span> spans = new ConcurrentLinkedDeque<>();
 
   CurrentTraceContext currentTraceContext = new StrictCurrentTraceContext();
@@ -61,16 +61,17 @@ public class HttpServerTracingHandlerTest extends Assert {
 
   Tracing.Builder tracingBuilder(Sampler sampler) {
     return Tracing.newBuilder()
-      .reporter(s -> {
-          // make sure the context was cleared prior to finish.. no leaks!
-          TraceContext current = httpTracing.tracing().currentTraceContext().get();
-          if (current != null) {
-            Assert.assertNotEquals(current.spanId(), s.id);
-          }
-          spans.add(s);
-        })
-      .currentTraceContext(currentTraceContext)
-      .sampler(sampler);
+        .reporter(
+            s -> {
+              // make sure the context was cleared prior to finish.. no leaks!
+              TraceContext current = httpTracing.tracing().currentTraceContext().get();
+              if (current != null) {
+                Assert.assertNotEquals(current.spanId(), s.id);
+              }
+              spans.add(s);
+            })
+        .currentTraceContext(currentTraceContext)
+        .sampler(sampler);
   }
 
   @Before
@@ -82,25 +83,27 @@ public class HttpServerTracingHandlerTest extends Assert {
   @Test
   public void testThreadBoundaries() throws Exception {
 
-    Thread thread = new Thread(new Runnable() {
-        public void run() {
-          EmbeddedChannel channel = new EmbeddedChannel(new HttpServerTracingHandler(httpTracingState),
-                                                        new ApplicationHandler());
+    Thread thread =
+        new Thread(
+            new Runnable() {
+              public void run() {
+                EmbeddedChannel channel =
+                    new EmbeddedChannel(
+                        new HttpServerTracingHandler(httpTracingState), new ApplicationHandler());
 
-          DefaultHttpRequest request = new DefaultHttpRequest(HTTP_1_1, GET, "/foo");
-          channel.writeInbound(request);
-          channel.runPendingTasks();
+                DefaultHttpRequest request = new DefaultHttpRequest(HTTP_1_1, GET, "/foo");
+                channel.writeInbound(request);
+                channel.runPendingTasks();
 
-          synchronized(httpTracing) {
-            httpTracing.notify();
-          }
-        }
-      });
+                synchronized (httpTracing) {
+                  httpTracing.notify();
+                }
+              }
+            });
     thread.start();
-    synchronized(httpTracing) {
+    synchronized (httpTracing) {
       httpTracing.wait();
     }
     Assert.assertEquals(2, spans.size());
   }
-
 }

@@ -14,7 +14,7 @@ public class LocalConnector extends Connector {
   }
 
   @Override
-  protected Class<? extends Channel> channel () {
+  protected Class<? extends Channel> channel() {
     return LocalChannel.class;
   }
 
@@ -25,5 +25,4 @@ public class LocalConnector extends Connector {
   public LocalConnector(String address) {
     this(new LocalAddress(address));
   }
-
 }

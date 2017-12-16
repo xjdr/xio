@@ -28,5 +28,4 @@ public class XioSecurityHandlerImplTest {
     X509Certificate selfSignedCert = SelfSignedX509CertGenerator.generate("*.paypal.com");
     assertNotNull(selfSignedCert);
   }
-
 }

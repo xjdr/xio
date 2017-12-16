@@ -6,17 +6,24 @@ import io.netty.handler.timeout.IdleStateHandler;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
-public class XioIdleDisconnectHandler extends IdleStateHandler{
-  public XioIdleDisconnectHandler(int readerIdleTimeSeconds, int writerIdleTimeSeconds, int allIdleTimeSeconds) {
+public class XioIdleDisconnectHandler extends IdleStateHandler {
+  public XioIdleDisconnectHandler(
+      int readerIdleTimeSeconds, int writerIdleTimeSeconds, int allIdleTimeSeconds) {
     super(readerIdleTimeSeconds, writerIdleTimeSeconds, allIdleTimeSeconds);
   }
 
-  public XioIdleDisconnectHandler(long readerIdleTime, long writerIdleTime, long allIdleTime, TimeUnit unit) {
+  public XioIdleDisconnectHandler(
+      long readerIdleTime, long writerIdleTime, long allIdleTime, TimeUnit unit) {
     super(readerIdleTime, writerIdleTime, allIdleTime, unit);
   }
 
-  public XioIdleDisconnectHandler(Duration readerIdleTime, Duration writerIdleTime, Duration allIdleTime) {
-    this(readerIdleTime.toMillis(), writerIdleTime.toMillis(), allIdleTime.toMillis(), TimeUnit.MILLISECONDS);
+  public XioIdleDisconnectHandler(
+      Duration readerIdleTime, Duration writerIdleTime, Duration allIdleTime) {
+    this(
+        readerIdleTime.toMillis(),
+        writerIdleTime.toMillis(),
+        allIdleTime.toMillis(),
+        TimeUnit.MILLISECONDS);
   }
 
   @Override

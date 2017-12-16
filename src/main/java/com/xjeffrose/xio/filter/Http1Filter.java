@@ -15,16 +15,15 @@ public class Http1Filter extends ChannelInboundHandlerAdapter {
   @Override
   public void channelRead(ChannelHandlerContext ctx, Object msg) {
     if (msg instanceof HttpRequest) {
-      HttpRequest request = (HttpRequest)msg;
+      HttpRequest request = (HttpRequest) msg;
       filter(ctx, request);
     }
     ctx.fireChannelRead(msg);
   }
 
   /**
-   * If there is no request or the request is denied close the
-   * ctx. Otherwise allow the connection to live. In either case
-   * remove this handler from the pipeline.
+   * If there is no request or the request is denied close the ctx. Otherwise allow the connection
+   * to live. In either case remove this handler from the pipeline.
    */
   private void filter(ChannelHandlerContext ctx, HttpRequest request) {
     ctx.pipeline().remove(this);
@@ -32,5 +31,4 @@ public class Http1Filter extends ChannelInboundHandlerAdapter {
       ctx.close();
     }
   }
-
 }

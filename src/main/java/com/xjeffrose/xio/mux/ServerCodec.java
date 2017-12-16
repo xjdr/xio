@@ -21,20 +21,24 @@ public class ServerCodec extends ChannelDuplexHandler {
   @Override
   public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
     if (msg instanceof Message) {
-      Message message = (Message)msg;
+      Message message = (Message) msg;
       if (currentPayload == null) {
         log.error("No payload received for request id '{}': {}", message.getId(), message);
-        ctx.fireExceptionCaught(new RuntimeException("No payload received for request id '" + message.getId() + "'"));
+        ctx.fireExceptionCaught(
+            new RuntimeException("No payload received for request id '" + message.getId() + "'"));
         reset();
         return;
       }
       if (error) {
         log.error("Multiple payloads received for request id '{}': {}", message.getId(), message);
-        ctx.fireExceptionCaught(new RuntimeException("Multiple payloads received for request id '" + message.getId() + "'"));
+        ctx.fireExceptionCaught(
+            new RuntimeException(
+                "Multiple payloads received for request id '" + message.getId() + "'"));
         reset();
         return;
       }
-      ServerRequest request = new ServerRequest(message.getId(), message.expectsResponse(), currentPayload);
+      ServerRequest request =
+          new ServerRequest(message.getId(), message.expectsResponse(), currentPayload);
       ctx.fireChannelRead(request);
       reset();
     } else {
@@ -43,7 +47,7 @@ public class ServerCodec extends ChannelDuplexHandler {
         return;
       }
       if (msg instanceof ReferenceCounted) {
-        currentPayload = ((ReferenceCounted)msg).retain();
+        currentPayload = ((ReferenceCounted) msg).retain();
       } else {
         currentPayload = msg;
       }
@@ -57,9 +61,10 @@ public class ServerCodec extends ChannelDuplexHandler {
   }
 
   @Override
-  public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
+  public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise)
+      throws Exception {
     if (msg instanceof Response) {
-      Response response = (Response)msg;
+      Response response = (Response) msg;
 
       PromiseCombiner combiner = new PromiseCombiner();
       combiner.add(write(ctx, response.getPayload()));

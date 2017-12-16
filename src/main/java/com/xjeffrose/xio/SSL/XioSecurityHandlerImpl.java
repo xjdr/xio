@@ -33,23 +33,20 @@ public class XioSecurityHandlerImpl implements XioSecurityHandlers {
   private final String cert;
   private final String key;
   private final boolean clientMode;
-  private final static X509Certificate selfSignedCert = createSelfSigned();
+  private static final X509Certificate selfSignedCert = createSelfSigned();
 
-
-  public static X509Certificate createSelfSigned(){
-    try{
+  public static X509Certificate createSelfSigned() {
+    try {
       return SelfSignedX509CertGenerator.generate("*.xjeffrose.com");
-    }catch (Exception e){
+    } catch (Exception e) {
       e.printStackTrace();
     }
     return null;
   }
 
-
   public XioSecurityHandlerImpl() {
     this(false);
   }
-
 
   public XioSecurityHandlerImpl(boolean clientMode) {
     this(null, null, clientMode);
@@ -58,7 +55,6 @@ public class XioSecurityHandlerImpl implements XioSecurityHandlers {
   public XioSecurityHandlerImpl(String cert, String key) {
     this(cert, key, false);
   }
-
 
   public XioSecurityHandlerImpl(String cert, String key, boolean clientMode) {
     this.cert = cert;
@@ -82,7 +78,8 @@ public class XioSecurityHandlerImpl implements XioSecurityHandlers {
       X509Certificate selfSignedCert = null;
 
       if (key != null) {
-        X509CertificateGenerator.DERKeySpec derKeySpec = X509CertificateGenerator.parseDERKeySpec(key);
+        X509CertificateGenerator.DERKeySpec derKeySpec =
+            X509CertificateGenerator.parseDERKeySpec(key);
         privateKey = X509CertificateGenerator.buildPrivateKey(derKeySpec);
         publicKey = X509CertificateGenerator.buildPublicKey(derKeySpec);
       } else {
@@ -99,8 +96,9 @@ public class XioSecurityHandlerImpl implements XioSecurityHandlers {
         for (String cert : certs) {
           CertificateFactory cf = CertificateFactory.getInstance("X.509");
           java.security.cert.X509Certificate x509Certificate =
-              (java.security.cert.X509Certificate) cf.generateCertificate(
-                  new ByteArrayInputStream((cert + "-----END CERTIFICATE-----\n").getBytes()));
+              (java.security.cert.X509Certificate)
+                  cf.generateCertificate(
+                      new ByteArrayInputStream((cert + "-----END CERTIFICATE-----\n").getBytes()));
           certList.add(x509Certificate);
         }
 
@@ -121,21 +119,22 @@ public class XioSecurityHandlerImpl implements XioSecurityHandlers {
         SslContext sslCtx;
 
         if (OpenSsl.isAvailable()) {
-          sslCtx = SslContextBuilder
-              .forServer(privateKey, chain)
-              .sslProvider(SslProvider.OPENSSL)
-              .build();
+          sslCtx =
+              SslContextBuilder.forServer(privateKey, chain)
+                  .sslProvider(SslProvider.OPENSSL)
+                  .build();
         } else {
           final KeyStore keyStore = KeyStore.getInstance("JKS", "SUN");
           keyStore.load(null, PASSWORD.toCharArray());
-          keyStore.setKeyEntry(chain[0].getIssuerX500Principal().getName(), privateKey, PASSWORD.toCharArray(), chain);
+          keyStore.setKeyEntry(
+              chain[0].getIssuerX500Principal().getName(),
+              privateKey,
+              PASSWORD.toCharArray(),
+              chain);
           KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
 
           kmf.init(keyStore, PASSWORD.toCharArray());
-          sslCtx = SslContextBuilder
-              .forServer(kmf)
-              .sslProvider(SslProvider.JDK)
-              .build();
+          sslCtx = SslContextBuilder.forServer(kmf).sslProvider(SslProvider.JDK).build();
         }
 
         ChannelHandler handler = sslCtx.newHandler(new PooledByteBufAllocator());
@@ -144,7 +143,9 @@ public class XioSecurityHandlerImpl implements XioSecurityHandlers {
         // tsu - enable all protocols since legacy apps still use SSLv2Hello...
         // JDK 7, 8, 9 (Early Access)    SSLv2Hello(2), SSLv3, TLSv1, TLSv1.1, TLSv1.2
         // TODO(JR): Fix this or only enable for certain service as this is insecure
-        ((SslHandler) handler).engine().setEnabledProtocols(((SslHandler) handler).engine().getSupportedProtocols());
+        ((SslHandler) handler)
+            .engine()
+            .setEnabledProtocols(((SslHandler) handler).engine().getSupportedProtocols());
 
         return handler;
 
@@ -152,25 +153,29 @@ public class XioSecurityHandlerImpl implements XioSecurityHandlers {
         SslContext sslCtx;
 
         if (OpenSsl.isAvailable()) {
-          sslCtx = SslContextBuilder
-              .forClient()
-              .sslProvider(SslProvider.OPENSSL)
-              .keyManager(privateKey, chain)
-              .trustManager(InsecureTrustManagerFactory.INSTANCE)
-              .build();
+          sslCtx =
+              SslContextBuilder.forClient()
+                  .sslProvider(SslProvider.OPENSSL)
+                  .keyManager(privateKey, chain)
+                  .trustManager(InsecureTrustManagerFactory.INSTANCE)
+                  .build();
         } else {
           final KeyStore keyStore = KeyStore.getInstance("JKS", "SUN");
           keyStore.load(null, PASSWORD.toCharArray());
-          keyStore.setKeyEntry(chain[0].getIssuerX500Principal().getName(), privateKey, PASSWORD.toCharArray(), chain);
+          keyStore.setKeyEntry(
+              chain[0].getIssuerX500Principal().getName(),
+              privateKey,
+              PASSWORD.toCharArray(),
+              chain);
           KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
 
           kmf.init(keyStore, PASSWORD.toCharArray());
-          sslCtx = SslContextBuilder
-              .forClient()
-              .sslProvider(SslProvider.JDK)
-              .keyManager(kmf)
-              .trustManager(InsecureTrustManagerFactory.INSTANCE)
-              .build();
+          sslCtx =
+              SslContextBuilder.forClient()
+                  .sslProvider(SslProvider.JDK)
+                  .keyManager(kmf)
+                  .trustManager(InsecureTrustManagerFactory.INSTANCE)
+                  .build();
         }
 
         ChannelHandler handler = sslCtx.newHandler(new PooledByteBufAllocator());
@@ -178,7 +183,15 @@ public class XioSecurityHandlerImpl implements XioSecurityHandlers {
         return handler;
       }
 
-    } catch (NoSuchAlgorithmException | KeyStoreException | UnrecoverableKeyException | CertificateException | NoSuchProviderException | IllegalArgumentException | IOException | SignatureException | InvalidKeyException e) {
+    } catch (NoSuchAlgorithmException
+        | KeyStoreException
+        | UnrecoverableKeyException
+        | CertificateException
+        | NoSuchProviderException
+        | IllegalArgumentException
+        | IOException
+        | SignatureException
+        | InvalidKeyException e) {
       e.printStackTrace();
     }
 

@@ -30,7 +30,8 @@ public class Encoder extends ChannelOutboundHandlerAdapter {
   }
 
   @Override
-  public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
+  public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise)
+      throws Exception {
 
     if (msg instanceof ByteBuf) {
       if (currentMessage == null) {
@@ -40,7 +41,7 @@ public class Encoder extends ChannelOutboundHandlerAdapter {
         currentMessage.addComponent(currentHeader);
       }
 
-      currentMessage.addComponent(true, (ByteBuf)msg);
+      currentMessage.addComponent(true, (ByteBuf) msg);
       promise.setSuccess();
     } else if (msg instanceof Message) {
       if (error) {
@@ -52,7 +53,7 @@ public class Encoder extends ChannelOutboundHandlerAdapter {
         throw new EncoderException("Encoder received Message without anything to encode");
       }
 
-      encodeMessage((Message)msg, currentMessage.readableBytes(), currentHeader);
+      encodeMessage((Message) msg, currentMessage.readableBytes(), currentHeader);
       currentMessage.addComponent(true, 0, currentHeader);
 
       ctx.write(currentMessage, promise);
@@ -61,5 +62,4 @@ public class Encoder extends ChannelOutboundHandlerAdapter {
       error = true;
     }
   }
-
 }

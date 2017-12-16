@@ -8,14 +8,14 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class XioExceptionLogger extends LoggingHandler {
 
-
   @Override
   public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
     ctx.fireChannelRead(msg);
   }
 
   @Override
-  public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
+  public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise)
+      throws Exception {
     ctx.write(msg, promise);
   }
 

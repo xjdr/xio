@@ -14,24 +14,23 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import java.util.concurrent.ThreadFactory;
 
-/**
- * Utility class used to build ClientChannelConfiguration and ServerChannelConfiguration.
- */
+/** Utility class used to build ClientChannelConfiguration and ServerChannelConfiguration. */
 public class ChannelConfiguration {
 
-  static private ThreadFactory threadFactory(String nameFormat) {
+  private static ThreadFactory threadFactory(String nameFormat) {
     return new ThreadFactoryBuilder().setNameFormat(nameFormat).build();
   }
 
   /**
-   * This method will configure a worker EventLoopGroup and a Channel
-   * for use by a client. It will try to use Epoll if it's available.
+   * This method will configure a worker EventLoopGroup and a Channel for use by a client. It will
+   * try to use Epoll if it's available.
    *
    * @param workerThreads spawn int number of worker threads
    * @param workerNameFormat uses String to set the worker thread names
    * @return ClientChannelConfiguration
    */
-  static public ClientChannelConfiguration clientConfig(int workerThreads, String workerNameFormat) {
+  public static ClientChannelConfiguration clientConfig(
+      int workerThreads, String workerNameFormat) {
     EventLoopGroup workerGroup;
     Class<? extends Channel> channelClass;
     if (Epoll.isAvailable()) {
@@ -46,17 +45,16 @@ public class ChannelConfiguration {
   }
 
   /**
-   * This method will configure a worker EventLoopGroup and a Channel
-   * for use by a client. It will try to use the correct SocketChannel
-   * for the provided workerGroup.
+   * This method will configure a worker EventLoopGroup and a Channel for use by a client. It will
+   * try to use the correct SocketChannel for the provided workerGroup.
    *
    * @param workerGroup uses EventLoopGroup in the ClientChannelConfiguration
    * @return ClientChannelConfiguration
    */
-  static public ClientChannelConfiguration clientConfig(EventLoopGroup workerGroup) {
+  public static ClientChannelConfiguration clientConfig(EventLoopGroup workerGroup) {
     EventLoopGroup parent = workerGroup;
     if (parent instanceof EventLoop) {
-      parent = ((EventLoop)workerGroup).parent();
+      parent = ((EventLoop) workerGroup).parent();
     }
     Class<? extends Channel> channelClass;
     if (parent instanceof EpollEventLoopGroup) {
@@ -70,11 +68,9 @@ public class ChannelConfiguration {
     return new ClientChannelConfiguration(workerGroup, channelClass);
   }
 
-
   /**
-   * This method will configure a boss EventLoopGroup, a worker
-   * EventLoopGroup and a ServerChannel for use by a server. It will
-   * try to use Epoll if it's available.
+   * This method will configure a boss EventLoopGroup, a worker EventLoopGroup and a ServerChannel
+   * for use by a server. It will try to use Epoll if it's available.
    *
    * @param bossThreads spawn in number of boss threads
    * @param bossNameFormat uses String to the boss thread names
@@ -82,7 +78,8 @@ public class ChannelConfiguration {
    * @param workerNameFormat uses String to set the worker thread names
    * @return ClientChannelConfiguration
    */
-  static public ServerChannelConfiguration serverConfig(int bossThreads, String bossNameFormat, int workerThreads, String workerNameFormat) {
+  public static ServerChannelConfiguration serverConfig(
+      int bossThreads, String bossNameFormat, int workerThreads, String workerNameFormat) {
     EventLoopGroup bossGroup;
     EventLoopGroup workerGroup;
     Class<? extends ServerChannel> channelClass;

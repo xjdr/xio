@@ -1,6 +1,5 @@
 package com.xjeffrose.xio.http.internal;
 
-import com.xjeffrose.xio.core.internal.UnstableApi;
 import com.xjeffrose.xio.http.Headers;
 import com.xjeffrose.xio.http.StreamingData;
 import io.netty.buffer.ByteBuf;
@@ -8,9 +7,7 @@ import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.LastHttpContent;
 import lombok.ToString;
 
-/**
- * Wrap an incoming HttpContent, for use by streaming clients or servers
- */
+/** Wrap an incoming HttpContent, for use by streaming clients or servers */
 @ToString
 public class Http1StreamingData implements StreamingData {
 
@@ -20,7 +17,7 @@ public class Http1StreamingData implements StreamingData {
 
   static Headers buildHeaders(HttpContent content) {
     if (content instanceof LastHttpContent) {
-      LastHttpContent last = (LastHttpContent)content;
+      LastHttpContent last = (LastHttpContent) content;
       if (last.trailingHeaders() != null) {
         return new Http1Headers(last.trailingHeaders());
       } else {
@@ -48,5 +45,4 @@ public class Http1StreamingData implements StreamingData {
   public Headers trailingHeaders() {
     return trailingHeaders;
   }
-
 }

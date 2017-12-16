@@ -10,8 +10,8 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 
 /**
- * This class will configure an EventLoopGroup and a Channel for use
- * by a client. It will try to use Epoll if it's available.
+ * This class will configure an EventLoopGroup and a Channel for use by a client. It will try to use
+ * Epoll if it's available.
  */
 // TODO(CK): this needs to move into the bootstrap package
 public class ChannelConfiguration {
@@ -32,7 +32,7 @@ public class ChannelConfiguration {
     return channelClass;
   }
 
-  static public ChannelConfiguration clientConfig(int workerThreads) {
+  public static ChannelConfiguration clientConfig(int workerThreads) {
     EventLoopGroup workerGroup;
     Class<? extends Channel> channelClass;
     if (Epoll.isAvailable()) {
@@ -46,10 +46,10 @@ public class ChannelConfiguration {
     return new ChannelConfiguration(workerGroup, channelClass);
   }
 
-  static public ChannelConfiguration clientConfig(EventLoopGroup workerGroup) {
+  public static ChannelConfiguration clientConfig(EventLoopGroup workerGroup) {
     EventLoopGroup parent = workerGroup;
     if (parent instanceof EventLoop) {
-      parent = ((EventLoop)workerGroup).parent();
+      parent = ((EventLoop) workerGroup).parent();
     }
     Class<? extends Channel> channelClass;
     if (parent instanceof EpollEventLoopGroup) {

@@ -17,13 +17,17 @@ public class ZooKeeperClientFactory {
     BoundedExponentialBackoffRetry {
       @Override
       RetryPolicy build(Config config) {
-        return new BoundedExponentialBackoffRetry(getMillis(config, "baseSleepDuration"), getMillis(config, "maxSleepDuration"), config.getInt("maxRetries"));
+        return new BoundedExponentialBackoffRetry(
+            getMillis(config, "baseSleepDuration"),
+            getMillis(config, "maxSleepDuration"),
+            config.getInt("maxRetries"));
       }
     },
     ExponentialBackoffRetry {
       @Override
       RetryPolicy build(Config config) {
-        return new ExponentialBackoffRetry(getMillis(config, "baseSleepDuration"), config.getInt("maxRetries"));
+        return new ExponentialBackoffRetry(
+            getMillis(config, "baseSleepDuration"), config.getInt("maxRetries"));
       }
     },
     RetryForever {
@@ -47,13 +51,15 @@ public class ZooKeeperClientFactory {
     RetryUntilElapsed {
       @Override
       RetryPolicy build(Config config) {
-        return new RetryUntilElapsed(getMillis(config, "maxElapsedDuration"), getMillis(config, "sleepDuration"));
+        return new RetryUntilElapsed(
+            getMillis(config, "maxElapsedDuration"), getMillis(config, "sleepDuration"));
       }
     };
 
     int getMillis(Config config, String path) {
-      return (int)config.getDuration(path).toMillis();
+      return (int) config.getDuration(path).toMillis();
     }
+
     abstract RetryPolicy build(Config config);
   }
 
@@ -67,10 +73,12 @@ public class ZooKeeperClientFactory {
     Config retry = config.getConfig("client.retry");
     try {
       ClientRetryPolicy policy = ClientRetryPolicy.valueOf(retry.getString("policy"));
-      return CuratorFrameworkFactory.newClient(config.getString("cluster"), policy.build(retry.getConfig(policy.name())));
+      return CuratorFrameworkFactory.newClient(
+          config.getString("cluster"), policy.build(retry.getConfig(policy.name())));
     } catch (IllegalArgumentException e) {
-      throw new RuntimeException("zookeeper.client.retry.policy must be one of " + Arrays.asList(ClientRetryPolicy.values()));
+      throw new RuntimeException(
+          "zookeeper.client.retry.policy must be one of "
+              + Arrays.asList(ClientRetryPolicy.values()));
     }
   }
-
 }

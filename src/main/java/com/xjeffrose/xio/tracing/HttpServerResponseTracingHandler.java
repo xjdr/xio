@@ -17,7 +17,8 @@ class HttpServerResponseTracingHandler extends ChannelOutboundHandlerAdapter {
   }
 
   @Override
-  public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
+  public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise)
+      throws Exception {
     if (!(msg instanceof HttpResponse)) {
       ctx.write(msg, promise);
       return;
@@ -25,12 +26,13 @@ class HttpServerResponseTracingHandler extends ChannelOutboundHandlerAdapter {
 
     final HttpResponse response = (HttpResponse) msg;
 
-    ctx.write(msg, promise).addListener(new ChannelFutureListener() {
-        @Override
-        public void operationComplete(ChannelFuture future) throws Exception {
-          state.onResponse(ctx, response, future.cause());
-        }
-      });
+    ctx.write(msg, promise)
+        .addListener(
+            new ChannelFutureListener() {
+              @Override
+              public void operationComplete(ChannelFuture future) throws Exception {
+                state.onResponse(ctx, response, future.cause());
+              }
+            });
   }
-
 }

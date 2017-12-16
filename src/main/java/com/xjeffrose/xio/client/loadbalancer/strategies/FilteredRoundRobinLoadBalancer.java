@@ -22,7 +22,10 @@ public class FilteredRoundRobinLoadBalancer implements Strategy {
 
   @Override
   public boolean okToPick(Node node) {
-    return node.getFilters().stream().allMatch(item -> filter.contains(node.getServiceName(), node.address().getHostName(),item));
+    return node.getFilters()
+        .stream()
+        .allMatch(
+            item -> filter.contains(node.getServiceName(), node.address().getHostName(), item));
   }
 
   @Override
@@ -30,7 +33,7 @@ public class FilteredRoundRobinLoadBalancer implements Strategy {
     List<UUID> ids = new ArrayList<>(okNodes.keySet());
 
     Collections.shuffle(ids, new Random());
-    for (UUID id: ids) {
+    for (UUID id : ids) {
       Node nextNode = okNodes.get(id);
       if (okToPick(nextNode)) {
         if (nextNode.isAvailable()) {

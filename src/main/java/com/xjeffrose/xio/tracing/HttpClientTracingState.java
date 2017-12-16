@@ -17,14 +17,10 @@ import lombok.Getter;
 
 public class HttpClientTracingState extends HttpTracingState {
 
-  @Getter
-  private final Tracing tracing;
-  @Getter
-  private final Tracer tracer;
-  @Getter
-  private final HttpClientHandler<HttpRequest, HttpResponse> handler;
-  @Getter
-  private final TraceContext.Injector<HttpHeaders> injector;
+  @Getter private final Tracing tracing;
+  @Getter private final Tracer tracer;
+  @Getter private final HttpClientHandler<HttpRequest, HttpResponse> handler;
+  @Getter private final TraceContext.Injector<HttpHeaders> injector;
 
   public HttpClientTracingState(HttpTracing httpTracing, boolean ssl) {
     tracing = httpTracing.tracing();
@@ -36,7 +32,7 @@ public class HttpClientTracingState extends HttpTracingState {
   private HttpHeaders addRemoteIp(ChannelHandlerContext ctx, HttpHeaders headers) {
     SocketAddress address = ctx.channel().remoteAddress();
     if (address instanceof InetSocketAddress) {
-      headers.set("x-remote-ip", ((InetSocketAddress)address).getHostString());
+      headers.set("x-remote-ip", ((InetSocketAddress) address).getHostString());
     }
     return headers;
   }
@@ -70,5 +66,4 @@ public class HttpClientTracingState extends HttpTracingState {
       handler.handleReceive(null, cause, span);
     }
   }
-
 }

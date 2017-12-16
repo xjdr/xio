@@ -30,7 +30,7 @@ public class Http1Rules {
         rules.put(newRule, ruleType);
         log.debug("rules {}", rules);
       }
-    } catch(InterruptedException e) {
+    } catch (InterruptedException e) {
       log.error("addIpRule couldn't add {}", http1Rule, e);
       return new Result(false, e.getMessage());
     }
@@ -48,11 +48,10 @@ public class Http1Rules {
         workLoad.put(UpdateMessage.removeHttp1Rule(newRule));
         rules.remove(newRule);
       }
-    } catch(InterruptedException e) {
+    } catch (InterruptedException e) {
       log.error("addIpRule couldn't add {}", http1Rule, e);
       return new Result(false, e.getMessage());
     }
     return new Result(true, "");
   }
-
 }

@@ -20,12 +20,9 @@ public class SimpleTestServer extends AbstractHandler implements Runnable, AutoC
     this.port = port;
   }
 
-  public void handle(String target,
-                     Request baseRequest,
-                     HttpServletRequest request,
-                     HttpServletResponse response)
-      throws IOException, ServletException
-  {
+  public void handle(
+      String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
+      throws IOException, ServletException {
     response.setContentType("text/html;charset=utf-8");
     response.setStatus(HttpServletResponse.SC_OK);
     response.setHeader("X-TEST-HEADER", request.getHeader("X-TEST-HEADER"));
@@ -51,7 +48,7 @@ public class SimpleTestServer extends AbstractHandler implements Runnable, AutoC
 
     try {
       server.start();
-      boundPort = ((ServerConnector)server.getConnectors()[0]).getLocalPort();
+      boundPort = ((ServerConnector) server.getConnectors()[0]).getLocalPort();
     } catch (Exception e) {
       throw new RuntimeException(e);
     }

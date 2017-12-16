@@ -5,7 +5,8 @@ import io.netty.util.AttributeKey;
 
 public class TlsAuthState {
 
-  private static final AttributeKey<String> PEER_IDENTITY_KEY = AttributeKey.newInstance("xio_peer_identity");
+  private static final AttributeKey<String> PEER_IDENTITY_KEY =
+      AttributeKey.newInstance("xio_peer_identity");
 
   public static final String UNAUTHENTICATED = "";
 
@@ -23,5 +24,4 @@ public class TlsAuthState {
   public static String getPeerIdentity(ChannelHandlerContext ctx) {
     return getDefaultPeer(ctx.channel().attr(PEER_IDENTITY_KEY).get());
   }
-
 }

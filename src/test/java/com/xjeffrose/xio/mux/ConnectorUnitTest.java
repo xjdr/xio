@@ -35,22 +35,22 @@ public class ConnectorUnitTest extends Assert {
     EventLoopGroup serverGroup = new DefaultEventLoopGroup();
     ServerBootstrap sb = new ServerBootstrap();
     sb.group(serverGroup)
-      .channel(LocalServerChannel.class)
-      .handler(new ChannelInitializer<LocalServerChannel>() {
-        @Override
-        public void initChannel(LocalServerChannel ch) throws Exception {
-        }
-      })
-      .childHandler(new ChannelInitializer<LocalChannel>() {
-        @Override
-        public void initChannel(LocalChannel ch) throws Exception {
-        }
-      });
+        .channel(LocalServerChannel.class)
+        .handler(
+            new ChannelInitializer<LocalServerChannel>() {
+              @Override
+              public void initChannel(LocalServerChannel ch) throws Exception {}
+            })
+        .childHandler(
+            new ChannelInitializer<LocalChannel>() {
+              @Override
+              public void initChannel(LocalChannel ch) throws Exception {}
+            });
     ChannelFuture future = sb.bind(address);
 
     future.awaitUninterruptibly();
 
-    server = (LocalServerChannel)future.channel();
+    server = (LocalServerChannel) future.channel();
   }
 
   @After
@@ -61,42 +61,44 @@ public class ConnectorUnitTest extends Assert {
   @Test
   public void testConnect() throws ExecutionException {
     EventLoopGroup group = new DefaultEventLoopGroup();
-    Connector connector = new Connector(address) {
-      @Override
-      protected List<Map.Entry<String, ChannelHandler>> payloadHandlers() {
-        return Arrays.asList();
-      }
+    Connector connector =
+        new Connector(address) {
+          @Override
+          protected List<Map.Entry<String, ChannelHandler>> payloadHandlers() {
+            return Arrays.asList();
+          }
 
-      @Override
-      protected EventLoopGroup group() {
-        return group;
-      }
+          @Override
+          protected EventLoopGroup group() {
+            return group;
+          }
 
-      @Override
-      protected Class<? extends Channel> channel () {
-        return LocalChannel.class;
-      }
-    };
+          @Override
+          protected Class<? extends Channel> channel() {
+            return LocalChannel.class;
+          }
+        };
 
     ListenableFuture<Channel> future = connector.connect();
 
     CountDownLatch done = new CountDownLatch(1);
 
-    Futures.addCallback(future, new FutureCallback<Channel>() {
-      @Override
-      public void onSuccess(Channel ch) {
-        assertTrue(true);
-        done.countDown();
-      }
+    Futures.addCallback(
+        future,
+        new FutureCallback<Channel>() {
+          @Override
+          public void onSuccess(Channel ch) {
+            assertTrue(true);
+            done.countDown();
+          }
 
-      @Override
-      public void onFailure(Throwable throwable) {
-        done.countDown();
-        assertTrue(false);
-      }
-    });
+          @Override
+          public void onFailure(Throwable throwable) {
+            done.countDown();
+            assertTrue(false);
+          }
+        });
 
     Uninterruptibles.awaitUninterruptibly(done); // block
   }
-
 }

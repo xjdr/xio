@@ -5,7 +5,8 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.AttributeKey;
 
 public class ConnectionContextHandler extends ChannelDuplexHandler {
-  private static final AttributeKey<XioConnectionContext> CONNECTION_CONTEXT = AttributeKey.valueOf("XioConnectionContext");
+  private static final AttributeKey<XioConnectionContext> CONNECTION_CONTEXT =
+      AttributeKey.valueOf("XioConnectionContext");
 
   @Override
   public void channelActive(ChannelHandlerContext ctx) throws Exception {

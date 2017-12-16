@@ -40,7 +40,8 @@ abstract class ProxyServer implements XioPipelineFragment {
     }
 
     @Override
-    protected final void channelRead0(final ChannelHandlerContext ctx, Object msg) throws Exception {
+    protected final void channelRead0(final ChannelHandlerContext ctx, Object msg)
+        throws Exception {
       if (finished) {
         received.add(ReferenceCountUtil.retain(msg));
         flush();
@@ -51,24 +52,25 @@ abstract class ProxyServer implements XioPipelineFragment {
       if (finished) {
         this.finished = true;
         ChannelFuture f = connectToDestination(ctx.channel().eventLoop(), new BackendHandler(ctx));
-        f.addListener(new ChannelFutureListener() {
-          @Override
-          public void operationComplete(ChannelFuture future) throws Exception {
-            if (!future.isSuccess()) {
-              ctx.close();
-            } else {
-              backend = future.channel();
-              flush();
-            }
-          }
-        });
+        f.addListener(
+            new ChannelFutureListener() {
+              @Override
+              public void operationComplete(ChannelFuture future) throws Exception {
+                if (!future.isSuccess()) {
+                  ctx.close();
+                } else {
+                  backend = future.channel();
+                  flush();
+                }
+              }
+            });
       }
     }
 
     private void flush() {
       if (backend != null) {
         boolean wrote = false;
-        for (;;) {
+        for (; ; ) {
           Object msg = received.poll();
           if (msg == null) {
             break;
@@ -83,7 +85,8 @@ abstract class ProxyServer implements XioPipelineFragment {
       }
     }
 
-    protected abstract boolean handleProxyProtocol(ChannelHandlerContext ctx, Object msg) throws Exception;
+    protected abstract boolean handleProxyProtocol(ChannelHandlerContext ctx, Object msg)
+        throws Exception;
 
     protected abstract SocketAddress intermediaryDestination();
 

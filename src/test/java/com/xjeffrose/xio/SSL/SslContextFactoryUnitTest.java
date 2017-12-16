@@ -11,17 +11,17 @@ import org.junit.Test;
 
 public class SslContextFactoryUnitTest extends Assert {
 
-
   @Test
   public void buildServerContext() throws Exception {
-    TlsConfig tlsConfig = new TlsConfig(ConfigFactory.load().getConfig("xio.testServer.settings.tls"));
+    TlsConfig tlsConfig =
+        new TlsConfig(ConfigFactory.load().getConfig("xio.testServer.settings.tls"));
     SslContext context = SslContextFactory.buildServerContext(tlsConfig);
   }
 
-
   @Test
   public void buildClientContext() throws Exception {
-    TlsConfig tlsConfig = new TlsConfig(ConfigFactory.load().getConfig("xio.testServer.settings.tls"));
+    TlsConfig tlsConfig =
+        new TlsConfig(ConfigFactory.load().getConfig("xio.testServer.settings.tls"));
     SslContext context = SslContextFactory.buildClientContext(tlsConfig);
   }
 }

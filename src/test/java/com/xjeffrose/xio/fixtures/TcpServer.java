@@ -22,11 +22,12 @@ public class TcpServer implements Runnable {
       ServerSocket socket = new ServerSocket(port);
       Socket connectionSocket = socket.accept();
 
-      BufferedReader inFromClient = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
+      BufferedReader inFromClient =
+          new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
       PrintWriter out = new PrintWriter(connectionSocket.getOutputStream(), true);
       String req = inFromClient.readLine();
-      //For debug only
-//      System.out.println("RECIEED REQ: " + req);
+      // For debug only
+      //      System.out.println("RECIEED REQ: " + req);
       out.println(req);
 
       connectionSocket.close();

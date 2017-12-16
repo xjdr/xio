@@ -12,7 +12,8 @@ public class AsyncRetryLoop {
   private final TimeUnit unit;
   private int attemptCount = 0;
 
-  public AsyncRetryLoop(int attemptLimit, EventLoopGroup eventLoopGroup, long delay, TimeUnit unit) {
+  public AsyncRetryLoop(
+      int attemptLimit, EventLoopGroup eventLoopGroup, long delay, TimeUnit unit) {
     this.attemptLimit = attemptLimit;
     this.eventLoopGroup = eventLoopGroup;
     this.delay = delay;

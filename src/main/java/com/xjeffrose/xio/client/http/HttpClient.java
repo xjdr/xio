@@ -35,5 +35,4 @@ public class HttpClient {
   public void write(LastHttpContent last) {
     client.write(last);
   }
-
 }

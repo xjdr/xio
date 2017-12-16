@@ -19,5 +19,4 @@ public class RoutePartial {
   void apply(ChannelHandlerContext ctx) {
     handler.handle(ctx, request, route);
   }
-
 }

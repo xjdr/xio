@@ -19,8 +19,8 @@ import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * HttpsUpgradeHandler informs clients that they must upgrade their
- * connection to SSL then closes the connection.
+ * HttpsUpgradeHandler informs clients that they must upgrade their connection to SSL then closes
+ * the connection.
  */
 @Slf4j
 @ChannelHandler.Sharable
@@ -36,13 +36,9 @@ public class HttpsUpgradeHandler extends ChannelOutboundHandlerAdapter {
     headers.add(HttpHeaderNames.CONNECTION, HttpHeaderValues.UPGRADE);
     headers.add(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE);
     headers.add(HttpHeaderNames.CONTENT_LENGTH, "0");
-    DefaultFullHttpResponse response = new DefaultFullHttpResponse(
-                                                        HTTP_1_1,
-                                                        UPGRADE_REQUIRED,
-                                                        Unpooled.EMPTY_BUFFER,
-                                                        headers,
-                                                        EmptyHttpHeaders.INSTANCE
-                                                        );
+    DefaultFullHttpResponse response =
+        new DefaultFullHttpResponse(
+            HTTP_1_1, UPGRADE_REQUIRED, Unpooled.EMPTY_BUFFER, headers, EmptyHttpHeaders.INSTANCE);
     payload = Recipes.encodeResponse(response);
 
     for (ByteBuf buffer : payload) {

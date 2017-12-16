@@ -33,7 +33,8 @@ public class ZooKeeperUpdateHandler implements UpdateHandler {
   }
 
   @Override
-  public void process(UpdateType updateType, Http1DeterministicRuleEngineConfig.Rule http1Rule, RuleType ruleType) {
+  public void process(
+      UpdateType updateType, Http1DeterministicRuleEngineConfig.Rule http1Rule, RuleType ruleType) {
     if (updateType == UpdateType.Add) {
       if (ruleType == RuleType.blacklist) {
         rules.mutateHttp1Rules().blacklistRule(http1Rule);
@@ -44,5 +45,4 @@ public class ZooKeeperUpdateHandler implements UpdateHandler {
       rules.mutateHttp1Rules().remove(http1Rule);
     }
   }
-
 }

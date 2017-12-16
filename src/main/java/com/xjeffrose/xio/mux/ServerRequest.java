@@ -5,11 +5,9 @@ import lombok.Getter;
 
 public class ServerRequest {
 
-  @Getter
-  private final UUID id;
+  @Getter private final UUID id;
   private final boolean expectsResponse;
-  @Getter
-  private final Object payload;
+  @Getter private final Object payload;
 
   public ServerRequest(UUID id, boolean expectsResponse, Object payload) {
     this.id = id;
@@ -20,5 +18,4 @@ public class ServerRequest {
   public boolean expectsResponse() {
     return expectsResponse;
   }
-
 }

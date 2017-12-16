@@ -1,6 +1,5 @@
 package com.xjeffrose.xio.http;
 
-import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 
 public class Status404RequestHandler implements PipelineRequestHandler {
@@ -10,5 +9,4 @@ public class Status404RequestHandler implements PipelineRequestHandler {
     Response notFound = ResponseBuilders.newNotFound();
     ctx.writeAndFlush(notFound);
   }
-
 }

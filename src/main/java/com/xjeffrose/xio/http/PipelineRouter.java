@@ -1,17 +1,16 @@
 package com.xjeffrose.xio.http;
 
 import com.google.common.collect.ImmutableMap;
-import io.netty.handler.codec.http.HttpRequest;
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import java.util.Map;
-import io.netty.channel.ChannelHandlerContext;
-import java.util.AbstractMap;
 
 public class PipelineRouter extends SimpleChannelInboundHandler<Request> {
 
   private final PathToRequestHandler requestHandlers;
 
-  public PipelineRouter(ImmutableMap<Route, PipelineRequestHandler> routes, PipelineRequestHandler defaultHandler) {
+  public PipelineRouter(
+      ImmutableMap<Route, PipelineRequestHandler> routes, PipelineRequestHandler defaultHandler) {
     requestHandlers = new PathToRequestHandler(routes, defaultHandler);
   }
 

@@ -16,17 +16,12 @@ public class XioServerState {
   @Getter
   private final ChannelGroup allChannels = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
 
-  @Getter
-  private final ChannelStatistics channelStatistics;
+  @Getter private final ChannelStatistics channelStatistics;
 
+  @Getter @Setter private Function<Boolean, ChannelHandler> tracingHandler;
+  // private ChannelHandler tracingHandler = null;
 
-  @Getter
-  @Setter
-  private Function<Boolean, ChannelHandler> tracingHandler;
-  //private ChannelHandler tracingHandler = null;
-
-  @Getter
-  private final SslContext sslContext;
+  @Getter private final SslContext sslContext;
 
   public XioServerState(XioServerConfig config) {
     channelStatistics = new ChannelStatistics(allChannels);

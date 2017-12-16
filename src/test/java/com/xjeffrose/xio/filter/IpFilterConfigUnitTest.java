@@ -28,5 +28,4 @@ public class IpFilterConfigUnitTest extends Assert {
   public void setIpFilterConfig(IpFilterConfig config) {
     this.config = config;
   }
-
 }

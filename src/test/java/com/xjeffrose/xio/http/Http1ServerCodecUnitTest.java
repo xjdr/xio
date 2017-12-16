@@ -3,58 +3,34 @@ package com.xjeffrose.xio.http;
 import static io.netty.handler.codec.http.HttpMethod.*;
 import static io.netty.handler.codec.http.HttpResponseStatus.*;
 import static io.netty.handler.codec.http.HttpVersion.*;
-import static java.util.concurrent.TimeUnit.SECONDS;
 
-import io.netty.handler.codec.http.HttpMethod;
-import com.xjeffrose.xio.SSL.SelfSignedX509CertGenerator;
-import com.xjeffrose.xio.SSL.X509Certificate;
-import io.netty.bootstrap.Bootstrap;
-import io.netty.bootstrap.ServerBootstrap;
-import io.netty.buffer.ByteBuf;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.DefaultEventLoop;
-import io.netty.channel.EventLoopGroup;
-import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.channel.embedded.EmbeddedChannel;
-import io.netty.channel.local.LocalAddress;
-import io.netty.channel.local.LocalChannel;
-import io.netty.channel.local.LocalServerChannel;
-import io.netty.handler.codec.http.DefaultHttpRequest;
-import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpHeaderValues;
-import io.netty.handler.codec.http.HttpObjectAggregator;
-import io.netty.handler.codec.http.HttpRequest;
-import io.netty.handler.codec.http.HttpRequestDecoder;
-import io.netty.handler.codec.http.HttpRequestEncoder;
-import io.netty.handler.codec.http.HttpResponse;
-import io.netty.handler.ssl.OpenSsl;
-import io.netty.handler.ssl.SslContext;
-import io.netty.handler.ssl.SslContextBuilder;
-import io.netty.handler.ssl.SslProvider;
-import java.util.Arrays;
-import java.util.concurrent.CountDownLatch;
-import org.hamcrest.core.IsCollectionContaining;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.Before;
-import io.netty.handler.codec.http.DefaultFullHttpRequest;
-import io.netty.handler.codec.http.FullHttpRequest;
 import com.google.common.util.concurrent.Uninterruptibles;
+import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.UnpooledByteBufAllocator;
-import java.util.ArrayList;
-import java.util.List;
-import io.netty.handler.codec.http.HttpContent;
-import io.netty.handler.codec.http.LastHttpContent;
-import io.netty.handler.codec.http.DefaultHttpContent;
-import io.netty.handler.codec.http.DefaultLastHttpContent;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
+import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.channel.embedded.EmbeddedChannel;
+import io.netty.handler.codec.http.DefaultFullHttpRequest;
+import io.netty.handler.codec.http.DefaultHttpContent;
+import io.netty.handler.codec.http.DefaultHttpRequest;
+import io.netty.handler.codec.http.DefaultLastHttpContent;
+import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.handler.codec.http.HttpContent;
+import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpObject;
+import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.HttpResponse;
+import io.netty.handler.codec.http.LastHttpContent;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 public class Http1ServerCodecUnitTest extends Assert {
 
@@ -65,30 +41,36 @@ public class Http1ServerCodecUnitTest extends Assert {
 
   @Before
   public void setUp() {
-    channel.pipeline().addLast("nextResponse", new ChannelOutboundHandlerAdapter() {
-      @Override
-      public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) {
-        responses.add((HttpObject)msg);
-        outputReceived.countDown();
-      }
-    });
+    channel
+        .pipeline()
+        .addLast(
+            "nextResponse",
+            new ChannelOutboundHandlerAdapter() {
+              @Override
+              public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) {
+                responses.add((HttpObject) msg);
+                outputReceived.countDown();
+              }
+            });
     channel.pipeline().addLast("handler", new Http1ServerCodec());
-    channel.pipeline().addLast("nextRequest", new SimpleChannelInboundHandler<Request>() {
-      @Override
-      protected void channelRead0(ChannelHandlerContext ctx, Request msg) {
-        requests.add(msg);
-        outputReceived.countDown();
-      }
-    });
+    channel
+        .pipeline()
+        .addLast(
+            "nextRequest",
+            new SimpleChannelInboundHandler<Request>() {
+              @Override
+              protected void channelRead0(ChannelHandlerContext ctx, Request msg) {
+                requests.add(msg);
+                outputReceived.countDown();
+              }
+            });
   }
 
   @Test
   public void testFullRequest() throws Exception {
     outputReceived = new CountDownLatch(1);
 
-    FullHttpRequest requestIn = new DefaultFullHttpRequest(HTTP_1_1,
-                                                           GET,
-                                                           "/");
+    FullHttpRequest requestIn = new DefaultFullHttpRequest(HTTP_1_1, GET, "/");
     channel.writeInbound(requestIn);
 
     channel.runPendingTasks(); // blocks
@@ -112,10 +94,7 @@ public class Http1ServerCodecUnitTest extends Assert {
     outputReceived = new CountDownLatch(1);
     String payload = "body";
     ByteBuf body = ByteBufUtil.writeUtf8(UnpooledByteBufAllocator.DEFAULT, payload);
-    FullHttpRequest requestIn = new DefaultFullHttpRequest(HTTP_1_1,
-                                                           GET,
-                                                           "/",
-                                                           body);
+    FullHttpRequest requestIn = new DefaultFullHttpRequest(HTTP_1_1, GET, "/", body);
 
     channel.writeInbound(requestIn);
 
@@ -138,9 +117,7 @@ public class Http1ServerCodecUnitTest extends Assert {
   @Test
   public void testStreamingRequest() throws Exception {
     outputReceived = new CountDownLatch(3);
-    HttpRequest requestIn = new DefaultHttpRequest(HTTP_1_1,
-                                                   GET,
-                                                   "/");
+    HttpRequest requestIn = new DefaultHttpRequest(HTTP_1_1, GET, "/");
     ByteBuf body1 = ByteBufUtil.writeUtf8(UnpooledByteBufAllocator.DEFAULT, "body1");
     HttpContent content = new DefaultHttpContent(body1);
     ByteBuf body2 = ByteBufUtil.writeUtf8(UnpooledByteBufAllocator.DEFAULT, "body2");
@@ -174,9 +151,9 @@ public class Http1ServerCodecUnitTest extends Assert {
     assertEquals("/", bodyOut1.path());
     assertFalse(bodyOut1.hasBody());
     assertFalse(bodyOut1.body() == null);
-    assertFalse(((StreamingRequestData)bodyOut1).content() == null);
-    assertEquals(body1, ((StreamingRequestData)bodyOut1).content());
-    assertFalse(((StreamingRequestData)bodyOut1).endOfStream());
+    assertFalse(((StreamingRequestData) bodyOut1).content() == null);
+    assertEquals(body1, ((StreamingRequestData) bodyOut1).content());
+    assertFalse(((StreamingRequestData) bodyOut1).endOfStream());
 
     Request bodyOut2 = requests.remove(0);
 
@@ -187,10 +164,9 @@ public class Http1ServerCodecUnitTest extends Assert {
     assertEquals("/", bodyOut2.path());
     assertFalse(bodyOut2.hasBody());
     assertFalse(bodyOut2.body() == null);
-    assertFalse(((StreamingRequestData)bodyOut2).content() == null);
-    assertEquals(body2, ((StreamingRequestData)bodyOut2).content());
-    assertTrue(((StreamingRequestData)bodyOut2).endOfStream());
-
+    assertFalse(((StreamingRequestData) bodyOut2).content() == null);
+    assertEquals(body2, ((StreamingRequestData) bodyOut2).content());
+    assertTrue(((StreamingRequestData) bodyOut2).endOfStream());
   }
 
   @Test
@@ -198,9 +174,7 @@ public class Http1ServerCodecUnitTest extends Assert {
     outputReceived = new CountDownLatch(2);
     ByteBuf body = ByteBufUtil.writeUtf8(UnpooledByteBufAllocator.DEFAULT, "response");
 
-    FullHttpRequest requestIn = new DefaultFullHttpRequest(HTTP_1_1,
-                                                           GET,
-                                                           "/");
+    FullHttpRequest requestIn = new DefaultFullHttpRequest(HTTP_1_1, GET, "/");
     FullResponse responseIn = ResponseBuilders.newOk().body(body).build();
 
     channel.writeInbound(requestIn);
@@ -211,14 +185,14 @@ public class Http1ServerCodecUnitTest extends Assert {
 
     Uninterruptibles.awaitUninterruptibly(outputReceived);
 
-    HttpResponse responseOut = (HttpResponse)responses.remove(0);
+    HttpResponse responseOut = (HttpResponse) responses.remove(0);
 
     assertTrue(responseOut != null);
     assertTrue(responseOut instanceof FullHttpResponse);
     assertEquals(HTTP_1_1, responseOut.protocolVersion());
     assertEquals(OK, responseOut.status());
-    assertFalse(((FullHttpResponse)responseOut).content() == null);
-    assertEquals(body, ((FullHttpResponse)responseOut).content());
+    assertFalse(((FullHttpResponse) responseOut).content() == null);
+    assertEquals(body, ((FullHttpResponse) responseOut).content());
   }
 
   @Test
@@ -226,14 +200,19 @@ public class Http1ServerCodecUnitTest extends Assert {
     outputReceived = new CountDownLatch(3);
     ByteBuf body = ByteBufUtil.writeUtf8(UnpooledByteBufAllocator.DEFAULT, "response");
 
-    FullHttpRequest requestIn = new DefaultFullHttpRequest(HTTP_1_1,
-                                                           GET,
-                                                           "/");
-    StreamingResponse responseIn = DefaultStreamingResponse.builder().status(OK).headers(new DefaultHeaders()).build();
+    FullHttpRequest requestIn = new DefaultFullHttpRequest(HTTP_1_1, GET, "/");
+    StreamingResponse responseIn =
+        DefaultStreamingResponse.builder().status(OK).headers(new DefaultHeaders()).build();
     ByteBuf body1 = ByteBufUtil.writeUtf8(UnpooledByteBufAllocator.DEFAULT, "body1");
-    StreamingData content = DefaultStreamingData.builder().content(body1).endOfStream(false).build();
+    StreamingData content =
+        DefaultStreamingData.builder().content(body1).endOfStream(false).build();
     ByteBuf body2 = ByteBufUtil.writeUtf8(UnpooledByteBufAllocator.DEFAULT, "body2");
-    StreamingData lastContent = DefaultStreamingData.builder().content(body2).endOfStream(true).trailingHeaders(new DefaultHeaders()).build();
+    StreamingData lastContent =
+        DefaultStreamingData.builder()
+            .content(body2)
+            .endOfStream(true)
+            .trailingHeaders(new DefaultHeaders())
+            .build();
 
     channel.writeInbound(requestIn);
     channel.runPendingTasks(); // blocks
@@ -245,20 +224,20 @@ public class Http1ServerCodecUnitTest extends Assert {
 
     Uninterruptibles.awaitUninterruptibly(outputReceived);
 
-    HttpResponse responseOut = (HttpResponse)responses.remove(0);
+    HttpResponse responseOut = (HttpResponse) responses.remove(0);
 
     assertTrue(responseOut != null);
     assertTrue(responseOut instanceof HttpResponse);
     assertEquals(HTTP_1_1, responseOut.protocolVersion());
     assertEquals(OK, responseOut.status());
 
-    HttpContent bodyOut1 = (HttpContent)responses.remove(0);
+    HttpContent bodyOut1 = (HttpContent) responses.remove(0);
 
     assertTrue(bodyOut1 != null);
     assertFalse(bodyOut1.content() == null);
     assertEquals(body1, bodyOut1.content());
 
-    LastHttpContent bodyOut2 = (LastHttpContent)responses.remove(0);
+    LastHttpContent bodyOut2 = (LastHttpContent) responses.remove(0);
 
     assertTrue(bodyOut2 != null);
     assertFalse(bodyOut2.content() == null);

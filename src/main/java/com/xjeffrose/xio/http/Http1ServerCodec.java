@@ -5,37 +5,31 @@ import com.xjeffrose.xio.http.internal.FullHttp1Request;
 import com.xjeffrose.xio.http.internal.Http1Request;
 import com.xjeffrose.xio.http.internal.Http1StreamingData;
 import io.netty.buffer.ByteBuf;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.HttpVersion;
-import io.netty.handler.codec.http.FullHttpResponse;
-import io.netty.handler.codec.http2.Http2Headers;
-import io.netty.handler.codec.http.HttpServerCodec;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.EmptyHttpHeaders;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelDuplexHandler;
-import io.netty.handler.codec.http.HttpResponse;
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
-import io.netty.handler.codec.http.DefaultHttpResponse;
-import io.netty.handler.codec.http.HttpObject;
-import io.netty.handler.codec.http.FullHttpRequest;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.experimental.Accessors;
-import io.netty.handler.codec.http.HttpRequest;
-import io.netty.handler.codec.http.HttpContent;
+import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.DefaultHttpContent;
-import io.netty.handler.codec.http.LastHttpContent;
+import io.netty.handler.codec.http.DefaultHttpResponse;
 import io.netty.handler.codec.http.DefaultLastHttpContent;
-import io.netty.util.AttributeKey;
+import io.netty.handler.codec.http.EmptyHttpHeaders;
+import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaderValues;
+import io.netty.handler.codec.http.HttpObject;
+import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.HttpResponse;
+import io.netty.handler.codec.http.HttpVersion;
+import io.netty.handler.codec.http.LastHttpContent;
+import io.netty.util.AttributeKey;
 
 @UnstableApi
 public class Http1ServerCodec extends ChannelDuplexHandler {
 
-  private static final AttributeKey<Request> CHANNEL_REQUEST_KEY = AttributeKey.newInstance("xio_channel_request");
+  private static final AttributeKey<Request> CHANNEL_REQUEST_KEY =
+      AttributeKey.newInstance("xio_channel_request");
 
   private static void setChannelRequest(ChannelHandlerContext ctx, Request request) {
     ctx.channel().attr(CHANNEL_REQUEST_KEY).set(request);
@@ -48,15 +42,17 @@ public class Http1ServerCodec extends ChannelDuplexHandler {
 
   Request wrapRequest(ChannelHandlerContext ctx, HttpObject msg) {
     if (msg instanceof FullHttpRequest) {
-      Request request = new FullHttp1Request((FullHttpRequest)msg);
+      Request request = new FullHttp1Request((FullHttpRequest) msg);
       setChannelRequest(ctx, request);
       return request;
     } else if (msg instanceof HttpRequest) {
-      Request request = new Http1Request((HttpRequest)msg);
+      Request request = new Http1Request((HttpRequest) msg);
       setChannelRequest(ctx, request);
       return request;
     } else if (msg instanceof HttpContent) {
-      Request request = new StreamingRequestData(getChannelRequest(ctx), new Http1StreamingData((HttpContent)msg));
+      Request request =
+          new StreamingRequestData(
+              getChannelRequest(ctx), new Http1StreamingData((HttpContent) msg));
       return request;
     }
     // TODO(CK): throw an exception?
@@ -66,7 +62,7 @@ public class Http1ServerCodec extends ChannelDuplexHandler {
   @Override
   public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
     if (msg instanceof HttpObject) {
-      ctx.fireChannelRead(wrapRequest(ctx, (HttpObject)msg));
+      ctx.fireChannelRead(wrapRequest(ctx, (HttpObject) msg));
     } else {
       ctx.fireChannelRead(msg);
     }
@@ -83,7 +79,7 @@ public class Http1ServerCodec extends ChannelDuplexHandler {
     }
 
     if (response instanceof FullResponse) {
-      FullResponse full = (FullResponse)response;
+      FullResponse full = (FullResponse) response;
       ByteBuf content;
       if (full.body() != null) {
         content = full.body();
@@ -96,11 +92,12 @@ public class Http1ServerCodec extends ChannelDuplexHandler {
 
       setChannelRequest(ctx, null);
 
-      return new DefaultFullHttpResponse(HttpVersion.HTTP_1_1,
-                                         full.status(),
-                                         content,
-                                         full.headers().http1Headers(),
-                                         EmptyHttpHeaders.INSTANCE);
+      return new DefaultFullHttpResponse(
+          HttpVersion.HTTP_1_1,
+          full.status(),
+          content,
+          full.headers().http1Headers(),
+          EmptyHttpHeaders.INSTANCE);
     } else {
       // TODO(CK): TransferEncoding
       // We don't know the size of the message payload so set TransferEncoding to chunked
@@ -108,9 +105,8 @@ public class Http1ServerCodec extends ChannelDuplexHandler {
         response.headers().set(HttpHeaderNames.TRANSFER_ENCODING, HttpHeaderValues.CHUNKED);
       }
 
-      return new DefaultHttpResponse(HttpVersion.HTTP_1_1,
-                                     response.status(),
-                                     response.headers().http1Headers());
+      return new DefaultHttpResponse(
+          HttpVersion.HTTP_1_1, response.status(), response.headers().http1Headers());
     }
   }
 
@@ -128,11 +124,12 @@ public class Http1ServerCodec extends ChannelDuplexHandler {
   }
 
   @Override
-  public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
+  public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise)
+      throws Exception {
     if (msg instanceof StreamingData) {
-      ctx.write(buildContent(ctx, (StreamingData)msg), promise);
+      ctx.write(buildContent(ctx, (StreamingData) msg), promise);
     } else if (msg instanceof Response) {
-      ctx.write(buildResponse(ctx, (Response)msg), promise);
+      ctx.write(buildResponse(ctx, (Response) msg), promise);
     } else {
       ctx.write(msg, promise);
     }

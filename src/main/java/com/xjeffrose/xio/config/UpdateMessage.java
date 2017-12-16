@@ -3,7 +3,7 @@ package com.xjeffrose.xio.config;
 import com.xjeffrose.xio.config.thrift.RuleType;
 import java.net.InetAddress;
 
-abstract public class UpdateMessage {
+public abstract class UpdateMessage {
 
   protected final UpdateType updateType;
   protected final Object payload;
@@ -15,43 +15,47 @@ abstract public class UpdateMessage {
     this.ruleType = ruleType;
   }
 
-  abstract public void process(UpdateHandler handler);
+  public abstract void process(UpdateHandler handler);
 
-  static public class IpRuleUpdate extends UpdateMessage {
+  public static class IpRuleUpdate extends UpdateMessage {
     IpRuleUpdate(UpdateType updateType, InetAddress address, RuleType ruleType) {
       super(updateType, address, ruleType);
     }
 
     @Override
     public void process(UpdateHandler handler) {
-      handler.process(updateType, (InetAddress)payload, ruleType);
+      handler.process(updateType, (InetAddress) payload, ruleType);
     }
   }
 
-  static public class Http1RuleUpdate extends UpdateMessage {
-    Http1RuleUpdate(UpdateType updateType, Http1DeterministicRuleEngineConfig.Rule http1Rule, RuleType ruleType) {
+  public static class Http1RuleUpdate extends UpdateMessage {
+    Http1RuleUpdate(
+        UpdateType updateType,
+        Http1DeterministicRuleEngineConfig.Rule http1Rule,
+        RuleType ruleType) {
       super(updateType, http1Rule, ruleType);
     }
 
     @Override
     public void process(UpdateHandler handler) {
-      handler.process(updateType, (Http1DeterministicRuleEngineConfig.Rule)payload, ruleType);
+      handler.process(updateType, (Http1DeterministicRuleEngineConfig.Rule) payload, ruleType);
     }
   }
 
-  static public UpdateMessage addIpRule(InetAddress address, RuleType ruleType) {
+  public static UpdateMessage addIpRule(InetAddress address, RuleType ruleType) {
     return new IpRuleUpdate(UpdateType.Add, address, ruleType);
   }
 
-  static public UpdateMessage removeIpRule(InetAddress address) {
+  public static UpdateMessage removeIpRule(InetAddress address) {
     return new IpRuleUpdate(UpdateType.Remove, address, RuleType.blacklist);
   }
 
-  static public UpdateMessage addHttp1Rule(Http1DeterministicRuleEngineConfig.Rule http1Rule, RuleType ruleType) {
+  public static UpdateMessage addHttp1Rule(
+      Http1DeterministicRuleEngineConfig.Rule http1Rule, RuleType ruleType) {
     return new Http1RuleUpdate(UpdateType.Add, http1Rule, ruleType);
   }
 
-  static public UpdateMessage removeHttp1Rule(Http1DeterministicRuleEngineConfig.Rule http1Rule) {
+  public static UpdateMessage removeHttp1Rule(Http1DeterministicRuleEngineConfig.Rule http1Rule) {
     return new Http1RuleUpdate(UpdateType.Remove, http1Rule, RuleType.blacklist);
   }
 }

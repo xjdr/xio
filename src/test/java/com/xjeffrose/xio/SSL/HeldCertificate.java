@@ -1,5 +1,7 @@
 package com.xjeffrose.xio.SSL;
 
+import static okhttp3.internal.Util.verifyAsIpAddress;
+
 import java.math.BigInteger;
 import java.security.GeneralSecurityException;
 import java.security.KeyPair;
@@ -19,8 +21,6 @@ import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.x509.X509V3CertificateGenerator;
-
-import static okhttp3.internal.Util.verifyAsIpAddress;
 
 /**
  * A certificate and its private key. This can be used on the server side by HTTPS servers, or on
@@ -114,17 +114,16 @@ public final class HeldCertificate {
         notBefore = new Date(now);
         notAfter = new Date(now + duration);
       }
-
     }
+
     public HeldCertificate build() throws GeneralSecurityException {
       setValidDates();
       // Subject, public & private keys for this certificate.
-      KeyPair heldKeyPair = keyPair != null
-          ? keyPair
-          : generateKeyPair();
-      X500Principal subject = hostname != null
-          ? new X500Principal("CN=" + hostname)
-          : new X500Principal("CN=" + UUID.randomUUID());
+      KeyPair heldKeyPair = keyPair != null ? keyPair : generateKeyPair();
+      X500Principal subject =
+          hostname != null
+              ? new X500Principal("CN=" + hostname)
+              : new X500Principal("CN=" + UUID.randomUUID());
 
       // Subject, public & private keys for this certificate's signer. It may be self signed!
       KeyPair signedByKeyPair;
@@ -148,25 +147,23 @@ public final class HeldCertificate {
       generator.setSignatureAlgorithm("SHA256WithRSAEncryption");
 
       if (maxIntermediateCas > 0) {
-        generator.addExtension(X509Extensions.BasicConstraints, true,
-            new BasicConstraints(maxIntermediateCas));
+        generator.addExtension(
+            X509Extensions.BasicConstraints, true, new BasicConstraints(maxIntermediateCas));
       }
 
       if (!altNames.isEmpty()) {
         ASN1Encodable[] encodableAltNames = new ASN1Encodable[altNames.size()];
         for (int i = 0, size = altNames.size(); i < size; i++) {
           String altName = altNames.get(i);
-          int tag = verifyAsIpAddress(altName)
-              ? GeneralName.iPAddress
-              : GeneralName.dNSName;
+          int tag = verifyAsIpAddress(altName) ? GeneralName.iPAddress : GeneralName.dNSName;
           encodableAltNames[i] = new GeneralName(tag, altName);
         }
-        generator.addExtension(X509Extensions.SubjectAlternativeName, true,
-            new DERSequence(encodableAltNames));
+        generator.addExtension(
+            X509Extensions.SubjectAlternativeName, true, new DERSequence(encodableAltNames));
       }
 
-      X509Certificate certificate = generator.generateX509Certificate(
-          signedByKeyPair.getPrivate(), "BC");
+      X509Certificate certificate =
+          generator.generateX509Certificate(signedByKeyPair.getPrivate(), "BC");
       return new HeldCertificate(certificate, heldKeyPair);
     }
 

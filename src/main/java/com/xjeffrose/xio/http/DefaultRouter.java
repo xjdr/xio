@@ -16,18 +16,15 @@ public class DefaultRouter implements Router {
         log.warn("No router has been configured yet!");
         return new RequestUpdateHandler() {
           @Override
-          public void update(HttpContent content) {
-          }
+          public void update(HttpContent content) {}
 
           @Override
-          public void update(LastHttpContent last) {
-          }
+          public void update(LastHttpContent last) {}
         };
       }
 
       @Override
-      public void close() throws Exception {
-      }
+      public void close() throws Exception {}
     };
   }
 }

@@ -18,7 +18,8 @@ import io.netty.util.CharsetUtil;
 
 public class XioHttp2StreamHandler extends ChannelDuplexHandler {
 
-  static final ByteBuf RESPONSE_BYTES = unreleasableBuffer(copiedBuffer("Hello World", CharsetUtil.UTF_8));
+  static final ByteBuf RESPONSE_BYTES =
+      unreleasableBuffer(copiedBuffer("Hello World", CharsetUtil.UTF_8));
 
   @Override
   public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
@@ -78,5 +79,3 @@ public class XioHttp2StreamHandler extends ChannelDuplexHandler {
     ctx.writeAndFlush(new DefaultHttp2DataFrame(payload, true));
   }
 }
-
-

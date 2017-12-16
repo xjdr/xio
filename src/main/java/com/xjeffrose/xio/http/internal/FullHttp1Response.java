@@ -1,16 +1,12 @@
 package com.xjeffrose.xio.http.internal;
 
-import io.netty.handler.codec.http.HttpResponseStatus;
-import com.xjeffrose.xio.core.internal.UnstableApi;
-import com.xjeffrose.xio.http.Headers;
 import com.xjeffrose.xio.http.FullResponse;
-import io.netty.handler.codec.http.FullHttpResponse;
+import com.xjeffrose.xio.http.Headers;
 import io.netty.buffer.ByteBuf;
+import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.handler.codec.http.HttpResponseStatus;
 
-
-/**
- * Wrap an incoming FullHttpResponse, for use in a client.
- */
+/** Wrap an incoming FullHttpResponse, for use in a client. */
 public class FullHttp1Response implements FullResponse {
 
   private final FullHttpResponse delegate;
@@ -40,5 +36,4 @@ public class FullHttp1Response implements FullResponse {
   public ByteBuf body() {
     return delegate.content();
   }
-
 }

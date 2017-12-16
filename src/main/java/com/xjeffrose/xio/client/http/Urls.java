@@ -12,9 +12,7 @@ public class Urls {
 
   public static int getEffectivePort(URL url) {
     int specifiedPort = url.getPort();
-    return specifiedPort != -1
-      ? specifiedPort
-      : getDefaultPort(url.getProtocol());
+    return specifiedPort != -1 ? specifiedPort : getDefaultPort(url.getProtocol());
   }
 
   public static int getDefaultPort(String protocol) {

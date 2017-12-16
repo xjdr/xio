@@ -17,14 +17,16 @@ public class XioMuxEncoder extends MessageToByteEncoder {
     ByteBuf msg = (ByteBuf) o;
     byte LF = '\0';
 
-    byteBuf = ctx.alloc().directBuffer()
-        .readBytes(msgSize)
-        .readBytes(sessionId)
-        .readBytes(type)
-        .readBytes(source)
-        .readBytes(destination)
-        .readBytes(flags)
-        .readBytes(msg)
-        .readBytes(LF);
+    byteBuf =
+        ctx.alloc()
+            .directBuffer()
+            .readBytes(msgSize)
+            .readBytes(sessionId)
+            .readBytes(type)
+            .readBytes(source)
+            .readBytes(destination)
+            .readBytes(flags)
+            .readBytes(msg)
+            .readBytes(LF);
   }
 }

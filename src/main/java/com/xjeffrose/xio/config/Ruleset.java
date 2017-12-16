@@ -9,7 +9,7 @@ import java.util.Map;
 
 public class Ruleset {
 
-  static public class Markable<T> {
+  public static class Markable<T> {
     private final T data;
     private boolean marked = false;
 
@@ -35,8 +35,10 @@ public class Ruleset {
     }
   }
 
-  private final Markable<IpAddressDeterministicRuleEngineConfig> ipRules = new Markable<>(new IpAddressDeterministicRuleEngineConfig());
-  private final Markable<Http1DeterministicRuleEngineConfig> http1Rules = new Markable<>(new Http1DeterministicRuleEngineConfig());
+  private final Markable<IpAddressDeterministicRuleEngineConfig> ipRules =
+      new Markable<>(new IpAddressDeterministicRuleEngineConfig());
+  private final Markable<Http1DeterministicRuleEngineConfig> http1Rules =
+      new Markable<>(new Http1DeterministicRuleEngineConfig());
 
   private final String ipFilterPath;
   private final String http1FilterPath;
@@ -103,8 +105,7 @@ public class Ruleset {
   }
 
   public boolean equals(Ruleset other) {
-    return other.ipRules.get().equals(ipRules.get()) &&
-      other.http1Rules.get().equals(http1Rules.get())
-      ;
+    return other.ipRules.get().equals(ipRules.get())
+        && other.http1Rules.get().equals(http1Rules.get());
   }
 }

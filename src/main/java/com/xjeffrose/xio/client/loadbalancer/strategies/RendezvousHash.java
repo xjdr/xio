@@ -14,7 +14,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class RendezvousHash<N> {
 
-
   private final HashFunction hasher;
   private final Funnel<N> nodeFunnel;
   private final int quorum;
@@ -47,15 +46,14 @@ public class RendezvousHash<N> {
     Map<Long, N> hashMap = new ConcurrentHashMap<>();
     List<N> _nodeList = new ArrayList<>();
 
-    nodeList.stream()
-      .filter(xs -> !_nodeList.contains(xs))
-      .forEach(xs -> {
-        hashMap.put(hasher.newHasher()
-          .putBytes(key)
-          .putObject(xs, nodeFunnel)
-          .hash().asLong(), xs);
-
-      });
+    nodeList
+        .stream()
+        .filter(xs -> !_nodeList.contains(xs))
+        .forEach(
+            xs -> {
+              hashMap.put(
+                  hasher.newHasher().putBytes(key).putObject(xs, nodeFunnel).hash().asLong(), xs);
+            });
 
     for (int i = 0; i < quorum; i++) {
       _nodeList.add(hashMap.remove(hashMap.keySet().stream().max(Long::compare).orElse(null)));

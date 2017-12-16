@@ -25,5 +25,4 @@ public class RequestBuilders {
   public static DefaultFullRequest.Builder newPost(String path) {
     return newPost().path(path);
   }
-
 }

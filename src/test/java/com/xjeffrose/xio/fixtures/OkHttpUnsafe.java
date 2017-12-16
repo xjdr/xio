@@ -22,8 +22,10 @@ public class OkHttpUnsafe {
   public static KeyManager[] getKeyManagers(TlsConfig config) throws Exception {
     KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
     keystore.load(null, "".toCharArray());
-    keystore.setKeyEntry("server", config.getPrivateKey(), "".toCharArray(), config.getCertificateAndChain());
-    KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+    keystore.setKeyEntry(
+        "server", config.getPrivateKey(), "".toCharArray(), config.getCertificateAndChain());
+    KeyManagerFactory keyManagerFactory =
+        KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
     keyManagerFactory.init(keystore, "".toCharArray());
     return keyManagerFactory.getKeyManagers();
   }
@@ -31,7 +33,8 @@ public class OkHttpUnsafe {
   public static KeyManager[] getEmptyKeyManager() throws Exception {
     KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
     keystore.load(null, "".toCharArray());
-    KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+    KeyManagerFactory keyManagerFactory =
+        KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
     keyManagerFactory.init(keystore, "".toCharArray());
     return keyManagerFactory.getKeyManagers();
   }
@@ -39,12 +42,12 @@ public class OkHttpUnsafe {
   public static X509TrustManager unsafeTrustManager() {
     return new X509TrustManager() {
       @Override
-      public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) throws CertificateException {
-      }
+      public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType)
+          throws CertificateException {}
 
       @Override
-      public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType) throws CertificateException {
-      }
+      public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType)
+          throws CertificateException {}
 
       @Override
       public java.security.cert.X509Certificate[] getAcceptedIssuers() {
@@ -53,18 +56,23 @@ public class OkHttpUnsafe {
     };
   }
 
-  public static SSLSocketFactory getUnsafeSSLSocketFactory(KeyManager[] keyManagers, X509TrustManager trustManager) throws NoSuchAlgorithmException, KeyManagementException {
+  public static SSLSocketFactory getUnsafeSSLSocketFactory(
+      KeyManager[] keyManagers, X509TrustManager trustManager)
+      throws NoSuchAlgorithmException, KeyManagementException {
     // Create a trust manager that does not validate certificate chains
-    final TrustManager[] trustAllCerts = new TrustManager[]{ trustManager };
+    final TrustManager[] trustAllCerts = new TrustManager[] {trustManager};
 
     // Install the all-trusting trust manager
     final SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
     sslContext.init(keyManagers, trustAllCerts, new java.security.SecureRandom());
     // Create an ssl socket factory with our all-trusting manager
     final SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
-    // System.out.println("supported ciphers: " + java.util.Arrays.asList(sslSocketFactory.getSupportedCipherSuites()));
-    // System.out.println("supported SSL parameters ciphers: " + java.util.Arrays.asList(sslContext.getSupportedSSLParameters().getCipherSuites()));
-    // System.out.println("supported SSL parameters protocols: " + java.util.Arrays.asList(sslContext.getSupportedSSLParameters().getProtocols()));
+    // System.out.println("supported ciphers: " +
+    // java.util.Arrays.asList(sslSocketFactory.getSupportedCipherSuites()));
+    // System.out.println("supported SSL parameters ciphers: " +
+    // java.util.Arrays.asList(sslContext.getSupportedSSLParameters().getCipherSuites()));
+    // System.out.println("supported SSL parameters protocols: " +
+    // java.util.Arrays.asList(sslContext.getSupportedSSLParameters().getProtocols()));
     return sslSocketFactory;
   }
 
@@ -73,15 +81,17 @@ public class OkHttpUnsafe {
       X509TrustManager trustManager = unsafeTrustManager();
       final SSLSocketFactory sslSocketFactory = getUnsafeSSLSocketFactory(null, trustManager);
 
-      OkHttpClient okHttpClient = new OkHttpClient.Builder()
-        .sslSocketFactory(sslSocketFactory, trustManager)
-        .hostnameVerifier(new HostnameVerifier() {
-          @Override
-          public boolean verify(String hostname, SSLSession session) {
-            return true;
-          }
-        })
-        .build();
+      OkHttpClient okHttpClient =
+          new OkHttpClient.Builder()
+              .sslSocketFactory(sslSocketFactory, trustManager)
+              .hostnameVerifier(
+                  new HostnameVerifier() {
+                    @Override
+                    public boolean verify(String hostname, SSLSession session) {
+                      return true;
+                    }
+                  })
+              .build();
 
       return okHttpClient;
     } catch (Exception e) {
@@ -92,11 +102,12 @@ public class OkHttpUnsafe {
   public static MockWebServer getSslMockWebServer(TlsConfig config) {
     try {
       MockWebServer server = new MockWebServer();
-      server.useHttps(OkHttpUnsafe.getUnsafeSSLSocketFactory(getKeyManagers(config), unsafeTrustManager()), false);
+      server.useHttps(
+          OkHttpUnsafe.getUnsafeSSLSocketFactory(getKeyManagers(config), unsafeTrustManager()),
+          false);
       return server;
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
   }
-
 }

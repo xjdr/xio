@@ -10,11 +10,11 @@ public class XioEchoPipelineFunctionalTest extends Assert {
 
   @Test
   public void testEchoServer() {
-    XioServerBootstrap bootstrap = XioServerBootstrap.fromConfig("xio.testEchoServer")
-      .addToPipeline(new XioEchoPipeline())
-    ;
+    XioServerBootstrap bootstrap =
+        XioServerBootstrap.fromConfig("xio.testEchoServer").addToPipeline(new XioEchoPipeline());
 
-    try (XioServer server = bootstrap.build(); EchoClient client = new EchoClient()) {
+    try (XioServer server = bootstrap.build();
+        EchoClient client = new EchoClient()) {
       client.connect(server.getInstrumentation().addressBound());
       String payload = "test message";
       client.send(payload);
@@ -25,11 +25,11 @@ public class XioEchoPipelineFunctionalTest extends Assert {
 
   @Test
   public void testEchoServerLargePayload() {
-    XioServerBootstrap bootstrap = XioServerBootstrap.fromConfig("xio.testEchoServer")
-      .addToPipeline(new XioEchoPipeline())
-    ;
+    XioServerBootstrap bootstrap =
+        XioServerBootstrap.fromConfig("xio.testEchoServer").addToPipeline(new XioEchoPipeline());
 
-    try (XioServer server = bootstrap.build(); EchoClient client = new EchoClient()) {
+    try (XioServer server = bootstrap.build();
+        EchoClient client = new EchoClient()) {
       client.connect(server.getInstrumentation().addressBound());
       int n = 800;
       String payload = "Netty rocks!";
@@ -43,5 +43,4 @@ public class XioEchoPipelineFunctionalTest extends Assert {
       assertEquals(payload, response);
     }
   }
-
 }

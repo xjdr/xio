@@ -1,27 +1,24 @@
 package com.xjeffrose.xio.helpers;
 
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 import com.xjeffrose.xio.fixtures.OkHttpUnsafe;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 public class ClientHelper {
 
-  static public Response request(String url, OkHttpClient client) {
+  public static Response request(String url, OkHttpClient client) {
     try {
-      Request request = new Request.Builder()
-        .url(url)
-        .build()
-      ;
+      Request request = new Request.Builder().url(url).build();
       return client.newCall(request).execute();
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }
 
-  static public Response request(String url) {
+  public static Response request(String url) {
     return request(url, new OkHttpClient());
   }
 
@@ -29,12 +26,12 @@ public class ClientHelper {
     return protocol + address.getHostString() + ":" + address.getPort() + "/";
   }
 
-  static public Response http(InetSocketAddress address) {
+  public static Response http(InetSocketAddress address) {
     String url = buildUrl("http://", address);
     return request(url, new OkHttpClient());
   }
 
-  static public Response https(InetSocketAddress address) {
+  public static Response https(InetSocketAddress address) {
     String url = buildUrl("https://", address);
     return request(url, OkHttpUnsafe.getUnsafeClient());
   }

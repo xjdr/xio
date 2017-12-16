@@ -17,19 +17,16 @@ import lombok.Getter;
 public class Http1DeterministicRuleEngineConfig implements Marshallable {
 
   @EqualsAndHashCode
-  static public class Rule {
+  public static class Rule {
     // request line
-    @Getter
-    private final HttpMethod method;
-    @Getter
-    private final String uri;
-    @Getter
-    private final HttpVersion version;
+    @Getter private final HttpMethod method;
+    @Getter private final String uri;
+    @Getter private final HttpVersion version;
     // headers
-    @Getter
-    private HashMultimap<String, String> headers;
+    @Getter private HashMultimap<String, String> headers;
 
-    public Rule(HttpMethod method, String uri, HttpVersion version, HashMultimap<String, String> headers) {
+    public Rule(
+        HttpMethod method, String uri, HttpVersion version, HashMultimap<String, String> headers) {
       this.method = method;
       this.uri = uri;
       this.version = version;
@@ -37,11 +34,10 @@ public class Http1DeterministicRuleEngineConfig implements Marshallable {
     }
 
     /**
-     * For every header key defined in the headers multimap do the following:
-     *  * return false if the request doesn't have a header for that key
-     *  * iterate all of the request header values for that key
-     *  * if none of the request header values match any of the multimap values, return false
-     *  * otherwise return true
+     * For every header key defined in the headers multimap do the following: * return false if the
+     * request doesn't have a header for that key * iterate all of the request header values for
+     * that key * if none of the request header values match any of the multimap values, return
+     * false * otherwise return true
      */
     private boolean matchHeaders(HttpRequest request) {
       if (headers != null && headers.size() > 0) {
@@ -101,7 +97,15 @@ public class Http1DeterministicRuleEngineConfig implements Marshallable {
         uri = this.uri;
       }
 
-      return "headers: [" + headers + "] method: [" + method + "] version: [" + version + "] uri: [" + uri + "]";
+      return "headers: ["
+          + headers
+          + "] method: ["
+          + method
+          + "] version: ["
+          + version
+          + "] uri: ["
+          + uri
+          + "]";
     }
   }
 

@@ -32,54 +32,54 @@ public class ChannelStatistics extends ChannelDuplexHandler implements XioMetric
     allChannels.remove(ctx.channel());
     ctx.fireChannelInactive();
   }
-  //TODO: Properly implement
-//    public void handleUpstream(ChannelHandlerContext ctx, ChannelEvent e)
-//      throws Exception {
-//    if (e instanceof ChannelStateEvent) {
-//      ChannelStateEvent cse = (ChannelStateEvent) e;
-//      switch (cse.getState()) {
-//        case OPEN:
-//          if (Boolean.TRUE.equals(cse.getValue())) {
-//            // connect
-//            channelCount.incrementAndGet();
-//            allChannels.add(e.getChannel());
-//          } else {
-//            // disconnect
-//            channelCount.decrementAndGet();
-//            allChannels.remove(e.getChannel());
-//          }
-//          break;
-//        case BOUND:
-//          break;
-//      }
-//    }
-//
-//    if (e instanceof UpstreamMessageEvent) {
-//      UpstreamMessageEvent ume = (UpstreamMessageEvent) e;
-//      if (ume.getMessage() instanceof ChannelBuffer) {
-//        ChannelBuffer cb = (ChannelBuffer) ume.getMessage();
-//        int readableBytes = cb.readableBytes();
-//        //  compute stats here, bytes read from remote
-//        bytesRead.getAndAdd(readableBytes);
-//      }
-//    }
-//
-//    ctx.sendUpstream(e);
-//  }
-//
-//  public void handleDownstream(ChannelHandlerContext ctx, ChannelEvent e)
-//      throws Exception {
-//    if (e instanceof DownstreamMessageEvent) {
-//      DownstreamMessageEvent dme = (DownstreamMessageEvent) e;
-//      if (dme.getMessage() instanceof ChannelBuffer) {
-//        ChannelBuffer cb = (ChannelBuffer) dme.getMessage();
-//        int readableBytes = cb.readableBytes();
-//        // compute stats here, bytes written to remote
-//        bytesWritten.getAndAdd(readableBytes);
-//      }
-//    }
-//    ctx.sendDownstream(e);
-//  }
+  // TODO: Properly implement
+  //    public void handleUpstream(ChannelHandlerContext ctx, ChannelEvent e)
+  //      throws Exception {
+  //    if (e instanceof ChannelStateEvent) {
+  //      ChannelStateEvent cse = (ChannelStateEvent) e;
+  //      switch (cse.getState()) {
+  //        case OPEN:
+  //          if (Boolean.TRUE.equals(cse.getValue())) {
+  //            // connect
+  //            channelCount.incrementAndGet();
+  //            allChannels.add(e.getChannel());
+  //          } else {
+  //            // disconnect
+  //            channelCount.decrementAndGet();
+  //            allChannels.remove(e.getChannel());
+  //          }
+  //          break;
+  //        case BOUND:
+  //          break;
+  //      }
+  //    }
+  //
+  //    if (e instanceof UpstreamMessageEvent) {
+  //      UpstreamMessageEvent ume = (UpstreamMessageEvent) e;
+  //      if (ume.getMessage() instanceof ChannelBuffer) {
+  //        ChannelBuffer cb = (ChannelBuffer) ume.getMessage();
+  //        int readableBytes = cb.readableBytes();
+  //        //  compute stats here, bytes read from remote
+  //        bytesRead.getAndAdd(readableBytes);
+  //      }
+  //    }
+  //
+  //    ctx.sendUpstream(e);
+  //  }
+  //
+  //  public void handleDownstream(ChannelHandlerContext ctx, ChannelEvent e)
+  //      throws Exception {
+  //    if (e instanceof DownstreamMessageEvent) {
+  //      DownstreamMessageEvent dme = (DownstreamMessageEvent) e;
+  //      if (dme.getMessage() instanceof ChannelBuffer) {
+  //        ChannelBuffer cb = (ChannelBuffer) dme.getMessage();
+  //        int readableBytes = cb.readableBytes();
+  //        // compute stats here, bytes written to remote
+  //        bytesWritten.getAndAdd(readableBytes);
+  //      }
+  //    }
+  //    ctx.sendDownstream(e);
+  //  }
 
   public int getChannelCount() {
     return channelCount.get();

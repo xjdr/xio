@@ -16,49 +16,37 @@ public class NullZkClient extends ZkClient {
   }
 
   @Override
-  public void rebuild() {
-  }
+  public void rebuild() {}
 
   @Override
-  public void register(String NODE_LIST_PATH, InetSocketAddress address, @Nullable byte[] data) {
-  }
+  public void register(String NODE_LIST_PATH, InetSocketAddress address, @Nullable byte[] data) {}
 
   @Override
-  public void register(String NODE_LIST_PATH, String ip, int port, @Nullable byte[] data) {
-  }
+  public void register(String NODE_LIST_PATH, String ip, int port, @Nullable byte[] data) {}
 
   @Override
-  public void register(String path, InetSocketAddress address) {
-  }
+  public void register(String path, InetSocketAddress address) {}
 
   @Override
-  public void electLeader(String ELECTION_PATH, LeaderSelectorListener listener) {
-  }
+  public void electLeader(String ELECTION_PATH, LeaderSelectorListener listener) {}
 
   @Override
-  public void electLeader(String path) {
-  }
-
+  public void electLeader(String path) {}
 
   @Override
-  public void startNodeCache(NodeCache cache) {
-  }
+  public void startNodeCache(NodeCache cache) {}
 
   @Override
-  public void start() {
-  }
+  public void start() {}
 
   @Override
-  public void stopNodeCache(NodeCache cache) {
-  }
+  public void stopNodeCache(NodeCache cache) {}
 
   @Override
-  public void stop() throws Exception {
-  }
+  public void stop() throws Exception {}
 
   @Override
-  public void set(String path, String data) {
-  }
+  public void set(String path, String data) {}
 
   @Override
   public String get(String path) {
@@ -66,8 +54,7 @@ public class NullZkClient extends ZkClient {
   }
 
   @Override
-  public void set(String path, String data, boolean compress) {
-  }
+  public void set(String path, String data, boolean compress) {}
 
   @Override
   public String get(String path, boolean compress) {
@@ -94,8 +81,6 @@ public class NullZkClient extends ZkClient {
     return "";
   }
 
-
   @Override
-  public void registerUpdater(ConfigurationUpdater updater) {
-  }
+  public void registerUpdater(ConfigurationUpdater updater) {}
 }

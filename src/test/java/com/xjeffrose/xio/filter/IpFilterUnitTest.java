@@ -50,7 +50,8 @@ public class IpFilterUnitTest extends Assert {
     chDeny.runPendingTasks();
     assertFalse(chDeny.isActive());
     assertFalse(chDeny.isOpen());
-    verify(ipFilter.getLog()).warn("IpFilter denied blacklisted ip '{}'{}", "172.22.10.1", " (eager)");
+    verify(ipFilter.getLog())
+        .warn("IpFilter denied blacklisted ip '{}'{}", "172.22.10.1", " (eager)");
   }
 
   @Test
@@ -77,8 +78,8 @@ public class IpFilterUnitTest extends Assert {
     verify(ipFilter.getLog()).info("IpFilter allowed ip '{}'", "172.22.10.2");
   }
 
-
-  private EmbeddedChannel newEmbeddedInetChannel(final String ipAddress, boolean issueAddress, ChannelHandler... handlers) {
+  private EmbeddedChannel newEmbeddedInetChannel(
+      final String ipAddress, boolean issueAddress, ChannelHandler... handlers) {
     return new EmbeddedChannel(handlers) {
 
       @Override

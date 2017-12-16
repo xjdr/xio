@@ -40,7 +40,7 @@ import org.junit.Test;
 
 public class GentleSslHandlerUnitTest extends Assert {
 
-  static public ByteBuf encodeRequest(HttpRequest request) {
+  public static ByteBuf encodeRequest(HttpRequest request) {
     EmbeddedChannel channel = new EmbeddedChannel();
 
     channel.pipeline().addLast("http request encoder", new HttpRequestEncoder());
@@ -57,19 +57,17 @@ public class GentleSslHandlerUnitTest extends Assert {
     java.security.cert.X509Certificate[] chain = new java.security.cert.X509Certificate[1];
     chain[0] = selfSignedCert.getCert();
 
-    SslContext sslContext = SslContextBuilder
-      .forServer(selfSignedCert.getKey(), chain)
-      .sslProvider(SslProvider.OPENSSL)
-      .build();
+    SslContext sslContext =
+        SslContextBuilder.forServer(selfSignedCert.getKey(), chain)
+            .sslProvider(SslProvider.OPENSSL)
+            .build();
     HttpsUpgradeHandler cleartextHandler = new HttpsUpgradeHandler();
     GentleSslHandler upgradeHandler = new GentleSslHandler(sslContext, cleartextHandler);
 
     ByteBuf rawRequest = encodeRequest(new DefaultHttpRequest(HTTP_1_1, GET, "/"));
 
     EmbeddedChannel channel = new EmbeddedChannel();
-    channel.pipeline()
-      .addLast("upgradeHandler", upgradeHandler)
-      ;
+    channel.pipeline().addLast("upgradeHandler", upgradeHandler);
 
     channel.writeInbound(rawRequest);
 
@@ -80,14 +78,18 @@ public class GentleSslHandlerUnitTest extends Assert {
     assertTrue(response != null);
 
     assertEquals(response.status(), UPGRADE_REQUIRED);
-    assertThat(Arrays.asList(response.headers().get(HttpHeaderNames.CONNECTION).split(",")),
-               IsCollectionContaining.hasItem(HttpHeaderValues.CLOSE.toString()));
-    assertThat(Arrays.asList(response.headers().get(HttpHeaderNames.CONNECTION).split(",")),
-               IsCollectionContaining.hasItem(HttpHeaderValues.UPGRADE.toString()));
-    assertThat(Arrays.asList(response.headers().get(HttpHeaderNames.UPGRADE).split(",")),
-               IsCollectionContaining.hasItem("TLS/1.2"));
-    assertThat(Arrays.asList(response.headers().get(HttpHeaderNames.UPGRADE).split(",")),
-               IsCollectionContaining.hasItem("HTTP/1.1"));
+    assertThat(
+        Arrays.asList(response.headers().get(HttpHeaderNames.CONNECTION).split(",")),
+        IsCollectionContaining.hasItem(HttpHeaderValues.CLOSE.toString()));
+    assertThat(
+        Arrays.asList(response.headers().get(HttpHeaderNames.CONNECTION).split(",")),
+        IsCollectionContaining.hasItem(HttpHeaderValues.UPGRADE.toString()));
+    assertThat(
+        Arrays.asList(response.headers().get(HttpHeaderNames.UPGRADE).split(",")),
+        IsCollectionContaining.hasItem("TLS/1.2"));
+    assertThat(
+        Arrays.asList(response.headers().get(HttpHeaderNames.UPGRADE).split(",")),
+        IsCollectionContaining.hasItem("HTTP/1.1"));
   }
 
   @Test
@@ -99,63 +101,69 @@ public class GentleSslHandlerUnitTest extends Assert {
     java.security.cert.X509Certificate[] chain = new java.security.cert.X509Certificate[1];
     chain[0] = selfSignedCert.getCert();
 
-    SslContext sslContext = SslContextBuilder
-      .forServer(selfSignedCert.getKey(), chain)
-      .sslProvider(SslProvider.OPENSSL)
-      .build();
+    SslContext sslContext =
+        SslContextBuilder.forServer(selfSignedCert.getKey(), chain)
+            .sslProvider(SslProvider.OPENSSL)
+            .build();
 
     HttpsUpgradeHandler cleartextHandler = new HttpsUpgradeHandler();
     GentleSslHandler upgradeHandler = new GentleSslHandler(sslContext, cleartextHandler);
-
 
     final CountDownLatch serverChannelLatch = new CountDownLatch(1);
     final CountDownLatch requestLatch = new CountDownLatch(1);
     LocalAddress serverAddress = new LocalAddress(getClass().getName());
 
     EventLoopGroup group = new DefaultEventLoop();
-    ServerBootstrap sb = new ServerBootstrap()
-      .channel(LocalServerChannel.class)
-      .group(group)
-      .childHandler(new ChannelInitializer<Channel>() {
-          @Override
-          protected void initChannel(Channel ch) throws Exception {
-            ch.pipeline()
-              .addLast("gentle ssl handler", upgradeHandler)
-              .addLast("http request decoder", new HttpRequestDecoder())
-              .addLast("http message aggregator", new HttpObjectAggregator(1048576))
-              .addLast("app logic", new SimpleChannelInboundHandler<Object>() {
+    ServerBootstrap sb =
+        new ServerBootstrap()
+            .channel(LocalServerChannel.class)
+            .group(group)
+            .childHandler(
+                new ChannelInitializer<Channel>() {
                   @Override
-                  protected void channelRead0(ChannelHandlerContext ctx, Object message) throws Exception {
-                    requestLatch.countDown();
-                    assertTrue("message is HttpRequest", message instanceof HttpRequest);
-                  }
-              });
-            ;
+                  protected void initChannel(Channel ch) throws Exception {
+                    ch.pipeline()
+                        .addLast("gentle ssl handler", upgradeHandler)
+                        .addLast("http request decoder", new HttpRequestDecoder())
+                        .addLast("http message aggregator", new HttpObjectAggregator(1048576))
+                        .addLast(
+                            "app logic",
+                            new SimpleChannelInboundHandler<Object>() {
+                              @Override
+                              protected void channelRead0(ChannelHandlerContext ctx, Object message)
+                                  throws Exception {
+                                requestLatch.countDown();
+                                assertTrue(
+                                    "message is HttpRequest", message instanceof HttpRequest);
+                              }
+                            });
+                    ;
 
-            serverChannelLatch.countDown();
-          }
-        });
+                    serverChannelLatch.countDown();
+                  }
+                });
     sb.bind(serverAddress).sync();
 
     // setup client
-    SslContext clientContext = SslContextBuilder
-      .forClient()
-      .sslProvider(SslProvider.OPENSSL)
-      .trustManager(selfSignedCert.getCert())
-      .build();
+    SslContext clientContext =
+        SslContextBuilder.forClient()
+            .sslProvider(SslProvider.OPENSSL)
+            .trustManager(selfSignedCert.getCert())
+            .build();
 
-    Bootstrap cb = new Bootstrap()
-      .channel(LocalChannel.class)
-      .group(group)
-      .handler(new ChannelInitializer<Channel>() {
-          @Override
-          protected void initChannel(Channel ch) throws Exception {
-            ch.pipeline()
-              .addLast("ssl client handler", clientContext.newHandler(ch.alloc()))
-              .addLast("http request decoder", new HttpRequestEncoder())
-            ;
-          }
-        });
+    Bootstrap cb =
+        new Bootstrap()
+            .channel(LocalChannel.class)
+            .group(group)
+            .handler(
+                new ChannelInitializer<Channel>() {
+                  @Override
+                  protected void initChannel(Channel ch) throws Exception {
+                    ch.pipeline()
+                        .addLast("ssl client handler", clientContext.newHandler(ch.alloc()))
+                        .addLast("http request decoder", new HttpRequestEncoder());
+                  }
+                });
 
     Channel clientChannel = cb.connect(serverAddress).sync().channel();
     assertTrue(serverChannelLatch.await(5, SECONDS));

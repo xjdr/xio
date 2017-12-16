@@ -28,13 +28,11 @@ public class Http {
     headers.set(HttpHeaderNames.HOST, host);
     headers.set(HttpHeaderNames.CONTENT_LENGTH, content.length());
     return new DefaultFullHttpRequest(
-      HttpVersion.HTTP_1_1,
-      HttpMethod.POST,
-      path,
-      Unpooled.wrappedBuffer(content.getBytes()),
-      headers,
-      new DefaultHttpHeaders()
-    );
+        HttpVersion.HTTP_1_1,
+        HttpMethod.POST,
+        path,
+        Unpooled.wrappedBuffer(content.getBytes()),
+        headers,
+        new DefaultHttpHeaders());
   }
-
 }

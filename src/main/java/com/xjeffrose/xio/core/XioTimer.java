@@ -8,7 +8,8 @@ import javax.annotation.PreDestroy;
 
 public final class XioTimer extends HashedWheelTimer implements Closeable {
   public XioTimer(String prefix, long tickDuration, TimeUnit unit, int ticksPerWheel) {
-    super(new ThreadFactoryBuilder().setNameFormat(prefix + "-timer-%s").setDaemon(true).build(),
+    super(
+        new ThreadFactoryBuilder().setNameFormat(prefix + "-timer-%s").setDaemon(true).build(),
         tickDuration,
         unit,
         ticksPerWheel);

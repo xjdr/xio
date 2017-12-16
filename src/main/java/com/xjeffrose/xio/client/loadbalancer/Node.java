@@ -33,7 +33,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class Node implements Closeable {
 
-
   private final UUID token = UUID.randomUUID();
   private final ConcurrentHashMap<Channel, Stopwatch> pending = new ConcurrentHashMap<>();
   private final SocketAddress address;
@@ -66,7 +65,14 @@ public class Node implements Closeable {
     this(address, ImmutableList.of(), weight, "", Protocol.TCP, false, bootstrap);
   }
 
-  public Node(SocketAddress address, ImmutableList<String> filters, int weight, String serviceName, Protocol proto, boolean ssl, Bootstrap bootstrap) {
+  public Node(
+      SocketAddress address,
+      ImmutableList<String> filters,
+      int weight,
+      String serviceName,
+      Protocol proto,
+      boolean ssl,
+      Bootstrap bootstrap) {
     this.address = address;
     this.proto = proto;
     this.ssl = ssl;
@@ -75,12 +81,15 @@ public class Node implements Closeable {
     this.weight = weight;
     this.serviceName = serviceName;
     // TODO(CK): This be passed in, we're not really taking advantage of pooling
-    this.connectionPool = new XioConnectionPool(bootstrap, new AsyncRetryLoopFactory() {
-      @Override
-      public AsyncRetryLoop buildLoop(EventLoopGroup eventLoopGroup) {
-        return new AsyncRetryLoop(3, bootstrap.config().group(), 1, TimeUnit.SECONDS);
-      }
-    });
+    this.connectionPool =
+        new XioConnectionPool(
+            bootstrap,
+            new AsyncRetryLoopFactory() {
+              @Override
+              public AsyncRetryLoop buildLoop(EventLoopGroup eventLoopGroup) {
+                return new AsyncRetryLoop(3, bootstrap.config().group(), 1, TimeUnit.SECONDS);
+              }
+            });
     eventLoopGroup = bootstrap.config().group();
   }
 
@@ -103,7 +112,9 @@ public class Node implements Closeable {
    * @return socket address
    */
   public static InetSocketAddress toInetAddress(HostAndPort hostAndPort) {
-    return (hostAndPort == null) ? null : new InetSocketAddress(hostAndPort.getHost(), hostAndPort.getPort());
+    return (hostAndPort == null)
+        ? null
+        : new InetSocketAddress(hostAndPort.getHost(), hostAndPort.getPort());
   }
 
   public Future<Void> send(Object message) {
@@ -111,27 +122,31 @@ public class Node implements Closeable {
 
     log.debug("Acquiring Node: " + this);
     Future<Channel> channelResult = connectionPool.acquire();
-    channelResult.addListener(new FutureListener<Channel>() {
-      public void operationComplete(Future<Channel> future) {
-        if (future.isSuccess()) {
-          Channel channel = future.getNow();
-          channel.writeAndFlush(message).addListener(new ChannelFutureListener() {
-            public void operationComplete(ChannelFuture channelFuture) {
-              if (channelFuture.isSuccess()) {
-                log.debug("write finished for " + message);
-                promise.setSuccess(null);
-              } else {
-                log.error("Write error: ", channelFuture.cause());
-                promise.setFailure(channelFuture.cause());
-              }
+    channelResult.addListener(
+        new FutureListener<Channel>() {
+          public void operationComplete(Future<Channel> future) {
+            if (future.isSuccess()) {
+              Channel channel = future.getNow();
+              channel
+                  .writeAndFlush(message)
+                  .addListener(
+                      new ChannelFutureListener() {
+                        public void operationComplete(ChannelFuture channelFuture) {
+                          if (channelFuture.isSuccess()) {
+                            log.debug("write finished for " + message);
+                            promise.setSuccess(null);
+                          } else {
+                            log.error("Write error: ", channelFuture.cause());
+                            promise.setFailure(channelFuture.cause());
+                          }
+                        }
+                      });
+            } else {
+              log.error("Could not connect to client for write: " + future.cause());
+              promise.setFailure(future.cause());
             }
-          });
-        } else {
-          log.error("Could not connect to client for write: " + future.cause());
-          promise.setFailure(future.cause());
-        }
-      }
-    });
+          }
+        });
 
     return promise;
   }

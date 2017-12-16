@@ -67,7 +67,8 @@ public class RequestMuxerFunctionalTest extends Assert {
   private ChannelHandler requestHandler() {
     return new SimpleChannelInboundHandler<ServerRequest>() {
       @Override
-      protected void channelRead0(ChannelHandlerContext ctx, ServerRequest request) throws Exception {
+      protected void channelRead0(ChannelHandlerContext ctx, ServerRequest request)
+          throws Exception {
         requests.offer(request);
         if (request.expectsResponse()) {
           Response response = new Response(request.getId(), responsePayload);
@@ -88,13 +89,13 @@ public class RequestMuxerFunctionalTest extends Assert {
     String responseContent = "this is the response content";
     HttpHeaders headers = new DefaultHttpHeaders();
     headers.set(HttpHeaderNames.CONTENT_LENGTH, responseContent.length());
-    responsePayload = new DefaultFullHttpResponse(
-      HttpVersion.HTTP_1_1,
-      HttpResponseStatus.OK,
-      Unpooled.wrappedBuffer(responseContent.getBytes()),
-      headers,
-      new DefaultHttpHeaders()
-    );
+    responsePayload =
+        new DefaultFullHttpResponse(
+            HttpVersion.HTTP_1_1,
+            HttpResponseStatus.OK,
+            Unpooled.wrappedBuffer(responseContent.getBytes()),
+            headers,
+            new DefaultHttpHeaders());
 
     testGroup = new DefaultEventLoopGroup();
 
@@ -102,65 +103,66 @@ public class RequestMuxerFunctionalTest extends Assert {
 
     LocalAddress address = new LocalAddress("functional-test-mux");
 
-    ChannelInitializer<Channel> initializer = new ChannelInitializer<Channel>() {
-      @Override
-      public void initChannel(Channel channel) {
-        //channel.pipeline().addLast(new LoggingHandler(LogLevel.ERROR));
-      }
-    };
+    ChannelInitializer<Channel> initializer =
+        new ChannelInitializer<Channel>() {
+          @Override
+          public void initChannel(Channel channel) {
+            // channel.pipeline().addLast(new LoggingHandler(LogLevel.ERROR));
+          }
+        };
 
-    ChannelInitializer<Channel> childInitializer = new ChannelInitializer<Channel>() {
-      @Override
-      public void initChannel(Channel channel) {
-        channel.pipeline()
-          //.addLast(new LoggingHandler(LogLevel.ERROR))
-          .addLast("frame length codec", new FrameLengthCodec())
-          .addLast("mux message codec", new Codec())
-          .addLast("http request decoder", new HttpRequestDecoder())
-          .addLast("http reponse encoder", new HttpResponseEncoder())
-          .addLast("http request aggregator", new HttpObjectAggregator(65535))
-          .addLast("mux server codec", new ServerCodec())
-          .addLast("mux server request handler", requestHandler())
-          ;
-      }
-    };
+    ChannelInitializer<Channel> childInitializer =
+        new ChannelInitializer<Channel>() {
+          @Override
+          public void initChannel(Channel channel) {
+            channel
+                .pipeline()
+                // .addLast(new LoggingHandler(LogLevel.ERROR))
+                .addLast("frame length codec", new FrameLengthCodec())
+                .addLast("mux message codec", new Codec())
+                .addLast("http request decoder", new HttpRequestDecoder())
+                .addLast("http reponse encoder", new HttpResponseEncoder())
+                .addLast("http request aggregator", new HttpObjectAggregator(65535))
+                .addLast("mux server codec", new ServerCodec())
+                .addLast("mux server request handler", requestHandler());
+          }
+        };
 
-    server = (LocalServerChannel) new ServerBootstrap()
-      .localAddress(address)
-      .channel(LocalServerChannel.class)
-      .group(testGroup)
-      .handler(initializer)
-      .childHandler(childInitializer)
-      .bind()
-      .syncUninterruptibly() //block
-      .channel()
-      ;
+    server =
+        (LocalServerChannel)
+            new ServerBootstrap()
+                .localAddress(address)
+                .channel(LocalServerChannel.class)
+                .group(testGroup)
+                .handler(initializer)
+                .childHandler(childInitializer)
+                .bind()
+                .syncUninterruptibly() // block
+                .channel();
 
-    connector = new LocalConnector(address) {
-      @Override
-      protected List<Map.Entry<String, ChannelHandler>> payloadHandlers() {
-        return Arrays.asList(
-          new AbstractMap.SimpleImmutableEntry<>("http request encoder", new HttpRequestEncoder()),
-          new AbstractMap.SimpleImmutableEntry<>("http response decoder", new HttpResponseDecoder()),
-          new AbstractMap.SimpleImmutableEntry<>("http request aggregator", new HttpObjectAggregator(65535))
-        );
-      }
+    connector =
+        new LocalConnector(address) {
+          @Override
+          protected List<Map.Entry<String, ChannelHandler>> payloadHandlers() {
+            return Arrays.asList(
+                new AbstractMap.SimpleImmutableEntry<>(
+                    "http request encoder", new HttpRequestEncoder()),
+                new AbstractMap.SimpleImmutableEntry<>(
+                    "http response decoder", new HttpResponseDecoder()),
+                new AbstractMap.SimpleImmutableEntry<>(
+                    "http request aggregator", new HttpObjectAggregator(65535)));
+          }
 
-      @Override
-      protected EventLoopGroup group() {
-        return testGroup;
-      }
-    };
+          @Override
+          protected EventLoopGroup group() {
+            return testGroup;
+          }
+        };
 
     connectionPool = new ConnectionPool(connector);
 
-    client = new RequestMuxer(
-      config,
-      testGroup,
-      connectionPool
-    );
+    client = new RequestMuxer(config, testGroup, connectionPool);
     client.start();
-
   }
 
   @After
@@ -169,14 +171,14 @@ public class RequestMuxerFunctionalTest extends Assert {
     server.close();
   }
 
-  //@Test
+  // @Test
   public void testRequestNoResponse() throws ExecutionException {
     HttpRequest httpRequest = Http.get("hostname.com", "/path");
     Request request = client.write(httpRequest);
     UUID id = Uninterruptibles.getUninterruptibly(request.getWriteFuture());
 
     ServerRequest serverRequest = Uninterruptibles.takeUninterruptibly(requests);
-    HttpRequest serverHttpRequest = (HttpRequest)serverRequest.getPayload();
+    HttpRequest serverHttpRequest = (HttpRequest) serverRequest.getPayload();
     assertEquals(id, serverRequest.getId());
     assertFalse(serverRequest.expectsResponse());
     assertEquals(httpRequest.method(), serverHttpRequest.method());
@@ -195,7 +197,7 @@ public class RequestMuxerFunctionalTest extends Assert {
     UUID id = Uninterruptibles.getUninterruptibly(request.getWriteFuture());
 
     ServerRequest serverRequest = Uninterruptibles.takeUninterruptibly(requests);
-    HttpRequest serverHttpRequest = (HttpRequest)serverRequest.getPayload();
+    HttpRequest serverHttpRequest = (HttpRequest) serverRequest.getPayload();
     assertEquals(id, serverRequest.getId());
     assertTrue(serverRequest.expectsResponse());
     assertEquals(httpRequest.method(), serverHttpRequest.method());
@@ -208,7 +210,6 @@ public class RequestMuxerFunctionalTest extends Assert {
 
     Response response = Uninterruptibles.getUninterruptibly(request.getResponseFuture());
     assertEquals(request.getId(), response.getInResponseTo());
-    HttpResponse responsePayload = (HttpResponse)response.getPayload();
+    HttpResponse responsePayload = (HttpResponse) response.getPayload();
   }
-
 }

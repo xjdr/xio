@@ -12,9 +12,7 @@ import java.net.InetSocketAddress;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Handler implementation for the tcp proxy server.
- */
+/** Handler implementation for the tcp proxy server. */
 public class TcpProxyCodec extends ChannelInboundHandlerAdapter {
 
   public class BackendProxyCodec extends ChannelInboundHandlerAdapter {
@@ -32,16 +30,19 @@ public class TcpProxyCodec extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(final ChannelHandlerContext ctx, Object msg) {
-      inboundChannel.writeAndFlush(msg).addListener(new ChannelFutureListener() {
-        @Override
-        public void operationComplete(ChannelFuture future) {
-          if (future.isSuccess()) {
-            ctx.channel().read();
-          } else {
-            future.channel().close();
-          }
-        }
-      });
+      inboundChannel
+          .writeAndFlush(msg)
+          .addListener(
+              new ChannelFutureListener() {
+                @Override
+                public void operationComplete(ChannelFuture future) {
+                  if (future.isSuccess()) {
+                    ctx.channel().read();
+                  } else {
+                    future.channel().close();
+                  }
+                }
+              });
     }
 
     @Override
@@ -80,39 +81,43 @@ public class TcpProxyCodec extends ChannelInboundHandlerAdapter {
     // Start the connection attempt.
     Bootstrap b = new Bootstrap();
     b.group(inboundChannel.eventLoop())
-      .channel(ctx.channel().getClass())
-      .handler(new BackendProxyCodec(inboundChannel))
-      .option(ChannelOption.AUTO_READ, false);
+        .channel(ctx.channel().getClass())
+        .handler(new BackendProxyCodec(inboundChannel))
+        .option(ChannelOption.AUTO_READ, false);
     ChannelFuture f = b.connect(proxyEndpoint);
     outboundChannel = f.channel();
-    f.addListener(new ChannelFutureListener() {
-      @Override
-      public void operationComplete(ChannelFuture future) {
-        if (future.isSuccess()) {
-          // connection complete start to read first data
-          inboundChannel.read();
-        } else {
-          // Close the connection if the connection attempt has failed.
-          inboundChannel.close();
-        }
-      }
-    });
+    f.addListener(
+        new ChannelFutureListener() {
+          @Override
+          public void operationComplete(ChannelFuture future) {
+            if (future.isSuccess()) {
+              // connection complete start to read first data
+              inboundChannel.read();
+            } else {
+              // Close the connection if the connection attempt has failed.
+              inboundChannel.close();
+            }
+          }
+        });
   }
 
   @Override
   public void channelRead(final ChannelHandlerContext ctx, Object msg) {
     if (outboundChannel.isOpen()) {
-      outboundChannel.writeAndFlush(msg).addListener(new ChannelFutureListener() {
-        @Override
-        public void operationComplete(ChannelFuture future) {
-          if (future.isSuccess()) {
-            // was able to flush out data, start to read the next chunk
-            ctx.channel().read();
-          } else {
-            future.channel().close();
-          }
-        }
-      });
+      outboundChannel
+          .writeAndFlush(msg)
+          .addListener(
+              new ChannelFutureListener() {
+                @Override
+                public void operationComplete(ChannelFuture future) {
+                  if (future.isSuccess()) {
+                    // was able to flush out data, start to read the next chunk
+                    ctx.channel().read();
+                  } else {
+                    future.channel().close();
+                  }
+                }
+              });
     }
   }
 
@@ -129,13 +134,10 @@ public class TcpProxyCodec extends ChannelInboundHandlerAdapter {
     closeOnFlush(ctx.channel());
   }
 
-  /**
-   * Closes the specified channel after all queued write requests are flushed.
-   */
+  /** Closes the specified channel after all queued write requests are flushed. */
   void closeOnFlush(Channel ch) {
     if (ch.isActive()) {
       ch.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
     }
   }
-
 }

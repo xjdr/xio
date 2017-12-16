@@ -5,5 +5,4 @@ public interface ConfigurationUpdater {
   String getPath();
 
   void update(byte[] data);
-
 }

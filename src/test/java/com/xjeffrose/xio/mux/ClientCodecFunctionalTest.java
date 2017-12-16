@@ -33,21 +33,20 @@ public class ClientCodecFunctionalTest extends Assert {
 
     channel = new EmbeddedChannel();
 
-    channel.pipeline()
-      .addLast(new FrameLengthCodec())
-      .addLast(new Encoder())
-      // http encoder
-      .addLast(new HttpRequestEncoder())
-
-      .addLast(encoder)
-    ;
+    channel
+        .pipeline()
+        .addLast(new FrameLengthCodec())
+        .addLast(new Encoder())
+        // http encoder
+        .addLast(new HttpRequestEncoder())
+        .addLast(encoder);
   }
 
   byte[] hexToBytes(String hex) {
-    byte[] result = new byte[hex.length()/2];
-    for(int i = 0; i < hex.length(); ) {
-      int idx = i/2;
-      result[idx] = Byte.parseByte(hex.substring(i, i+2), 16);
+    byte[] result = new byte[hex.length() / 2];
+    for (int i = 0; i < hex.length(); ) {
+      int idx = i / 2;
+      result[idx] = Byte.parseByte(hex.substring(i, i + 2), 16);
       i += 2;
     }
 
@@ -56,25 +55,32 @@ public class ClientCodecFunctionalTest extends Assert {
 
   @Test
   public void testEncodeGet() {
-    Request request = new Request(UUID.fromString("934bf16b-7d6f-4f8a-92ce-6d46affb933f"), SettableFuture.create(), SettableFuture.create());
-    HttpRequest payload = new DefaultHttpRequest(
-      HttpVersion.HTTP_1_1,
-      HttpMethod.GET,
-      "/path"
-    );
+    Request request =
+        new Request(
+            UUID.fromString("934bf16b-7d6f-4f8a-92ce-6d46affb933f"),
+            SettableFuture.create(),
+            SettableFuture.create());
+    HttpRequest payload = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/path");
 
     Message message = new Message(request, payload);
     channel.writeOutbound(message);
     channel.runPendingTasks();
 
     ByteBuf expectedLength = Unpooled.copiedBuffer(hexToBytes("0042"));
-    ByteBuf expectedEncoded = Unpooled.copiedBuffer(hexToBytes("39333462663136622d376436662d346638612d393263652d3664343661666662393333660000000100000016474554202f7061746820485454502f312e310d0a0d0a"));
+    ByteBuf expectedEncoded =
+        Unpooled.copiedBuffer(
+            hexToBytes(
+                "39333462663136622d376436662d346638612d393263652d3664343661666662393333660000000100000016474554202f7061746820485454502f312e310d0a0d0a"));
 
-    ByteBuf length = (ByteBuf)channel.outboundMessages().poll();
-    ByteBuf encoded = (ByteBuf)channel.outboundMessages().poll();
+    ByteBuf length = (ByteBuf) channel.outboundMessages().poll();
+    ByteBuf encoded = (ByteBuf) channel.outboundMessages().poll();
 
-    assertTrue("Expected: " + ByteBufUtil.hexDump(expectedLength), ByteBufUtil.equals(expectedLength, length));
-    assertTrue("Expected: " + ByteBufUtil.hexDump(expectedEncoded), ByteBufUtil.equals(expectedEncoded, encoded));
+    assertTrue(
+        "Expected: " + ByteBufUtil.hexDump(expectedLength),
+        ByteBufUtil.equals(expectedLength, length));
+    assertTrue(
+        "Expected: " + ByteBufUtil.hexDump(expectedEncoded),
+        ByteBufUtil.equals(expectedEncoded, encoded));
   }
 
   @Test
@@ -83,27 +89,38 @@ public class ClientCodecFunctionalTest extends Assert {
     HttpHeaders headers = new DefaultHttpHeaders();
     headers.add(HttpHeaderNames.TRANSFER_ENCODING, HttpHeaderValues.CHUNKED);
 
-    Request request = new Request(UUID.fromString("70b3e594-2387-412c-9050-f6f7f46b64d5"), SettableFuture.create(), SettableFuture.create());
-    HttpRequest payload = new DefaultFullHttpRequest(
-      HttpVersion.HTTP_1_1,
-      HttpMethod.POST,
-      "/path",
-      content,
-      headers,
-      new DefaultHttpHeaders()
-    );
+    Request request =
+        new Request(
+            UUID.fromString("70b3e594-2387-412c-9050-f6f7f46b64d5"),
+            SettableFuture.create(),
+            SettableFuture.create());
+    HttpRequest payload =
+        new DefaultFullHttpRequest(
+            HttpVersion.HTTP_1_1,
+            HttpMethod.POST,
+            "/path",
+            content,
+            headers,
+            new DefaultHttpHeaders());
 
     Message message = new Message(request, payload);
     channel.writeOutbound(message);
     channel.runPendingTasks();
 
     ByteBuf expectedLength = Unpooled.copiedBuffer(hexToBytes("007d"));
-    ByteBuf expectedEncoded = Unpooled.copiedBuffer(hexToBytes("37306233653539342d323338372d343132632d393035302d6636663766343662363464350000000100000051504f5354202f7061746820485454502f312e310d0a7472616e736665722d656e636f64696e673a206368756e6b65640d0a0d0a31330d0a746869732069732074686520636f6e74656e740d0a300d0a0d0a"));
+    ByteBuf expectedEncoded =
+        Unpooled.copiedBuffer(
+            hexToBytes(
+                "37306233653539342d323338372d343132632d393035302d6636663766343662363464350000000100000051504f5354202f7061746820485454502f312e310d0a7472616e736665722d656e636f64696e673a206368756e6b65640d0a0d0a31330d0a746869732069732074686520636f6e74656e740d0a300d0a0d0a"));
 
-    ByteBuf length = (ByteBuf)channel.outboundMessages().poll();
-    ByteBuf encoded = (ByteBuf)channel.outboundMessages().poll();
+    ByteBuf length = (ByteBuf) channel.outboundMessages().poll();
+    ByteBuf encoded = (ByteBuf) channel.outboundMessages().poll();
 
-    assertTrue("Expected: " + ByteBufUtil.hexDump(expectedLength), ByteBufUtil.equals(expectedLength, length));
-    assertTrue("Expected: " + ByteBufUtil.hexDump(expectedEncoded), ByteBufUtil.equals(expectedEncoded, encoded));
+    assertTrue(
+        "Expected: " + ByteBufUtil.hexDump(expectedLength),
+        ByteBufUtil.equals(expectedLength, length));
+    assertTrue(
+        "Expected: " + ByteBufUtil.hexDump(expectedEncoded),
+        ByteBufUtil.equals(expectedEncoded, encoded));
   }
 }

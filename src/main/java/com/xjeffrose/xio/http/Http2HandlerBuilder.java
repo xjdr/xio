@@ -12,7 +12,8 @@ import java.util.function.Function;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class Http2HandlerBuilder extends AbstractHttp2ConnectionHandlerBuilder<Http2Handler, Http2HandlerBuilder> {
+public class Http2HandlerBuilder
+    extends AbstractHttp2ConnectionHandlerBuilder<Http2Handler, Http2HandlerBuilder> {
 
   private static final Http2FrameLogger logger = new Http2FrameLogger(INFO, Http2Handler.class);
   private final Function<Boolean, Http2FrameListener> frameListener;
@@ -39,8 +40,10 @@ public class Http2HandlerBuilder extends AbstractHttp2ConnectionHandlerBuilder<H
   }
 
   @Override
-  protected Http2Handler build(Http2ConnectionDecoder decoder, Http2ConnectionEncoder encoder, Http2Settings initialSettings) {
+  protected Http2Handler build(
+      Http2ConnectionDecoder decoder,
+      Http2ConnectionEncoder encoder,
+      Http2Settings initialSettings) {
     return new Http2Handler(decoder, encoder, initialSettings);
   }
-
 }

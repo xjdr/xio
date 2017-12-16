@@ -20,7 +20,8 @@ public class ZkClientFunctionalTest extends Assert {
       String payload = "payload";
 
       RetryPolicy retryPolicy = new RetryOneTime(1);
-      try(CuratorFramework client = CuratorFrameworkFactory.newClient(server.getConnectString(), retryPolicy)) {
+      try (CuratorFramework client =
+          CuratorFrameworkFactory.newClient(server.getConnectString(), retryPolicy)) {
         client.start();
         String path = "/xio/watched/node-init";
 
@@ -30,18 +31,19 @@ public class ZkClientFunctionalTest extends Assert {
         AtomicReference<String> result = new AtomicReference<>();
         CountDownLatch signal = new CountDownLatch(1);
 
-        zkClient.registerUpdater(new ConfigurationUpdater() {
-          @Override
-          public String getPath() {
-            return path;
-          }
+        zkClient.registerUpdater(
+            new ConfigurationUpdater() {
+              @Override
+              public String getPath() {
+                return path;
+              }
 
-          @Override
-          public void update(byte[] data) {
-            result.set(new String(data));
-            signal.countDown();
-          }
-        });
+              @Override
+              public void update(byte[] data) {
+                result.set(new String(data));
+                signal.countDown();
+              }
+            });
 
         zkClient.start();
 
@@ -61,7 +63,8 @@ public class ZkClientFunctionalTest extends Assert {
       String payload = "payload";
 
       RetryPolicy retryPolicy = new RetryOneTime(1);
-      try(CuratorFramework client = CuratorFrameworkFactory.newClient(server.getConnectString(), retryPolicy)) {
+      try (CuratorFramework client =
+          CuratorFrameworkFactory.newClient(server.getConnectString(), retryPolicy)) {
         client.start();
         String path = "/xio/watched/node-update";
 
@@ -72,19 +75,20 @@ public class ZkClientFunctionalTest extends Assert {
         CountDownLatch firstSignal = new CountDownLatch(1);
         CountDownLatch secondSignal = new CountDownLatch(2);
 
-        zkClient.registerUpdater(new ConfigurationUpdater() {
-          @Override
-          public String getPath() {
-            return path;
-          }
+        zkClient.registerUpdater(
+            new ConfigurationUpdater() {
+              @Override
+              public String getPath() {
+                return path;
+              }
 
-          @Override
-          public void update(byte[] data) {
-            result.set(new String(data));
-            firstSignal.countDown();
-            secondSignal.countDown();
-          }
-        });
+              @Override
+              public void update(byte[] data) {
+                result.set(new String(data));
+                firstSignal.countDown();
+                secondSignal.countDown();
+              }
+            });
 
         zkClient.start();
 
@@ -102,5 +106,4 @@ public class ZkClientFunctionalTest extends Assert {
       }
     }
   }
-
 }

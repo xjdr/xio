@@ -34,6 +34,5 @@ public class XioLeaderSelectorListener implements LeaderSelectorListener {
   }
 
   @Override
-  public void stateChanged(CuratorFramework curatorFramework, ConnectionState connectionState) {
-  }
+  public void stateChanged(CuratorFramework curatorFramework, ConnectionState connectionState) {}
 }

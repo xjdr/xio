@@ -22,15 +22,15 @@ public class MutualAuthHandler extends ChannelInboundHandlerAdapter {
       chain[0].checkValidity();
 
       return session.getPeerPrincipal().getName();
-    } catch (javax.security.cert.CertificateExpiredException | javax.security.cert.CertificateNotYetValidException e) {
+    } catch (javax.security.cert.CertificateExpiredException
+        | javax.security.cert.CertificateNotYetValidException e) {
       return TlsAuthState.UNAUTHENTICATED;
     } catch (SSLPeerUnverifiedException e) {
       return TlsAuthState.UNAUTHENTICATED;
     }
   }
 
-  public void peerIdentityEstablished(ChannelHandlerContext ctx, String identity) {
-  }
+  public void peerIdentityEstablished(ChannelHandlerContext ctx, String identity) {}
 
   @Override
   public void userEventTriggered(ChannelHandlerContext ctx, Object evt) {
@@ -42,7 +42,8 @@ public class MutualAuthHandler extends ChannelInboundHandlerAdapter {
       if (handshakeEvent.isSuccess()) {
         SslHandler sslHandler = ctx.pipeline().get(SslHandler.class);
         if (sslHandler == null) {
-          throw new IllegalStateException("cannot find a SslHandler in the pipeline (required for MutualAuthHandler)");
+          throw new IllegalStateException(
+              "cannot find a SslHandler in the pipeline (required for MutualAuthHandler)");
         }
         peerIdentity = getPeerIdentity(sslHandler.engine());
       }
@@ -52,5 +53,4 @@ public class MutualAuthHandler extends ChannelInboundHandlerAdapter {
 
     ctx.fireUserEventTriggered(evt);
   }
-
 }

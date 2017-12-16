@@ -8,7 +8,8 @@ public class ApplicationConfigTest extends Assert {
 
   @Test
   public void testFromConfig() {
-    ApplicationConfig config = ApplicationConfig.fromConfig("xio.exampleApplication", ConfigFactory.load());
+    ApplicationConfig config =
+        ApplicationConfig.fromConfig("xio.exampleApplication", ConfigFactory.load());
 
     assertEquals("example application", config.getName());
     assertEquals(5, config.getBossThreads());
@@ -20,6 +21,5 @@ public class ApplicationConfigTest extends Assert {
     assertEquals("/xio/http1FilterRules", config.getHttp1FilterPath());
     assertEquals("http://127.0.0.1:9411/api/v1/spans", config.getZipkinUrl());
     assertEquals(0.50, config.getSamplingRate(), 0.001);
-
   }
 }

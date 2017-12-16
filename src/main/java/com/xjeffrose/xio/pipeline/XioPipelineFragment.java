@@ -9,6 +9,9 @@ public interface XioPipelineFragment {
 
   public String applicationProtocol();
 
-  public void buildHandlers(ApplicationState appState, XioServerConfig config, XioServerState state, ChannelPipeline pipeline);
-
+  public void buildHandlers(
+      ApplicationState appState,
+      XioServerConfig config,
+      XioServerState state,
+      ChannelPipeline pipeline);
 }
