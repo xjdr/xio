@@ -443,6 +443,7 @@
             <configuration>
               <excludes>
                 <exclude>**/thrift/*.class</exclude>
+                <exclude>**/AutoValue_*.class</exclude>
               </excludes>
             </configuration>
           </execution>
@@ -455,6 +456,7 @@
             <configuration>
               <excludes>
                 <exclude>**/thrift/*.class</exclude>
+                <exclude>**/AutoValue_*.class</exclude>
               </excludes>
             </configuration>
           </execution>
@@ -466,6 +468,7 @@
             <configuration>
               <excludes>
                 <exclude>**/thrift/*.class</exclude>
+                <exclude>**/AutoValue_*.class</exclude>
               </excludes>
               <rules>
                 <rule>

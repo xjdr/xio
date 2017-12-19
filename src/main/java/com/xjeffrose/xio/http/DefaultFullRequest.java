@@ -5,9 +5,7 @@ import com.xjeffrose.xio.core.internal.UnstableApi;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.HttpMethod;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.ToString;
-import lombok.experimental.Accessors;
 
 /** Value class for representing an outgoing HTTP1/2 Request, for use in a client. */
 @UnstableApi
