@@ -215,6 +215,13 @@
     </dependency>
 
     <dependency>
+      <groupId>com.google.auto.value</groupId>
+      <artifactId>auto-value</artifactId>
+      <version>1.5.2</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
       <groupId>io.zipkin.brave</groupId>
       <artifactId>brave-instrumentation-http-tests</artifactId>
       <version>4.4.0</version>
@@ -252,15 +259,8 @@
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
-      <version>1.16.8</version>
-      <scope>compile</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>com.puppycrawl.tools</groupId>
-      <artifactId>checkstyle</artifactId>
-      <version>6.19</version>
-      <scope>test</scope>
+      <version>1.16.18</version>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
@@ -371,8 +371,10 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
-        <version>2.9</version>
+        <version>3.0.0</version>
         <configuration>
+          <doclint>all</doclint>
+          <failOnError>true</failOnError>
           <quiet>true</quiet>
           <source>1.8</source>
           <encoding>${project.build.sourceEncoding}</encoding>
@@ -434,6 +436,7 @@
             <configuration>
               <excludes>
                 <exclude>**/thrift/*.class</exclude>
+                <exclude>**/AutoValue_*.class</exclude>
               </excludes>
             </configuration>
           </execution>
@@ -446,6 +449,7 @@
             <configuration>
               <excludes>
                 <exclude>**/thrift/*.class</exclude>
+                <exclude>**/AutoValue_*.class</exclude>
               </excludes>
             </configuration>
           </execution>
@@ -457,6 +461,7 @@
             <configuration>
               <excludes>
                 <exclude>**/thrift/*.class</exclude>
+                <exclude>**/AutoValue_*.class</exclude>
               </excludes>
               <rules>
                 <rule>
@@ -498,7 +503,30 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <version>2.17</version>
+        <configuration>
+          <configLocation>google_checks.xml</configLocation>
+        </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>com.puppycrawl.tools</groupId>
+            <artifactId>checkstyle</artifactId>
+            <version>8.5</version>
+          </dependency>
+        </dependencies>
+        <executions>
+          <execution>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
+
     <pluginManagement>
       <plugins>
         <plugin>
@@ -547,6 +575,29 @@
           </reportSet>
         </reportSets>
       </plugin>
+
+      <!-- this is used by mvn site, which isn't currently part of the build
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>3.0.0</version>
+        <configuration>
+          <additionalparam>-Xdoclint:all,-Xdoclint:missing</additionalparam>
+          <quiet>false</quiet>
+          <source>1.8</source>
+          <encoding>${project.build.sourceEncoding}</encoding>
+          <excludePackageNames>*thrift*</excludePackageNames>
+        </configuration>
+        <reportSets>
+          <reportSet>
+            <id>default</id>
+            <reports>
+              <report>javadoc</report>
+            </reports>
+          </reportSet>
+        </reportSets>
+      </plugin>
+      -->
     </plugins>
   </reporting>
 </project>
