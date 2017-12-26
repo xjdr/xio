@@ -1,42 +1,8 @@
 package com.xjeffrose.xio.tracing;
 
-import static io.netty.handler.codec.http.HttpMethod.GET;
-import static io.netty.handler.codec.http.HttpMethod.POST;
-import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
-import static io.netty.util.CharsetUtil.UTF_8;
 import static org.junit.Assert.*;
 
-import brave.http.ITHttpClient;
-import brave.propagation.TraceContext;
-import com.xjeffrose.xio.client.XioClient;
-import com.xjeffrose.xio.client.XioClientBootstrap;
-import com.xjeffrose.xio.client.XioRequest;
-import com.xjeffrose.xio.client.loadbalancer.Protocol;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.EventLoopGroup;
-import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.handler.codec.http.DefaultFullHttpRequest;
-import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpObject;
-import io.netty.handler.codec.http.HttpRequest;
-import io.netty.handler.codec.http.HttpResponse;
-import io.netty.handler.codec.http.LastHttpContent;
-import io.netty.util.concurrent.Future;
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
-import java.util.concurrent.CompletableFuture;
 import java.util.logging.*;
-import org.junit.AssumptionViolatedException;
-import org.junit.ComparisonFailure;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestWatcher;
-import org.junit.runner.Description;
-import com.xjeffrose.xio.client.ClientConfig;
 
 // TODO(CK): These brave integration tests are flaky and stall out sometimes
 // Turn them back on when they are fixed

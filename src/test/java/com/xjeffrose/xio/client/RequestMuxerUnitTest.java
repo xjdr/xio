@@ -34,10 +34,8 @@ import org.mockito.junit.MockitoRule;
 
 public class RequestMuxerUnitTest extends Assert {
 
-  @Setter
-  boolean success = false;
-  @Setter
-  boolean failure = false;
+  @Setter boolean success = false;
+  @Setter boolean failure = false;
 
   ConnectionPool connectionPool;
 
@@ -47,37 +45,32 @@ public class RequestMuxerUnitTest extends Assert {
 
   EventLoopGroup group;
 
-  @Rule
-  public MockitoRule mockitoRule = MockitoJUnit.rule();
+  @Rule public MockitoRule mockitoRule = MockitoJUnit.rule();
 
   @Before
   public void setUp() throws Exception {
     Config config = ConfigFactory.load().getConfig("xio.testApplication.settings.requestMuxer");
-    LocalConnector connector = new LocalConnector("test-muxer") {
-      @Override
-      public ListenableFuture<Channel> connect() {
-        SettableFuture<Channel> result = SettableFuture.create();
-        EmbeddedChannel channel = new EmbeddedChannel();
-        channel.pipeline().addLast(new ClientCodec());
-        channels.add(channel);
-        result.set(channel);
-        return result;
-      }
-    };
+    LocalConnector connector =
+        new LocalConnector("test-muxer") {
+          @Override
+          public ListenableFuture<Channel> connect() {
+            SettableFuture<Channel> result = SettableFuture.create();
+            EmbeddedChannel channel = new EmbeddedChannel();
+            channel.pipeline().addLast(new ClientCodec());
+            channels.add(channel);
+            result.set(channel);
+            return result;
+          }
+        };
     // TODO(CK): Override connection pool request node instead of connector.connect
     connectionPool = new ConnectionPool(connector);
 
-    group = new NioEventLoopGroup(5,
-      new ThreadFactoryBuilder()
-      .setNameFormat("chicagoClient-nioEventLoopGroup-%d")
-      .build()
-    );
+    group =
+        new NioEventLoopGroup(
+            5,
+            new ThreadFactoryBuilder().setNameFormat("chicagoClient-nioEventLoopGroup-%d").build());
 
-    requestMuxer = new RequestMuxer(
-      config,
-      group,
-      connectionPool
-    );
+    requestMuxer = new RequestMuxer(config, group, connectionPool);
     requestMuxer.start();
   }
 
@@ -86,19 +79,21 @@ public class RequestMuxerUnitTest extends Assert {
     Integer payload = new Integer(1);
     Request request = requestMuxer.write(payload);
     CountDownLatch done = new CountDownLatch(1);
-    Futures.addCallback(request.getWriteFuture(), new FutureCallback<UUID>() {
-      @Override
-      public void onSuccess(UUID id) {
-        setSuccess(true);
-        done.countDown();
-      }
+    Futures.addCallback(
+        request.getWriteFuture(),
+        new FutureCallback<UUID>() {
+          @Override
+          public void onSuccess(UUID id) {
+            setSuccess(true);
+            done.countDown();
+          }
 
-      @Override
-      public void onFailure(Throwable throwable) {
-        setFailure(true);
-        done.countDown();
-      }
-    });
+          @Override
+          public void onFailure(Throwable throwable) {
+            setFailure(true);
+            done.countDown();
+          }
+        });
 
     EmbeddedChannel channel = channels.get(0);
     channel.runPendingTasks();
@@ -107,7 +102,7 @@ public class RequestMuxerUnitTest extends Assert {
     assertTrue(request.getWriteFuture().isDone());
     assertFalse(failure);
     assertTrue(success);
-    Integer written = (Integer)channel.outboundMessages().peek();
+    Integer written = (Integer) channel.outboundMessages().peek();
     assertEquals(payload, written);
     requestMuxer.close();
   }
@@ -116,7 +111,7 @@ public class RequestMuxerUnitTest extends Assert {
   public <T> Optional<T> maybeGetFrom(Future<T> future) {
     try {
       return Optional.ofNullable(Uninterruptibles.getUninterruptibly(future)); // block
-    } catch(ExecutionException e) {
+    } catch (ExecutionException e) {
       return Optional.empty();
     }
   }
@@ -124,19 +119,21 @@ public class RequestMuxerUnitTest extends Assert {
   // TODO(CK): Refactor this into a helper class
   public <T> void blockingCallback(ListenableFuture<T> future, FutureCallback<T> callback) {
     CountDownLatch done = new CountDownLatch(1);
-    Futures.addCallback(future, new FutureCallback<T>() {
-      @Override
-      public void onSuccess(T result) {
-        callback.onSuccess(result);
-        done.countDown();
-      }
+    Futures.addCallback(
+        future,
+        new FutureCallback<T>() {
+          @Override
+          public void onSuccess(T result) {
+            callback.onSuccess(result);
+            done.countDown();
+          }
 
-      @Override
-      public void onFailure(Throwable throwable) {
-        callback.onFailure(throwable);
-        done.countDown();
-      }
-    });
+          @Override
+          public void onFailure(Throwable throwable) {
+            callback.onFailure(throwable);
+            done.countDown();
+          }
+        });
     Uninterruptibles.awaitUninterruptibly(done); // block
   }
 
@@ -149,23 +146,26 @@ public class RequestMuxerUnitTest extends Assert {
     EmbeddedChannel channel = channels.get(0);
     Optional<UUID> result = maybeGetFrom(request.getWriteFuture());
     assertTrue(result.isPresent());
-    result.ifPresent(uuid -> {
-      // simulate write response
-      Response response = new Response(uuid, payload);
-      request.getResponsePromise().set(response);
-      // add callback when the response future comes in
-      blockingCallback(request.getResponseFuture(), new FutureCallback<Response>() {
-        @Override
-        public void onSuccess(Response response) {
-          setSuccess(true);
-        }
+    result.ifPresent(
+        uuid -> {
+          // simulate write response
+          Response response = new Response(uuid, payload);
+          request.getResponsePromise().set(response);
+          // add callback when the response future comes in
+          blockingCallback(
+              request.getResponseFuture(),
+              new FutureCallback<Response>() {
+                @Override
+                public void onSuccess(Response response) {
+                  setSuccess(true);
+                }
 
-        @Override
-        public void onFailure(Throwable throwable) {
-          setFailure(true);
-        }
-      }); // block
-    });
+                @Override
+                public void onFailure(Throwable throwable) {
+                  setFailure(true);
+                }
+              }); // block
+        });
     assertTrue(success);
     assertFalse(failure);
   }

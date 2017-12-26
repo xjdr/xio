@@ -1,36 +1,28 @@
 package com.xjeffrose.xio.http;
 
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
-import static com.typesafe.config.ConfigValueFactory.fromAnyRef;
-
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
-import okhttp3.mockwebserver.MockWebServer;
-import okhttp3.mockwebserver.MockResponse;
-import okhttp3.mockwebserver.RecordedRequest;
-import okhttp3.mockwebserver.Dispatcher;
-
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Before;
-import org.junit.After;
-import org.junit.Test;
-import org.junit.AssumptionViolatedException;
-
-import java.net.InetSocketAddress;
-import java.io.IOException;
-import com.xjeffrose.xio.helpers.ProxyPipelineRequestHandler;
-
+import com.google.common.collect.ImmutableMap;
 import com.xjeffrose.xio.SSL.TlsConfig;
+import com.xjeffrose.xio.application.Application;
+import com.xjeffrose.xio.bootstrap.ApplicationBootstrap;
 import com.xjeffrose.xio.fixtures.OkHttpUnsafe;
+import com.xjeffrose.xio.helpers.ProxyPipelineRequestHandler;
 import com.xjeffrose.xio.pipeline.SmartHttpPipeline;
 import com.xjeffrose.xio.pipeline.XioPipelineFragment;
 import io.netty.channel.ChannelHandler;
-import com.google.common.collect.ImmutableMap;
-import com.xjeffrose.xio.application.Application;
-import com.xjeffrose.xio.bootstrap.ApplicationBootstrap;
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.mockwebserver.Dispatcher;
+import okhttp3.mockwebserver.MockResponse;
+import okhttp3.mockwebserver.MockWebServer;
+import okhttp3.mockwebserver.RecordedRequest;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.AssumptionViolatedException;
+import org.junit.Before;
+import org.junit.Test;
 
 public class ProxyWiringTest extends Assert {
   OkHttpClient client = OkHttpUnsafe.getUnsafeClient();
@@ -65,24 +57,27 @@ public class ProxyWiringTest extends Assert {
     return new SmartHttpPipeline() {
       @Override
       public ChannelHandler getApplicationRouter() {
-        return new PipelineRouter(ImmutableMap.of(), new ProxyPipelineRequestHandler(boundAddress, true));
+        return new PipelineRouter(
+            ImmutableMap.of(), new ProxyPipelineRequestHandler(boundAddress, true));
       }
     };
   }
 
-
   @Test
   public void testProxy() throws Exception {
     InetSocketAddress proxiedAddress = new InetSocketAddress("127.0.0.1", server.getPort());
-    Application application = new ApplicationBootstrap("xio.proxyApplication")
-      .addServer("proxyServer", (bs) -> bs.addToPipeline(proxyFragment(proxiedAddress))).build();
+    Application application =
+        new ApplicationBootstrap("xio.proxyApplication")
+            .addServer("proxyServer", (bs) -> bs.addToPipeline(proxyFragment(proxiedAddress)))
+            .build();
 
-    Dispatcher dispatcher = new Dispatcher() {
-      @Override
-      public MockResponse dispatch(RecordedRequest request) throws InterruptedException {
-        return new MockResponse().setBody("['I am a json response']");
-      }
-    };
+    Dispatcher dispatcher =
+        new Dispatcher() {
+          @Override
+          public MockResponse dispatch(RecordedRequest request) throws InterruptedException {
+            return new MockResponse().setBody("['I am a json response']");
+          }
+        };
     server.setDispatcher(dispatcher);
 
     InetSocketAddress proxy = application.instrumentation("proxyServer").boundAddress();
@@ -96,12 +91,12 @@ public class ProxyWiringTest extends Assert {
   }
 
   protected Request buildRequest(InetSocketAddress address) throws IOException {
-    StringBuilder path = new StringBuilder("https://")
-      .append("127.0.0.1")
-      .append(":")
-      .append(address.getPort())
-      .append("/api/v1/fives/hand/slap")
-      ;
+    StringBuilder path =
+        new StringBuilder("https://")
+            .append("127.0.0.1")
+            .append(":")
+            .append(address.getPort())
+            .append("/api/v1/fives/hand/slap");
     return new Request.Builder().url(path.toString()).build();
   }
 

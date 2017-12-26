@@ -9,8 +9,7 @@ import io.netty.channel.ChannelHandler;
 // TODO(CK): merge this with XioBasePipeline
 public class XioServerPipeline extends XioBasePipeline {
 
-  public XioServerPipeline() {
-  }
+  public XioServerPipeline() {}
 
   @Override
   public ChannelHandler getEncryptionHandler(XioServerConfig config, XioServerState state) {
@@ -40,10 +39,7 @@ public class XioServerPipeline extends XioBasePipeline {
   @Override
   public ChannelHandler getIdleDisconnectHandler(XioServerLimits limits) {
     return new XioIdleDisconnectHandler(
-      limits.maxReadIdleTime(),
-      limits.maxWriteIdleTime(),
-      limits.maxAllIdleTime()
-    );
+        limits.maxReadIdleTime(), limits.maxWriteIdleTime(), limits.maxAllIdleTime());
   }
 
   @Override
@@ -55,5 +51,4 @@ public class XioServerPipeline extends XioBasePipeline {
   public ChannelHandler getApplicationHandler() {
     return null;
   }
-
 }

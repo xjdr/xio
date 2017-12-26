@@ -11,5 +11,4 @@ public interface Unmarshaller {
   public void unmarshall(Http1DeterministicRuleEngineConfig config, byte[] data);
 
   public void unmarshall(IpAddressDeterministicRuleEngineConfig config, byte[] data);
-
 }

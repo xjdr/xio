@@ -20,5 +20,4 @@ public class ClientChannelConfiguration {
   public Class<? extends Channel> channel() {
     return channelClass;
   }
-
 }

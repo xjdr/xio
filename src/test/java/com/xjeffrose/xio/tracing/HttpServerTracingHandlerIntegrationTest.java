@@ -1,35 +1,8 @@
 package com.xjeffrose.xio.tracing;
 
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.EXPECTATION_FAILED;
-import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
-import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 import static org.junit.Assert.*;
 
-import brave.Span;
-import brave.Tracer;
-import brave.http.HttpTracing;
-import brave.http.ITHttpServer;
-import com.xjeffrose.xio.bootstrap.XioServerBootstrap;
-import com.xjeffrose.xio.pipeline.SmartHttpPipeline;
-import com.xjeffrose.xio.server.XioServer;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
-import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelHandler;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpObject;
-import io.netty.handler.codec.http.HttpRequest;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.util.CharsetUtil;
-import java.io.IOException;
-import java.util.function.Function;
 import java.util.logging.*;
-import org.junit.After;
 
 /*
 public class HttpServerTracingHandlerIntegrationTest extends ITHttpServer {

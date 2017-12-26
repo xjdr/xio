@@ -17,12 +17,13 @@ public class BBtoHttpResponseTest {
 
     assertEquals(HttpResponseStatus.OK, response.getStatus());
     assertEquals("xio", response.headers().get("Server"));
-
   }
 
   @Test
   public void testGetResponseServerError() throws Exception {
-    ByteBuf bb = Unpooled.wrappedBuffer("HTTP/1.1 500 Internal Server Error\r\nServer: xio\r\n\r\n\r\n".getBytes());
+    ByteBuf bb =
+        Unpooled.wrappedBuffer(
+            "HTTP/1.1 500 Internal Server Error\r\nServer: xio\r\n\r\n\r\n".getBytes());
     DefaultFullHttpResponse response = BBtoHttpResponse.getResponse(bb);
 
     assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, response.getStatus());

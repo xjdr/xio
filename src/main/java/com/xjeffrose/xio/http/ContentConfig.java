@@ -7,5 +7,4 @@ public class ContentConfig {
   public ContentConfig(String path) {
     this.path = path;
   }
-
 }

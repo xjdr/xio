@@ -30,5 +30,4 @@ public class ZooKeeperReadProvider extends ReadProvider {
       throw new RuntimeException(e);
     }
   }
-
 }

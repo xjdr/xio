@@ -15,8 +15,8 @@ import io.netty.channel.WriteBufferWaterMark;
 import io.netty.handler.codec.http.HttpClientCodec;
 import io.netty.handler.ssl.SslContext;
 import java.net.InetSocketAddress;
-import java.util.function.Supplier;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
@@ -31,24 +31,15 @@ public class XioClientBootstrap {
   private ChannelConfiguration channelConfig;
   private final ClientConfig config;
   private final SslContext sslContext;
-  @Setter
-  private InetSocketAddress address;
-  @Setter
-  private Distributor distributor;
-  @Setter
-  private boolean ssl;
-  @Setter
-  private Protocol proto;
-  @Setter
-  private Supplier<ChannelHandler> applicationProtocol;
-  @Setter
-  private Supplier<ChannelHandler> tracingHandler;
-  @Setter
-  private Function<ClientState, ChannelInitializer> initializerFactory;
-  @Setter
-  private ChannelHandler handler;
-  @Setter
-  boolean usePool;
+  @Setter private InetSocketAddress address;
+  @Setter private Distributor distributor;
+  @Setter private boolean ssl;
+  @Setter private Protocol proto;
+  @Setter private Supplier<ChannelHandler> applicationProtocol;
+  @Setter private Supplier<ChannelHandler> tracingHandler;
+  @Setter private Function<ClientState, ChannelInitializer> initializerFactory;
+  @Setter private ChannelHandler handler;
+  @Setter boolean usePool;
 
   private XioClientBootstrap(XioClientBootstrap other) {
     this.config = other.config;
@@ -90,15 +81,18 @@ public class XioClientBootstrap {
     if (proto != null && (proto == Protocol.HTTP || proto == Protocol.HTTPS)) {
       applicationProtocol = () -> new HttpClientCodec();
     } else if (applicationProtocol == null) {
-      throw new RuntimeException("Cannot build initializer, specify either protocol or applicationProtocol");
+      throw new RuntimeException(
+          "Cannot build initializer, specify either protocol or applicationProtocol");
     }
 
-    ClientState state = new ClientState(config,
-                                        address,
-                                        handler,
-                                        (ssl ? sslContext : null),
-                                        applicationProtocol,
-                                        tracingHandler);
+    ClientState state =
+        new ClientState(
+            config,
+            address,
+            handler,
+            (ssl ? sslContext : null),
+            applicationProtocol,
+            tracingHandler);
     if (initializerFactory != null) {
       return initializerFactory.apply(state);
     }
@@ -108,13 +102,14 @@ public class XioClientBootstrap {
 
   public Bootstrap buildBootstrap(ChannelConfiguration channelConfig) {
     return new Bootstrap()
-      .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 500)
-      .option(ChannelOption.SO_REUSEADDR, true)
-      .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-      .option(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(8 * 1024, 32 * 1024))
-      .option(ChannelOption.TCP_NODELAY, true)
-      .group(channelConfig.workerGroup())
-      .channel(channelConfig.channel());
+        .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 500)
+        .option(ChannelOption.SO_REUSEADDR, true)
+        .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
+        .option(
+            ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(8 * 1024, 32 * 1024))
+        .option(ChannelOption.TCP_NODELAY, true)
+        .group(channelConfig.workerGroup())
+        .channel(channelConfig.channel());
   }
 
   public XioClient build() {
@@ -147,5 +142,4 @@ public class XioClientBootstrap {
   public XioClientBootstrap clone(EventLoopGroup group) {
     return clone(ChannelConfiguration.clientConfig(group));
   }
-
 }

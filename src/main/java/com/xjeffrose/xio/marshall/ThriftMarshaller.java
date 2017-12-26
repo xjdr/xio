@@ -95,13 +95,15 @@ public class ThriftMarshaller implements Marshaller {
     if (headers != null && headers.size() > 0) {
       ArrayList<Http1HeaderTuple> result = new ArrayList<Http1HeaderTuple>();
 
-      headers.entries().stream().forEach(e -> result.add(new Http1HeaderTuple(e.getKey(), e.getValue())));
+      headers
+          .entries()
+          .stream()
+          .forEach(e -> result.add(new Http1HeaderTuple(e.getKey(), e.getValue())));
 
       return result;
     }
     return null;
   }
-
 
   private Http1Rule build(Http1DeterministicRuleEngineConfig.Rule rule) {
     Http1Rule message = new Http1Rule();
@@ -143,5 +145,4 @@ public class ThriftMarshaller implements Marshaller {
 
     return serialize(message);
   }
-
 }

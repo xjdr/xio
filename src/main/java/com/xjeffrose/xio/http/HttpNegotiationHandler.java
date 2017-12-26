@@ -41,5 +41,4 @@ public class HttpNegotiationHandler extends ApplicationProtocolNegotiationHandle
       throw new RuntimeException("Unknown Application Protocol '" + protocol + "'");
     }
   }
-
 }

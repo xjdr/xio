@@ -24,5 +24,4 @@ public class HttpBuilders {
   public static DefaultStreamingData.Builder newStreamingData() {
     return DefaultStreamingData.builder();
   }
-
 }

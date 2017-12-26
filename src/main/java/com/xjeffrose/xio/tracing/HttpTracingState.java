@@ -8,7 +8,8 @@ import io.netty.util.AttributeKey;
 public class HttpTracingState {
 
   private static final AttributeKey<Span> span_key = AttributeKey.newInstance("xio_tracing_span");
-  private static final AttributeKey<TraceContext> context_key = AttributeKey.newInstance("xio_tracing_context");
+  private static final AttributeKey<TraceContext> context_key =
+      AttributeKey.newInstance("xio_tracing_context");
 
   public static void setSpan(ChannelHandlerContext ctx, Span span) {
     ctx.channel().attr(span_key).set(span);
@@ -33,5 +34,4 @@ public class HttpTracingState {
   public static TraceContext popContext(ChannelHandlerContext ctx) {
     return ctx.channel().attr(context_key).getAndSet(null);
   }
-
 }

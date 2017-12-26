@@ -12,25 +12,23 @@ import io.netty.handler.codec.http.LastHttpContent;
 
 public class HttpStatus404Handler implements RequestHandler {
 
-  public HttpStatus404Handler() {
-  }
+  public HttpStatus404Handler() {}
 
   @Override
   public RequestUpdateHandler handle(HttpRequest request, ChannelHandlerContext ctx) {
-    HttpResponse not_found = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.NOT_FOUND);
+    HttpResponse not_found =
+        new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.NOT_FOUND);
     ctx.writeAndFlush(not_found).addListener(ChannelFutureListener.CLOSE);
 
     return new RequestUpdateHandler() {
       @Override
-      public void update(HttpContent content) {
-      }
+      public void update(HttpContent content) {}
+
       @Override
-      public void update(LastHttpContent last) {
-      }
+      public void update(LastHttpContent last) {}
     };
   }
 
   @Override
-  public void close() {
-  }
+  public void close() {}
 }

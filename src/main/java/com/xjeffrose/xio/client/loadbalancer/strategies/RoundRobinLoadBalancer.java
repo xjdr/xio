@@ -25,7 +25,7 @@ public class RoundRobinLoadBalancer implements Strategy {
     List<UUID> ids = new ArrayList<>(okNodes.keySet());
 
     Collections.shuffle(ids, new Random());
-    for (UUID id: ids) {
+    for (UUID id : ids) {
       Node nextNode = okNodes.get(id);
       if (okToPick(nextNode)) {
         if (nextNode.isAvailable()) {

@@ -10,17 +10,19 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class Application implements AutoCloseable {
 
-  @Getter
-  private final ApplicationConfig config;
+  @Getter private final ApplicationConfig config;
 
   private final Map<String, XioServer> servers;
 
-  @Getter
-  private final ApplicationState state;
+  @Getter private final ApplicationState state;
 
   private final Configurator configurator;
 
-  public Application(ApplicationConfig config, Map<String, XioServer> servers, ApplicationState state, Configurator configurator) {
+  public Application(
+      ApplicationConfig config,
+      Map<String, XioServer> servers,
+      ApplicationState state,
+      Configurator configurator) {
     this.config = config;
     this.servers = servers;
     this.state = state;
@@ -36,5 +38,4 @@ public class Application implements AutoCloseable {
     servers.values().stream().forEach((v) -> v.close());
     configurator.close();
   }
-
 }

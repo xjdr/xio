@@ -47,5 +47,4 @@ public class HttpClientBuilder {
     bootstrap.address(endpoint).ssl(useSsl);
     return new HttpClient(bootstrap.build(), hostHeader);
   }
-
 }

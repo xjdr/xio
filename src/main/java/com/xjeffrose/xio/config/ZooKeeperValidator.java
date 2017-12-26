@@ -26,5 +26,4 @@ public class ZooKeeperValidator {
       log.error("stored rules do not match rules in memory");
     }
   }
-
 }

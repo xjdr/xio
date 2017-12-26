@@ -31,3 +31,16 @@ This project uses the following lombok features:
 ### github flow
 
 This project is using github flow: https://guides.github.com/introduction/flow/
+
+### Source Code Style
+
+`xio` source code conforms to the standards set forth in the [Google
+Java Style Guide](https://google.github.io/styleguide/javaguide.html). The
+following maven plugins maintain the source code standards:
+
+ * [maven-git-code-format](https://github.com/Cosium/maven-git-code-format) is a
+   pre-commit git hook that formats all of the java source code files about to
+   be committed.
+
+ * [fmt-maven-plugin](https://github.com/coveo/fmt-maven-plugin) is run during
+   `mvn verify` to ensure that source files are formatted correctly.

@@ -5,14 +5,15 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http2.Http2DataFrame;
 import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.util.AttributeKey;
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class Http2ProxyHandler extends SimpleChannelInboundHandler<Http2Request> {
 
-  private static final AttributeKey<Map<Integer, Http2RouteProvider>> STREAM_ID_ROUTE_MAP_KEY = AttributeKey.newInstance("xio_stream_id_route_map_key");
+  private static final AttributeKey<Map<Integer, Http2RouteProvider>> STREAM_ID_ROUTE_MAP_KEY =
+      AttributeKey.newInstance("xio_stream_id_route_map_key");
 
   public static Map<Integer, Http2RouteProvider> getRouteMap(ChannelHandlerContext ctx) {
     Map<Integer, Http2RouteProvider> routeMap = ctx.channel().attr(STREAM_ID_ROUTE_MAP_KEY).get();
@@ -57,15 +58,16 @@ public class Http2ProxyHandler extends SimpleChannelInboundHandler<Http2Request>
   }
 
   @Override
-  public final void channelRead0(final ChannelHandlerContext ctx, Http2Request msg) throws Exception {
+  public final void channelRead0(final ChannelHandlerContext ctx, Http2Request msg)
+      throws Exception {
     if (msg.payload instanceof Http2Headers) {
-      Http2Headers headers = (Http2Headers)msg.payload;
+      Http2Headers headers = (Http2Headers) msg.payload;
       Http2RouteProvider route = router.get(headers);
       setRoute(ctx, msg.streamId, route);
 
       route.handle(msg, ctx);
     } else if (msg.payload instanceof Http2DataFrame) {
-      Http2DataFrame data = (Http2DataFrame)msg.payload;
+      Http2DataFrame data = (Http2DataFrame) msg.payload;
       Http2RouteProvider route = getRoute(ctx, msg.streamId);
 
       route.handle(msg, ctx);
@@ -88,5 +90,4 @@ public class Http2ProxyHandler extends SimpleChannelInboundHandler<Http2Request>
     log.error("exceptionCaught", cause);
     ctx.close();
   }
-
 }

@@ -15,19 +15,14 @@ public class IpFilter extends ChannelInboundHandlerAdapter {
     this.config = config;
   }
 
-  /**
-   * channel has been registered with it's eventloop, we may have a
-   * remote ip, try to filter.
-   */
+  /** channel has been registered with it's eventloop, we may have a remote ip, try to filter. */
   @Override
   public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
     eagerFilter(ctx);
     ctx.fireChannelRegistered();
   }
 
-  /**
-   * channel is active, check remote ip against the filter.
-   */
+  /** channel is active, check remote ip against the filter. */
   @Override
   public void channelActive(ChannelHandlerContext ctx) throws Exception {
     filter(ctx, remoteAddress(ctx), false);
@@ -48,9 +43,8 @@ public class IpFilter extends ChannelInboundHandlerAdapter {
   }
 
   /**
-   * If there is no remote ip or the ip is denied close the
-   * ctx. Otherwise allow the connection to live. In either case
-   * remove this handler from the pipeline.
+   * If there is no remote ip or the ip is denied close the ctx. Otherwise allow the connection to
+   * live. In either case remove this handler from the pipeline.
    */
   private void filter(ChannelHandlerContext ctx, InetSocketAddress address, boolean eager) {
     ctx.pipeline().remove(this);
@@ -59,7 +53,10 @@ public class IpFilter extends ChannelInboundHandlerAdapter {
       if (eager) {
         describeEager = " (eager)";
       }
-      log.warn("IpFilter denied blacklisted ip '{}'{}", address.getAddress().getHostAddress(), describeEager);
+      log.warn(
+          "IpFilter denied blacklisted ip '{}'{}",
+          address.getAddress().getHostAddress(),
+          describeEager);
       ctx.close();
     } else {
       log.info("IpFilter allowed ip '{}'", address.getAddress().getHostAddress());

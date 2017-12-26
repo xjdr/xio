@@ -16,14 +16,11 @@ import io.netty.handler.codec.http.HttpServerCodec;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * SmartHttpPipeline does http well.
- * If configured with a certificate pair (which it should be by default), it will:
- *   - accept incoming TLS and negotiate the application protocol
- *     - supporting http/2 requests if the client can
- *     - supporting http/1 requests as a fallback
- *   - try to upgrade plain text requests with http response code 426
- *   - http/1.1 over cleartext if configured to do so (not the default)
- *
+ * SmartHttpPipeline does http well. If configured with a certificate pair (which it should be by
+ * default), it will: - accept incoming TLS and negotiate the application protocol - supporting
+ * http/2 requests if the client can - supporting http/1 requests as a fallback - try to upgrade
+ * plain text requests with http response code 426 - http/1.1 over cleartext if configured to do so
+ * (not the default)
  */
 @Slf4j
 public class SmartHttpPipeline extends XioServerPipeline {
@@ -82,7 +79,11 @@ public class SmartHttpPipeline extends XioServerPipeline {
     return new RouteApplicator();
   }
 
-  public void buildHandlers(ApplicationState appState, XioServerConfig config, XioServerState state, ChannelPipeline pipeline) {
+  public void buildHandlers(
+      ApplicationState appState,
+      XioServerConfig config,
+      XioServerState state,
+      ChannelPipeline pipeline) {
     super.buildHandlers(appState, config, state, pipeline);
     if (fragment != null) {
       fragment.buildHandlers(appState, config, state, pipeline);

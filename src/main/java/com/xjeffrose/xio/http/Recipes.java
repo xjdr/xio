@@ -41,7 +41,6 @@ public final class Recipes {
     ContentType(String value) {
       this.value = value;
     }
-
   }
 
   public static ByteBuf unpooledBuffer(String payload) {
@@ -49,12 +48,15 @@ public final class Recipes {
   }
 
   // Request {{{
-  public static FullHttpRequest newFullRequest(HttpMethod method, String urlPath, ByteBuf buffer, ContentType contentType) {
-    FullHttpRequest request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, method, urlPath, buffer);
+  public static FullHttpRequest newFullRequest(
+      HttpMethod method, String urlPath, ByteBuf buffer, ContentType contentType) {
+    FullHttpRequest request =
+        new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, method, urlPath, buffer);
     request.headers().set(CONTENT_TYPE, contentType.value);
     request.headers().setInt(CONTENT_LENGTH, buffer.readableBytes());
     return request;
   }
+
   public static HttpRequest newRequestDelete(String urlPath) {
     return new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.DELETE, urlPath);
   }
@@ -63,11 +65,13 @@ public final class Recipes {
     return new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, urlPath);
   }
 
-  public static HttpRequest newRequestPost(String urlPath, ByteBuf buffer, ContentType contentType) {
+  public static HttpRequest newRequestPost(
+      String urlPath, ByteBuf buffer, ContentType contentType) {
     return newFullRequest(HttpMethod.POST, urlPath, buffer, contentType);
   }
 
-  public static HttpRequest newRequestPost(String urlPath, String payload, ContentType contentType) {
+  public static HttpRequest newRequestPost(
+      String urlPath, String payload, ContentType contentType) {
     return newRequestPost(urlPath, unpooledBuffer(payload), contentType);
   }
 
@@ -85,7 +89,8 @@ public final class Recipes {
     return new DefaultHttpResponse(v1_1, status);
   }
 
-  public static HttpResponse newResponse(HttpResponseStatus status, ByteBuf buffer, ContentType contentType) {
+  public static HttpResponse newResponse(
+      HttpResponseStatus status, ByteBuf buffer, ContentType contentType) {
     FullHttpResponse response = new DefaultFullHttpResponse(v1_1, status, buffer);
 
     response.headers().set(CONTENT_TYPE, contentType.value);
@@ -94,7 +99,8 @@ public final class Recipes {
     return response;
   }
 
-  public static HttpResponse newResponse(HttpResponseStatus status, String payload, ContentType contentType) {
+  public static HttpResponse newResponse(
+      HttpResponseStatus status, String payload, ContentType contentType) {
     return newResponse(status, unpooledBuffer(payload), contentType);
   }
 
@@ -128,7 +134,7 @@ public final class Recipes {
   // Response }}}
 
   // useful for both encoders and decoders
-  static public List<ByteBuf> extractBuffers(EmbeddedChannel channel) {
+  public static List<ByteBuf> extractBuffers(EmbeddedChannel channel) {
     channel.runPendingTasks();
     List<ByteBuf> buffers = Lists.newArrayList();
     while (true) {
@@ -142,7 +148,7 @@ public final class Recipes {
   }
 
   // encoders {{{
-  static public List<ByteBuf> encodeRequest(DefaultFullHttpRequest request) {
+  public static List<ByteBuf> encodeRequest(DefaultFullHttpRequest request) {
     EmbeddedChannel channel = new EmbeddedChannel();
 
     channel.pipeline().addLast("http request encoder", new HttpRequestEncoder());
@@ -150,7 +156,7 @@ public final class Recipes {
     return extractBuffers(channel);
   }
 
-  static public List<ByteBuf> encodeResponse(HttpResponse response) {
+  public static List<ByteBuf> encodeResponse(HttpResponse response) {
     EmbeddedChannel channel = new EmbeddedChannel();
 
     channel.pipeline().addLast("http response encoder", new HttpResponseEncoder());
@@ -161,13 +167,13 @@ public final class Recipes {
 
   // decoders {{{
 
-  static public HttpRequest decodeRequest(List<ByteBuf> payload) {
+  public static HttpRequest decodeRequest(List<ByteBuf> payload) {
     EmbeddedChannel channel = new EmbeddedChannel();
 
-    channel.pipeline()
-      .addLast("http request decoder", new HttpRequestDecoder())
-      .addLast("http message aggregator", new HttpObjectAggregator(1048576))
-      ;
+    channel
+        .pipeline()
+        .addLast("http request decoder", new HttpRequestDecoder())
+        .addLast("http message aggregator", new HttpObjectAggregator(1048576));
 
     for (ByteBuf buffer : payload) {
       channel.writeInbound(buffer);
@@ -177,13 +183,13 @@ public final class Recipes {
     return request;
   }
 
-  static public HttpResponse decodeResponse(List<ByteBuf> payload) {
+  public static HttpResponse decodeResponse(List<ByteBuf> payload) {
     EmbeddedChannel channel = new EmbeddedChannel();
 
-    channel.pipeline()
-      .addLast("http response decoder", new HttpResponseDecoder())
-      .addLast("http message aggregator", new HttpObjectAggregator(1048576))
-      ;
+    channel
+        .pipeline()
+        .addLast("http response decoder", new HttpResponseDecoder())
+        .addLast("http message aggregator", new HttpObjectAggregator(1048576));
 
     for (ByteBuf buffer : payload) {
       channel.writeInbound(buffer);

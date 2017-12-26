@@ -8,8 +8,7 @@ public class XioServerInstrumentation {
   public InetSocketAddress addressBound;
   public String applicationProtocol;
 
-  public XioServerInstrumentation() {
-  }
+  public XioServerInstrumentation() {}
 
   @Deprecated
   public InetSocketAddress addressBound() {
@@ -23,5 +22,4 @@ public class XioServerInstrumentation {
   public String applicationProtocol() {
     return applicationProtocol;
   }
-
 }

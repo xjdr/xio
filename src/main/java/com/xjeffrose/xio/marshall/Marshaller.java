@@ -11,5 +11,4 @@ public interface Marshaller {
   public byte[] marshall(Http1DeterministicRuleEngineConfig config);
 
   public byte[] marshall(IpAddressDeterministicRuleEngineConfig config);
-
 }

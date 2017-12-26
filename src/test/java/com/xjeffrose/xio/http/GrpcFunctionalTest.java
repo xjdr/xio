@@ -46,20 +46,23 @@ import org.junit.Test;
 
 public class GrpcFunctionalTest extends Assert {
 
-  static public class HelloWorldClient {
+  public static class HelloWorldClient {
 
     private final ManagedChannel channel;
     private final GreeterGrpc.GreeterBlockingStub blockingStub;
 
-    static private ManagedChannel build(String host, int port) {
+    private static ManagedChannel build(String host, int port) {
       return NettyChannelBuilder.forAddress(host, port)
-        // this overrides dns lookup, maybe
-        //.overrideAuthority(TestUtils.TEST_SERVER_HOST)
-        .overrideAuthority(host + ":" + port)
-        // this is the default
-        //.negotiationType(NegotiationType.TLS)
-        .sslContext(SslContextFactory.buildClientContext(TlsConfig.fromConfig("xio.h2TestClient.settings.tls"), InsecureTrustManagerFactory.INSTANCE))
-        .build();
+          // this overrides dns lookup, maybe
+          // .overrideAuthority(TestUtils.TEST_SERVER_HOST)
+          .overrideAuthority(host + ":" + port)
+          // this is the default
+          // .negotiationType(NegotiationType.TLS)
+          .sslContext(
+              SslContextFactory.buildClientContext(
+                  TlsConfig.fromConfig("xio.h2TestClient.settings.tls"),
+                  InsecureTrustManagerFactory.INSTANCE))
+          .build();
     }
 
     /** Construct client connecting to HelloWorld server at {@code host:port}. */
@@ -91,16 +94,19 @@ public class GrpcFunctionalTest extends Assert {
     }
   }
 
-  static public class HelloWorldServer {
+  public static class HelloWorldServer {
 
     private Server server;
 
     private void start(int port) throws IOException {
-      server = NettyServerBuilder.forPort(port)
-        .sslContext(SslContextFactory.buildServerContext(TlsConfig.fromConfig("xio.testServer.settings.tls")))
-        .addService(new GreeterImpl())
-        .build()
-        .start();
+      server =
+          NettyServerBuilder.forPort(port)
+              .sslContext(
+                  SslContextFactory.buildServerContext(
+                      TlsConfig.fromConfig("xio.testServer.settings.tls")))
+              .addService(new GreeterImpl())
+              .build()
+              .start();
     }
 
     public void stop() {
@@ -166,37 +172,34 @@ public class GrpcFunctionalTest extends Assert {
   public void testFakeGrpcServer() throws Exception {
     final Http2Headers cannedHeaders = new DefaultHttp2Headers();
     cannedHeaders
-      .status("200")
-      .add("content-type", "application/grpc")
-      .add("grpc-encoding", "identity")
-      .add("grpc-accept-encoding", "gzip")
-      ;
+        .status("200")
+        .add("content-type", "application/grpc")
+        .add("grpc-encoding", "identity")
+        .add("grpc-accept-encoding", "gzip");
 
-    final Http2Headers cannedTrailers = new DefaultHttp2Headers()
-      .add("grpc-status", "0")
-      ;
+    final Http2Headers cannedTrailers = new DefaultHttp2Headers().add("grpc-status", "0");
 
-    ByteBuf buf = Unpooled.copiedBuffer(ByteBufUtil.decodeHexDump("000000000d0a0b48656c6c6f20776f726c64"));
+    ByteBuf buf =
+        Unpooled.copiedBuffer(ByteBufUtil.decodeHexDump("000000000d0a0b48656c6c6f20776f726c64"));
     final Http2DataFrame cannedData = new DefaultHttp2DataFrame(buf.retain(), false);
 
-    XioChannelHandlerFactory f = () -> new ChannelInboundHandlerAdapter() {
-        @Override
-        public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-          if (msg instanceof Http2Request) {
-            Http2Request request = (Http2Request)msg;
-            if (request.payload instanceof Http2DataFrame) {
-              ctx.write(Http2Response.build(request.streamId, cannedHeaders));
-              ctx.write(Http2Response.build(request.streamId, cannedData));
-              ctx.write(Http2Response.build(request.streamId, cannedTrailers, true));
-            }
-          }
-
-        }
-
-      };
-    XioServerBootstrap bootstrap = XioServerBootstrap.fromConfig("xio.testGrpcServer")
-      .addToPipeline(new SmartHttpPipeline(f))
-    ;
+    XioChannelHandlerFactory f =
+        () ->
+            new ChannelInboundHandlerAdapter() {
+              @Override
+              public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+                if (msg instanceof Http2Request) {
+                  Http2Request request = (Http2Request) msg;
+                  if (request.payload instanceof Http2DataFrame) {
+                    ctx.write(Http2Response.build(request.streamId, cannedHeaders));
+                    ctx.write(Http2Response.build(request.streamId, cannedData));
+                    ctx.write(Http2Response.build(request.streamId, cannedTrailers, true));
+                  }
+                }
+              }
+            };
+    XioServerBootstrap bootstrap =
+        XioServerBootstrap.fromConfig("xio.testGrpcServer").addToPipeline(new SmartHttpPipeline(f));
 
     XioServer xioServer = bootstrap.build();
     HelloWorldClient client = HelloWorldClient.run(xioServer.getPort());
@@ -215,57 +218,85 @@ public class GrpcFunctionalTest extends Assert {
 
     InetSocketAddress boundAddress = new InetSocketAddress("127.0.0.1", server.getPort());
 
-    final SslContext sslContext = SslContextFactory.buildClientContext(TlsConfig.fromConfig("xio.h2TestClient.settings.tls"), InsecureTrustManagerFactory.INSTANCE);
+    final SslContext sslContext =
+        SslContextFactory.buildClientContext(
+            TlsConfig.fromConfig("xio.h2TestClient.settings.tls"),
+            InsecureTrustManagerFactory.INSTANCE);
 
     CountDownLatch msgReceived = new CountDownLatch(2);
-    Bootstrap client = new Bootstrap()
-      .group(group)
-      .channel(NioSocketChannel.class)
-      .handler(new ChannelInitializer<Channel>() {
-          @Override
-          protected void initChannel(Channel ch) throws Exception {
-            ch.pipeline()
-            .addLast(sslContext.newHandler(ch.alloc(), boundAddress.getHostString(), boundAddress.getPort()))
-            .addLast("codec", new Http2HandlerBuilder((s) -> new Http2FrameAdapter() {
-                @Override
-                public int onDataRead(ChannelHandlerContext ctx, int streamId, ByteBuf data, int padding,
-                                      boolean endOfStream) throws Http2Exception {
-                  msgReceived.countDown();
-                  return data.readableBytes() + padding;
-                }
+    Bootstrap client =
+        new Bootstrap()
+            .group(group)
+            .channel(NioSocketChannel.class)
+            .handler(
+                new ChannelInitializer<Channel>() {
+                  @Override
+                  protected void initChannel(Channel ch) throws Exception {
+                    ch.pipeline()
+                        .addLast(
+                            sslContext.newHandler(
+                                ch.alloc(), boundAddress.getHostString(), boundAddress.getPort()))
+                        .addLast(
+                            "codec",
+                            new Http2HandlerBuilder(
+                                    (s) ->
+                                        new Http2FrameAdapter() {
+                                          @Override
+                                          public int onDataRead(
+                                              ChannelHandlerContext ctx,
+                                              int streamId,
+                                              ByteBuf data,
+                                              int padding,
+                                              boolean endOfStream)
+                                              throws Http2Exception {
+                                            msgReceived.countDown();
+                                            return data.readableBytes() + padding;
+                                          }
 
-                @Override
-                public void onHeadersRead(ChannelHandlerContext ctx, int streamId, Http2Headers headers,
-                                          int padding, boolean endStream) throws Http2Exception {
-                  msgReceived.countDown();
-                }
+                                          @Override
+                                          public void onHeadersRead(
+                                              ChannelHandlerContext ctx,
+                                              int streamId,
+                                              Http2Headers headers,
+                                              int padding,
+                                              boolean endStream)
+                                              throws Http2Exception {
+                                            msgReceived.countDown();
+                                          }
 
-                @Override
-                public void onHeadersRead(ChannelHandlerContext ctx, int streamId, Http2Headers headers,
-                                          int streamDependency, short weight, boolean exclusive, int padding, boolean endStream) throws Http2Exception {
-                  msgReceived.countDown();
-                }
-              }).server(false).build())
-            ;
-          }
-        })
-      .remoteAddress(boundAddress)
-      ;
+                                          @Override
+                                          public void onHeadersRead(
+                                              ChannelHandlerContext ctx,
+                                              int streamId,
+                                              Http2Headers headers,
+                                              int streamDependency,
+                                              short weight,
+                                              boolean exclusive,
+                                              int padding,
+                                              boolean endStream)
+                                              throws Http2Exception {
+                                            msgReceived.countDown();
+                                          }
+                                        })
+                                .server(false)
+                                .build());
+                  }
+                })
+            .remoteAddress(boundAddress);
 
     Channel ch = client.connect().syncUninterruptibly().channel();
 
     Http2Headers headers = new DefaultHttp2Headers();
     headers
-      .authority("127.0.0.1:61422")
-      .method("POST")
-      .path("/helloworld.Greeter/SayHello")
-      .scheme("https")
-      .add("content-type", "application/grpc")
-      .add("te", "trailers")
-      .add("user-agent", "grpc-java-netty/1.7.0")
-      .add("grpc-accept-encoding", "gzip")
-      .add("grpc-trace-bin", "")
-      ;
+        .authority("127.0.0.1:61422")
+        .method("POST")
+        .path("/helloworld.Greeter/SayHello")
+        .scheme("https")
+        .add("content-type", "application/grpc")
+        .add("te", "trailers")
+        .add("user-agent", "grpc-java-netty/1.7.0")
+        .add("grpc-accept-encoding", "gzip")
+        .add("grpc-trace-bin", "");
 
     ByteBuf buf = Unpooled.wrappedBuffer(ByteBufUtil.decodeHexDump("00000000070a05776f726c64"));
     Http2DataFrame data = new DefaultHttp2DataFrame(buf, true);
@@ -275,60 +306,77 @@ public class GrpcFunctionalTest extends Assert {
     server.stop();
   }
 
-  static Channel buildProxy(EventLoopGroup group, SslContext sslContext, ChannelHandlerContext ctx, InetSocketAddress address) {
+  static Channel buildProxy(
+      EventLoopGroup group,
+      SslContext sslContext,
+      ChannelHandlerContext ctx,
+      InetSocketAddress address) {
 
-    Bootstrap client = new Bootstrap()
-      .group(group)
-      .channel(NioSocketChannel.class)
-      .handler(new ChannelInitializer<Channel>() {
-          @Override
-          protected void initChannel(Channel ch) throws Exception {
-            ch.pipeline()
-            .addLast(sslContext.newHandler(ch.alloc(), address.getHostString(), address.getPort()))
-            .addLast("codec", new Http2HandlerBuilder(Http2FrameForwarder::create).server(false).build())
-            .addLast("stream mapper", new Http2StreamMapper())
-            .addLast("proxy", new RawBackendHandler(ctx))
-            ;
-          }
-        })
-      .remoteAddress(address)
-      ;
+    Bootstrap client =
+        new Bootstrap()
+            .group(group)
+            .channel(NioSocketChannel.class)
+            .handler(
+                new ChannelInitializer<Channel>() {
+                  @Override
+                  protected void initChannel(Channel ch) throws Exception {
+                    ch.pipeline()
+                        .addLast(
+                            sslContext.newHandler(
+                                ch.alloc(), address.getHostString(), address.getPort()))
+                        .addLast(
+                            "codec",
+                            new Http2HandlerBuilder(Http2FrameForwarder::create)
+                                .server(false)
+                                .build())
+                        .addLast("stream mapper", new Http2StreamMapper())
+                        .addLast("proxy", new RawBackendHandler(ctx));
+                  }
+                })
+            .remoteAddress(address);
     Channel ch = client.connect().syncUninterruptibly().channel();
     return ch;
   }
 
-  private static final AttributeKey<Channel> TEST_CH_KEY = AttributeKey.newInstance("xio_test_ch_key");
+  private static final AttributeKey<Channel> TEST_CH_KEY =
+      AttributeKey.newInstance("xio_test_ch_key");
 
   @Test
   public void testGrpcProxyRequest() throws Exception {
     HelloWorldServer server = HelloWorldServer.run();
 
-    final SslContext sslContext = SslContextFactory.buildClientContext(TlsConfig.fromConfig("xio.h2TestClient.settings.tls"), InsecureTrustManagerFactory.INSTANCE);
+    final SslContext sslContext =
+        SslContextFactory.buildClientContext(
+            TlsConfig.fromConfig("xio.h2TestClient.settings.tls"),
+            InsecureTrustManagerFactory.INSTANCE);
 
     InetSocketAddress boundAddress = new InetSocketAddress("127.0.0.1", server.getPort());
 
-    XioChannelHandlerFactory f = () -> new ChannelDuplexHandler() {
-        @Override
-        public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-          Channel ch = ctx.channel().attr(TEST_CH_KEY).get();
-          if (ch == null) {
-            ch = buildProxy(group, sslContext, ctx, boundAddress);
-            ctx.channel().attr(TEST_CH_KEY).set(ch);
-          }
+    XioChannelHandlerFactory f =
+        () ->
+            new ChannelDuplexHandler() {
+              @Override
+              public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+                Channel ch = ctx.channel().attr(TEST_CH_KEY).get();
+                if (ch == null) {
+                  ch = buildProxy(group, sslContext, ctx, boundAddress);
+                  ctx.channel().attr(TEST_CH_KEY).set(ch);
+                }
 
-          if (msg instanceof Http2Request) {
-            Http2Request request = (Http2Request)msg;
-            ch.writeAndFlush(request);
-          }
-        }
-        @Override
-        public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
-          ctx.write(msg, promise);
-        }
-      };
-    XioServerBootstrap bootstrap = XioServerBootstrap.fromConfig("xio.testGrpcServer")
-      .addToPipeline(new SmartHttpPipeline(f))
-    ;
+                if (msg instanceof Http2Request) {
+                  Http2Request request = (Http2Request) msg;
+                  ch.writeAndFlush(request);
+                }
+              }
+
+              @Override
+              public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise)
+                  throws Exception {
+                ctx.write(msg, promise);
+              }
+            };
+    XioServerBootstrap bootstrap =
+        XioServerBootstrap.fromConfig("xio.testGrpcServer").addToPipeline(new SmartHttpPipeline(f));
 
     XioServer xioServer = bootstrap.build();
     HelloWorldClient client = HelloWorldClient.run(xioServer.getPort());
@@ -341,5 +389,4 @@ public class GrpcFunctionalTest extends Assert {
     xioServer.close();
     server.stop();
   }
-
 }

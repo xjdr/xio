@@ -1,31 +1,31 @@
 package com.xjeffrose.xio.http.internal;
 
-import com.xjeffrose.xio.core.internal.UnstableApi;
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import com.xjeffrose.xio.http.Headers;
-import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.CharSequenceValueConverter;
 import io.netty.handler.codec.ValueConverter;
+import io.netty.handler.codec.http.HttpHeaders;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
-import java.util.ArrayList;
-import java.util.HashSet;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 public class Http1Headers implements Headers {
 
   private final HttpHeaders delegate;
   private final ValueConverter<CharSequence> valueConverter = CharSequenceValueConverter.INSTANCE;
+
   public Http1Headers(HttpHeaders delegate) {
     this.delegate = delegate;
   }
 
   @Override
-  public Headers add(io.netty.handler.codec.Headers<? extends CharSequence, ? extends CharSequence, ?> headers) {
+  public Headers add(
+      io.netty.handler.codec.Headers<? extends CharSequence, ? extends CharSequence, ?> headers) {
     for (Map.Entry<? extends CharSequence, ? extends CharSequence> entry : headers) {
       delegate.add(entry.getKey(), entry.getValue());
     }
@@ -95,7 +95,6 @@ public class Http1Headers implements Headers {
     return add(name, valueConverter.convertTimeMillis(value));
   }
 
-
   @Override
   public Headers addObject(CharSequence name, Iterable<?> values) {
     delegate.add(name, values);
@@ -113,7 +112,6 @@ public class Http1Headers implements Headers {
     delegate.add(name, value);
     return this;
   }
-
 
   @Override
   public Headers clear() {
@@ -449,7 +447,8 @@ public class Http1Headers implements Headers {
   }
 
   @Override
-  public Headers set(io.netty.handler.codec.Headers<? extends CharSequence, ? extends CharSequence, ?> headers) {
+  public Headers set(
+      io.netty.handler.codec.Headers<? extends CharSequence, ? extends CharSequence, ?> headers) {
     clear();
     for (Map.Entry<? extends CharSequence, ? extends CharSequence> entry : headers) {
       delegate.add(entry.getKey(), entry.getValue());
@@ -475,7 +474,8 @@ public class Http1Headers implements Headers {
   }
 
   @Override
-  public Headers setAll(io.netty.handler.codec.Headers<? extends CharSequence, ? extends CharSequence, ?> headers) {
+  public Headers setAll(
+      io.netty.handler.codec.Headers<? extends CharSequence, ? extends CharSequence, ?> headers) {
     for (Map.Entry<? extends CharSequence, ? extends CharSequence> entry : headers) {
       delegate.set(entry.getKey(), entry.getValue());
     }
@@ -554,24 +554,15 @@ public class Http1Headers implements Headers {
     return delegate.size();
   }
 
-
-
-
-
-
   @Override
   public boolean equals(Object o) {
-    return o instanceof Http1Headers && delegate.equals(((Http1Headers)o).delegate);
+    return o instanceof Http1Headers && delegate.equals(((Http1Headers) o).delegate);
   }
 
   @Override
   public int hashCode() {
     return delegate.hashCode();
   }
-
-
-
-
 
   @Override
   public Iterator<Map.Entry<CharSequence, CharSequence>> iterator() {
@@ -594,5 +585,4 @@ public class Http1Headers implements Headers {
   public HttpHeaders http1Headers() {
     return delegate;
   }
-
 }

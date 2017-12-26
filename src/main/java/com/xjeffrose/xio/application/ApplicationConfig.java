@@ -14,26 +14,16 @@ public class ApplicationConfig {
 
   private final Config config;
 
-  @Getter
-  private final String name;
-  @Getter
-  private final int bossThreads;
-  @Getter
-  private final String bossNameFormat;
-  @Getter
-  private final int workerThreads;
-  @Getter
-  private final String workerNameFormat;
-  @Getter
-  private final String zookeeperCluster;
-  @Getter
-  private final String ipFilterPath;
-  @Getter
-  private final String http1FilterPath;
-  @Getter
-  private final String zipkinUrl;
-  @Getter
-  private final float samplingRate;
+  @Getter private final String name;
+  @Getter private final int bossThreads;
+  @Getter private final String bossNameFormat;
+  @Getter private final int workerThreads;
+  @Getter private final String workerNameFormat;
+  @Getter private final String zookeeperCluster;
+  @Getter private final String ipFilterPath;
+  @Getter private final String http1FilterPath;
+  @Getter private final String zipkinUrl;
+  @Getter private final float samplingRate;
 
   public ApplicationConfig(Config config) {
     this.config = config;
@@ -57,13 +47,14 @@ public class ApplicationConfig {
     try {
       return config.getConfig("servers").getConfig(server);
     } catch (ConfigException e) {
-      String servers = config
-        .getConfig("servers")
-        .root()
-        .entrySet()
-        .stream()
-        .map( i -> i.getKey() )
-        .collect(java.util.stream.Collectors.joining(", "));
+      String servers =
+          config
+              .getConfig("servers")
+              .root()
+              .entrySet()
+              .stream()
+              .map(i -> i.getKey())
+              .collect(java.util.stream.Collectors.joining(", "));
       log.error("Invalid server '{}', available servers: {}", server, servers);
       throw e;
     }
@@ -74,7 +65,8 @@ public class ApplicationConfig {
   }
 
   public ServerChannelConfiguration serverChannelConfig() {
-    return ChannelConfiguration.serverConfig(bossThreads, bossNameFormat, workerThreads, workerNameFormat);
+    return ChannelConfiguration.serverConfig(
+        bossThreads, bossNameFormat, workerThreads, workerNameFormat);
   }
 
   public ZkClient zookeeperClient() {
@@ -84,6 +76,4 @@ public class ApplicationConfig {
       return new ZkClient(zookeeperCluster);
     }
   }
-
-
 }

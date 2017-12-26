@@ -6,9 +6,7 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Handler implementation for the echo server.
- */
+/** Handler implementation for the echo server. */
 @Sharable
 public class EchoCodec extends ChannelInboundHandlerAdapter {
 

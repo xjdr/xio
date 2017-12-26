@@ -14,8 +14,7 @@ public class HostnameDeterministicRuleEngineConfig implements Marshallable {
   private final Set<String> blacklistHosts = new HashSet<>();
   private final Set<String> whitelistHosts = new HashSet<>();
 
-  public HostnameDeterministicRuleEngineConfig() {
-  }
+  public HostnameDeterministicRuleEngineConfig() {}
 
   public void blacklistHost(String host) {
     blacklistHosts.add(host);
@@ -50,5 +49,4 @@ public class HostnameDeterministicRuleEngineConfig implements Marshallable {
   public void putBytes(Unmarshaller unmarshaller, byte[] data) {
     unmarshaller.unmarshall(this, data);
   }
-
 }

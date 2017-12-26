@@ -15,7 +15,8 @@ public class XioPipelineAssembler {
   private final XioServerState state;
   private final List<XioPipelineFragment> fragments;
 
-  public XioPipelineAssembler(ApplicationState appState, XioServerConfig config, XioServerState state) {
+  public XioPipelineAssembler(
+      ApplicationState appState, XioServerConfig config, XioServerState state) {
     this.appState = appState;
     this.config = config;
     this.state = state;
@@ -34,7 +35,8 @@ public class XioPipelineAssembler {
 
   private XioChannelInitializer buildInitializer() {
     if (fragments.size() == 0) {
-      throw new RuntimeException("At least one pipeline fragment needs to be added prior to calling build");
+      throw new RuntimeException(
+          "At least one pipeline fragment needs to be added prior to calling build");
     }
 
     return new XioChannelInitializer(this);
@@ -45,7 +47,8 @@ public class XioPipelineAssembler {
       String protocol = fragment.applicationProtocol();
       if (protocol != null) {
         if (instrumentation.applicationProtocol != null) {
-          throw new RuntimeException("Only one application protocol can be defined for a given pipeline");
+          throw new RuntimeException(
+              "Only one application protocol can be defined for a given pipeline");
         }
         instrumentation.applicationProtocol = protocol;
       }
@@ -53,5 +56,4 @@ public class XioPipelineAssembler {
 
     return buildInitializer();
   }
-
 }

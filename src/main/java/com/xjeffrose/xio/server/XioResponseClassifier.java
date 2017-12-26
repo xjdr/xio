@@ -25,7 +25,6 @@ public class XioResponseClassifier extends ChannelDuplexHandler {
       ctx.pipeline().remove(this);
       ctx.fireChannelActive();
     }
-
   }
 
   @Override

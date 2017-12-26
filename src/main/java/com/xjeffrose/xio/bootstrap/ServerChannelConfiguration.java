@@ -9,7 +9,10 @@ public class ServerChannelConfiguration {
   private final EventLoopGroup workerGroup;
   private final Class<? extends ServerChannel> channelClass;
 
-  ServerChannelConfiguration(EventLoopGroup bossGroup, EventLoopGroup workerGroup, Class<? extends ServerChannel> channelClass) {
+  ServerChannelConfiguration(
+      EventLoopGroup bossGroup,
+      EventLoopGroup workerGroup,
+      Class<? extends ServerChannel> channelClass) {
     this.bossGroup = bossGroup;
     this.workerGroup = workerGroup;
     this.channelClass = channelClass;

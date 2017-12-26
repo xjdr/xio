@@ -35,6 +35,7 @@ public class HttpClientFunctionalTest extends Assert {
     logger.setLevel(Level.WARNING);
     return logger;
   }
+
   Logger hush = disableJavaLogging();
 
   @Before
@@ -57,18 +58,19 @@ public class HttpClientFunctionalTest extends Assert {
     CountDownLatch receivedResponse = new CountDownLatch(2);
 
     final ConcurrentLinkedQueue<HttpObject> responses = new ConcurrentLinkedQueue<>();
-    ChannelHandler responseHandler = new SimpleChannelInboundHandler<HttpObject>() {
-        @Override
-        protected void channelRead0(ChannelHandlerContext ctx, HttpObject msg) {
-          responses.add(msg);
-          receivedResponse.countDown();
-        }
-    };
+    ChannelHandler responseHandler =
+        new SimpleChannelInboundHandler<HttpObject>() {
+          @Override
+          protected void channelRead0(ChannelHandlerContext ctx, HttpObject msg) {
+            responses.add(msg);
+            receivedResponse.countDown();
+          }
+        };
     ClientConfig config = ClientConfig.fromConfig("xio.h1TestClient");
-    XioClientBootstrap bootstrap = new XioClientBootstrap(config)
-      .channelConfig(ChannelConfiguration.clientConfig(1))
-      .handler(responseHandler)
-      ;
+    XioClientBootstrap bootstrap =
+        new XioClientBootstrap(config)
+            .channelConfig(ChannelConfiguration.clientConfig(1))
+            .handler(responseHandler);
     HttpClientBuilder builder = new HttpClientBuilder(bootstrap);
     URL url = server.url("/hello-world").url();
     HttpClient client = builder.endpointForUrl(url).build();
@@ -82,7 +84,6 @@ public class HttpClientFunctionalTest extends Assert {
     assertEquals("/hello-world", request1.getPath());
 
     // check response
-    assertEquals(HttpResponseStatus.OK, ((HttpResponse)responses.poll()).status());
+    assertEquals(HttpResponseStatus.OK, ((HttpResponse) responses.poll()).status());
   }
-
 }

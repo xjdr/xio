@@ -25,18 +25,22 @@ public class XioTestSecurityFactory implements XioSecurityFactory {
       public ChannelHandler getEncryptionHandler() {
         try {
           SelfSignedCertificate ssc = new SelfSignedCertificate();
-          SslContext sslCtx = SslContextBuilder.forClient()
-              .trustManager(InsecureTrustManagerFactory.INSTANCE).build();
+          SslContext sslCtx =
+              SslContextBuilder.forClient()
+                  .trustManager(InsecureTrustManagerFactory.INSTANCE)
+                  .build();
 
-//                SSLEngine engine = new SSLEngineFactory("src/test/resources/privateKey.pem", "src/test/resources/cert.pem").getEngine();
-//                engine.beginHandshake();
+          //                SSLEngine engine = new
+          // SSLEngineFactory("src/test/resources/privateKey.pem",
+          // "src/test/resources/cert.pem").getEngine();
+          //                engine.beginHandshake();
 
           return sslCtx.newHandler(new PooledByteBufAllocator());
 
         } catch (SSLException | CertificateException e) {
           e.printStackTrace();
         }
-//                return new SslHandler(engine);
+        //                return new SslHandler(engine);
         return null;
       }
     };

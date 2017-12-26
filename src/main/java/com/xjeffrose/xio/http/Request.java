@@ -1,16 +1,19 @@
 package com.xjeffrose.xio.http;
 
-import io.netty.handler.codec.http.HttpMethod;
 import com.xjeffrose.xio.core.internal.UnstableApi;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpMethod;
 
 @UnstableApi
 public interface Request {
 
   HttpMethod method();
+
   String path();
+
   String version();
+
   Headers headers();
 
   default String host() {
@@ -36,32 +39,32 @@ public interface Request {
   boolean keepAlive();
 
   /*
-  boolean hasBody()
-  requestPrepare
-  requestProcess
-  requestFinish
+    boolean hasBody()
+    requestPrepare
+    requestProcess
+    requestFinish
 
-  public interface StreamingRequestHandler {
-  void prepare();
-  void process();
-  void finish();
+    public interface StreamingRequestHandler {
+    void prepare();
+    void process();
+    void finish();
+    }
+
+    public interace FullRequestHandler {
+    void process();
+    }
+
+  public class ResponseBuilder {
+    public ResponseBuilder addHeader(CharSequence key, CharSequence value);
+    public ResponseBuilder headers(Headers headers);
+    public ResponseBuilder status(int status);
+    public ResponseBuilder body(Body);
+    public Response build();
   }
 
-  public interace FullRequestHandler {
-  void process();
-  }
+  full response
+  streaming response
 
-public class ResponseBuilder {
-  public ResponseBuilder addHeader(CharSequence key, CharSequence value);
-  public ResponseBuilder headers(Headers headers);
-  public ResponseBuilder status(int status);
-  public ResponseBuilder body(Body);
-  public Response build();
-}
-
-full response
-streaming response
-
-  */
+    */
 
 }

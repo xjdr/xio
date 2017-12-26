@@ -15,52 +15,53 @@ import javax.net.ssl.TrustManagerFactory;
 
 public class SslContextFactory {
 
-  static private SslContextBuilder configure(TlsConfig config, SslContextBuilder builder) {
+  private static SslContextBuilder configure(TlsConfig config, SslContextBuilder builder) {
     return builder
-      .applicationProtocolConfig(config.getAlpnConfig())
-      .ciphers(config.getCiphers(), SupportedCipherSuiteFilter.INSTANCE)
-      .clientAuth(config.getClientAuth())
-      .enableOcsp(config.isEnableOcsp())
-      .protocols(config.getProtocols())
-      .sessionCacheSize(config.getSessionCacheSize())
-      .sessionTimeout(config.getSessionTimeout())
-      .sslProvider(config.getSslProvider())
-      ;
+        .applicationProtocolConfig(config.getAlpnConfig())
+        .ciphers(config.getCiphers(), SupportedCipherSuiteFilter.INSTANCE)
+        .clientAuth(config.getClientAuth())
+        .enableOcsp(config.isEnableOcsp())
+        .protocols(config.getProtocols())
+        .sessionCacheSize(config.getSessionCacheSize())
+        .sessionTimeout(config.getSessionTimeout())
+        .sslProvider(config.getSslProvider());
   }
 
-  static private SslContextBuilder newServerBuilder(TlsConfig config) {
+  private static SslContextBuilder newServerBuilder(TlsConfig config) {
     return SslContextBuilder.forServer(config.getPrivateKey(), config.getCertificateAndChain());
   }
 
-  static public SslContext buildServerContext(TlsConfig config, TrustManagerFactory trustManager, boolean allowExpiredClients) {
+  public static SslContext buildServerContext(
+      TlsConfig config, TrustManagerFactory trustManager, boolean allowExpiredClients) {
     try {
       return configure(config, newServerBuilder(config))
-        .trustManager(new XioTrustManagerFactory(trustManager, allowExpiredClients))
-        .build();
+          .trustManager(new XioTrustManagerFactory(trustManager, allowExpiredClients))
+          .build();
     } catch (SSLException e) {
       return null;
     }
   }
 
-  static public SslContext buildServerContext(TlsConfig config, TrustManagerFactory trustManager) {
+  public static SslContext buildServerContext(TlsConfig config, TrustManagerFactory trustManager) {
     return buildServerContext(config, trustManager, false);
   }
 
-  static public SslContext buildServerContext(TlsConfig config, boolean allowExpiredClients) {
+  public static SslContext buildServerContext(TlsConfig config, boolean allowExpiredClients) {
     // servers will trust only certs in trusted certs collection
-    return buildServerContext(config, buildTrustManagerFactory(config.getTrustedCerts()), allowExpiredClients);
+    return buildServerContext(
+        config, buildTrustManagerFactory(config.getTrustedCerts()), allowExpiredClients);
   }
 
-  static public SslContext buildServerContext(TlsConfig config) {
+  public static SslContext buildServerContext(TlsConfig config) {
     return buildServerContext(config, false);
   }
 
-  static public SslContext buildClientContext(TlsConfig config, TrustManagerFactory trustManager) {
+  public static SslContext buildClientContext(TlsConfig config, TrustManagerFactory trustManager) {
     try {
       return configure(config, SslContextBuilder.forClient())
-        .keyManager(config.getPrivateKey(), config.getCertificateAndChain())
-        .trustManager(new XioTrustManagerFactory(trustManager))
-        .build();
+          .keyManager(config.getPrivateKey(), config.getCertificateAndChain())
+          .trustManager(new XioTrustManagerFactory(trustManager))
+          .build();
     } catch (SSLException e) {
       return null;
     }
@@ -72,13 +73,14 @@ public class SslContextFactory {
       ks.load(null, null);
 
       int i = 1;
-      for (X509Certificate cert: certCollection) {
+      for (X509Certificate cert : certCollection) {
         String alias = Integer.toString(i);
         ks.setCertificateEntry(alias, cert);
         i++;
       }
 
-      TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+      TrustManagerFactory trustManagerFactory =
+          TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
 
       trustManagerFactory.init(ks);
 
@@ -88,7 +90,7 @@ public class SslContextFactory {
     }
   }
 
-  static public SslContext buildClientContext(TlsConfig config) {
+  public static SslContext buildClientContext(TlsConfig config) {
     // clients will trust only certs in trusted certs collection
     return buildClientContext(config, buildTrustManagerFactory(config.getTrustedCerts()));
   }

@@ -23,12 +23,12 @@ public class XioTracing {
       return null;
     }
     return Tracing.newBuilder()
-      .localServiceName(config.getName())
-      // puts trace IDs into logs
-      .currentTraceContext(MDCCurrentTraceContext.create())
-      .reporter(buildReporter(config))
-      .sampler(Sampler.create(config.getSamplingRate()))
-      .build();
+        .localServiceName(config.getName())
+        // puts trace IDs into logs
+        .currentTraceContext(MDCCurrentTraceContext.create())
+        .reporter(buildReporter(config))
+        .sampler(Sampler.create(config.getSamplingRate()))
+        .build();
   }
 
   public XioTracing(ApplicationConfig config) {
@@ -56,5 +56,4 @@ public class XioTracing {
     HttpClientTracingState state = new HttpClientTracingState(httpTracing, tls);
     return new HttpClientTracingHandler(state);
   }
-
 }

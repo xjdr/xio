@@ -5,10 +5,8 @@ import lombok.Getter;
 
 public class XioRequest<T> {
 
-  @Getter
-  private final T payload;
-  @Getter
-  private final TraceContext context;
+  @Getter private final T payload;
+  @Getter private final TraceContext context;
 
   public XioRequest(T payload, TraceContext context) {
     this.payload = payload;

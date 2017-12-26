@@ -21,7 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-abstract public class Connector {
+public abstract class Connector {
 
   private final SocketAddress address;
 
@@ -30,11 +30,11 @@ abstract public class Connector {
   }
 
   public Connector(InetSocketAddress address) {
-    this((SocketAddress)address);
+    this((SocketAddress) address);
   }
 
   public Connector(LocalAddress address) {
-    this((SocketAddress)address);
+    this((SocketAddress) address);
   }
 
   protected List<Map.Entry<String, ChannelHandler>> payloadHandlers() {
@@ -48,22 +48,19 @@ abstract public class Connector {
       protected void initChannel(Channel channel) {
         ChannelPipeline pipeline = channel.pipeline();
         pipeline
-          .addLast("frame length codec", new FrameLengthCodec())
-          .addLast("mux message codec", new Codec())
-          ;
+            .addLast("frame length codec", new FrameLengthCodec())
+            .addLast("mux message codec", new Codec());
         for (Map.Entry<String, ChannelHandler> entry : payloadHandlers()) {
           pipeline.addLast(entry.getKey(), entry.getValue());
         }
-        pipeline
-          .addLast("mux client codec", new ClientCodec())
-          ;
+        pipeline.addLast("mux client codec", new ClientCodec());
       }
     };
   }
 
-  abstract protected EventLoopGroup group();
+  protected abstract EventLoopGroup group();
 
-  abstract protected Class<? extends Channel> channel();
+  protected abstract Class<? extends Channel> channel();
 
   protected Bootstrap configure(Bootstrap bootstrap) {
     return bootstrap;
@@ -73,13 +70,13 @@ abstract public class Connector {
     Bootstrap bootstrap = new Bootstrap();
     // TODO(CK): move all of these constants out into Config
     bootstrap
-      .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 500)
-      .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-      .option(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(8 * 1024, 32 * 1024))
-      .option(ChannelOption.AUTO_READ, true)
-      .group(group())
-      .channel(channel())
-      ;
+        .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 500)
+        .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
+        .option(
+            ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(8 * 1024, 32 * 1024))
+        .option(ChannelOption.AUTO_READ, true)
+        .group(group())
+        .channel(channel());
     return configure(bootstrap);
   }
 
@@ -88,16 +85,19 @@ abstract public class Connector {
   }
 
   protected void connectBootstrap(SettableFuture<Channel> promise) {
-    cloneBootstrap().connect(address).addListener(new ChannelFutureListener() {
-      @Override
-      public void operationComplete(ChannelFuture future) {
-        if (future.isSuccess()) {
-          promise.set(future.channel());
-        } else {
-          promise.setException(future.cause());
-        }
-      }
-    });
+    cloneBootstrap()
+        .connect(address)
+        .addListener(
+            new ChannelFutureListener() {
+              @Override
+              public void operationComplete(ChannelFuture future) {
+                if (future.isSuccess()) {
+                  promise.set(future.channel());
+                } else {
+                  promise.setException(future.cause());
+                }
+              }
+            });
   }
 
   public ListenableFuture<Channel> connect() {
@@ -109,5 +109,4 @@ abstract public class Connector {
   public SocketAddress address() {
     return address;
   }
-
 }

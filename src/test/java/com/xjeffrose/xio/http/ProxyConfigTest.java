@@ -16,5 +16,4 @@ public class ProxyConfigTest extends Assert {
     assertEquals("/", config.urlPath);
     assertEquals(false, config.needSSL);
   }
-
 }

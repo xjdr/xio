@@ -30,7 +30,7 @@ public class EchoServer implements AutoCloseable {
   public void accept() {
     try {
       peerSocket = serverSocket.accept();
-      out = new PrintWriter(peerSocket.getOutputStream(),true);
+      out = new PrintWriter(peerSocket.getOutputStream(), true);
       in = new BufferedReader(new InputStreamReader(peerSocket.getInputStream()));
     } catch (IOException e) {
       throw new RuntimeException(e);
@@ -53,7 +53,7 @@ public class EchoServer implements AutoCloseable {
       in.close();
       peerSocket.close();
       serverSocket.close();
-    } catch(IOException e) {
+    } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }

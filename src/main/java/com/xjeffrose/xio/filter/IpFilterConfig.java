@@ -12,7 +12,7 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode
 public class IpFilterConfig {
 
-  static public class Updater implements ConfigurationUpdater {
+  public static class Updater implements ConfigurationUpdater {
     private final String path;
     private final Consumer<IpFilterConfig> setter;
     private final IpAddressDeterministicRuleEngineConfig config;

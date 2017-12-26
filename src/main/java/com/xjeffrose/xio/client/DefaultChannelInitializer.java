@@ -2,8 +2,8 @@ package com.xjeffrose.xio.client;
 
 import static com.xjeffrose.xio.pipeline.Pipelines.addHandler;
 
-import com.xjeffrose.xio.core.XioMessageLogger;
 import com.xjeffrose.xio.core.XioIdleDisconnectHandler;
+import com.xjeffrose.xio.core.XioMessageLogger;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelInitializer;
@@ -34,7 +34,9 @@ public class DefaultChannelInitializer extends ChannelInitializer {
   public void initChannel(Channel channel) {
     ChannelPipeline cp = channel.pipeline();
     if (sslContext != null) {
-      cp.addLast("encryptionHandler", sslContext.newHandler(channel.alloc(), address.getHostString(), address.getPort()));
+      cp.addLast(
+          "encryptionHandler",
+          sslContext.newHandler(channel.alloc(), address.getHostString(), address.getPort()));
     }
     if (config.isMessageLoggerEnabled()) {
       addHandler(cp, "message logging", new XioMessageLogger(XioClient.class, config.getName()));
@@ -45,5 +47,4 @@ public class DefaultChannelInitializer extends ChannelInitializer {
     cp.addLast(new XioIdleDisconnectHandler(60, 60, 60));
     cp.addLast(handler);
   }
-
 }

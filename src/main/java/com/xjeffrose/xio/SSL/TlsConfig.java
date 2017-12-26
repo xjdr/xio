@@ -33,33 +33,24 @@ import lombok.Getter;
 
 public class TlsConfig {
 
-  @Getter
-  private final boolean useSsl;
+  @Getter private final boolean useSsl;
   // used internally
   private final boolean useOpenSsl;
-  @Getter
-  private final boolean logInsecureConfig;
-  @Getter
-  private final PrivateKey privateKey;
+  @Getter private final boolean logInsecureConfig;
+  @Getter private final PrivateKey privateKey;
   // custom getter
   private final X509Certificate certificate;
-  @Getter
-  private final List<X509Certificate> x509TrustedCerts;
+  @Getter private final List<X509Certificate> x509TrustedCerts;
   private final ImmutableList<X509Certificate> x509CertChain;
-  @Getter
-  private final ApplicationProtocolConfig alpnConfig;
+  @Getter private final ApplicationProtocolConfig alpnConfig;
   // custom getter
   private final List<String> ciphers;
-  @Getter
-  private final ClientAuth clientAuth;
-  @Getter
-  private final boolean enableOcsp;
+  @Getter private final ClientAuth clientAuth;
+  @Getter private final boolean enableOcsp;
   // custom getter
   private final List<String> protocols;
-  @Getter
-  private final long sessionCacheSize;
-  @Getter
-  private final long sessionTimeout;
+  @Getter private final long sessionCacheSize;
+  @Getter private final long sessionTimeout;
 
   private static String readPath(String path) {
     try {
@@ -116,9 +107,7 @@ public class TlsConfig {
     return readPathFromValue(config.getString(key));
   }
 
-  /**
-   * Only works with PKCS8 formatted private keys
-   */
+  /** Only works with PKCS8 formatted private keys */
   private static PrivateKey parsePrivateKeyFromPem(String pemData) {
     PrivateKey key = null;
     try {
@@ -161,16 +150,16 @@ public class TlsConfig {
   }
 
   private static ApplicationProtocolConfig buildAlpnConfig(Config config) {
-    ApplicationProtocolConfig.Protocol protocol = config.getEnum(ApplicationProtocolConfig.Protocol.class, "protocol");
-    ApplicationProtocolConfig.SelectorFailureBehavior selectorBehavior = config.getEnum(ApplicationProtocolConfig.SelectorFailureBehavior.class, "selectorBehavior");
-    ApplicationProtocolConfig.SelectedListenerFailureBehavior selectedBehavior = config.getEnum(ApplicationProtocolConfig.SelectedListenerFailureBehavior.class, "selectedBehavior");
+    ApplicationProtocolConfig.Protocol protocol =
+        config.getEnum(ApplicationProtocolConfig.Protocol.class, "protocol");
+    ApplicationProtocolConfig.SelectorFailureBehavior selectorBehavior =
+        config.getEnum(ApplicationProtocolConfig.SelectorFailureBehavior.class, "selectorBehavior");
+    ApplicationProtocolConfig.SelectedListenerFailureBehavior selectedBehavior =
+        config.getEnum(
+            ApplicationProtocolConfig.SelectedListenerFailureBehavior.class, "selectedBehavior");
     List<String> supportedProtocols = config.getStringList("supportedProtocols");
     return new ApplicationProtocolConfig(
-                                         protocol,
-                                         selectorBehavior,
-                                         selectedBehavior,
-                                         supportedProtocols
-                                         );
+        protocol, selectorBehavior, selectedBehavior, supportedProtocols);
   }
 
   private static List<X509Certificate> buildCerts(List<String> paths) {
@@ -189,10 +178,11 @@ public class TlsConfig {
     x509TrustedCerts = buildCerts(config.getStringList("x509TrustedCertPaths"));
     privateKey = parsePrivateKeyFromPem(readPathFromKey("privateKeyPath", config));
     certificate = parseX509CertificateFromPem(readPathFromKey("x509CertPath", config));
-    x509CertChain = new ImmutableList.Builder<X509Certificate>()
-      .add(certificate)
-      .addAll(buildCerts(config.getStringList("x509CertChainPaths")))
-      .build();
+    x509CertChain =
+        new ImmutableList.Builder<X509Certificate>()
+            .add(certificate)
+            .addAll(buildCerts(config.getStringList("x509CertChainPaths")))
+            .build();
     useOpenSsl = config.getBoolean("useOpenSsl");
     alpnConfig = buildAlpnConfig(config.getConfig("alpn"));
     ciphers = config.getStringList("ciphers");
@@ -203,11 +193,11 @@ public class TlsConfig {
     sessionTimeout = config.getLong("sessionTimeout");
   }
 
-  static public TlsConfig fromConfig(String key, Config config) {
+  public static TlsConfig fromConfig(String key, Config config) {
     return new TlsConfig(config.getConfig(key));
   }
 
-  static public TlsConfig fromConfig(String key) {
+  public static TlsConfig fromConfig(String key) {
     return fromConfig(key, ConfigFactory.load());
   }
 

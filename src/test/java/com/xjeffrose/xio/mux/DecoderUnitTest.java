@@ -15,8 +15,7 @@ import org.junit.rules.ExpectedException;
 
 public class DecoderUnitTest extends Assert {
 
-  @Rule
-  public ExpectedException thrown = ExpectedException.none();
+  @Rule public ExpectedException thrown = ExpectedException.none();
 
   EmbeddedChannel channel;
 
@@ -24,9 +23,7 @@ public class DecoderUnitTest extends Assert {
   public void setUp() throws Exception {
     channel = new EmbeddedChannel();
 
-    channel.pipeline()
-      .addLast(new Decoder())
-    ;
+    channel.pipeline().addLast(new Decoder());
   }
 
   @Test
@@ -44,19 +41,22 @@ public class DecoderUnitTest extends Assert {
     channel.writeInbound(buf);
     channel.runPendingTasks();
 
-    ByteBuf decoded = (ByteBuf)channel.inboundMessages().poll();
-    Message message = (Message)channel.inboundMessages().poll();
+    ByteBuf decoded = (ByteBuf) channel.inboundMessages().poll();
+    Message message = (Message) channel.inboundMessages().poll();
 
+    String expectedDecoded =
+        new StringBuilder()
+            .append("         +-------------------------------------------------+\n")
+            .append("         |  0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f |\n")
+            .append(
+                "+--------+-------------------------------------------------+----------------+\n")
+            .append(
+                "|00000000| 00 00 00 01                                     |....            |\n")
+            .append("+--------+-------------------------------------------------+----------------+")
+            .toString();
 
-    String expectedDecoded = new StringBuilder()
-      .append("         +-------------------------------------------------+\n")
-      .append("         |  0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f |\n")
-      .append("+--------+-------------------------------------------------+----------------+\n")
-      .append("|00000000| 00 00 00 01                                     |....            |\n")
-      .append("+--------+-------------------------------------------------+----------------+")
-      .toString();
-
-    assertEquals("Expected:\n" + expectedDecoded, expectedDecoded, ByteBufUtil.prettyHexDump(decoded));
+    assertEquals(
+        "Expected:\n" + expectedDecoded, expectedDecoded, ByteBufUtil.prettyHexDump(decoded));
     assertEquals(id, message.id);
     assertEquals(op, message.op);
   }
@@ -77,5 +77,4 @@ public class DecoderUnitTest extends Assert {
 
     channel.writeInbound(buf);
   }
-
 }

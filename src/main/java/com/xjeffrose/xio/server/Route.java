@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import lombok.extern.slf4j.Slf4j;
 import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 
 @ToString
 @Slf4j
@@ -39,23 +39,13 @@ public class Route {
 
             if (keyword.indexOf("*") == 0) {
               keyword = keyword.substring(1);
-              regexPattern
-                .append("[/]?")
-                .append("(?<")
-                .append(keyword)
-                .append(">.*)");
+              regexPattern.append("[/]?").append("(?<").append(keyword).append(">.*)");
             } else {
-              regexPattern
-                .append("/")
-                .append("(?<")
-                .append(keyword)
-                .append(">[^/]*)");
+              regexPattern.append("/").append("(?<").append(keyword).append(">[^/]*)");
             }
             keywords.add(keyword);
           } else {
-            regexPattern
-              .append("/")
-              .append(segment);
+            regexPattern.append("/").append(segment);
           }
         }
       }

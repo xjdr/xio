@@ -1,46 +1,23 @@
 package com.xjeffrose.xio.fixtures;
 
-import static io.netty.handler.codec.http.HttpHeaders.Names.CONNECTION;
-import static io.netty.handler.codec.http.HttpHeaders.Names.CONTENT_LENGTH;
-import static io.netty.handler.codec.http.HttpHeaders.Names.CONTENT_TYPE;
-import static io.netty.handler.codec.http.HttpHeaders.Names.COOKIE;
-import static io.netty.handler.codec.http.HttpHeaders.Names.SET_COOKIE;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.CONTINUE;
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
-import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
-
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
-import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.handler.codec.DecoderResult;
-import io.netty.handler.codec.http.Cookie;
-import io.netty.handler.codec.http.CookieDecoder;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.FullHttpResponse;
-import io.netty.handler.codec.http.HttpContent;
-import io.netty.handler.codec.http.HttpHeaders;
-import io.netty.handler.codec.http.HttpObject;
-import io.netty.handler.codec.http.HttpRequest;
-import io.netty.handler.codec.http.LastHttpContent;
-import io.netty.handler.codec.http.QueryStringDecoder;
-import io.netty.handler.codec.http.ServerCookieEncoder;
-import io.netty.util.CharsetUtil;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 import com.xjeffrose.xio.http.FullRequest;
+import com.xjeffrose.xio.http.Headers;
+import com.xjeffrose.xio.http.PipelineRequestHandler;
 import com.xjeffrose.xio.http.Request;
 import com.xjeffrose.xio.http.Response;
 import com.xjeffrose.xio.http.ResponseBuilders;
 import com.xjeffrose.xio.http.Route;
-import com.xjeffrose.xio.http.Headers;
-import com.xjeffrose.xio.http.PipelineRequestHandler;
-import com.xjeffrose.xio.http.StreamingRequestData;
 import com.xjeffrose.xio.http.StreamingData;
+import com.xjeffrose.xio.http.StreamingRequestData;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.QueryStringDecoder;
+import io.netty.util.CharsetUtil;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 public class SamplePipelineRequestHandler implements PipelineRequestHandler {
 
@@ -86,7 +63,7 @@ public class SamplePipelineRequestHandler implements PipelineRequestHandler {
 
     Response response = null;
     if (request instanceof FullRequest) {
-      FullRequest fullRequest = (FullRequest)request;
+      FullRequest fullRequest = (FullRequest) request;
 
       ByteBuf content = fullRequest.body();
       if (content.isReadable()) {
@@ -98,7 +75,7 @@ public class SamplePipelineRequestHandler implements PipelineRequestHandler {
     }
 
     if (request instanceof StreamingRequestData) {
-      StreamingData data = (StreamingData)request;
+      StreamingData data = (StreamingData) request;
       if (data.endOfStream()) {
         buf.append("END OF CONTENT\r\n");
 
@@ -119,7 +96,5 @@ public class SamplePipelineRequestHandler implements PipelineRequestHandler {
     if (response != null) {
       ctx.writeAndFlush(response);
     }
-
   }
-
 }

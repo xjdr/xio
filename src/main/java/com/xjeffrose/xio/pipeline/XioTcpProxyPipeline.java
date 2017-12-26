@@ -22,5 +22,4 @@ public class XioTcpProxyPipeline extends XioServerPipeline {
   public ChannelHandler getCodecHandler(XioServerConfig config) {
     return new TcpProxyCodec(proxyEndpoint);
   }
-
 }

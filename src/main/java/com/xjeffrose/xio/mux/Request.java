@@ -20,8 +20,7 @@ public class Request {
     Complete;
   }
 
-  @Getter
-  private final UUID id;
+  @Getter private final UUID id;
 
   final SettableFuture<UUID> writeFuture;
   final Optional<SettableFuture<Response>> maybeResponseFuture;
@@ -58,13 +57,17 @@ public class Request {
     return maybeResponseFuture.get();
   }
 
-  public Request(UUID id, SettableFuture<UUID> writeFuture, Optional<SettableFuture<Response>> maybeResponseFuture) {
+  public Request(
+      UUID id,
+      SettableFuture<UUID> writeFuture,
+      Optional<SettableFuture<Response>> maybeResponseFuture) {
     this.id = id;
     this.writeFuture = writeFuture;
     this.maybeResponseFuture = maybeResponseFuture;
   }
 
-  public Request(UUID id, SettableFuture<UUID> writeFuture, SettableFuture<Response> responseFuture) {
+  public Request(
+      UUID id, SettableFuture<UUID> writeFuture, SettableFuture<Response> responseFuture) {
     this(id, writeFuture, Optional.of(responseFuture));
   }
 

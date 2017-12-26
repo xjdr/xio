@@ -30,7 +30,8 @@ public class XioServerBootstrap {
 
   private ServerChannelConfiguration channelConfig;
 
-  public XioServerBootstrap(ApplicationState appState, XioServerConfig config, XioServerState state) {
+  public XioServerBootstrap(
+      ApplicationState appState, XioServerConfig config, XioServerState state) {
     serverBootstrap = new ServerBootstrap();
     pipelineAssembler = new XioPipelineAssembler(appState, config, state);
     this.config = config;
@@ -40,16 +41,16 @@ public class XioServerBootstrap {
   }
 
   // TODO(CK): refactor tests and remove this
-  static public XioServerBootstrap fromConfig(String key, Config config) {
+  public static XioServerBootstrap fromConfig(String key, Config config) {
     XioServerConfig serverConfig = XioServerConfig.fromConfig(key, config);
     return new XioServerBootstrap(
-      new ApplicationState(ApplicationConfig.fromConfig("xio.defaultApplication", ConfigFactory.load())),
-      serverConfig,
-      new XioServerState(serverConfig)
-    );
+        new ApplicationState(
+            ApplicationConfig.fromConfig("xio.defaultApplication", ConfigFactory.load())),
+        serverConfig,
+        new XioServerState(serverConfig));
   }
 
-  static public XioServerBootstrap fromConfig(String key) {
+  public static XioServerBootstrap fromConfig(String key) {
     return fromConfig(key, ConfigFactory.load());
   }
 
@@ -83,7 +84,7 @@ public class XioServerBootstrap {
     ChannelFuture future = serverBootstrap.bind();
     future.awaitUninterruptibly();
     if (future.isSuccess()) {
-      instrumentation.addressBound = (InetSocketAddress)future.channel().localAddress();
+      instrumentation.addressBound = (InetSocketAddress) future.channel().localAddress();
     } else {
       log.error("Couldn't bind channel", future.cause());
       throw new RuntimeException(future.cause());

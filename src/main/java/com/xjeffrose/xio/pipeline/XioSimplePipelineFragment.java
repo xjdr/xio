@@ -14,6 +14,7 @@ public class XioSimplePipelineFragment implements XioPipelineFragment {
     this.pipelineLabel = pipelineLabel;
     this.factory = factory;
   }
+
   public XioSimplePipelineFragment(XioChannelHandlerFactory factory) {
     this("XioSimplePipelineFragment", factory);
   }
@@ -22,7 +23,11 @@ public class XioSimplePipelineFragment implements XioPipelineFragment {
     return null;
   }
 
-  public void buildHandlers(ApplicationState appState, XioServerConfig config, XioServerState state, ChannelPipeline pipeline) {
+  public void buildHandlers(
+      ApplicationState appState,
+      XioServerConfig config,
+      XioServerState state,
+      ChannelPipeline pipeline) {
     pipeline.addLast(pipelineLabel, factory.build());
   }
 }

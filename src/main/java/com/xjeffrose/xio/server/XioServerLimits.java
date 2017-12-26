@@ -38,5 +38,4 @@ public class XioServerLimits {
   public Duration maxAllIdleTime() {
     return maxAllIdleTime;
   }
-
 }

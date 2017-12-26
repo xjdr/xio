@@ -25,13 +25,14 @@ public class IpRules {
       log.debug("address {}", address.getHostAddress());
       RuleType existingRuleType = rules.get(address);
       if (existingRuleType != null && existingRuleType.equals(ruleType)) {
-        return new Result(false, "address " + address.getHostAddress() + " already on " + existingRuleType);
+        return new Result(
+            false, "address " + address.getHostAddress() + " already on " + existingRuleType);
       } else {
         workLoad.put(UpdateMessage.addIpRule(address, ruleType));
         rules.put(address, ruleType);
         log.debug("rules {}", rules);
       }
-    } catch(UnknownHostException | InterruptedException e) {
+    } catch (UnknownHostException | InterruptedException e) {
       log.error("addIpRule couldn't add {}", ipRule, e);
       return new Result(false, e.getMessage());
     }
@@ -49,11 +50,10 @@ public class IpRules {
         workLoad.put(UpdateMessage.removeIpRule(address));
         rules.remove(address);
       }
-    } catch(UnknownHostException | InterruptedException e) {
+    } catch (UnknownHostException | InterruptedException e) {
       log.error("addIpRule couldn't add {}", ipRule, e);
       return new Result(false, e.getMessage());
     }
     return new Result(true, "");
   }
-
 }

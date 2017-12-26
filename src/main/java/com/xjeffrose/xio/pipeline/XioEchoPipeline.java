@@ -6,8 +6,7 @@ import io.netty.channel.ChannelHandler;
 
 public class XioEchoPipeline extends XioServerPipeline {
 
-  public XioEchoPipeline() {
-  }
+  public XioEchoPipeline() {}
 
   @Override
   public String applicationProtocol() {
@@ -18,5 +17,4 @@ public class XioEchoPipeline extends XioServerPipeline {
   public ChannelHandler getCodecHandler(XioServerConfig config) {
     return new EchoCodec();
   }
-
 }

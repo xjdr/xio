@@ -17,12 +17,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
 
-/**
- * Creates a new Distributor to perform load balancing
- */
+/** Creates a new Distributor to perform load balancing */
 @Slf4j
 public class Distributor implements Closeable {
-
 
   private final ImmutableList<Node> pool;
   private final Map<UUID, Node> okNodes = new ConcurrentHashMap<>();
@@ -31,11 +28,14 @@ public class Distributor implements Closeable {
   private final XioTimer xioTimer;
   private final Timeout refreshTimeout;
 
-  private final Ordering<Node> byWeight = Ordering.natural().onResultOf(
-    (Function<Node, Integer>) node -> node.getWeight()
-  ).reverse();
+  private final Ordering<Node> byWeight =
+      Ordering.natural().onResultOf((Function<Node, Integer>) node -> node.getWeight()).reverse();
 
-  public Distributor(ImmutableList<Node> pool, Strategy strategy, NodeHealthCheck nodeHealthCheck, XioTimer xioTimer) {
+  public Distributor(
+      ImmutableList<Node> pool,
+      Strategy strategy,
+      NodeHealthCheck nodeHealthCheck,
+      XioTimer xioTimer) {
     this.nodeHealthCheck = nodeHealthCheck;
     this.xioTimer = xioTimer;
     this.pool = ImmutableList.copyOf(byWeight.sortedCopy(pool));
@@ -57,7 +57,11 @@ public class Distributor implements Closeable {
       if (node.isAvailable()) {
         okNodes.putIfAbsent(node.token(), node);
       } else {
-        log.error("Node is unreachable: " + node.address().getHostName() + ":" + node.address().getPort());
+        log.error(
+            "Node is unreachable: "
+                + node.address().getHostName()
+                + ":"
+                + node.address().getPort());
         okNodes.remove(node.token());
       }
     }
@@ -123,13 +127,15 @@ public class Distributor implements Closeable {
     ImmutableList<Node> nodes = ImmutableList.copyOf(this.pool());
     List<NodeStat> nodeStat = new ArrayList<>();
     if (nodes != null && !nodes.isEmpty()) {
-      nodes.stream()
-          .forEach(node -> {
-            NodeStat ns = new NodeStat(node);
-            ns.setHealthy(okNodes.containsKey(node.token()));
-            ns.setUsedForRouting(strategy.okToPick(node));
-            nodeStat.add(ns);
-          });
+      nodes
+          .stream()
+          .forEach(
+              node -> {
+                NodeStat ns = new NodeStat(node);
+                ns.setHealthy(okNodes.containsKey(node.token()));
+                ns.setUsedForRouting(strategy.okToPick(node));
+                nodeStat.add(ns);
+              });
     }
     return nodeStat;
   }
@@ -142,5 +148,4 @@ public class Distributor implements Closeable {
   public void close() throws IOException {
     // TODO(CK): Not sure what to close
   }
-
 }

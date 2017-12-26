@@ -46,8 +46,8 @@ public class XioChannelProxy extends ChannelDuplexHandler {
       log.debug("Service channelActive " + inboundChannel + " " + ctx.channel());
     }
     // attr never returns null
-//    Attribute<Node> attrNode = inboundChannel.attr(Constants.PICKED_OUTBOUND_NODE);
-//    node = attrNode.get();
+    //    Attribute<Node> attrNode = inboundChannel.attr(Constants.PICKED_OUTBOUND_NODE);
+    //    node = attrNode.get();
     if (node != null) {
       node.addPending(ctx.channel());
     }
@@ -61,16 +61,22 @@ public class XioChannelProxy extends ChannelDuplexHandler {
     if (log.isDebugEnabled()) {
       log.debug("Service channelRead and WRITE back " + inboundChannel + " " + ctx.channel());
     }
-    inboundChannel.write(msg).addListener(new ChannelFutureListener() {
-      @Override
-      public void operationComplete(ChannelFuture future) {
-        if (!future.isSuccess()) {
-          log.error(connectionContext.toString("WRITE back failure: ",
-              future.cause() != null ? future.cause().getMessage() : null), future.cause());
-          future.channel().close();
-        }
-      }
-    });
+    inboundChannel
+        .write(msg)
+        .addListener(
+            new ChannelFutureListener() {
+              @Override
+              public void operationComplete(ChannelFuture future) {
+                if (!future.isSuccess()) {
+                  log.error(
+                      connectionContext.toString(
+                          "WRITE back failure: ",
+                          future.cause() != null ? future.cause().getMessage() : null),
+                      future.cause());
+                  future.channel().close();
+                }
+              }
+            });
   }
 
   @Override
@@ -98,26 +104,32 @@ public class XioChannelProxy extends ChannelDuplexHandler {
 
   @Override
   public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-    log.error(connectionContext.toString("Exception caught: ",
-        cause.getClass().getName() + " " + cause.getMessage()), cause);
+    log.error(
+        connectionContext.toString(
+            "Exception caught: ", cause.getClass().getName() + " " + cause.getMessage()),
+        cause);
     closeOnFlush(ctx.channel());
   }
 
   @Override
-  public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
+  public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise)
+      throws Exception {
     // non ssl or strict pass-through case
     if (sslHandler == null) {
       ctx.write(msg, promise);
       return;
     }
 
-    sslHandler.handshakeFuture().addListener(new GenericFutureListener<Future<Channel>>() {
-      @Override
-      public void operationComplete(Future<Channel> future) throws Exception {
-        if (future.isSuccess()) {
-          ctx.write(msg, promise);
-        }
-      }
-    });
+    sslHandler
+        .handshakeFuture()
+        .addListener(
+            new GenericFutureListener<Future<Channel>>() {
+              @Override
+              public void operationComplete(Future<Channel> future) throws Exception {
+                if (future.isSuccess()) {
+                  ctx.write(msg, promise);
+                }
+              }
+            });
   }
 }

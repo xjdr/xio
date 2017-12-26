@@ -2,6 +2,7 @@ package com.xjeffrose.xio.http;
 
 import com.google.common.collect.ImmutableList;
 import com.typesafe.config.Config;
+import com.xjeffrose.xio.client.ClientConfig;
 import com.xjeffrose.xio.client.XioClientBootstrap;
 import com.xjeffrose.xio.server.Route;
 import io.netty.channel.ChannelHandler;
@@ -11,7 +12,6 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import com.xjeffrose.xio.client.ClientConfig;
 
 public class RoundRobinProxyConfig {
 
@@ -26,7 +26,6 @@ public class RoundRobinProxyConfig {
       this.hostHeader = hostHeader;
       this.needSSL = needSSL;
     }
-
   }
 
   private final AtomicInteger next = new AtomicInteger();
@@ -34,30 +33,46 @@ public class RoundRobinProxyConfig {
   private final ClientConfig clientConfig;
   private final Function<Boolean, ChannelHandler> tracingHandler;
 
-  public RoundRobinProxyConfig(ImmutableList<Host> hosts, ClientConfig clientConfig, Function<Boolean, ChannelHandler> tracingHandler) {
+  public RoundRobinProxyConfig(
+      ImmutableList<Host> hosts,
+      ClientConfig clientConfig,
+      Function<Boolean, ChannelHandler> tracingHandler) {
     this.hosts = hosts;
     this.clientConfig = clientConfig;
     this.tracingHandler = tracingHandler;
   }
 
   private static ImmutableList<Host> parse(Config config) {
-    List<Host> hosts = config.root().entrySet().stream().map((item) -> {
-      Config entry = config.getConfig(item.getKey());
-      InetSocketAddress address = new InetSocketAddress(entry.getString("host"), entry.getInt("port"));
-      String hostHeader = entry.getString("hostHeader");
-      boolean needSSL = entry.getBoolean("needSSL");
+    List<Host> hosts =
+        config
+            .root()
+            .entrySet()
+            .stream()
+            .map(
+                (item) -> {
+                  Config entry = config.getConfig(item.getKey());
+                  InetSocketAddress address =
+                      new InetSocketAddress(entry.getString("host"), entry.getInt("port"));
+                  String hostHeader = entry.getString("hostHeader");
+                  boolean needSSL = entry.getBoolean("needSSL");
 
-      return new Host(address, hostHeader, needSSL);
-    }).collect(Collectors.toList());
+                  return new Host(address, hostHeader, needSSL);
+                })
+            .collect(Collectors.toList());
 
     return ImmutableList.copyOf(hosts);
   }
 
-  public RoundRobinProxyConfig(Config config, ClientConfig clientConfig, Function<Boolean, ChannelHandler> tracingHandler) {
+  public RoundRobinProxyConfig(
+      Config config, ClientConfig clientConfig, Function<Boolean, ChannelHandler> tracingHandler) {
     this(parse(config.getConfig("proxy.hosts")), clientConfig, tracingHandler);
   }
 
-  public static RoundRobinProxyConfig fromConfig(String key, Config config, ClientConfig clientConfig, Function<Boolean, ChannelHandler> tracingHandler) {
+  public static RoundRobinProxyConfig fromConfig(
+      String key,
+      Config config,
+      ClientConfig clientConfig,
+      Function<Boolean, ChannelHandler> tracingHandler) {
     return new RoundRobinProxyConfig(config.getConfig(key), clientConfig, tracingHandler);
   }
 
@@ -69,8 +84,8 @@ public class RoundRobinProxyConfig {
     int idx = next.getAndIncrement();
     Host host = hosts.get(idx % hosts.size());
 
-    ProxyConfig proxyConfig = new ProxyConfig(host.address, host.hostHeader, "", "/", host.needSSL, false);
+    ProxyConfig proxyConfig =
+        new ProxyConfig(host.address, host.hostHeader, "", "/", host.needSSL, false);
     return new SimpleProxyHandler(Route.build("/:*path"), proxyConfig, newClient(host.needSSL));
   }
-
 }

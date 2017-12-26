@@ -42,12 +42,13 @@ public class Configurator implements Runnable {
   private final Http1Rules http1Rules;
   private final BlockingQueue<UpdateMessage> workLoad = new LinkedBlockingQueue<>();
   private final Timer timer = new Timer("Configurator update thread", true);
-  private final TimerTask timerTask = new TimerTask() {
-    @Override
-    public void run() {
-      writeToStorage();
-    }
-  };
+  private final TimerTask timerTask =
+      new TimerTask() {
+        @Override
+        public void run() {
+          writeToStorage();
+        }
+      };
   private int storageRuns = 0;
   private int validationInterval = 2;
 
@@ -58,7 +59,10 @@ public class Configurator implements Runnable {
     workLoad.drainTo(messages);
     messages.forEach((m) -> m.process(storage));
     long recordsWritten = storage.commit();
-    log.info("writeToStorage - finished {} updates written {} records written", messages.size(), recordsWritten);
+    log.info(
+        "writeToStorage - finished {} updates written {} records written",
+        messages.size(),
+        recordsWritten);
     if (storageRuns % validationInterval == 0) {
       zkValidator.validate();
     }
@@ -67,7 +71,8 @@ public class Configurator implements Runnable {
   private ConfigurationService.Iface newService() {
     return new ConfigurationService.Iface() {
       @Override
-      public Result addIpRule(IpRule ipRule, RuleType ruleType) throws org.apache.thrift.TException {
+      public Result addIpRule(IpRule ipRule, RuleType ruleType)
+          throws org.apache.thrift.TException {
         log.info("addIpRule {} {}", ipRule, ruleType);
         return ipRules.add(ipRule, ruleType, workLoad);
       }
@@ -78,9 +83,9 @@ public class Configurator implements Runnable {
         return ipRules.remove(ipRule, workLoad);
       }
 
-
       @Override
-      public Result addHttp1Rule(Http1Rule http1Rule, RuleType ruleType) throws org.apache.thrift.TException {
+      public Result addHttp1Rule(Http1Rule http1Rule, RuleType ruleType)
+          throws org.apache.thrift.TException {
         log.info("addHttp1Rule {} {}", http1Rule, ruleType);
         return http1Rules.add(http1Rule, ruleType, workLoad);
       }
@@ -90,11 +95,15 @@ public class Configurator implements Runnable {
         log.info("removeHttp1Rule {}", http1Rule);
         return http1Rules.remove(http1Rule, workLoad);
       }
-
     };
   }
 
-  public Configurator(UpdateHandler storage, Duration updateInterval, InetSocketAddress bindAddress, Ruleset existing, ZooKeeperValidator zkValidator) {
+  public Configurator(
+      UpdateHandler storage,
+      Duration updateInterval,
+      InetSocketAddress bindAddress,
+      Ruleset existing,
+      ZooKeeperValidator zkValidator) {
     this.storage = storage;
     this.updateInterval = updateInterval;
     this.bindAddress = bindAddress;
@@ -136,12 +145,10 @@ public class Configurator implements Runnable {
     }
 
     @Override
-    public void start() {
-    }
-    @Override
-    public void close() {
-    }
+    public void start() {}
 
+    @Override
+    public void close() {}
   }
 
   public static Configurator build(Config config) {
@@ -161,9 +168,12 @@ public class Configurator implements Runnable {
     ZooKeeperValidator zkValidator = new ZooKeeperValidator(zkReader, rules, configurationManager);
 
     Duration writeInterval = configurationUpdateServer.getDuration("writeInterval");
-    InetSocketAddress serverAddress = new InetSocketAddress(configurationUpdateServer.getString("bindIp"), configurationUpdateServer.getInt("bindPort"));
-    Configurator server = new Configurator(zkUpdater, writeInterval, serverAddress, rules, zkValidator);
+    InetSocketAddress serverAddress =
+        new InetSocketAddress(
+            configurationUpdateServer.getString("bindIp"),
+            configurationUpdateServer.getInt("bindPort"));
+    Configurator server =
+        new Configurator(zkUpdater, writeInterval, serverAddress, rules, zkValidator);
     return server;
   }
-
 }

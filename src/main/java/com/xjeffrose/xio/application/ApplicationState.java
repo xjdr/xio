@@ -6,17 +6,14 @@ import com.xjeffrose.xio.filter.Http1FilterConfig;
 import com.xjeffrose.xio.filter.IpFilterConfig;
 import com.xjeffrose.xio.http.DefaultRouter;
 import com.xjeffrose.xio.http.Router;
-import lombok.Getter;
-
 import java.util.concurrent.atomic.AtomicReference;
+import lombok.Getter;
 
 public class ApplicationState {
 
-  @Getter
-  private final ZkClient zkClient;
+  @Getter private final ZkClient zkClient;
 
-  @Getter
-  private final ServerChannelConfiguration channelConfiguration;
+  @Getter private final ServerChannelConfiguration channelConfiguration;
 
   // TODO(CK): store ClientChannelConfiguration here as well
 
@@ -31,12 +28,15 @@ public class ApplicationState {
     zkClient = config.zookeeperClient();
 
     ipFilterConfig = new AtomicReference<>(new IpFilterConfig());
-    zkClient.registerUpdater(new IpFilterConfig.Updater(config.getIpFilterPath(), this::setIpFilterConfig));
+    zkClient.registerUpdater(
+        new IpFilterConfig.Updater(config.getIpFilterPath(), this::setIpFilterConfig));
 
     http1FilterConfig = new AtomicReference<>(new Http1FilterConfig());
-    zkClient.registerUpdater(new Http1FilterConfig.Updater(config.getHttp1FilterPath(), this::setHttp1FilterConfig));
+    zkClient.registerUpdater(
+        new Http1FilterConfig.Updater(config.getHttp1FilterPath(), this::setHttp1FilterConfig));
 
-    // Set this to null.  If router is being bootstrapped from here, it will check for null before proceeding.
+    // Set this to null.  If router is being bootstrapped from here, it will check for null before
+    // proceeding.
     // It is expected that dynamic configuration service will update this as needed.
     router = new AtomicReference<>(new DefaultRouter());
   }
@@ -57,7 +57,9 @@ public class ApplicationState {
     http1FilterConfig.set(newConfig);
   }
 
-  public Router getRouter() { return router.get(); }
+  public Router getRouter() {
+    return router.get();
+  }
 
   public void setRouter(Router router) {
     this.router.set(router);

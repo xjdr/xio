@@ -11,18 +11,12 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class XioServerConfig {
-  @Getter
-  private final Map<ChannelOption<Object>, Object> bootstrapOptions;
-  @Getter
-  private String name;
-  @Getter
-  private InetSocketAddress bindAddress;
-  @Getter
-  private XioServerLimits limits;
-  @Getter
-  private TlsConfig tls;
-  @Getter
-  private final boolean messageLoggerEnabled;
+  @Getter private final Map<ChannelOption<Object>, Object> bootstrapOptions;
+  @Getter private String name;
+  @Getter private InetSocketAddress bindAddress;
+  @Getter private XioServerLimits limits;
+  @Getter private TlsConfig tls;
+  @Getter private final boolean messageLoggerEnabled;
 
   public XioServerConfig(Config config) {
     bootstrapOptions = null;
@@ -44,12 +38,11 @@ public class XioServerConfig {
     }
   }
 
-  static public XioServerConfig fromConfig(String key, Config config) {
+  public static XioServerConfig fromConfig(String key, Config config) {
     return new XioServerConfig(config.getConfig(key));
   }
 
-  static public XioServerConfig fromConfig(String key) {
+  public static XioServerConfig fromConfig(String key) {
     return fromConfig(key, ConfigFactory.load());
   }
-
 }

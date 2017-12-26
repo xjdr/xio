@@ -11,7 +11,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public abstract class XioFirewall extends ChannelDuplexHandler {
 
-
   private final HashSet<String> blacklist;
   private final HashSet<String> whitelist;
   private final ZkClient zkClient;
@@ -61,7 +60,7 @@ public abstract class XioFirewall extends ChannelDuplexHandler {
       evt = (XioEvent) _evt;
     } else {
       evt = null;
-      //TODO(JR): Throw probably?
+      // TODO(JR): Throw probably?
     }
 
     switch (evt) {

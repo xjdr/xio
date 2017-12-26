@@ -32,7 +32,8 @@ public class ZooKeeperWriteProviderFunctionalTest extends Assert {
 
       ThriftMarshaller marshaller = new ThriftMarshaller();
       RetryPolicy retryPolicy = new RetryOneTime(1);
-      try(CuratorFramework client = CuratorFrameworkFactory.newClient(server.getConnectString(), retryPolicy)) {
+      try (CuratorFramework client =
+          CuratorFrameworkFactory.newClient(server.getConnectString(), retryPolicy)) {
         client.start();
         String path = "/some/path/to/nodes/hostRules";
 
@@ -59,19 +60,18 @@ public class ZooKeeperWriteProviderFunctionalTest extends Assert {
 
       HashMultimap<String, String> headers = HashMultimap.create();
       headers.put("User-Agent", "Bad-actor: 1.0");
-      Http1DeterministicRuleEngineConfig.Rule bad = new Http1DeterministicRuleEngineConfig.Rule(
-        HttpMethod.GET,
-        "/path/to/failure",
-        HttpVersion.HTTP_1_0,
-        headers
-      );
-      Http1DeterministicRuleEngineConfig.Rule good = new Http1DeterministicRuleEngineConfig.Rule(null, null, null, null);
+      Http1DeterministicRuleEngineConfig.Rule bad =
+          new Http1DeterministicRuleEngineConfig.Rule(
+              HttpMethod.GET, "/path/to/failure", HttpVersion.HTTP_1_0, headers);
+      Http1DeterministicRuleEngineConfig.Rule good =
+          new Http1DeterministicRuleEngineConfig.Rule(null, null, null, null);
       config.blacklistRule(bad);
       config.whitelistRule(good);
 
       ThriftMarshaller marshaller = new ThriftMarshaller();
       RetryPolicy retryPolicy = new RetryOneTime(1);
-      try(CuratorFramework client = CuratorFrameworkFactory.newClient(server.getConnectString(), retryPolicy)) {
+      try (CuratorFramework client =
+          CuratorFrameworkFactory.newClient(server.getConnectString(), retryPolicy)) {
         client.start();
         String path = "/some/path/to/nodes/http1Rules";
 
@@ -102,7 +102,8 @@ public class ZooKeeperWriteProviderFunctionalTest extends Assert {
 
       ThriftMarshaller marshaller = new ThriftMarshaller();
       RetryPolicy retryPolicy = new RetryOneTime(1);
-      try(CuratorFramework client = CuratorFrameworkFactory.newClient(server.getConnectString(), retryPolicy)) {
+      try (CuratorFramework client =
+          CuratorFrameworkFactory.newClient(server.getConnectString(), retryPolicy)) {
         client.start();
         String path = "/some/path/to/nodes/ipRules";
 
@@ -119,5 +120,4 @@ public class ZooKeeperWriteProviderFunctionalTest extends Assert {
       }
     }
   }
-
 }

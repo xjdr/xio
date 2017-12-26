@@ -3,8 +3,7 @@ package com.xjeffrose.xio.server;
 public class RequestContexts {
   private static ThreadLocal<RequestContext> threadLocalContext = new ThreadLocal<>();
 
-  private RequestContexts() {
-  }
+  private RequestContexts() {}
 
   public static RequestContext getCurrentContext() {
     RequestContext currentContext = threadLocalContext.get();

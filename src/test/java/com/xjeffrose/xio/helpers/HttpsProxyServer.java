@@ -46,7 +46,11 @@ public class HttpsProxyServer extends ProxyServer {
     this.uri = uri;
   }
 
-  public void buildHandlers(ApplicationState appState, XioServerConfig config, XioServerState state, ChannelPipeline pipeline) {
+  public void buildHandlers(
+      ApplicationState appState,
+      XioServerConfig config,
+      XioServerState state,
+      ChannelPipeline pipeline) {
     pipeline.addLast(new HttpObjectAggregator(1));
     pipeline.addLast(new HttpIntermediaryHandler());
   }
@@ -81,15 +85,16 @@ public class HttpsProxyServer extends ProxyServer {
       Bootstrap b = new Bootstrap();
       b.channel(config.channel());
       b.group(config.workerGroup());
-      b.handler(new ChannelInitializer() {
-        public void initChannel(Channel channel) {
-          channel.pipeline()
-            .addLast(clientSslCtx.newHandler(PooledByteBufAllocator.DEFAULT))
-            .addLast(handler)
-            .addLast(new HttpRequestEncoder())
-          ;
-        }
-      });
+      b.handler(
+          new ChannelInitializer() {
+            public void initChannel(Channel channel) {
+              channel
+                  .pipeline()
+                  .addLast(clientSslCtx.newHandler(PooledByteBufAllocator.DEFAULT))
+                  .addLast(handler)
+                  .addLast(new HttpRequestEncoder());
+            }
+          });
       return b.connect(intermediaryDestination());
     }
   }

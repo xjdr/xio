@@ -13,7 +13,13 @@ public class ProxyConfig {
   public final boolean needSSL;
   public final boolean pathPassthru;
 
-  public ProxyConfig(InetSocketAddress address, String hostHeader, String url, String urlPath, boolean needSSL, boolean pathPassthru) {
+  public ProxyConfig(
+      InetSocketAddress address,
+      String hostHeader,
+      String url,
+      String urlPath,
+      boolean needSSL,
+      boolean pathPassthru) {
     this.address = address;
     this.hostHeader = hostHeader;
     this.url = url;
@@ -63,5 +69,4 @@ public class ProxyConfig {
       throw new RuntimeException(e);
     }
   }
-
 }

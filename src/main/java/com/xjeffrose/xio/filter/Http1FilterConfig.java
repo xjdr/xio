@@ -11,7 +11,7 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode
 public class Http1FilterConfig {
 
-  static public class Updater implements ConfigurationUpdater {
+  public static class Updater implements ConfigurationUpdater {
     private final String path;
     private final Consumer<Http1FilterConfig> setter;
     private final Http1DeterministicRuleEngineConfig config;
@@ -46,7 +46,7 @@ public class Http1FilterConfig {
   }
 
   public boolean denied(HttpRequest request) {
-    for(Http1DeterministicRuleEngineConfig.Rule rule : blacklist) {
+    for (Http1DeterministicRuleEngineConfig.Rule rule : blacklist) {
       if (rule.matches(request)) {
         return true;
       }

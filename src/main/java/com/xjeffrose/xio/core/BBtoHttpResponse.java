@@ -14,14 +14,14 @@ import javax.annotation.Nullable;
 
 public class BBtoHttpResponse {
 
-  private BBtoHttpResponse() {
-  }
+  private BBtoHttpResponse() {}
 
   public static DefaultFullHttpResponse getResponse(ByteBuf byteBuf) {
     return BBtoHttpResponse.getResponse(null, byteBuf);
   }
 
-  public static DefaultFullHttpResponse getResponse(@Nullable ChannelHandlerContext ctx, ByteBuf byteBuf) {
+  public static DefaultFullHttpResponse getResponse(
+      @Nullable ChannelHandlerContext ctx, ByteBuf byteBuf) {
     // Lets make a HTTP parser cause apparently that's a good idea...
     final ByteBuf response = byteBuf.duplicate();
     final Joiner joiner = Joiner.on(" ").skipNulls();
@@ -47,25 +47,37 @@ public class BBtoHttpResponse {
     // Lets make a HTTP Response object now
     if (ctx == null) {
       if (body != null) {
-        httpResponse = new DefaultFullHttpResponse(
-            HttpVersion.valueOf(firstLine[0]),
-            new HttpResponseStatus(Integer.parseInt(firstLine[1]), joiner.join(Arrays.copyOfRange(firstLine, 2, 5))),
-            Unpooled.wrappedBuffer(body));
+        httpResponse =
+            new DefaultFullHttpResponse(
+                HttpVersion.valueOf(firstLine[0]),
+                new HttpResponseStatus(
+                    Integer.parseInt(firstLine[1]),
+                    joiner.join(Arrays.copyOfRange(firstLine, 2, 5))),
+                Unpooled.wrappedBuffer(body));
       } else {
-        httpResponse = new DefaultFullHttpResponse(
-            HttpVersion.valueOf(firstLine[0]),
-            new HttpResponseStatus(Integer.parseInt(firstLine[1]), joiner.join(Arrays.copyOfRange(firstLine, 2, 5))));
+        httpResponse =
+            new DefaultFullHttpResponse(
+                HttpVersion.valueOf(firstLine[0]),
+                new HttpResponseStatus(
+                    Integer.parseInt(firstLine[1]),
+                    joiner.join(Arrays.copyOfRange(firstLine, 2, 5))));
       }
     } else {
       if (body != null) {
-        httpResponse = new DefaultFullHttpResponse(
-            HttpVersion.valueOf(firstLine[0]),
-            new HttpResponseStatus(Integer.parseInt(firstLine[1]), joiner.join(Arrays.copyOfRange(firstLine, 2, 5))),
-            ctx.alloc().buffer().writeBytes(body));
+        httpResponse =
+            new DefaultFullHttpResponse(
+                HttpVersion.valueOf(firstLine[0]),
+                new HttpResponseStatus(
+                    Integer.parseInt(firstLine[1]),
+                    joiner.join(Arrays.copyOfRange(firstLine, 2, 5))),
+                ctx.alloc().buffer().writeBytes(body));
       } else {
-        httpResponse = new DefaultFullHttpResponse(
-            HttpVersion.valueOf(firstLine[0]),
-            new HttpResponseStatus(Integer.parseInt(firstLine[1]), joiner.join(Arrays.copyOfRange(firstLine, 2, 5))));
+        httpResponse =
+            new DefaultFullHttpResponse(
+                HttpVersion.valueOf(firstLine[0]),
+                new HttpResponseStatus(
+                    Integer.parseInt(firstLine[1]),
+                    joiner.join(Arrays.copyOfRange(firstLine, 2, 5))));
       }
     }
 

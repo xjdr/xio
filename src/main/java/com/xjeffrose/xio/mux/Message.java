@@ -5,10 +5,7 @@ import java.util.UUID;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
-/**
- * Message(Request, Payload) - Request
- * Message(UUID) - Response
- */
+/** Message(Request, Payload) - Request Message(UUID) - Response */
 @EqualsAndHashCode
 public class Message {
 
@@ -22,7 +19,7 @@ public class Message {
     }
 
     public byte toByte() {
-      return (byte)ordinal();
+      return (byte) ordinal();
     }
 
     public static Op fromByte(byte ordinal) {
@@ -30,17 +27,13 @@ public class Message {
     }
   }
 
-  @Getter
-  final Request request;
+  @Getter final Request request;
 
-  @Getter
-  final UUID id;
+  @Getter final UUID id;
 
-  @Getter
-  final Op op;
+  @Getter final Op op;
 
-  @Getter
-  final Object payload;
+  @Getter final Object payload;
 
   public Message(Request request, Object payload) {
     this.request = request;
@@ -64,12 +57,11 @@ public class Message {
     request = null;
   }
 
-  static public Message buildResponse(UUID id, Op op) {
+  public static Message buildResponse(UUID id, Op op) {
     return new Message(id, op);
   }
 
-  static public Message buildResponse(UUID id) {
+  public static Message buildResponse(UUID id) {
     return new Message(id, Op.Response);
   }
-
 }

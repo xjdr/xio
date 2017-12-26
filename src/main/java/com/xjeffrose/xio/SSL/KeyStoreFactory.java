@@ -22,8 +22,7 @@ import java.security.cert.Certificate;
 
 public class KeyStoreFactory {
 
-  private KeyStoreFactory() {
-  }
+  private KeyStoreFactory() {}
 
   public static KeyStore Generate(X509Certificate cert, String password) {
 
@@ -34,16 +33,15 @@ public class KeyStoreFactory {
       keyStore.load(null, passwd);
       keyStore.setCertificateEntry(cert.getFqdn(), cert.getCert());
 
-      Certificate[] chain = new Certificate[]{cert.getCert()};
+      Certificate[] chain = new Certificate[] {cert.getCert()};
       keyStore.setKeyEntry(cert.getFqdn(), cert.getKey(), passwd, chain);
 
-      //For testing only
-      //keyStore.store(new FileOutputStream("mykeystore"), passwd);
+      // For testing only
+      // keyStore.store(new FileOutputStream("mykeystore"), passwd);
 
       return keyStore;
     } catch (Exception e) {
       return null;
     }
   }
-
 }

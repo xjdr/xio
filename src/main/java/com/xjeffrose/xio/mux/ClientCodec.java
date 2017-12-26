@@ -15,7 +15,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ClientCodec extends ChannelDuplexHandler {
 
-  private static AttributeKey<Map<UUID, Request>> KEY = AttributeKey.newInstance("com.xjeffrose.xio.mux.RequestMap");
+  private static AttributeKey<Map<UUID, Request>> KEY =
+      AttributeKey.newInstance("com.xjeffrose.xio.mux.RequestMap");
 
   private Object currentPayload;
   private boolean error = false;
@@ -52,23 +53,32 @@ public class ClientCodec extends ChannelDuplexHandler {
   @Override
   public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
     if (msg instanceof Message) {
-      Message message = (Message)msg;
+      Message message = (Message) msg;
       if (currentPayload == null) {
         log.error("No response payload received for request id '{}': {}", message.getId(), message);
-        ctx.fireExceptionCaught(new RuntimeException("No response payload received for request id '" + message.getId() + "'"));
+        ctx.fireExceptionCaught(
+            new RuntimeException(
+                "No response payload received for request id '" + message.getId() + "'"));
         reset();
         return;
       }
       if (error) {
-        log.error("Multiple response payloads received for request id '{}': {}", message.getId(), message);
-        ctx.fireExceptionCaught(new RuntimeException("Multiple response payloads received for request id '" + message.getId() + "'"));
+        log.error(
+            "Multiple response payloads received for request id '{}': {}",
+            message.getId(),
+            message);
+        ctx.fireExceptionCaught(
+            new RuntimeException(
+                "Multiple response payloads received for request id '" + message.getId() + "'"));
         reset();
         return;
       }
       Request request = getRequest(getMapping(ctx.channel()), message);
       if (request == null) {
         log.error("Unexpected response received for request id '{}': {}", message.getId(), message);
-        ctx.fireExceptionCaught(new RuntimeException("Unexpected response received for request id '" + message.getId() + "'"));
+        ctx.fireExceptionCaught(
+            new RuntimeException(
+                "Unexpected response received for request id '" + message.getId() + "'"));
         reset();
         return;
       }
@@ -91,9 +101,10 @@ public class ClientCodec extends ChannelDuplexHandler {
   }
 
   @Override
-  public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
+  public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise)
+      throws Exception {
     if (msg instanceof Message) {
-      Message message = (Message)msg;
+      Message message = (Message) msg;
       Request request = message.getRequest();
       if (request.expectsResponse()) {
         setRequest(ctx.channel().attr(KEY).get(), request);

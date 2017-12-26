@@ -22,21 +22,19 @@ public class SimpleContentRoute implements RequestHandler {
   @Override
   public RequestUpdateHandler handle(HttpRequest request, ChannelHandlerContext ctx) {
     if (HttpUtil.is100ContinueExpected(request)) {
-      ctx.writeAndFlush(new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.CONTINUE));
+      ctx.writeAndFlush(
+          new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.CONTINUE));
     }
 
     return new RequestUpdateHandler() {
       @Override
-      public void update(HttpContent content) {
-      }
+      public void update(HttpContent content) {}
+
       @Override
-      public void update(LastHttpContent last) {
-      }
+      public void update(LastHttpContent last) {}
     };
   }
 
   @Override
-  public void close() {
-  }
-
+  public void close() {}
 }

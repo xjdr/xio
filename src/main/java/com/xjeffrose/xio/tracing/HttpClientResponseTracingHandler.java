@@ -24,5 +24,4 @@ class HttpClientResponseTracingHandler extends SimpleChannelInboundHandler<HttpR
     state.onError(ctx, cause);
     ctx.fireExceptionCaught(cause);
   }
-
 }

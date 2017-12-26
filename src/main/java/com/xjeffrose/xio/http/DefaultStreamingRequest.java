@@ -1,18 +1,12 @@
 package com.xjeffrose.xio.http;
 
 import com.xjeffrose.xio.core.internal.UnstableApi;
-import io.netty.buffer.ByteBuf;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.DefaultHttpResponse;
-import io.netty.handler.codec.http.HttpVersion;
-import lombok.experimental.Accessors;
+import io.netty.handler.codec.http.HttpMethod;
 import lombok.Builder;
 import lombok.Getter;
-import io.netty.handler.codec.http.HttpMethod;
+import lombok.experimental.Accessors;
 
-/**
- * Value class for representing a streaming outgoing HTTP1/2 Request, for use in a client.
- */
+/** Value class for representing a streaming outgoing HTTP1/2 Request, for use in a client. */
 @UnstableApi
 @Builder(builderClassName = "Builder")
 @Accessors(fluent = true)
@@ -23,13 +17,14 @@ public class DefaultStreamingRequest implements StreamingRequest {
   String path;
   Headers headers;
 
-  /**
-   * Not intended to be called.
-   */
+  /** Not intended to be called. */
   @Override
-  public String version() { return ""; }
+  public String version() {
+    return "";
+  }
 
   @Override
-  public boolean keepAlive() { return false; }
-
+  public boolean keepAlive() {
+    return false;
+  }
 }

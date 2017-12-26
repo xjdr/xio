@@ -2,9 +2,7 @@ package com.xjeffrose.xio.client.retry;
 
 import java.util.concurrent.TimeUnit;
 
-/**
- * Mechanism for timing methods and recording counters
- */
+/** Mechanism for timing methods and recording counters */
 public interface TracerDriver {
   /**
    * Record the given trace event

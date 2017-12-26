@@ -59,48 +59,47 @@ public class ThriftUnmarshaller implements Unmarshaller {
     for (String address : message.getWhitelistHosts()) {
       config.whitelistHost(address);
     }
-
   }
 
-  static private HttpMethod build(Http1Method method) {
+  private static HttpMethod build(Http1Method method) {
     if (method != null) {
-      switch(method) {
-      case CONNECT:
-        return HttpMethod.CONNECT;
-      case DELETE:
-        return HttpMethod.DELETE;
-      case GET:
-        return HttpMethod.GET;
-      case HEAD:
-        return HttpMethod.HEAD;
-      case OPTIONS:
-        return HttpMethod.OPTIONS;
-      case PATCH:
-        return HttpMethod.PATCH;
-      case POST:
-        return HttpMethod.POST;
-      case PUT:
-        return HttpMethod.PUT;
-      case TRACE:
-        return HttpMethod.TRACE;
+      switch (method) {
+        case CONNECT:
+          return HttpMethod.CONNECT;
+        case DELETE:
+          return HttpMethod.DELETE;
+        case GET:
+          return HttpMethod.GET;
+        case HEAD:
+          return HttpMethod.HEAD;
+        case OPTIONS:
+          return HttpMethod.OPTIONS;
+        case PATCH:
+          return HttpMethod.PATCH;
+        case POST:
+          return HttpMethod.POST;
+        case PUT:
+          return HttpMethod.PUT;
+        case TRACE:
+          return HttpMethod.TRACE;
       }
     }
     return null;
   }
 
-  static private HttpVersion build(Http1Version version) {
+  private static HttpVersion build(Http1Version version) {
     if (version != null) {
-      switch(version) {
-      case HTTP_1_0:
-        return HttpVersion.HTTP_1_0;
-      case HTTP_1_1:
-        return HttpVersion.HTTP_1_1;
+      switch (version) {
+        case HTTP_1_0:
+          return HttpVersion.HTTP_1_0;
+        case HTTP_1_1:
+          return HttpVersion.HTTP_1_1;
       }
     }
     return null;
   }
 
-  static private HashMultimap<String, String> build(List<Http1HeaderTuple> headers) {
+  private static HashMultimap<String, String> build(List<Http1HeaderTuple> headers) {
     if (headers != null && headers.size() > 0) {
       HashMultimap<String, String> result = HashMultimap.create();
 
@@ -113,13 +112,9 @@ public class ThriftUnmarshaller implements Unmarshaller {
     return null;
   }
 
-  static public Http1DeterministicRuleEngineConfig.Rule build(Http1Rule rule) {
+  public static Http1DeterministicRuleEngineConfig.Rule build(Http1Rule rule) {
     return new Http1DeterministicRuleEngineConfig.Rule(
-      build(rule.getMethod()),
-      rule.getUri(),
-      build(rule.getVersion()),
-      build(rule.getHeaders())
-    );
+        build(rule.getMethod()), rule.getUri(), build(rule.getVersion()), build(rule.getHeaders()));
   }
 
   public void unmarshall(Http1DeterministicRuleEngineConfig config, byte[] data) {
@@ -134,7 +129,6 @@ public class ThriftUnmarshaller implements Unmarshaller {
     for (Http1Rule rule : message.getWhitelistRules()) {
       config.whitelistRule(build(rule));
     }
-
   }
 
   public void unmarshall(IpAddressDeterministicRuleEngineConfig config, byte[] data) {
@@ -153,6 +147,5 @@ public class ThriftUnmarshaller implements Unmarshaller {
     } catch (UnknownHostException e) {
       throw new RuntimeException(e);
     }
-
   }
 }

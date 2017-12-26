@@ -9,11 +9,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ShutdownUtil {
 
-
-  public static void shutdownChannelFactory(EventLoopGroup group,
-                                            ExecutorService bossExecutor,
-                                            ExecutorService workerExecutor,
-                                            ChannelGroup allChannels) {
+  public static void shutdownChannelFactory(
+      EventLoopGroup group,
+      ExecutorService bossExecutor,
+      ExecutorService workerExecutor,
+      ChannelGroup allChannels) {
     // Close all channels
     if (allChannels != null) {
       closeChannels(allChannels);
@@ -36,21 +36,22 @@ public class ShutdownUtil {
 
     // Release any other resources netty might be holding onto via this group
     if (group != null) {
-      //TODO: Find netty4 equivalent (may not be nessisary with shutdown gracefully)
-//      group.releaseExternalResources();
+      // TODO: Find netty4 equivalent (may not be nessisary with shutdown gracefully)
+      //      group.releaseExternalResources();
     }
   }
 
   public static void closeChannels(ChannelGroup allChannels) {
     if (allChannels.size() > 0) {
-      // TODO : allow an option here to control if we need to drain connections and wait instead of killing them all
+      // TODO : allow an option here to control if we need to drain connections and wait instead of
+      // killing them all
       try {
-//        log.info("Closing %s open client connections", allChannels.size());
+        //        log.info("Closing %s open client connections", allChannels.size());
         if (!allChannels.close().await(5, TimeUnit.SECONDS)) {
-//          log.warn("Failed to close all open client connections");
+          //          log.warn("Failed to close all open client connections");
         }
       } catch (InterruptedException e) {
-//        log.warn("Interrupted while closing client connections");
+        //        log.warn("Interrupted while closing client connections");
         Thread.currentThread().interrupt();
       }
     }
@@ -60,12 +61,12 @@ public class ShutdownUtil {
   public static void shutdownExecutor(ExecutorService executor, final String name) {
     executor.shutdown();
     try {
-//      log.info("Waiting for %s to shutdown", name);
+      //      log.info("Waiting for %s to shutdown", name);
       if (!executor.awaitTermination(5, TimeUnit.SECONDS)) {
-//        log.warn("%s did not shutdown properly", name);
+        //        log.warn("%s did not shutdown properly", name);
       }
     } catch (InterruptedException e) {
-//      log.warn("Interrupted while waiting for %s to shutdown", name);
+      //      log.warn("Interrupted while waiting for %s to shutdown", name);
       Thread.currentThread().interrupt();
     }
   }
