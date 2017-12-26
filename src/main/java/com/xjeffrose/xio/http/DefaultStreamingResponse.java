@@ -1,23 +1,35 @@
 package com.xjeffrose.xio.http;
 
+import com.google.auto.value.AutoValue;
 import com.xjeffrose.xio.core.internal.UnstableApi;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.experimental.Accessors;
+import lombok.ToString;
 
 /** Value class for representing a streaming outgoing HTTP1/2 Response, for use in a server. */
 @UnstableApi
-@Builder(builderClassName = "Builder")
-@Accessors(fluent = true)
-@Getter
-public class DefaultStreamingResponse implements StreamingResponse {
+@AutoValue
+@ToString
+public abstract class DefaultStreamingResponse implements StreamingResponse {
 
-  HttpResponseStatus status;
-  Headers headers;
+  public abstract HttpResponseStatus status();
+
+  public abstract Headers headers();
   /** Not intended to be called. */
   @Override
   public String version() {
     return "";
+  }
+
+  @AutoValue.Builder
+  public abstract static class Builder {
+    public abstract Builder status(HttpResponseStatus status);
+
+    public abstract Builder headers(Headers headers);
+
+    public abstract DefaultStreamingResponse build();
+  }
+
+  static Builder builder() {
+    return new AutoValue_DefaultStreamingResponse.Builder();
   }
 }

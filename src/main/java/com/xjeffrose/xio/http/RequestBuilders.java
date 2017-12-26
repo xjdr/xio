@@ -1,6 +1,7 @@
 package com.xjeffrose.xio.http;
 
 import com.xjeffrose.xio.core.internal.UnstableApi;
+import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.HttpMethod;
 
 @UnstableApi
@@ -11,7 +12,7 @@ public class RequestBuilders {
   }
 
   public static DefaultFullRequest.Builder newGet() {
-    return newDefaultBuilder().method(HttpMethod.GET);
+    return newDefaultBuilder().method(HttpMethod.GET).body(Unpooled.EMPTY_BUFFER);
   }
 
   public static DefaultFullRequest.Builder newGet(String path) {
