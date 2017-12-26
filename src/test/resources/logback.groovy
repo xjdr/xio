@@ -24,6 +24,8 @@ appender("DEVNULL", FileAppender) {
 }
 
 logger("io.netty.channel.DefaultChannelPipeline", DEBUG)
+logger("com.xjeffrose.xio.config.ConfigReloader", OFF)
+
 if (System.getProperty("DEBUG") != null) {
   root(DEBUG, ["CONSOLE"])
 } else if (System.getProperty("COVERAGE") != null) {
