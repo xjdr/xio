@@ -44,3 +44,6 @@ following maven plugins maintain the source code standards:
 
  * [fmt-maven-plugin](https://github.com/coveo/fmt-maven-plugin) is run during
    `mvn verify` to ensure that source files are formatted correctly.
+
+ * [maven-checkstyle-plugin](https://maven.apache.org/plugins/maven-checkstyle-plugin/index.html)
+   is run during `mvn verify` to ensure that style conventions are being adhered to.
