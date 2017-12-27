@@ -10,6 +10,8 @@
 
 ** DONE Add route applicator to http pipeline
 
+** TODO Wrap Http/2 Request/Response objects
+
 ** Authorization uses route pipeline
 
 ** Http1ServerCodec sets response Transfer-Encoding
