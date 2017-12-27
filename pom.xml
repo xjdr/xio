@@ -614,7 +614,7 @@
           <url>packagecloud+https://packagecloud.io/${env.PACKAGECLOUD_USER}/xio</url>
         </repository>
         <snapshotRepository>
-          <id>packagecloud-examplecorp</id>
+          <id>packagecloud-${env.PACKAGECLOUD_USER}</id>
           <url>packagecloud+https://packagecloud.io/${env.PACKAGECLOUD_USER}/xio</url>
         </snapshotRepository>
       </distributionManagement>
