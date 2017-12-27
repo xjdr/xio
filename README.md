@@ -3,6 +3,8 @@
 
 [![Coverage Status](https://coveralls.io/repos/xjdr/xio/badge.svg?branch=master&service=github)](https://coveralls.io/github/xjdr/xio?branch=master)
 
+[![Snapshot Repository](https://img.shields.io/badge/xio-0.13.0--SNAPSHOT-green.svg)](https://packagecloud.io/pdex/xio) [Snapshot install instructions](https://packagecloud.io/pdex/xio/install#maven)
+
 xio
 ===
 
