@@ -8,7 +8,7 @@ dependencies:
   cache_directories:
     - ~/.m2
   override:
-    - mvn test-compile -DskipTests=true -Dmaven.javadoc.skip=true -B -V
+    - mvn -DskipTests=true clean install dependency:resolve-plugins dependency:go-offline
 test:
   override:
     - mvn clean verify -Dmaven.javadoc.skip=true -DCOVERAGE=1
@@ -18,3 +18,8 @@ test:
     - cp target/xio*jar pom.xml $CIRCLE_ARTIFACTS
     - mkdir -p $CIRCLE_TEST_REPORTS/junit/
     - find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} $CIRCLE_TEST_REPORTS/junit/ \;
+deployment:
+  main:
+    branch: master
+    commands:
+      - mvn -s .circleci.settings.xml -DskipTests deploy
