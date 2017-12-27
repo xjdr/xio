@@ -4,6 +4,7 @@ machine:
   pre:
     - sudo apt-get update
     - sudo apt-get install openssl libssl-dev
+    - rm -fr ~/.m2
 dependencies:
   cache_directories:
     - ~/.m2
