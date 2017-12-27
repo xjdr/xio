@@ -8,7 +8,7 @@ dependencies:
   cache_directories:
     - ~/.m2
   override:
-    - mvn -DskipTests=true clean install dependency:resolve-plugins dependency:go-offline
+    - mvn -DskipTests=true -Dmaven.javadoc.skip=true clean test-compile dependency:resolve-plugins dependency:go-offline
 test:
   override:
     - mvn clean verify -Dmaven.javadoc.skip=true -DCOVERAGE=1
