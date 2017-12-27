@@ -317,6 +317,11 @@
         <artifactId>os-maven-plugin</artifactId>
         <version>1.5.0.Final</version>
       </extension>
+      <extension>
+        <groupId>io.packagecloud.maven.wagon</groupId>
+        <artifactId>maven-packagecloud-wagon</artifactId>
+        <version>0.0.6</version>
+      </extension>
     </extensions>
     <plugins>
       <plugin>
@@ -600,4 +605,19 @@
       -->
     </plugins>
   </reporting>
+  <profiles>
+    <profile>
+      <id>packagecloud</id>
+      <distributionManagement>
+        <repository>
+          <id>packagecloud-${env.PACKAGECLOUD_USER}</id>
+          <url>packagecloud+https://packagecloud.io/${env.PACKAGECLOUD_USER}/xio</url>
+        </repository>
+        <snapshotRepository>
+          <id>packagecloud-${env.PACKAGECLOUD_USER}</id>
+          <url>packagecloud+https://packagecloud.io/${env.PACKAGECLOUD_USER}/xio</url>
+        </snapshotRepository>
+      </distributionManagement>
+    </profile>
+  </profiles>
 </project>
