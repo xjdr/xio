@@ -12,6 +12,10 @@
 
 ** TODO Wrap Http/2 Request/Response objects
 
+*** TODO Wrap Http2Headers
+
+*** TODO Refactor Http1Headers and Http2Headers to use java8 interface default methods
+
 ** Authorization uses route pipeline
 
 ** Http1ServerCodec sets response Transfer-Encoding
