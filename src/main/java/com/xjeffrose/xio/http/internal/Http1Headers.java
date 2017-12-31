@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+// TODO(CK): Rename this to Http1HeadersWrapper
+
 public class Http1Headers implements Headers {
 
   private final HttpHeaders delegate;

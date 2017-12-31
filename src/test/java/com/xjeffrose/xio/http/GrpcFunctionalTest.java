@@ -192,7 +192,7 @@ public class GrpcFunctionalTest extends Assert {
                   Http2Request request = (Http2Request) msg;
                   if (request.payload instanceof Http2DataFrame) {
                     ctx.write(Http2Response.build(request.streamId, cannedHeaders));
-                    ctx.write(Http2Response.build(request.streamId, cannedData));
+                    ctx.write(Http2Response.build(request.streamId, cannedData, false));
                     ctx.write(Http2Response.build(request.streamId, cannedTrailers, true));
                   }
                 }

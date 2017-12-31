@@ -2,6 +2,7 @@ package com.xjeffrose.xio.http;
 
 import com.xjeffrose.xio.core.internal.UnstableApi;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
 
@@ -28,12 +29,16 @@ public interface Request {
     return result;
   }
 
+  default int streamId() {
+    return 0;
+  }
+
   default boolean hasBody() {
     return false;
   }
 
   default ByteBuf body() {
-    return null;
+    return Unpooled.EMPTY_BUFFER;
   }
 
   boolean keepAlive();

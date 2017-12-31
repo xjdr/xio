@@ -9,6 +9,8 @@ import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpUtil;
 import lombok.ToString;
 
+// TODO(CK): Rename this to StreamingHttp1Request
+
 /** Wrap an incoming HttpResponse, for use in a server. */
 @ToString
 public class Http1Request implements StreamingRequest {

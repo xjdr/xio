@@ -29,11 +29,15 @@ public class Http2FrameForwarder implements Http2FrameListener {
     if (isServer) {
       ctx.fireChannelRead(
           Http2Request.build(
-              streamId, new DefaultHttp2DataFrame(data.retain(), endOfStream, padding)));
+              streamId,
+              new DefaultHttp2DataFrame(data.retain(), endOfStream, padding),
+              endOfStream));
     } else {
       ctx.fireChannelRead(
           Http2Response.build(
-              streamId, new DefaultHttp2DataFrame(data.retain(), endOfStream, padding)));
+              streamId,
+              new DefaultHttp2DataFrame(data.retain(), endOfStream, padding),
+              endOfStream));
     }
     return data.readableBytes() + padding;
   }
@@ -43,7 +47,7 @@ public class Http2FrameForwarder implements Http2FrameListener {
       ChannelHandlerContext ctx, int streamId, Http2Headers headers, int padding, boolean endStream)
       throws Http2Exception {
     if (isServer) {
-      ctx.fireChannelRead(Http2Request.build(streamId, headers));
+      ctx.fireChannelRead(Http2Request.build(streamId, headers, endStream));
     } else {
       ctx.fireChannelRead(Http2Response.build(streamId, headers, endStream));
     }
@@ -61,7 +65,7 @@ public class Http2FrameForwarder implements Http2FrameListener {
       boolean endStream)
       throws Http2Exception {
     if (isServer) {
-      ctx.fireChannelRead(Http2Request.build(streamId, headers));
+      ctx.fireChannelRead(Http2Request.build(streamId, headers, endStream));
     } else {
       ctx.fireChannelRead(Http2Response.build(streamId, headers, endStream));
     }
