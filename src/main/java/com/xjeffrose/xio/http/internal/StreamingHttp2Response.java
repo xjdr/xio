@@ -14,10 +14,12 @@ public class StreamingHttp2Response implements StreamingResponse {
 
   private final Http2Headers delegate;
   private final Http2HeadersWrapper headers;
+  private final int streamId;
 
-  public StreamingHttp2Response(Http2Headers delegate) {
+  public StreamingHttp2Response(Http2Headers delegate, int streamId) {
     this.delegate = delegate;
     headers = new Http2HeadersWrapper(delegate);
+    this.streamId = streamId;
   }
 
   public HttpResponseStatus status() {

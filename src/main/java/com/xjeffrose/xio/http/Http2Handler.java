@@ -12,6 +12,7 @@ import io.netty.handler.codec.http2.Http2Settings;
 import io.netty.util.AttributeKey;
 import lombok.extern.slf4j.Slf4j;
 
+// TODO(CK): Rename this to Http2ServerHandler
 @Slf4j
 public class Http2Handler extends Http2ConnectionHandler {
 
@@ -90,6 +91,7 @@ public class Http2Handler extends Http2ConnectionHandler {
       }
     }
 
+    // TODO(CK): This should be broken out into Http2ClientHandler
     if (msg instanceof Http2Headers) {
       Http2Headers headers = (Http2Headers) msg;
       currentStreamId = connection().local().incrementAndGetNextStreamId();

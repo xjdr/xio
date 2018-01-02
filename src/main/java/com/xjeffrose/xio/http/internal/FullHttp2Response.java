@@ -12,12 +12,15 @@ public class FullHttp2Response implements FullResponse {
 
   private final Http2Headers delegate;
   private final Http2HeadersWrapper headers;
+  private final int streamId;
 
-  public FullHttp2Response(Http2Headers delegate) {
+  public FullHttp2Response(Http2Headers delegate, int streamId) {
     this.delegate = delegate;
     headers = new Http2HeadersWrapper(delegate);
+    this.streamId = streamId;
   }
 
+  @Override
   public HttpResponseStatus status() {
     try {
       return HttpResponseStatus.valueOf(Integer.parseInt(delegate.status().toString()));
@@ -26,18 +29,27 @@ public class FullHttp2Response implements FullResponse {
     }
   }
 
+  @Override
+  public int streamId() {
+    return streamId;
+  }
+
+  @Override
   public String version() {
     return "h2";
   }
 
+  @Override
   public Headers headers() {
     return headers;
   }
 
+  @Override
   public boolean hasBody() {
     return false;
   }
 
+  @Override
   public ByteBuf body() {
     return Unpooled.EMPTY_BUFFER;
   }
