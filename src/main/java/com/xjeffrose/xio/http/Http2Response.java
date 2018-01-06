@@ -19,8 +19,9 @@ public class Http2Response<T> {
     this.eos = eos;
   }
 
-  public static Http2Response<Http2DataFrame> build(int streamId, Http2DataFrame data) {
-    return new Http2Response<Http2DataFrame>(streamId, data, false);
+  public static Http2Response<Http2DataFrame> build(
+      int streamId, Http2DataFrame data, boolean eos) {
+    return new Http2Response<Http2DataFrame>(streamId, data, eos);
   }
 
   public static Http2Response<Http2Headers> build(int streamId, Http2Headers headers) {

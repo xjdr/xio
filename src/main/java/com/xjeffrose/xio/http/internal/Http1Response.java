@@ -8,6 +8,8 @@ import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import lombok.ToString;
 
+// TODO(CK): Rename this to StreamingHttp1Response
+
 /** Wrap an incoming HttpResponse, for use in a client. */
 @ToString
 public class Http1Response implements StreamingResponse {

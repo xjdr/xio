@@ -3,7 +3,9 @@ package com.xjeffrose.xio.http;
 import com.google.auto.value.AutoValue;
 import com.xjeffrose.xio.core.internal.UnstableApi;
 import io.netty.buffer.ByteBuf;
+import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
+import java.util.Optional;
 import lombok.Builder;
 import lombok.ToString;
 
@@ -43,6 +45,17 @@ public abstract class DefaultFullRequest implements FullRequest {
     public abstract Builder headers(Headers headers);
 
     public abstract DefaultFullRequest build();
+
+    abstract Optional<Headers> headers();
+
+    public Builder host(String host) {
+      if (!headers().isPresent()) {
+        headers(new DefaultHeaders());
+      }
+
+      headers().get().set(HttpHeaderNames.HOST, host);
+      return this;
+    }
   }
 
   static Builder builder() {

@@ -10,6 +10,16 @@
 
 ** DONE Add route applicator to http pipeline
 
+** TODO Wrap Http/2 Request/Response objects
+
+*** DONE Wrap Http2Headers
+
+*** DONE Http2ServerCodec
+
+*** TODO Http2ClientCodec
+
+*** TODO Refactor Http1Headers and Http2Headers to use java8 interface default methods
+
 ** Authorization uses route pipeline
 
 ** Http1ServerCodec sets response Transfer-Encoding

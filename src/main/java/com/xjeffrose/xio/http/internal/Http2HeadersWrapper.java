@@ -2,10 +2,12 @@ package com.xjeffrose.xio.http.internal;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.xjeffrose.xio.http.Headers;
 import io.netty.handler.codec.CharSequenceValueConverter;
 import io.netty.handler.codec.ValueConverter;
 import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http2.Http2Headers;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -14,29 +16,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-// TODO(CK): Rename this to Http1HeadersWrapper
+public class Http2HeadersWrapper implements Headers {
 
-public class Http1Headers implements Headers {
-
-  private final HttpHeaders delegate;
+  private final Http2Headers delegate;
   private final ValueConverter<CharSequence> valueConverter = CharSequenceValueConverter.INSTANCE;
 
-  public Http1Headers(HttpHeaders delegate) {
+  @VisibleForTesting
+  io.netty.handler.codec.http2.Http2Headers delegate() {
+    return delegate;
+  }
+
+  public Http2HeadersWrapper(Http2Headers delegate) {
     this.delegate = delegate;
   }
 
   @Override
-  public Headers add(
-      io.netty.handler.codec.Headers<? extends CharSequence, ? extends CharSequence, ?> headers) {
-    for (Map.Entry<? extends CharSequence, ? extends CharSequence> entry : headers) {
-      delegate.add(entry.getKey(), entry.getValue());
-    }
-    return this;
-  }
-
-  @Override
-  public Headers add(CharSequence name, Iterable<? extends CharSequence> values) {
-    delegate.add(name, values);
+  public Headers add(CharSequence name, CharSequence value) {
+    delegate.add(name, value);
     return this;
   }
 
@@ -47,8 +43,17 @@ public class Http1Headers implements Headers {
   }
 
   @Override
-  public Headers add(CharSequence name, CharSequence value) {
-    delegate.add(name, value);
+  public Headers add(CharSequence name, Iterable<? extends CharSequence> values) {
+    delegate.add(name, values);
+    return this;
+  }
+
+  @Override
+  public Headers add(
+      io.netty.handler.codec.Headers<? extends CharSequence, ? extends CharSequence, ?> headers) {
+    for (Map.Entry<? extends CharSequence, ? extends CharSequence> entry : headers) {
+      delegate.add(entry.getKey(), entry.getValue());
+    }
     return this;
   }
 
@@ -88,30 +93,31 @@ public class Http1Headers implements Headers {
   }
 
   @Override
+  public Headers addObject(CharSequence name, Iterable<?> values) {
+    delegate.addObject(name, values);
+    return this;
+  }
+
+  @Override
+  public Headers addObject(CharSequence name, Object value) {
+    delegate.addObject(name, value);
+    return this;
+  }
+
+  @Override
+  public Headers addObject(CharSequence name, Object... values) {
+    delegate.addObject(name, values);
+    return this;
+  }
+
+  @Override
   public Headers addShort(CharSequence name, short value) {
     return add(name, valueConverter.convertShort(value));
   }
 
   @Override
   public Headers addTimeMillis(CharSequence name, long value) {
-    return add(name, valueConverter.convertTimeMillis(value));
-  }
-
-  @Override
-  public Headers addObject(CharSequence name, Iterable<?> values) {
-    delegate.add(name, values);
-    return this;
-  }
-
-  @Override
-  public Headers addObject(CharSequence name, Object... values) {
-    delegate.add(name, Arrays.asList(values));
-    return this;
-  }
-
-  @Override
-  public Headers addObject(CharSequence name, Object value) {
-    delegate.add(name, value);
+    delegate.addTimeMillis(name, value);
     return this;
   }
 
@@ -128,7 +134,7 @@ public class Http1Headers implements Headers {
 
   @Override
   public boolean contains(CharSequence name, CharSequence value) {
-    return delegate.contains(name, value, false);
+    return delegate.contains(name, value);
   }
 
   @Override
@@ -182,17 +188,18 @@ public class Http1Headers implements Headers {
   }
 
   @Override
+  public boolean equals(Object o) {
+    return o instanceof Http2HeadersWrapper && delegate.equals(((Http2HeadersWrapper) o).delegate);
+  }
+
+  @Override
   public CharSequence get(CharSequence name) {
     return delegate.get(name);
   }
 
   @Override
   public CharSequence get(CharSequence name, CharSequence defaultValue) {
-    if (delegate.contains(name)) {
-      return delegate.get(name);
-    }
-
-    return defaultValue;
+    return delegate.get(name, defaultValue);
   }
 
   @Override
@@ -287,15 +294,7 @@ public class Http1Headers implements Headers {
 
   @Override
   public Character getCharAndRemove(CharSequence name) {
-    CharSequence value = getAndRemove(name);
-    if (value == null) {
-      return null;
-    }
-    try {
-      return valueConverter.convertToChar(value);
-    } catch (Throwable ignored) {
-      return null;
-    }
+    return delegate.getCharAndRemove(name);
   }
 
   @Override
@@ -449,6 +448,44 @@ public class Http1Headers implements Headers {
   }
 
   @Override
+  public int hashCode() {
+    return delegate.hashCode();
+  }
+
+  @Override
+  public boolean isEmpty() {
+    return delegate.isEmpty();
+  }
+
+  @Override
+  public Iterator<Map.Entry<CharSequence, CharSequence>> iterator() {
+    return delegate.iterator();
+  }
+
+  @Override
+  public Set<CharSequence> names() {
+    return new HashSet<CharSequence>(delegate.names());
+  }
+
+  @Override
+  public boolean remove(CharSequence name) {
+    int before = delegate.size();
+    delegate.remove(name);
+    return before != delegate.size();
+  }
+
+  @Override
+  public Headers set(CharSequence name, CharSequence value) {
+    delegate.set(name, value);
+    return this;
+  }
+
+  @Override
+  public Headers set(CharSequence name, CharSequence... values) {
+    return set(name, Arrays.asList(values));
+  }
+
+  @Override
   public Headers set(
       io.netty.handler.codec.Headers<? extends CharSequence, ? extends CharSequence, ?> headers) {
     clear();
@@ -459,20 +496,9 @@ public class Http1Headers implements Headers {
   }
 
   @Override
-  public Headers set(CharSequence name, CharSequence value) {
-    delegate.set(name, value);
-    return this;
-  }
-
-  @Override
   public Headers set(CharSequence name, Iterable<? extends CharSequence> values) {
     delegate.set(name, values);
     return this;
-  }
-
-  @Override
-  public Headers set(CharSequence name, CharSequence... values) {
-    return set(name, Arrays.asList(values));
   }
 
   @Override
@@ -487,6 +513,11 @@ public class Http1Headers implements Headers {
   @Override
   public Headers setBoolean(CharSequence name, boolean value) {
     return set(name, valueConverter.convertBoolean(value));
+  }
+
+  @Override
+  public Headers setByte(CharSequence name, byte value) {
+    return set(name, valueConverter.convertByte(value));
   }
 
   @Override
@@ -515,30 +546,21 @@ public class Http1Headers implements Headers {
   }
 
   @Override
-  public Headers setObject(CharSequence name, Object value) {
-    delegate.set(name, value);
+  public Headers setObject(CharSequence name, Iterable<?> values) {
+    delegate.setObject(name, values);
     return this;
   }
 
   @Override
-  public Headers setObject(CharSequence name, Iterable<?> values) {
-    delegate.set(name, values);
+  public Headers setObject(CharSequence name, Object value) {
+    delegate.setObject(name, value);
     return this;
   }
 
   @Override
   public Headers setObject(CharSequence name, Object... values) {
-    return setObject(name, Arrays.asList(values));
-  }
-
-  @Override
-  public Headers setTimeMillis(CharSequence name, long value) {
-    return set(name, valueConverter.convertTimeMillis(value));
-  }
-
-  @Override
-  public Headers setByte(CharSequence name, byte value) {
-    return set(name, valueConverter.convertByte(value));
+    delegate.setObject(name, values);
+    return this;
   }
 
   @Override
@@ -547,8 +569,8 @@ public class Http1Headers implements Headers {
   }
 
   @Override
-  public boolean isEmpty() {
-    return delegate.isEmpty();
+  public Headers setTimeMillis(CharSequence name, long value) {
+    return set(name, valueConverter.convertTimeMillis(value));
   }
 
   @Override
@@ -556,35 +578,10 @@ public class Http1Headers implements Headers {
     return delegate.size();
   }
 
-  @Override
-  public boolean equals(Object o) {
-    return o instanceof Http1Headers && delegate.equals(((Http1Headers) o).delegate);
-  }
-
-  @Override
-  public int hashCode() {
-    return delegate.hashCode();
-  }
-
-  @Override
-  public Iterator<Map.Entry<CharSequence, CharSequence>> iterator() {
-    return delegate.iteratorCharSequence();
-  }
-
-  @Override
-  public Set<CharSequence> names() {
-    return new HashSet<CharSequence>(delegate.names());
-  }
-
-  @Override
-  public boolean remove(CharSequence name) {
-    int before = delegate.size();
-    delegate.remove(name);
-    return before != delegate.size();
-  }
+  // TODO(CK): Remove this in favor of using the iterator constructor?
 
   @Override
   public HttpHeaders http1Headers() {
-    return delegate;
+    return null;
   }
 }

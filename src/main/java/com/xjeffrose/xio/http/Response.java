@@ -13,6 +13,10 @@ public interface Response {
 
   Headers headers();
 
+  default int streamId() {
+    return 0;
+  }
+
   default boolean hasBody() {
     return false;
   }
