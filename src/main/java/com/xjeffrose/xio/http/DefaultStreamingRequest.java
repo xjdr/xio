@@ -14,11 +14,18 @@ import lombok.ToString;
 @ToString
 public abstract class DefaultStreamingRequest implements StreamingRequest {
 
+  @Override
+  public boolean startOfStream() {
+    return true;
+  }
+
   public abstract HttpMethod method();
 
   public abstract String path();
 
   public abstract Headers headers();
+
+  public abstract int streamId();
 
   /** Not intended to be called. */
   @Override
@@ -39,6 +46,8 @@ public abstract class DefaultStreamingRequest implements StreamingRequest {
 
     public abstract Builder headers(Headers headers);
 
+    public abstract Builder streamId(int streamId);
+
     public abstract DefaultStreamingRequest build();
 
     abstract Optional<Headers> headers();
@@ -54,6 +63,6 @@ public abstract class DefaultStreamingRequest implements StreamingRequest {
   }
 
   static Builder builder() {
-    return new AutoValue_DefaultStreamingRequest.Builder();
+    return new AutoValue_DefaultStreamingRequest.Builder().streamId(-1);
   }
 }

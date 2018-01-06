@@ -13,6 +13,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import io.netty.handler.codec.http2.Http2Headers;
+import io.netty.handler.codec.http2.HttpConversionUtil;
 
 // TODO(CK): Rename this to Http1HeadersWrapper
 
@@ -584,7 +586,39 @@ public class Http1Headers implements Headers {
   }
 
   @Override
-  public HttpHeaders http1Headers() {
+  public HttpHeaders http1Headers(boolean isTrailer, boolean isRequest) {
     return delegate;
+  }
+
+  /*
+  TODO(CK): maybe move this to request/response
+      public static Http2Headers toHttp2Headers(HttpMessage in, boolean validateHeaders) {
+          HttpHeaders inHeaders = in.headers();
+          final Http2Headers out = new DefaultHttp2Headers(validateHeaders, inHeaders.size());
+          if (in instanceof HttpRequest) {
+              HttpRequest request = (HttpRequest) in;
+              URI requestTargetUri = URI.create(request.uri());
+              out.path(toHttp2Path(requestTargetUri));
+              out.method(request.method().asciiName());
+              setHttp2Scheme(inHeaders, requestTargetUri, out);
+
+              if (!isOriginForm(requestTargetUri) && !isAsteriskForm(requestTargetUri)) {
+                  // Attempt to take from HOST header before taking from the request-line
+                  String host = inHeaders.getAsString(HttpHeaderNames.HOST);
+                  setHttp2Authority((host == null || host.isEmpty()) ? requestTargetUri.getAuthority() : host, out);
+              }
+          } else if (in instanceof HttpResponse) {
+              HttpResponse response = (HttpResponse) in;
+              out.status(response.status().codeAsText());
+          }
+
+          // Add the HTTP headers which have not been consumed above
+          toHttp2Headers(inHeaders, out);
+          return out;
+      }
+     */
+  @Override
+  public Http2Headers http2Headers() {
+    return HttpConversionUtil.toHttp2Headers(delegate, true);
   }
 }

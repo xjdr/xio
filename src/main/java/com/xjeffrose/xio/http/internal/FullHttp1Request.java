@@ -17,30 +17,47 @@ public class FullHttp1Request implements FullRequest {
     headers = new Http1Headers(delegate.headers());
   }
 
+  @Override
+  public boolean startOfStream() {
+    return true;
+  }
+
+  @Override
   public HttpMethod method() {
     return delegate.method();
   }
 
+  @Override
   public String path() {
     return delegate.uri();
   }
 
+  @Override
   public String version() {
     return delegate.protocolVersion().text();
   }
 
+  @Override
   public Headers headers() {
     return headers;
   }
 
+  @Override
+  public int streamId() {
+    return -1;
+  }
+
+  @Override
   public boolean keepAlive() {
     return HttpUtil.isKeepAlive(delegate);
   }
 
+  @Override
   public boolean hasBody() {
     return delegate.content() != null && delegate.content().readableBytes() > 0;
   }
 
+  @Override
   public ByteBuf body() {
     return delegate.content();
   }

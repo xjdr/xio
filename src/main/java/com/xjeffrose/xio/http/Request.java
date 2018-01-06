@@ -9,6 +9,11 @@ import io.netty.handler.codec.http.HttpMethod;
 @UnstableApi
 public interface Request {
 
+  boolean startOfStream();
+
+  // TODO(CK): move this here from StreamingData?
+  // boolean endOfStream();
+
   HttpMethod method();
 
   String path();
@@ -29,9 +34,7 @@ public interface Request {
     return result;
   }
 
-  default int streamId() {
-    return 0;
-  }
+  int streamId();
 
   default boolean hasBody() {
     return false;

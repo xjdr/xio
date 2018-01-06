@@ -7,6 +7,8 @@ import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http2.Http2Headers;
 import lombok.ToString;
+import io.netty.handler.codec.http2.HttpConversionUtil;
+import io.netty.handler.codec.http2.Http2Exception;
 
 /** Wrap an incoming Http2 Response, for use in a client. */
 @ToString
@@ -24,9 +26,9 @@ public class StreamingHttp2Response implements StreamingResponse {
 
   public HttpResponseStatus status() {
     try {
-      return HttpResponseStatus.valueOf(Integer.parseInt(delegate.status().toString()));
-    } catch (Exception e) {
-      return null;
+      return HttpConversionUtil.parseStatus(delegate.status());
+    } catch (Http2Exception e) {
+      throw new RuntimeException(e);
     }
   }
 

@@ -93,10 +93,9 @@ public class Http2ServerCodecUnitTest extends Assert {
     Http2Headers headers = new DefaultHttp2Headers().method("POST").path("/");
     Http2Request requestIn = Http2Request.build(1, headers, false);
     ByteBuf body1 = ByteBufUtil.writeUtf8(UnpooledByteBufAllocator.DEFAULT, "body1");
-    Http2Request content = Http2Request.build(1, new DefaultHttp2DataFrame(body1, false, 1), false);
+    Http2Request content = Http2Request.build(1, new DefaultHttp2DataFrame(body1, false), false);
     ByteBuf body2 = ByteBufUtil.writeUtf8(UnpooledByteBufAllocator.DEFAULT, "body2");
-    Http2Request lastContent =
-        Http2Request.build(1, new DefaultHttp2DataFrame(body2, true, 1), true);
+    Http2Request lastContent = Http2Request.build(1, new DefaultHttp2DataFrame(body2, true), true);
 
     channel.writeInbound(requestIn);
     channel.writeInbound(content);
@@ -151,10 +150,9 @@ public class Http2ServerCodecUnitTest extends Assert {
     Http2Headers headers = new DefaultHttp2Headers().method("POST").path("/");
     Http2Request requestIn = Http2Request.build(1, headers, false);
     ByteBuf body1 = ByteBufUtil.writeUtf8(UnpooledByteBufAllocator.DEFAULT, "body1");
-    Http2Request content = Http2Request.build(1, new DefaultHttp2DataFrame(body1, false, 1), false);
+    Http2Request content = Http2Request.build(1, new DefaultHttp2DataFrame(body1, false), false);
     ByteBuf body2 = ByteBufUtil.writeUtf8(UnpooledByteBufAllocator.DEFAULT, "body2");
-    Http2Request lastContent =
-        Http2Request.build(1, new DefaultHttp2DataFrame(body2, true, 1), false);
+    Http2Request lastContent = Http2Request.build(1, new DefaultHttp2DataFrame(body2, true), false);
     Http2Headers trailers = new DefaultHttp2Headers().set("foo", "bar");
     Http2Request lastHeaders = Http2Request.build(1, trailers, true);
 

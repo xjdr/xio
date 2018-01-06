@@ -16,6 +16,8 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import okhttp3.OkHttpClient;
 import okhttp3.mockwebserver.MockWebServer;
+import java.util.Arrays;
+import okhttp3.Protocol;
 
 public class OkHttpUnsafe {
 
@@ -91,6 +93,7 @@ public class OkHttpUnsafe {
                       return true;
                     }
                   })
+              .protocols(Arrays.asList(Protocol.HTTP_1_1))
               .build();
 
       return okHttpClient;

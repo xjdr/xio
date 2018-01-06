@@ -11,6 +11,7 @@ import io.netty.handler.codec.http2.Http2Settings;
 import java.util.function.Function;
 import lombok.extern.slf4j.Slf4j;
 
+// TODO(CK): break this out into client/server classes
 @Slf4j
 public class Http2HandlerBuilder
     extends AbstractHttp2ConnectionHandlerBuilder<Http2Handler, Http2HandlerBuilder> {

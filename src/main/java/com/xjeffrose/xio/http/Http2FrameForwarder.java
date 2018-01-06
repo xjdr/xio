@@ -9,6 +9,8 @@ import io.netty.handler.codec.http2.Http2FrameListener;
 import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.handler.codec.http2.Http2Settings;
 
+// TODO(CK): break this out into client/server classes
+
 /** Forwards the frame with stream id to the next handler in the pipeline */
 public class Http2FrameForwarder implements Http2FrameListener {
 
@@ -96,7 +98,10 @@ public class Http2FrameForwarder implements Http2FrameListener {
   @Override
   public void onSettingsRead(ChannelHandlerContext ctx, Http2Settings settings)
       throws Http2Exception {
-    // TODO(CK): We don't currently have a use case for these frames
+    // h2 clients need to know that server settings have been received before they can write
+    if (!isServer) {
+      ctx.fireUserEventTriggered(RequestBuffer.WriteReady.INSTANCE);
+    }
   }
 
   @Override

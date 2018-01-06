@@ -12,8 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ApplicationConfig {
 
-  private final Config config;
-
+  @Getter private final Config config;
   @Getter private final String name;
   @Getter private final int bossThreads;
   @Getter private final String bossNameFormat;

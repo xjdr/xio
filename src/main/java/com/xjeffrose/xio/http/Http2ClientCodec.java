@@ -80,8 +80,7 @@ public class Http2ClientCodec extends ChannelDuplexHandler {
     }
     */
 
-    DefaultHttp2Headers headers = new DefaultHttp2Headers();
-    headers.add(request.headers());
+    Http2Headers headers = request.headers().http2Headers();
 
     headers.authority(request.host()).method(request.method().asciiName()).path(request.path());
 
@@ -91,7 +90,7 @@ public class Http2ClientCodec extends ChannelDuplexHandler {
       if (request.body().readableBytes() > 0) {
         PromiseCombiner combiner = new PromiseCombiner();
         combiner.add(ctx.write(Http2Request.build(streamId, headers, false), ctx.newPromise()));
-        Http2DataFrame data = new DefaultHttp2DataFrame(request.body(), true, streamId);
+        Http2DataFrame data = new DefaultHttp2DataFrame(request.body(), true);
         combiner.add(ctx.write(Http2Request.build(streamId, data, true), ctx.newPromise()));
         combiner.finish(promise);
       } else {
@@ -106,12 +105,10 @@ public class Http2ClientCodec extends ChannelDuplexHandler {
     int streamId = 0; // TODO(CK): need a no stream constant somewhere
     boolean dataEos = data.endOfStream() && data.trailingHeaders().size() == 0;
     Http2Request request =
-        Http2Request.build(
-            streamId, new DefaultHttp2DataFrame(data.content(), dataEos, streamId), dataEos);
+        Http2Request.build(streamId, new DefaultHttp2DataFrame(data.content(), dataEos), dataEos);
 
     if (data.trailingHeaders().size() != 0) {
-      Http2Headers headers = new DefaultHttp2Headers();
-      headers.add(data.trailingHeaders());
+      Http2Headers headers = data.trailingHeaders().http2Headers();
       Http2Request last = Http2Request.build(streamId, headers, true);
       PromiseCombiner combiner = new PromiseCombiner();
       combiner.add(ctx.write(request, ctx.newPromise()));

@@ -101,12 +101,15 @@ public class Http1ClientCodec extends ChannelDuplexHandler {
           full.method(),
           full.path(),
           content,
-          full.headers().http1Headers(),
+          full.headers().http1Headers(false, true),
           EmptyHttpHeaders.INSTANCE);
     } else {
       // TODO(CK): TransferEncoding
       return new DefaultHttpRequest(
-          HttpVersion.HTTP_1_1, request.method(), request.path(), request.headers().http1Headers());
+          HttpVersion.HTTP_1_1,
+          request.method(),
+          request.path(),
+          request.headers().http1Headers(false, true));
     }
   }
 
@@ -114,7 +117,7 @@ public class Http1ClientCodec extends ChannelDuplexHandler {
     if (data.endOfStream()) {
       LastHttpContent last = new DefaultLastHttpContent(data.content());
       if (data.trailingHeaders() != null) {
-        last.trailingHeaders().add(data.trailingHeaders().http1Headers());
+        last.trailingHeaders().add(data.trailingHeaders().http1Headers(true, true));
       }
       // setChannelRequest(ctx, null);
       return last;

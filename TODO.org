@@ -1,4 +1,4 @@
-* on deck
+* completed
 
 ** DONE Add application codec to base pipeline
 
@@ -10,15 +10,19 @@
 
 ** DONE Add route applicator to http pipeline
 
-** TODO Wrap Http/2 Request/Response objects
+** DONE Wrap Http/2 Request/Response objects
 
 *** DONE Wrap Http2Headers
 
 *** DONE Http2ServerCodec
 
-*** TODO Http2ClientCodec
+*** DONE Http2ClientCodec
 
-*** TODO Refactor Http1Headers and Http2Headers to use java8 interface default methods
+** DONE Update proxy to use application request object
+
+* on deck
+
+** TODO Refactor Http1Headers and Http2Headers to use java8 interface default methods
 
 ** Authorization uses route pipeline
 
@@ -34,12 +38,19 @@
 
 * backlog
 
-** Update proxy to use application request object
-
 ** connection pool that is optimized to worker loop allocation
    for a worker loop group of size N create at least N connections to the remote endpoint
 
 ** get rid of jetty helpers, replace them with MockWebServer
+
+** setup errorprone
+   https://github.com/square/okhttp/blob/master/pom.xml#L148
+
+** document how to write a netty handler
+
+*** it's ok to throw exceptions
+
+*** use ChannelFuture's cause() to catch exceptions
 
 ** document immutable object testing concepts
 #+begin_src java

@@ -18,6 +18,11 @@ public class FullHttp2Request implements FullRequest {
   }
 
   @Override
+  public boolean startOfStream() {
+    return true;
+  }
+
+  @Override
   public HttpMethod method() {
     return HttpMethod.valueOf(delegate.method().toString());
   }
