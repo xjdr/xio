@@ -40,6 +40,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ReverseProxyFunctionalTest extends Assert {
 
+  @BeforeClass
+  public static void setupJul() {
+    JulBridge.initialize();
+  }
+
   OkHttpClient client;
   Config config;
   EventLoopGroup group;

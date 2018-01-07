@@ -9,6 +9,11 @@ import java.util.logging.*;
 /*
 public class HttpClientTracingHandlerIntegrationTest extends ITHttpClient<XioClient> {
 
+  @BeforeClass
+  public static void setupJul() {
+    JulBridge.initialize();
+  }
+
   @Rule
   public TestWatcher testWatcher = new TestWatcher() {
       @Override

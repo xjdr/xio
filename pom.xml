@@ -108,7 +108,7 @@
       <version>1.7.21</version>
     </dependency>
 
-    <!-- this doesn't appear to be working -->
+    <!-- this requires additional setup see: JulBridge.java -->
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>jul-to-slf4j</artifactId>
