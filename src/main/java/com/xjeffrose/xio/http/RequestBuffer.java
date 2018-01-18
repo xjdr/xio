@@ -19,12 +19,17 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import java.util.function.BiFunction;
+import java.util.LinkedList;
 
 @Slf4j
 public class RequestBuffer extends ChannelDuplexHandler {
 
-  public static class WriteReady {
+  // TODO(CK): look into using this event as well?
+  // http://netty.io/4.1/api/io/netty/handler/codec/http2/Http2ConnectionPrefaceAndSettingsFrameWrittenEvent.html
+  public static final class WriteReady {
     public static final WriteReady INSTANCE = new WriteReady();
+
+    private WriteReady() {}
   }
 
   public static class ObjectAndPromise {
@@ -41,11 +46,11 @@ public class RequestBuffer extends ChannelDuplexHandler {
     }
   }
 
-  List<ObjectAndPromise> writeBuffer = new ArrayList<>();
+  private final List<ObjectAndPromise> writeBuffer = new LinkedList<>();
 
   @Override
   public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-    if (!(evt instanceof WriteReady)) {
+    if (!(evt == WriteReady.INSTANCE)) {
       ctx.fireUserEventTriggered(evt);
       return;
     }

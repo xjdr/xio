@@ -22,6 +22,9 @@ public class FullHttp2Response implements FullResponse {
     this.streamId = streamId;
   }
 
+  /**
+   * Throws a RuntimeException if the underlying status cannot be converted to an HttpResponseStatus
+   */
   @Override
   public HttpResponseStatus status() {
     try {

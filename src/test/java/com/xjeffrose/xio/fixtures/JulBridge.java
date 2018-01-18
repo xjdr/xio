@@ -37,9 +37,9 @@ import org.slf4j.bridge.SLF4JBridgeHandler;
 import org.junit.BeforeClass;
 
 public abstract class JulBridge {
-  private static int dummy = -1;
+  private static final int dummy = -1;
 
-  public static void initialize() {
+  public static synchronized void initialize() {
     if (dummy == -1) {
       SLF4JBridgeHandler.removeHandlersForRootLogger();
       SLF4JBridgeHandler.install();

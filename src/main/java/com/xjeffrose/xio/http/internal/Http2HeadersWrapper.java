@@ -582,6 +582,7 @@ public class Http2HeadersWrapper implements Headers {
     return delegate.size();
   }
 
+  /** Return an Http1 Headers object based on the values in the underlying Http2Headers object. */
   @Override
   public HttpHeaders http1Headers(boolean isTrailer, boolean isRequest) {
     try {

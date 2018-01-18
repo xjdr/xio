@@ -24,16 +24,39 @@ import com.xjeffrose.xio.core.XioIdleDisconnectHandler;
 import java.util.function.Supplier;
 import java.util.concurrent.Future;
 import io.netty.channel.ChannelFutureListener;
+import lombok.extern.slf4j.Slf4j;
+import io.netty.util.concurrent.PromiseCombiner;
+import io.netty.channel.ChannelPromise;
 
+@Slf4j
 public class Client {
 
   private final ClientState state;
   private final Supplier<ChannelHandler> appHandler;
-  Channel channel;
+  private final ChannelFutureListener connectionListener;
+  private final ChannelFutureListener writeListener;
+  private Channel channel;
 
   public Client(ClientState state, Supplier<ChannelHandler> appHandler) {
     this.state = state;
     this.appHandler = appHandler;
+    connectionListener =
+        f -> {
+          if (f.isDone() && f.isSuccess()) {
+            log.debug("Connection succeeded");
+          } else {
+            log.debug("Connection failed", f.cause());
+          }
+        };
+    writeListener =
+        f -> {
+          if (f.isDone() && f.isSuccess()) {
+            log.debug("Write succeeded");
+          } else {
+            log.debug("Write failed", f.cause());
+            log.debug("pipeline: {}", channel.pipeline());
+          }
+        };
   }
 
   private ChannelHandler buildHttp2Handler() {
@@ -66,39 +89,24 @@ public class Client {
                 .addLast("message logging", new XioMessageLogger(Client.class, "objects"))
                 .addLast("request buffer", new RequestBuffer())
                 .addLast("app handler", appHandler.get());
-            //              .addLast(new RawBackendHandler(ctx));
           }
         });
 
     return b.connect(state.remote);
   }
 
-  private void connected(ChannelFuture f) {
-    if (f.isDone() && f.isSuccess()) {
-      // log?
-    } else {
-      // log?
-      throw new RuntimeException(f.cause());
-    }
-  }
-
   public ChannelFuture write(Request request) {
     if (channel == null) {
       ChannelFuture future = connect();
-      ChannelFutureListener l =
-          f -> {
-            if (f.isDone() && f.isSuccess()) {
-              // log?
-            } else {
-              // log?
-              // fail the write future?
-              throw new RuntimeException(f.cause());
-            }
-          };
       channel = future.channel();
-      // connect().addListener(f -> connected((ChannelFuture) f));
-      connect().addListener(l);
+      ChannelPromise promise = channel.newPromise();
+      PromiseCombiner combiner = new PromiseCombiner();
+      combiner.add(future.addListener(connectionListener));
+      combiner.add(channel.writeAndFlush(request).addListener(writeListener));
+      combiner.finish(promise);
+      return promise;
+    } else {
+      return channel.writeAndFlush(request).addListener(writeListener);
     }
-    return channel.writeAndFlush(request);
   }
 }
