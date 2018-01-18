@@ -10,12 +10,15 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class Application implements AutoCloseable {
 
+  // TOOD(CK): move this into ApplicationState
   @Getter private final ApplicationConfig config;
 
+  // TODO(CK): move this into ApplicationState
   private final Map<String, XioServer> servers;
 
   @Getter private final ApplicationState state;
 
+  // TODO(CK): move this into ApplicationState
   private final Configurator configurator;
 
   public Application(

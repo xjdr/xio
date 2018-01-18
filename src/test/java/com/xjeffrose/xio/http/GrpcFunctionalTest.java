@@ -4,6 +4,7 @@ import com.google.common.util.concurrent.Uninterruptibles;
 import com.xjeffrose.xio.SSL.SslContextFactory;
 import com.xjeffrose.xio.SSL.TlsConfig;
 import com.xjeffrose.xio.bootstrap.XioServerBootstrap;
+import com.xjeffrose.xio.client.ClientConfig;
 import com.xjeffrose.xio.pipeline.SmartHttpPipeline;
 import com.xjeffrose.xio.pipeline.XioChannelHandlerFactory;
 import com.xjeffrose.xio.server.XioServer;
@@ -43,7 +44,13 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.Rule;
+import org.junit.rules.TestName;
+import com.google.common.collect.ImmutableMap;
+import io.netty.channel.ChannelHandler;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class GrpcFunctionalTest extends Assert {
 
   public static class HelloWorldClient {
@@ -144,9 +151,12 @@ public class GrpcFunctionalTest extends Assert {
 
   private EventLoopGroup group;
 
+  @Rule public TestName testName = new TestName();
+
   @Before
   public void setUp() {
     group = new NioEventLoopGroup(2);
+    log.debug("Test: " + testName.getMethodName());
   }
 
   @After
@@ -183,23 +193,33 @@ public class GrpcFunctionalTest extends Assert {
         Unpooled.copiedBuffer(ByteBufUtil.decodeHexDump("000000000d0a0b48656c6c6f20776f726c64"));
     final Http2DataFrame cannedData = new DefaultHttp2DataFrame(buf.retain(), false);
 
-    XioChannelHandlerFactory f =
-        () ->
-            new ChannelInboundHandlerAdapter() {
-              @Override
-              public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-                if (msg instanceof Http2Request) {
-                  Http2Request request = (Http2Request) msg;
-                  if (request.payload instanceof Http2DataFrame) {
-                    ctx.write(Http2Response.build(request.streamId, cannedHeaders));
-                    ctx.write(Http2Response.build(request.streamId, cannedData, false));
-                    ctx.write(Http2Response.build(request.streamId, cannedTrailers, true));
-                  }
-                }
-              }
-            };
     XioServerBootstrap bootstrap =
-        XioServerBootstrap.fromConfig("xio.testGrpcServer").addToPipeline(new SmartHttpPipeline(f));
+        XioServerBootstrap.fromConfig("xio.testGrpcServer")
+            .addToPipeline(
+                new SmartHttpPipeline() {
+                  @Override
+                  public ChannelHandler getApplicationRouter() {
+                    return new PipelineRouter(
+                        ImmutableMap.of(),
+                        new PipelineRequestHandler() {
+                          @Override
+                          public void handle(
+                              ChannelHandlerContext ctx, Request request, Route route) {
+                            if (request instanceof StreamingRequestData) {
+                              StreamingRequestData streaming = (StreamingRequestData) request;
+
+                              if (streaming.endOfStream()) {
+                                ctx.write(Http2Response.build(request.streamId(), cannedHeaders));
+                                ctx.write(
+                                    Http2Response.build(request.streamId(), cannedData, false));
+                                ctx.write(
+                                    Http2Response.build(request.streamId(), cannedTrailers, true));
+                              }
+                            }
+                          }
+                        });
+                  }
+                });
 
     XioServer xioServer = bootstrap.build();
     HelloWorldClient client = HelloWorldClient.run(xioServer.getPort());
@@ -338,45 +358,22 @@ public class GrpcFunctionalTest extends Assert {
     return ch;
   }
 
-  private static final AttributeKey<Channel> TEST_CH_KEY =
-      AttributeKey.newInstance("xio_test_ch_key");
-
   @Test
   public void testGrpcProxyRequest() throws Exception {
     HelloWorldServer server = HelloWorldServer.run();
 
-    final SslContext sslContext =
-        SslContextFactory.buildClientContext(
-            TlsConfig.fromConfig("xio.h2TestClient.settings.tls"),
-            InsecureTrustManagerFactory.INSTANCE);
-
-    InetSocketAddress boundAddress = new InetSocketAddress("127.0.0.1", server.getPort());
-
-    XioChannelHandlerFactory f =
-        () ->
-            new ChannelDuplexHandler() {
-              @Override
-              public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-                Channel ch = ctx.channel().attr(TEST_CH_KEY).get();
-                if (ch == null) {
-                  ch = buildProxy(group, sslContext, ctx, boundAddress);
-                  ctx.channel().attr(TEST_CH_KEY).set(ch);
-                }
-
-                if (msg instanceof Http2Request) {
-                  Http2Request request = (Http2Request) msg;
-                  ch.writeAndFlush(request);
-                }
-              }
-
-              @Override
-              public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise)
-                  throws Exception {
-                ctx.write(msg, promise);
-              }
-            };
+    ClientConfig config = ClientConfig.fromConfig("xio.h2TestClient");
+    ProxyConfig proxyConfig = ProxyConfig.parse("https://127.0.0.1:" + server.getPort() + "/");
     XioServerBootstrap bootstrap =
-        XioServerBootstrap.fromConfig("xio.testGrpcServer").addToPipeline(new SmartHttpPipeline(f));
+        XioServerBootstrap.fromConfig("xio.testGrpcServer")
+            .addToPipeline(
+                new SmartHttpPipeline() {
+                  @Override
+                  public ChannelHandler getApplicationRouter() {
+                    return new PipelineRouter(
+                        ImmutableMap.of(), new ProxyHandler(config, proxyConfig));
+                  }
+                });
 
     XioServer xioServer = bootstrap.build();
     HelloWorldClient client = HelloWorldClient.run(xioServer.getPort());

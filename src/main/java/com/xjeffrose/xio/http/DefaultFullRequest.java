@@ -15,6 +15,11 @@ import lombok.ToString;
 @ToString
 public abstract class DefaultFullRequest implements FullRequest {
 
+  @Override
+  public boolean startOfStream() {
+    return true;
+  }
+
   public abstract ByteBuf body();
 
   public abstract HttpMethod method();
@@ -22,6 +27,8 @@ public abstract class DefaultFullRequest implements FullRequest {
   public abstract String path();
 
   public abstract Headers headers();
+
+  public abstract int streamId();
 
   /** Not intended to be called. */
   @Override
@@ -44,6 +51,8 @@ public abstract class DefaultFullRequest implements FullRequest {
 
     public abstract Builder headers(Headers headers);
 
+    public abstract Builder streamId(int streamId);
+
     public abstract DefaultFullRequest build();
 
     abstract Optional<Headers> headers();
@@ -59,6 +68,6 @@ public abstract class DefaultFullRequest implements FullRequest {
   }
 
   static Builder builder() {
-    return new AutoValue_DefaultFullRequest.Builder();
+    return new AutoValue_DefaultFullRequest.Builder().streamId(-1);
   }
 }

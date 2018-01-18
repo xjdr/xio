@@ -12,6 +12,7 @@ import io.netty.handler.codec.http2.Http2Settings;
 import io.netty.util.AttributeKey;
 import lombok.extern.slf4j.Slf4j;
 
+// TODO(CK): break this out into client/server classes
 // TODO(CK): Rename this to Http2ServerHandler
 @Slf4j
 public class Http2Handler extends Http2ConnectionHandler {
@@ -70,6 +71,7 @@ public class Http2Handler extends Http2ConnectionHandler {
     // not an h2 frame, forward the write
     if (!(msg instanceof Http2DataFrame
         || msg instanceof Http2Headers
+        || msg instanceof Http2Request
         || msg instanceof Http2Response)) {
       ctx.write(msg, promise);
       return;
@@ -92,6 +94,25 @@ public class Http2Handler extends Http2ConnectionHandler {
     }
 
     // TODO(CK): This should be broken out into Http2ClientHandler
+
+    if (msg instanceof Http2Request) {
+      Http2Request request = (Http2Request) msg;
+
+      if (request.payload instanceof Http2Headers) {
+        Http2Headers headers = (Http2Headers) request.payload;
+        currentStreamId = connection().local().incrementAndGetNextStreamId();
+        setCurrentStreamId(ctx, currentStreamId);
+        writeHeaders(ctx, headers, false, promise);
+        return;
+      }
+
+      if (request.payload instanceof Http2DataFrame) {
+        Http2DataFrame data = (Http2DataFrame) request.payload;
+        writeData(ctx, data, promise);
+        return;
+      }
+    }
+
     if (msg instanceof Http2Headers) {
       Http2Headers headers = (Http2Headers) msg;
       currentStreamId = connection().local().incrementAndGetNextStreamId();

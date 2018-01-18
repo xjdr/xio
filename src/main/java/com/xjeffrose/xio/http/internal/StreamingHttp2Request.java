@@ -23,6 +23,11 @@ public class StreamingHttp2Request implements StreamingRequest {
   }
 
   @Override
+  public boolean startOfStream() {
+    return true;
+  }
+
+  @Override
   public HttpMethod method() {
     return HttpMethod.valueOf(delegate.method().toString());
   }

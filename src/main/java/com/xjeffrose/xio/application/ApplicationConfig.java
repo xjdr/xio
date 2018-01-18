@@ -8,12 +8,12 @@ import com.xjeffrose.xio.core.NullZkClient;
 import com.xjeffrose.xio.core.ZkClient;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import com.typesafe.config.ConfigFactory;
 
 @Slf4j
 public class ApplicationConfig {
 
   private final Config config;
-
   @Getter private final String name;
   @Getter private final int bossThreads;
   @Getter private final String bossNameFormat;
@@ -43,6 +43,11 @@ public class ApplicationConfig {
     return new ApplicationConfig(config.getConfig(key));
   }
 
+  public static ApplicationConfig fromConfig(String key) {
+    return fromConfig(key, ConfigFactory.load());
+  }
+
+  // TODO(CK): parse servers at construction time
   public Config getServer(String server) {
     try {
       return config.getConfig("servers").getConfig(server);
@@ -60,6 +65,7 @@ public class ApplicationConfig {
     }
   }
 
+  // TODO(CK): parse settings at construction time
   public Config settings() {
     return config.getConfig("settings");
   }

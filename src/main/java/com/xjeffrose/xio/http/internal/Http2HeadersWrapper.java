@@ -15,6 +15,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import io.netty.handler.codec.http.DefaultHttpHeaders;
+import io.netty.handler.codec.http2.HttpConversionUtil;
+import io.netty.handler.codec.http.HttpVersion;
+import io.netty.handler.codec.http2.Http2Exception;
 
 public class Http2HeadersWrapper implements Headers {
 
@@ -578,10 +582,16 @@ public class Http2HeadersWrapper implements Headers {
     return delegate.size();
   }
 
-  // TODO(CK): Remove this in favor of using the iterator constructor?
-
+  /** Return an Http1 Headers object based on the values in the underlying Http2Headers object. */
   @Override
-  public HttpHeaders http1Headers() {
-    return null;
+  public HttpHeaders http1Headers(boolean isTrailer, boolean isRequest) {
+    try {
+      HttpHeaders headers = new DefaultHttpHeaders();
+      HttpConversionUtil.addHttp2ToHttpHeaders(
+          -1, delegate, headers, HttpVersion.HTTP_1_1, isTrailer, isRequest);
+      return headers;
+    } catch (Http2Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 }

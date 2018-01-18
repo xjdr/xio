@@ -7,6 +7,11 @@ import java.util.logging.*;
 /*
 public class HttpServerTracingHandlerIntegrationTest extends ITHttpServer {
 
+  @BeforeClass
+  public static void setupJul() {
+    JulBridge.initialize();
+  }
+
   static Logger disableJavaLogging() {
     Logger logger = Logger.getLogger("okhttp3.mockwebserver.MockWebServer");
     logger.setLevel(Level.WARNING);

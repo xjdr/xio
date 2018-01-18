@@ -25,8 +25,15 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.BeforeClass;
+import com.xjeffrose.xio.fixtures.JulBridge;
 
 public class HttpClientFunctionalTest extends Assert {
+
+  @BeforeClass
+  public static void setupJul() {
+    JulBridge.initialize();
+  }
 
   MockWebServer server;
 

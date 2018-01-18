@@ -77,8 +77,7 @@ public class Http2ServerCodec extends ChannelDuplexHandler {
 
     Request request = getChannelRequest(ctx);
     int streamId = request.streamId();
-    DefaultHttp2Headers headers = new DefaultHttp2Headers();
-    headers.add(response.headers());
+    Http2Headers headers = response.headers().http2Headers();
 
     headers.status(response.status().codeAsText());
 
@@ -87,7 +86,7 @@ public class Http2ServerCodec extends ChannelDuplexHandler {
       if (response.body().readableBytes() > 0) {
         PromiseCombiner combiner = new PromiseCombiner();
         combiner.add(ctx.write(Http2Response.build(streamId, headers, false), ctx.newPromise()));
-        Http2DataFrame data = new DefaultHttp2DataFrame(response.body(), true, streamId);
+        Http2DataFrame data = new DefaultHttp2DataFrame(response.body(), true);
         combiner.add(ctx.write(Http2Response.build(streamId, data, true), ctx.newPromise()));
         combiner.finish(promise);
       } else {
@@ -107,12 +106,10 @@ public class Http2ServerCodec extends ChannelDuplexHandler {
 
     boolean dataEos = data.endOfStream() && data.trailingHeaders().size() == 0;
     Http2Response response =
-        Http2Response.build(
-            streamId, new DefaultHttp2DataFrame(data.content(), dataEos, streamId), dataEos);
+        Http2Response.build(streamId, new DefaultHttp2DataFrame(data.content(), dataEos), dataEos);
 
     if (data.trailingHeaders().size() != 0) {
-      Http2Headers headers = new DefaultHttp2Headers();
-      headers.add(data.trailingHeaders());
+      Http2Headers headers = data.trailingHeaders().http2Headers();
       Http2Response last = Http2Response.build(streamId, headers, true);
       PromiseCombiner combiner = new PromiseCombiner();
       combiner.add(ctx.write(response, ctx.newPromise()));

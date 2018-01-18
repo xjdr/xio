@@ -23,8 +23,16 @@ import org.junit.Assert;
 import org.junit.AssumptionViolatedException;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.BeforeClass;
+import com.xjeffrose.xio.fixtures.JulBridge;
 
 public class ProxyWiringTest extends Assert {
+
+  @BeforeClass
+  public static void setupJul() {
+    JulBridge.initialize();
+  }
+
   OkHttpClient client = OkHttpUnsafe.getUnsafeClient();
 
   public MockWebServer server;

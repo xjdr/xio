@@ -23,8 +23,11 @@ appender("DEVNULL", FileAppender) {
   }
 }
 
-logger("io.netty.channel.DefaultChannelPipeline", DEBUG)
 logger("com.xjeffrose.xio.config.ConfigReloader", OFF)
+logger("com.xjeffrose.xio.SSL.XioTrustManagerFactory", OFF)
+logger("com.xjeffrose.xio.core.NullZkClient", OFF)
+logger("io.netty.channel.DefaultChannelPipeline", DEBUG)
+logger("io.netty.util.internal.NativeLibraryLoader", ERROR)
 
 if (System.getProperty("DEBUG") != null) {
   root(DEBUG, ["CONSOLE"])

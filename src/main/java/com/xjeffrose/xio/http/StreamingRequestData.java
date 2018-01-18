@@ -18,6 +18,11 @@ public class StreamingRequestData implements Request, StreamingData {
   }
 
   @Override
+  public boolean startOfStream() {
+    return false;
+  }
+
+  @Override
   public HttpMethod method() {
     return request.method();
   }
@@ -35,6 +40,11 @@ public class StreamingRequestData implements Request, StreamingData {
   @Override
   public Headers headers() {
     return request.headers();
+  }
+
+  @Override
+  public int streamId() {
+    return request.streamId();
   }
 
   @Override
