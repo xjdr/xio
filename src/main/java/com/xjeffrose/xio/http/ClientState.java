@@ -1,12 +1,12 @@
 package com.xjeffrose.xio.http;
 
+import com.xjeffrose.xio.SSL.SslContextFactory;
+import com.xjeffrose.xio.bootstrap.ClientChannelConfiguration;
+import com.xjeffrose.xio.client.ClientConfig;
 import io.netty.channel.ChannelHandler;
 import io.netty.handler.ssl.SslContext;
 import java.net.InetSocketAddress;
 import java.util.function.Supplier;
-import com.xjeffrose.xio.client.ClientConfig;
-import com.xjeffrose.xio.bootstrap.ClientChannelConfiguration;
-import com.xjeffrose.xio.SSL.SslContextFactory;
 
 public class ClientState {
 

@@ -6,6 +6,7 @@ import com.xjeffrose.xio.client.ChannelConfiguration;
 import com.xjeffrose.xio.client.ClientConfig;
 import com.xjeffrose.xio.client.Http;
 import com.xjeffrose.xio.client.XioClientBootstrap;
+import com.xjeffrose.xio.fixtures.JulBridge;
 import com.xjeffrose.xio.fixtures.OkHttpUnsafe;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -24,9 +25,8 @@ import okhttp3.mockwebserver.RecordedRequest;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Test;
 import org.junit.BeforeClass;
-import com.xjeffrose.xio.fixtures.JulBridge;
+import org.junit.Test;
 
 public class HttpClientFunctionalTest extends Assert {
 

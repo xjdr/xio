@@ -1,26 +1,11 @@
 package com.xjeffrose.xio.http;
 
 import com.xjeffrose.xio.bootstrap.ChannelConfiguration;
-import com.xjeffrose.xio.client.ClientConfig;
-import com.xjeffrose.xio.http.Http1ClientCodec;
-import com.xjeffrose.xio.http.PipelineRequestHandler;
-import com.xjeffrose.xio.http.RawBackendHandler;
-import com.xjeffrose.xio.http.Request;
-import com.xjeffrose.xio.http.Route;
-import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInitializer;
-import io.netty.handler.codec.http.HttpClientCodec;
-import io.netty.handler.ssl.SslContext;
-import java.net.InetSocketAddress;
-import java.util.ArrayDeque;
-import java.util.Queue;
-import io.netty.channel.ChannelHandler;
-import com.xjeffrose.xio.core.XioMessageLogger;
 import com.xjeffrose.xio.bootstrap.ClientChannelConfiguration;
+import com.xjeffrose.xio.client.ClientConfig;
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.AttributeKey;
+import java.net.InetSocketAddress;
 
 public class ProxyHandler implements PipelineRequestHandler {
 

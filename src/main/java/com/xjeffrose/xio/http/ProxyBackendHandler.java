@@ -1,11 +1,10 @@
 package com.xjeffrose.xio.http;
 
-import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import lombok.extern.slf4j.Slf4j;
-import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelFuture;
 
 @Slf4j
 public class ProxyBackendHandler extends ChannelInboundHandlerAdapter {

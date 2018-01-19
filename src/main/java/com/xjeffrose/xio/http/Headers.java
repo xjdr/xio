@@ -3,9 +3,9 @@ package com.xjeffrose.xio.http;
 import com.xjeffrose.xio.core.internal.UnstableApi;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpHeaders;
-import java.util.Map.Entry;
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.Http2Headers;
+import java.util.Map.Entry;
 
 @UnstableApi
 public interface Headers
