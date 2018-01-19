@@ -23,6 +23,7 @@
 
     <!-- Dependencies -->
     <jmh.version>1.4.1</jmh.version>
+    <argLine>-Xbootclasspath/p:${bootclasspathPrefix} -Xms512m -Xmx512m</argLine>
   </properties>
 
   <scm>
@@ -358,7 +359,6 @@
           <systemPropertyVariables>
             <java.util.logging.SimpleFormatter.format>%1$tY-%1$tm-%1$td %1$tH:%1$tM:%1$tS %4$s %5$s%6$s%n</java.util.logging.SimpleFormatter.format>
           </systemPropertyVariables>
-          <argLine>-Xbootclasspath/p:${bootclasspathPrefix} -Xms512m -Xmx512m</argLine>
         </configuration>
         <dependencies>
           <dependency>
@@ -652,9 +652,6 @@
             <plugin>
               <groupId>org.apache.maven.plugins</groupId>
               <artifactId>maven-surefire-plugin</artifactId>
-              <configuration>
-                <argLine>-Xbootclasspath/p:${bootclasspathPrefix} -Xms512m -Xmx512m</argLine>
-              </configuration>
               <dependencies>
                 <dependency>
                   <groupId>org.mortbay.jetty.alpn</groupId>
