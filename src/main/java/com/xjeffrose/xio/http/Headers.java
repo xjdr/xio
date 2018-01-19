@@ -3,16 +3,20 @@ package com.xjeffrose.xio.http;
 import com.xjeffrose.xio.core.internal.UnstableApi;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpHeaders;
-import java.util.Map.Entry;
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.Http2Headers;
+import java.util.Map.Entry;
 
 @UnstableApi
 public interface Headers
     extends io.netty.handler.codec.Headers<CharSequence, CharSequence, Headers>,
         Iterable<Entry<CharSequence, CharSequence>> {
 
-  /** Return an Http1 Headers object based on the values in this Headers object. */
+  /**
+   * @param isTrailer this Headers object will be used for trailers.
+   * @param isRequest this Headers object will be used in a request header.
+   * @return an Http1 Headers object based on the values in this Headers object.
+   */
   default HttpHeaders http1Headers(boolean isTrailer, boolean isRequest) {
     // TODO(CK): filter out headers that can't be in a trailer
     // TODO(CK): filter out headers that can't be in a request

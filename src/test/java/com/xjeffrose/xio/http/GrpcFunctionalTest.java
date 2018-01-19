@@ -1,12 +1,12 @@
 package com.xjeffrose.xio.http;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.xjeffrose.xio.SSL.SslContextFactory;
 import com.xjeffrose.xio.SSL.TlsConfig;
 import com.xjeffrose.xio.bootstrap.XioServerBootstrap;
 import com.xjeffrose.xio.client.ClientConfig;
 import com.xjeffrose.xio.pipeline.SmartHttpPipeline;
-import com.xjeffrose.xio.pipeline.XioChannelHandlerFactory;
 import com.xjeffrose.xio.server.XioServer;
 import helloworld.*;
 import io.grpc.ManagedChannel;
@@ -19,11 +19,9 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelDuplexHandler;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelPromise;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
@@ -35,20 +33,17 @@ import io.netty.handler.codec.http2.Http2FrameAdapter;
 import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
-import io.netty.util.AttributeKey;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Test;
 import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.TestName;
-import com.google.common.collect.ImmutableMap;
-import io.netty.channel.ChannelHandler;
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class GrpcFunctionalTest extends Assert {

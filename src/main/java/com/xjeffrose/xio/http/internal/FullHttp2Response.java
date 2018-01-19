@@ -5,9 +5,9 @@ import com.xjeffrose.xio.http.Headers;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http2.Http2Exception;
 import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.handler.codec.http2.HttpConversionUtil;
-import io.netty.handler.codec.http2.Http2Exception;
 
 /** Wrap an incoming Http2 Response, for use in a client. */
 public class FullHttp2Response implements FullResponse {

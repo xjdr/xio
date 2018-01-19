@@ -1,32 +1,17 @@
 package com.xjeffrose.xio.http;
 
-import com.xjeffrose.xio.SSL.SslContextFactory;
-import com.xjeffrose.xio.client.ChannelConfiguration;
-import com.xjeffrose.xio.client.ClientConfig;
-import com.xjeffrose.xio.http.Http1ClientCodec;
-import com.xjeffrose.xio.http.PipelineRequestHandler;
-import com.xjeffrose.xio.http.RawBackendHandler;
-import com.xjeffrose.xio.http.Request;
-import com.xjeffrose.xio.http.Route;
+import com.xjeffrose.xio.core.XioIdleDisconnectHandler;
+import com.xjeffrose.xio.core.XioMessageLogger;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInitializer;
-import io.netty.handler.codec.http.HttpClientCodec;
-import io.netty.handler.ssl.SslContext;
-import java.net.InetSocketAddress;
-import java.util.ArrayDeque;
-import java.util.Queue;
-import io.netty.channel.ChannelHandler;
-import com.xjeffrose.xio.core.XioMessageLogger;
-import com.xjeffrose.xio.core.XioIdleDisconnectHandler;
-import java.util.function.Supplier;
-import java.util.concurrent.Future;
 import io.netty.channel.ChannelFutureListener;
-import lombok.extern.slf4j.Slf4j;
-import io.netty.util.concurrent.PromiseCombiner;
+import io.netty.channel.ChannelHandler;
+import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPromise;
+import io.netty.util.concurrent.PromiseCombiner;
+import java.util.function.Supplier;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class Client {

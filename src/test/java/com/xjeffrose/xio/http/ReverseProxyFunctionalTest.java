@@ -1,41 +1,38 @@
 package com.xjeffrose.xio.http;
 
+import com.google.common.collect.ImmutableMap;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
+import com.xjeffrose.xio.SSL.TlsConfig;
+import com.xjeffrose.xio.application.Application;
+import com.xjeffrose.xio.application.ApplicationConfig;
+import com.xjeffrose.xio.bootstrap.ApplicationBootstrap;
+import com.xjeffrose.xio.client.ClientConfig;
+import com.xjeffrose.xio.fixtures.JulBridge;
+import com.xjeffrose.xio.fixtures.OkHttpUnsafe;
+import com.xjeffrose.xio.pipeline.SmartHttpPipeline;
+import io.netty.channel.ChannelHandler;
+import io.netty.channel.EventLoopGroup;
+import java.util.Arrays;
+import java.util.List;
+import lombok.extern.slf4j.Slf4j;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
+import okhttp3.Protocol;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
-import okhttp3.mockwebserver.Dispatcher;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
 import okhttp3.mockwebserver.SocketPolicy;
-import com.xjeffrose.xio.fixtures.OkHttpUnsafe;
-import com.xjeffrose.xio.application.Application;
-import com.xjeffrose.xio.bootstrap.ApplicationBootstrap;
-import com.xjeffrose.xio.pipeline.SmartHttpPipeline;
-import io.netty.channel.EventLoopGroup;
-import io.netty.channel.nio.NioEventLoopGroup;
-import java.util.concurrent.TimeUnit;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Test;
-import org.junit.Rule;
-import org.junit.rules.TestName;
-import com.xjeffrose.xio.application.ApplicationConfig;
-import io.netty.channel.ChannelHandler;
-import com.google.common.collect.ImmutableMap;
-import com.typesafe.config.ConfigFactory;
-import com.xjeffrose.xio.SSL.TlsConfig;
-import com.typesafe.config.Config;
-import okhttp3.RequestBody;
-import okhttp3.MediaType;
-import okhttp3.Protocol;
-import java.util.Arrays;
-import java.util.List;
-import com.xjeffrose.xio.client.ClientConfig;
-import com.xjeffrose.xio.fixtures.JulBridge;
 import org.junit.BeforeClass;
-import lombok.extern.slf4j.Slf4j;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TestName;
 
 @Slf4j
 public class ReverseProxyFunctionalTest extends Assert {
@@ -52,9 +49,8 @@ public class ReverseProxyFunctionalTest extends Assert {
   Application reverseProxy;
   MockWebServer server;
 
-  static Application setupReverseProxy(ApplicationConfig appConfig, ProxyConfig proxyConfig) {
-    ClientConfig config = ClientConfig.fromConfig("clients.main", appConfig.getConfig());
-
+  static Application setupReverseProxy(
+      ApplicationConfig appConfig, ProxyConfig proxyConfig, ClientConfig clientConfig) {
     return new ApplicationBootstrap(appConfig)
         .addServer(
             "main",
@@ -64,7 +60,7 @@ public class ReverseProxyFunctionalTest extends Assert {
                       @Override
                       public ChannelHandler getApplicationRouter() {
                         return new PipelineRouter(
-                            ImmutableMap.of(), new ProxyHandler(config, proxyConfig));
+                            ImmutableMap.of(), new ProxyHandler(clientConfig, proxyConfig));
                       }
                     }))
         .build();
@@ -102,7 +98,10 @@ public class ReverseProxyFunctionalTest extends Assert {
     String front = h2Front ? "h2" : "h1";
     appConfig = ApplicationConfig.fromConfig("xio." + front + "ReverseProxy", config);
     ProxyConfig proxyConfig = ProxyConfig.parse("https://127.0.0.1:" + port + "/hello");
-    reverseProxy = setupReverseProxy(appConfig, proxyConfig);
+
+    ClientConfig clientConfig =
+        ClientConfig.fromConfig("xio." + front + "ReverseProxy.clients.main", ConfigFactory.load());
+    reverseProxy = setupReverseProxy(appConfig, proxyConfig, clientConfig);
   }
 
   void setupClient(boolean h2) throws Exception {

@@ -1,25 +1,14 @@
 package com.xjeffrose.xio.http;
 
-import com.xjeffrose.xio.client.ClientState;
-import com.xjeffrose.xio.client.DefaultChannelInitializer;
-import com.xjeffrose.xio.client.XioClient;
-import com.xjeffrose.xio.client.XioClientBootstrap;
-import com.xjeffrose.xio.server.Route;
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
-import io.netty.handler.codec.http2.Http2DataFrame;
-import io.netty.handler.codec.http2.Http2Headers;
-import io.netty.util.AttributeKey;
-import io.netty.util.ReferenceCountUtil;
-import java.util.ArrayList;
-import java.util.List;
-import lombok.extern.slf4j.Slf4j;
-import java.util.function.BiFunction;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.function.BiFunction;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class RequestBuffer extends ChannelDuplexHandler {
