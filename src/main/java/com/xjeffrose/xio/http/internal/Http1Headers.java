@@ -6,6 +6,8 @@ import com.xjeffrose.xio.http.Headers;
 import io.netty.handler.codec.CharSequenceValueConverter;
 import io.netty.handler.codec.ValueConverter;
 import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http2.Http2Headers;
+import io.netty.handler.codec.http2.HttpConversionUtil;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -13,8 +15,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import io.netty.handler.codec.http2.Http2Headers;
-import io.netty.handler.codec.http2.HttpConversionUtil;
 
 // TODO(CK): Rename this to Http1HeadersWrapper
 

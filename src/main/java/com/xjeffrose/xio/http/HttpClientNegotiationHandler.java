@@ -5,12 +5,11 @@ import static io.netty.handler.codec.http.HttpVersion.*;
 
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.HttpServerCodec;
+import io.netty.handler.codec.http.HttpClientCodec;
 import io.netty.handler.ssl.ApplicationProtocolNames;
 import io.netty.handler.ssl.ApplicationProtocolNegotiationHandler;
 import java.util.function.Supplier;
 import lombok.extern.slf4j.Slf4j;
-import io.netty.handler.codec.http.HttpClientCodec;
 
 @Slf4j
 public class HttpClientNegotiationHandler extends ApplicationProtocolNegotiationHandler {

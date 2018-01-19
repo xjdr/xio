@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.xjeffrose.xio.SSL.TlsConfig;
 import com.xjeffrose.xio.application.Application;
 import com.xjeffrose.xio.bootstrap.ApplicationBootstrap;
+import com.xjeffrose.xio.fixtures.JulBridge;
 import com.xjeffrose.xio.fixtures.OkHttpUnsafe;
 import com.xjeffrose.xio.helpers.ProxyPipelineRequestHandler;
 import com.xjeffrose.xio.pipeline.SmartHttpPipeline;
@@ -22,9 +23,8 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.AssumptionViolatedException;
 import org.junit.Before;
-import org.junit.Test;
 import org.junit.BeforeClass;
-import com.xjeffrose.xio.fixtures.JulBridge;
+import org.junit.Test;
 
 public class ProxyWiringTest extends Assert {
 
