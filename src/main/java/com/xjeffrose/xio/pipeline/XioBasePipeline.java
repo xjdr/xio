@@ -26,6 +26,10 @@ public abstract class XioBasePipeline implements XioPipelineFragment {
 
   public abstract ChannelHandler getEncryptionHandler(XioServerConfig config, XioServerState state);
 
+  public ChannelHandler getTlsAuthenticationHandler() {
+    return null;
+  }
+
   public abstract ChannelHandler getAuthenticationHandler();
 
   public abstract ChannelHandler getAuthorizationHandler();
@@ -71,7 +75,7 @@ public abstract class XioBasePipeline implements XioPipelineFragment {
     if (encryptionHandler != null) {
       pipeline.addLast("encryptionHandler", encryptionHandler);
     }
-    addHandler(pipeline, "authentication handler", getAuthenticationHandler());
+    addHandler(pipeline, "tls authentication handler", getTlsAuthenticationHandler());
     if (config.isMessageLoggerEnabled()) {
       pipeline.addLast("messageLogger", new XioMessageLogger(XioServer.class, config.getName()));
     }
@@ -82,9 +86,10 @@ public abstract class XioBasePipeline implements XioPipelineFragment {
     } else {
       throw new RuntimeException("No codec configured");
     }
-    addHandler(pipeline, "distributed tracing", state.getTracingHandler().apply(false));
+    addHandler(pipeline, "distributed tracing", state.tracingHandler(appState));
     addHandler(pipeline, "application codec", getApplicationCodec());
     addHandler(pipeline, "application router", getApplicationRouter());
+    addHandler(pipeline, "authentication handler", getAuthenticationHandler());
     pipeline.addLast("l7DeterministicRuleEngine", new Http1Filter(appState.getHttp1FilterConfig()));
     pipeline.addLast(
         "l7BehavioralRuleEngine",
