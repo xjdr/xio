@@ -37,7 +37,7 @@ import org.slf4j.bridge.SLF4JBridgeHandler;
 import org.junit.BeforeClass;
 
 public abstract class JulBridge {
-  private static final int dummy = -1;
+  private static int dummy = -1;
 
   public static synchronized void initialize() {
     if (dummy == -1) {
