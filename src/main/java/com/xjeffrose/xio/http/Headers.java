@@ -12,7 +12,11 @@ public interface Headers
     extends io.netty.handler.codec.Headers<CharSequence, CharSequence, Headers>,
         Iterable<Entry<CharSequence, CharSequence>> {
 
-  /** Return an Http1 Headers object based on the values in this Headers object. */
+  /**
+   * @param isTrailer this Headers object will be used for trailers.
+   * @param isRequest this Headers object will be used in a request header.
+   * @return an Http1 Headers object based on the values in this Headers object.
+   */
   default HttpHeaders http1Headers(boolean isTrailer, boolean isRequest) {
     // TODO(CK): filter out headers that can't be in a trailer
     // TODO(CK): filter out headers that can't be in a request
