@@ -4,6 +4,9 @@ import com.google.common.collect.ImmutableMap;
 import java.util.AbstractMap;
 import java.util.Map;
 
+// TODO(CK): both this and Route.java need to be refactored so that the load order of routes
+// doesn't matter. Off the top of my head this means parsing the routes into some sort of tree
+// data structure and walking the tree looking for hits.
 public class PathToRequestHandler {
 
   private final ImmutableMap<Route, PipelineRequestHandler> routes;

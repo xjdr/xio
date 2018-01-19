@@ -9,6 +9,7 @@ import java.util.Map;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
+// TODO(CK): rename this to ServerConfig
 @Slf4j
 public class XioServerConfig {
   @Getter private final Map<ChannelOption<Object>, Object> bootstrapOptions;
@@ -44,5 +45,9 @@ public class XioServerConfig {
 
   public static XioServerConfig fromConfig(String key) {
     return fromConfig(key, ConfigFactory.load());
+  }
+
+  public boolean isTlsEnabled() {
+    return tls.isUseSsl();
   }
 }
