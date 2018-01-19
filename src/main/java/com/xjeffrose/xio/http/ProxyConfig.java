@@ -4,6 +4,19 @@ import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+// TODO(CK): reconcile ProxyConfig with ClientConfig
+//   Deprecate these fields in ProxyConfig
+//     * address
+//     * needSSL
+/*
+url = scheme, authority, path, query-string, fragment
+{
+  hostHeader: "google.com:5678"
+  urlPath: "/foo/bar"
+  queryString: "baz=quf"
+}
+ */
+
 public class ProxyConfig {
 
   public final InetSocketAddress address;

@@ -3,6 +3,7 @@ package com.xjeffrose.xio.server;
 import com.typesafe.config.Config;
 import java.time.Duration;
 
+// TODO(CK): rename this to ServerLimits
 public class XioServerLimits {
 
   private final int maxConnections;

@@ -14,6 +14,13 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import java.util.concurrent.ThreadFactory;
 
+// TODO(CK): Configuration is the wrong name as we store
+//   EventLoopGroup objects in these classes.
+//     * ChannelState, ClientChannelState, ServerChannelState
+//     * ChannelPairing
+//     * EventLoopBundle, ClientEventLoopBundle, ServerEventLoopBundle
+//     * EventLoopState, ClientEventLoopState, ServerEventLoopState
+
 /** Utility class used to build ClientChannelConfiguration and ServerChannelConfiguration. */
 public class ChannelConfiguration {
 

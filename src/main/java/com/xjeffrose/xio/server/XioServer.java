@@ -7,10 +7,13 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class XioServer implements AutoCloseable {
 
+  // TODO(CK): move this into server state
   @Getter private final Channel serverChannel;
 
+  // TODO(CK): move this into server state
   @Getter private final XioServerInstrumentation instrumentation;
 
+  // TODO(CK): move this into server state
   @Getter private final XioServerConfig config;
 
   @Getter private final XioServerState state;
