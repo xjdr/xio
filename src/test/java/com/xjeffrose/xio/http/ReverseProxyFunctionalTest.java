@@ -52,9 +52,8 @@ public class ReverseProxyFunctionalTest extends Assert {
   Application reverseProxy;
   MockWebServer server;
 
-  static Application setupReverseProxy(ApplicationConfig appConfig, ProxyConfig proxyConfig) {
-    ClientConfig config = ClientConfig.fromConfig("clients.main", appConfig.getConfig());
-
+  static Application setupReverseProxy(
+      ApplicationConfig appConfig, ProxyConfig proxyConfig, ClientConfig clientConfig) {
     return new ApplicationBootstrap(appConfig)
         .addServer(
             "main",
@@ -64,7 +63,7 @@ public class ReverseProxyFunctionalTest extends Assert {
                       @Override
                       public ChannelHandler getApplicationRouter() {
                         return new PipelineRouter(
-                            ImmutableMap.of(), new ProxyHandler(config, proxyConfig));
+                            ImmutableMap.of(), new ProxyHandler(clientConfig, proxyConfig));
                       }
                     }))
         .build();
@@ -102,7 +101,10 @@ public class ReverseProxyFunctionalTest extends Assert {
     String front = h2Front ? "h2" : "h1";
     appConfig = ApplicationConfig.fromConfig("xio." + front + "ReverseProxy", config);
     ProxyConfig proxyConfig = ProxyConfig.parse("https://127.0.0.1:" + port + "/hello");
-    reverseProxy = setupReverseProxy(appConfig, proxyConfig);
+
+    ClientConfig clientConfig =
+        ClientConfig.fromConfig("xio." + front + "ReverseProxy.clients.main", ConfigFactory.load());
+    reverseProxy = setupReverseProxy(appConfig, proxyConfig, clientConfig);
   }
 
   void setupClient(boolean h2) throws Exception {
