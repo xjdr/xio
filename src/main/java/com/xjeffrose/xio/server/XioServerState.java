@@ -8,9 +8,7 @@ import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.handler.ssl.SslContext;
 import io.netty.util.concurrent.GlobalEventExecutor;
-import java.util.function.Function;
 import lombok.Getter;
-import lombok.Setter;
 
 // TODO(CK): rename this to ServerState
 public class XioServerState {
@@ -22,15 +20,11 @@ public class XioServerState {
 
   @Getter private final ChannelStatistics channelStatistics;
 
-  @Getter @Setter private Function<Boolean, ChannelHandler> tracingHandler;
-  // private ChannelHandler tracingHandler = null;
-
   @Getter private final SslContext sslContext;
 
   public XioServerState(XioServerConfig config) {
     this.config = config;
     channelStatistics = new ChannelStatistics(allChannels);
-    tracingHandler = (b) -> null;
     sslContext = SslContextFactory.buildServerContext(config.getTls());
   }
 

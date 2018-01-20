@@ -6,8 +6,10 @@ import com.xjeffrose.xio.filter.Http1FilterConfig;
 import com.xjeffrose.xio.filter.IpFilterConfig;
 import com.xjeffrose.xio.http.DefaultRouter;
 import com.xjeffrose.xio.http.Router;
+import com.xjeffrose.xio.tracing.XioTracing;
 import java.util.concurrent.atomic.AtomicReference;
 import lombok.Getter;
+import lombok.experimental.Accessors;
 
 public class ApplicationState {
 
@@ -16,6 +18,10 @@ public class ApplicationState {
   @Getter private final ServerChannelConfiguration channelConfiguration;
 
   // TODO(CK): store ClientChannelConfiguration here as well
+
+  @Accessors(fluent = true)
+  @Getter
+  private final XioTracing tracing;
 
   private final AtomicReference<IpFilterConfig> ipFilterConfig;
 
@@ -26,6 +32,7 @@ public class ApplicationState {
   public ApplicationState(ApplicationConfig config) {
     channelConfiguration = config.serverChannelConfig();
     zkClient = config.zookeeperClient();
+    tracing = new XioTracing(config);
 
     ipFilterConfig = new AtomicReference<>(new IpFilterConfig());
     zkClient.registerUpdater(

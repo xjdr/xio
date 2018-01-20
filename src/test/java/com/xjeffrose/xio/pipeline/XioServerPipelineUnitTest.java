@@ -16,8 +16,10 @@ import com.xjeffrose.xio.server.XioBehavioralRuleEngine;
 import com.xjeffrose.xio.server.XioConnectionLimiter;
 import com.xjeffrose.xio.server.XioResponseClassifier;
 import com.xjeffrose.xio.server.XioServerConfig;
+import com.xjeffrose.xio.server.XioServerLimits;
 import com.xjeffrose.xio.server.XioServerState;
 import com.xjeffrose.xio.server.XioWebApplicationFirewall;
+import com.xjeffrose.xio.tracing.HttpServerTracingHandler;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelPipeline;
 import org.junit.Test;
@@ -43,12 +45,27 @@ public class XioServerPipelineUnitTest {
           }
 
           @Override
+          public ChannelHandler getIdleDisconnectHandler(XioServerLimits limits) {
+            return new XioNoOpHandler();
+          }
+
+          @Override
+          public ChannelHandler getTlsAuthenticationHandler() {
+            return new XioNoOpHandler();
+          }
+
+          @Override
           public ChannelHandler getAuthenticationHandler() {
             return new XioNoOpHandler();
           }
 
           @Override
           public ChannelHandler getAuthorizationHandler() {
+            return new XioNoOpHandler();
+          }
+
+          @Override
+          public ChannelHandler getCodecNegotiationHandler(XioServerConfig config) {
             return new XioNoOpHandler();
           }
 
@@ -83,6 +100,9 @@ public class XioServerPipelineUnitTest {
         .addLast(eq("serviceConnectionLimiter"), isA(XioConnectionLimiter.class));
     inOrder
         .verify(pipeline, times(1))
+        .addLast(eq("idleDisconnectHandler"), isA(XioNoOpHandler.class));
+    inOrder
+        .verify(pipeline, times(1))
         .addLast(eq("l4DeterministicRuleEngine"), isA(IpFilter.class));
     inOrder
         .verify(pipeline, times(1))
@@ -96,11 +116,18 @@ public class XioServerPipelineUnitTest {
     inOrder.verify(pipeline, times(1)).addLast(eq("encryptionHandler"), isA(XioNoOpHandler.class));
     inOrder
         .verify(pipeline, times(1))
-        .addLast(eq("authentication handler"), isA(XioNoOpHandler.class));
+        .addLast(eq("tls authentication handler"), isA(XioNoOpHandler.class));
     inOrder.verify(pipeline, times(1)).addLast(eq("messageLogger"), isA(XioMessageLogger.class));
+    inOrder.verify(pipeline, times(1)).addLast(eq("codecNegotiation"), isA(XioNoOpHandler.class));
     inOrder.verify(pipeline, times(1)).addLast(eq("codec"), isA(XioNoOpHandler.class));
+    inOrder
+        .verify(pipeline, times(1))
+        .addLast(eq("distributed tracing"), isA(HttpServerTracingHandler.class));
     inOrder.verify(pipeline, times(1)).addLast(eq("application codec"), isA(XioNoOpHandler.class));
     inOrder.verify(pipeline, times(1)).addLast(eq("application router"), isA(XioNoOpHandler.class));
+    inOrder
+        .verify(pipeline, times(1))
+        .addLast(eq("authentication handler"), isA(XioNoOpHandler.class));
     inOrder
         .verify(pipeline, times(1))
         .addLast(eq("l7DeterministicRuleEngine"), isA(Http1Filter.class));
