@@ -16,6 +16,31 @@ import lombok.Getter;
 
 public class ApplicationBootstrap {
 
+  // TODO(CK): Make this configurable
+  /** ApplicationRunner knows how to stop a running Application */
+  public static class ApplicationRunner {
+    private final Application app;
+
+    ApplicationRunner(Application app) {
+      this.app = app;
+    }
+
+    public void start() {
+      Runtime.getRuntime()
+          .addShutdownHook(
+              new Thread() {
+                @Override
+                public void run() {
+                  stop();
+                }
+              });
+    }
+
+    public void stop() {
+      app.close();
+    }
+  }
+
   @Getter private final ApplicationConfig config;
 
   private final ApplicationState state;
@@ -30,6 +55,11 @@ public class ApplicationBootstrap {
   public ApplicationBootstrap(ApplicationConfig config) {
     this.config = config;
     this.state = new ApplicationState(config);
+  }
+
+  public ApplicationBootstrap(ApplicationState state) {
+    this.config = state.config();
+    this.state = state;
   }
 
   public ApplicationBootstrap(Config config) {
@@ -62,6 +92,8 @@ public class ApplicationBootstrap {
     state.getZkClient().start();
     Configurator configurator = Configurator.build(config.settings());
     configurator.start();
-    return new Application(config, servers, state, configurator);
+    Application application = new Application(config, servers, state, configurator);
+    new ApplicationRunner(application).start();
+    return application;
   }
 }

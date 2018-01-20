@@ -12,6 +12,7 @@ import com.xjeffrose.xio.fixtures.JulBridge;
 import com.xjeffrose.xio.fixtures.OkHttpUnsafe;
 import com.xjeffrose.xio.pipeline.SmartHttpPipeline;
 import io.netty.channel.ChannelHandler;
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.EventLoopGroup;
 import java.util.Arrays;
 import java.util.List;
@@ -49,8 +50,16 @@ public class ReverseProxyFunctionalTest extends Assert {
   Application reverseProxy;
   MockWebServer server;
 
-  static Application setupReverseProxy(
-      ApplicationConfig appConfig, ProxyConfig proxyConfig, ClientConfig clientConfig) {
+  static Application setupReverseProxy(ApplicationConfig appConfig, ProxyRouteConfig proxyConfig) {
+    ClientFactory factory =
+        new ClientFactory() {
+          @Override
+          public Client createClient(ChannelHandlerContext ctx, ClientConfig config) {
+            ClientState clientState = new ClientState(channelConfig(ctx), config, () -> null);
+            return new Client(clientState, () -> new ProxyBackendHandler(ctx));
+          }
+        };
+
     return new ApplicationBootstrap(appConfig)
         .addServer(
             "main",
@@ -60,7 +69,7 @@ public class ReverseProxyFunctionalTest extends Assert {
                       @Override
                       public ChannelHandler getApplicationRouter() {
                         return new PipelineRouter(
-                            ImmutableMap.of(), new ProxyHandler(clientConfig, proxyConfig));
+                            ImmutableMap.of(), new ProxyHandler(factory, proxyConfig));
                       }
                     }))
         .build();
@@ -97,11 +106,14 @@ public class ReverseProxyFunctionalTest extends Assert {
 
     String front = h2Front ? "h2" : "h1";
     appConfig = ApplicationConfig.fromConfig("xio." + front + "ReverseProxy", config);
-    ProxyConfig proxyConfig = ProxyConfig.parse("https://127.0.0.1:" + port + "/hello");
+    // TODO(CK): this creates global state across tests we should do something smarter
+    System.setProperty("xio.baseClient.remotePort", Integer.toString(server.getPort()));
+    System.setProperty("xio.testProxyRoute.proxyPath", "/hello/");
+    ConfigFactory.invalidateCaches();
+    Config root = ConfigFactory.load();
+    ProxyRouteConfig proxyConfig = new ProxyRouteConfig(root.getConfig("xio.testProxyRoute"));
 
-    ClientConfig clientConfig =
-        ClientConfig.fromConfig("xio." + front + "ReverseProxy.clients.main", ConfigFactory.load());
-    reverseProxy = setupReverseProxy(appConfig, proxyConfig, clientConfig);
+    reverseProxy = setupReverseProxy(appConfig, proxyConfig);
   }
 
   void setupClient(boolean h2) throws Exception {
@@ -133,9 +145,13 @@ public class ReverseProxyFunctionalTest extends Assert {
     return reverseProxy.instrumentation("main").boundAddress().getPort();
   }
 
-  String url(int port) {
+  String url(int port, boolean sanity) {
     StringBuilder path =
-        new StringBuilder("https://").append("127.0.0.1").append(":").append(port).append("/hello");
+        new StringBuilder("https://").append("127.0.0.1").append(":").append(port).append("/");
+    if (sanity) {
+      path.append("hello/");
+    }
+
     return path.toString();
   }
 
@@ -143,19 +159,19 @@ public class ReverseProxyFunctionalTest extends Assert {
     return new MockResponse().setBody("hello, world").setSocketPolicy(SocketPolicy.KEEP_OPEN);
   }
 
-  void get(int port) throws Exception {
-    String url = url(port);
+  void get(int port, boolean sanity) throws Exception {
+    String url = url(port, sanity);
     Request request = new Request.Builder().url(url).build();
 
     server.enqueue(buildResponse());
     Response response = client.newCall(request).execute();
 
     RecordedRequest servedRequest = server.takeRequest();
-    assertEquals("/hello", servedRequest.getRequestUrl().encodedPath());
+    assertEquals("/hello/", servedRequest.getRequestUrl().encodedPath());
   }
 
-  void post(int port) throws Exception {
-    String url = url(port);
+  void post(int port, boolean sanity) throws Exception {
+    String url = url(port, sanity);
     MediaType mediaType = MediaType.parse("text/plain");
     RequestBody body = RequestBody.create(mediaType, "this is the post body");
     Request request = new Request.Builder().url(url).post(body).build();
@@ -164,7 +180,7 @@ public class ReverseProxyFunctionalTest extends Assert {
     Response response = client.newCall(request).execute();
 
     RecordedRequest servedRequest = server.takeRequest();
-    assertEquals("/hello", servedRequest.getRequestUrl().encodedPath());
+    assertEquals("/hello/", servedRequest.getRequestUrl().encodedPath());
     assertEquals("this is the post body", servedRequest.getBody().readUtf8());
   }
 
@@ -173,7 +189,7 @@ public class ReverseProxyFunctionalTest extends Assert {
     setupClient(false);
     setupBack(false);
 
-    get(server.getPort());
+    get(server.getPort(), true);
   }
 
   @Test
@@ -181,7 +197,7 @@ public class ReverseProxyFunctionalTest extends Assert {
     setupClient(false);
     setupBack(false);
 
-    post(server.getPort());
+    post(server.getPort(), true);
   }
 
   @Test
@@ -189,7 +205,7 @@ public class ReverseProxyFunctionalTest extends Assert {
     setupClient(true);
     setupBack(true);
 
-    get(server.getPort());
+    get(server.getPort(), true);
   }
 
   @Test
@@ -197,7 +213,7 @@ public class ReverseProxyFunctionalTest extends Assert {
     setupClient(true);
     setupBack(true);
 
-    post(server.getPort());
+    post(server.getPort(), true);
   }
 
   @Test
@@ -205,7 +221,7 @@ public class ReverseProxyFunctionalTest extends Assert {
     setupClient(true);
     setupFrontBack(true, false);
 
-    get(port());
+    get(port(), false);
   }
 
   @Test
@@ -213,7 +229,7 @@ public class ReverseProxyFunctionalTest extends Assert {
     setupClient(true);
     setupFrontBack(true, false);
 
-    post(port());
+    post(port(), false);
   }
 
   @Test
@@ -221,7 +237,7 @@ public class ReverseProxyFunctionalTest extends Assert {
     setupClient(false);
     setupFrontBack(false, true);
 
-    get(port());
+    get(port(), false);
   }
 
   @Test
@@ -229,6 +245,6 @@ public class ReverseProxyFunctionalTest extends Assert {
     setupClient(false);
     setupFrontBack(false, true);
 
-    post(port());
+    post(port(), false);
   }
 }
