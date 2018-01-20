@@ -1,17 +1,28 @@
 package com.xjeffrose.xio.application;
 
+import com.xjeffrose.xio.bootstrap.ChannelConfiguration;
+import com.xjeffrose.xio.bootstrap.ClientChannelConfiguration;
 import com.xjeffrose.xio.bootstrap.ServerChannelConfiguration;
+import com.xjeffrose.xio.client.ClientConfig;
 import com.xjeffrose.xio.core.ZkClient;
 import com.xjeffrose.xio.filter.Http1FilterConfig;
 import com.xjeffrose.xio.filter.IpFilterConfig;
+import com.xjeffrose.xio.http.ClientState;
 import com.xjeffrose.xio.http.DefaultRouter;
 import com.xjeffrose.xio.http.Router;
 import com.xjeffrose.xio.tracing.XioTracing;
+import io.netty.channel.ChannelHandler;
+import io.netty.channel.EventLoopGroup;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 
 public class ApplicationState {
+
+  @Accessors(fluent = true)
+  @Getter
+  private final ApplicationConfig config;
 
   @Getter private final ZkClient zkClient;
 
@@ -30,8 +41,9 @@ public class ApplicationState {
   private final AtomicReference<Router> router;
 
   public ApplicationState(ApplicationConfig config) {
-    channelConfiguration = config.serverChannelConfig();
+    this.config = config;
     zkClient = config.zookeeperClient();
+    channelConfiguration = config.serverChannelConfig();
     tracing = new XioTracing(config);
 
     ipFilterConfig = new AtomicReference<>(new IpFilterConfig());
@@ -46,6 +58,10 @@ public class ApplicationState {
     // proceeding.
     // It is expected that dynamic configuration service will update this as needed.
     router = new AtomicReference<>(new DefaultRouter());
+  }
+
+  public EventLoopGroup workerGroup() {
+    return channelConfiguration.workerGroup();
   }
 
   public IpFilterConfig getIpFilterConfig() {
@@ -70,5 +86,18 @@ public class ApplicationState {
 
   public void setRouter(Router router) {
     this.router.set(router);
+  }
+
+  public ClientState createClientState(
+      ClientChannelConfiguration channelConfig, ClientConfig config) {
+
+    Supplier<ChannelHandler> tracingHandler =
+        () -> tracing().newClientHandler(config.isTlsEnabled());
+
+    return new ClientState(channelConfig, config, tracingHandler);
+  }
+
+  public ClientState createClientState(ClientConfig config) {
+    return createClientState(ChannelConfiguration.clientConfig(workerGroup()), config);
   }
 }

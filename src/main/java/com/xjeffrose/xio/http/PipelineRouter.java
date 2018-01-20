@@ -14,6 +14,10 @@ public class PipelineRouter extends SimpleChannelInboundHandler<Request> {
     requestHandlers = new PathToRequestHandler(routes, defaultHandler);
   }
 
+  public PipelineRouter(ImmutableMap<Route, PipelineRequestHandler> routes) {
+    this.requestHandlers = new PathToRequestHandler(routes);
+  }
+
   public PipelineRouter(PathToRequestHandler requestHandlers) {
     this.requestHandlers = requestHandlers;
   }

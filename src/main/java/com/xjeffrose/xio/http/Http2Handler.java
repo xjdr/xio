@@ -102,7 +102,7 @@ public class Http2Handler extends Http2ConnectionHandler {
         Http2Headers headers = (Http2Headers) request.payload;
         currentStreamId = connection().local().incrementAndGetNextStreamId();
         setCurrentStreamId(ctx, currentStreamId);
-        writeHeaders(ctx, headers, false, promise);
+        writeHeaders(ctx, headers, request.eos, promise);
         return;
       }
 

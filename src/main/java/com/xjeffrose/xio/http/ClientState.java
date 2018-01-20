@@ -8,6 +8,7 @@ import io.netty.handler.ssl.SslContext;
 import java.net.InetSocketAddress;
 import java.util.function.Supplier;
 
+// TODO(CK): This needs to replace the ClientState in client
 public class ClientState {
 
   public final ClientChannelConfiguration channelConfig;
@@ -44,5 +45,16 @@ public class ClientState {
       boolean enableTls,
       Supplier<ChannelHandler> tracingHandler) {
     this(channelConfig, config, remote, sslContext(enableTls, config), tracingHandler);
+  }
+
+  public ClientState(
+      ClientChannelConfiguration channelConfig,
+      ClientConfig config,
+      Supplier<ChannelHandler> tracingHandler) {
+    this.channelConfig = channelConfig;
+    this.config = config;
+    this.remote = config.remote();
+    this.sslContext = sslContext(config.isTlsEnabled(), config);
+    this.tracingHandler = tracingHandler;
   }
 }

@@ -4,16 +4,34 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.xjeffrose.xio.SSL.TlsConfig;
 import io.netty.channel.ChannelOption;
+import java.net.InetSocketAddress;
 import java.util.Map;
 import lombok.Getter;
+import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@Accessors(fluent = true)
+@Getter
 public class ClientConfig {
-  @Getter private final Map<ChannelOption<Object>, Object> bootstrapOptions;
-  @Getter private final String name;
-  @Getter private final TlsConfig tls;
-  @Getter private final boolean messageLoggerEnabled;
+  private final Map<ChannelOption<Object>, Object> bootstrapOptions;
+  private final String name;
+  private final TlsConfig tls;
+  private final boolean messageLoggerEnabled;
+  private final InetSocketAddress local;
+  private final InetSocketAddress remote;
+
+  public String getName() {
+    return name;
+  }
+
+  public TlsConfig getTls() {
+    return tls;
+  }
+
+  public boolean isMessageLoggerEnabled() {
+    return messageLoggerEnabled;
+  }
 
   public ClientConfig(Config config) {
     bootstrapOptions = null;
@@ -23,6 +41,17 @@ public class ClientConfig {
       log.warn("Client '{}' has useSsl set to false!", name);
     }
     messageLoggerEnabled = config.getBoolean("settings.messageLoggerEnabled");
+
+    if (config.getString("localIp").isEmpty()) {
+      local = null;
+    } else {
+      local = new InetSocketAddress(config.getString("localIp"), config.getInt("localPort"));
+    }
+    remote = new InetSocketAddress(config.getString("remoteIp"), config.getInt("remotePort"));
+  }
+
+  public boolean isTlsEnabled() {
+    return tls.isUseSsl();
   }
 
   public static ClientConfig fromConfig(String key, Config config) {

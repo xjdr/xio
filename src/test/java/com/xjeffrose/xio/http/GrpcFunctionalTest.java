@@ -2,6 +2,8 @@ package com.xjeffrose.xio.http;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.Uninterruptibles;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 import com.xjeffrose.xio.SSL.SslContextFactory;
 import com.xjeffrose.xio.SSL.TlsConfig;
 import com.xjeffrose.xio.bootstrap.XioServerBootstrap;
@@ -356,9 +358,23 @@ public class GrpcFunctionalTest extends Assert {
   @Test
   public void testGrpcProxyRequest() throws Exception {
     HelloWorldServer server = HelloWorldServer.run();
+    // TODO(CK): this creates global state across tests we should do something smarter
+    System.setProperty("xio.baseClient.remotePort", Integer.toString(server.getPort()));
+    System.setProperty("xio.testProxyRoute.proxyPath", "/");
+    ConfigFactory.invalidateCaches();
+    Config root = ConfigFactory.load();
 
     ClientConfig config = ClientConfig.fromConfig("xio.h2TestClient");
-    ProxyConfig proxyConfig = ProxyConfig.parse("https://127.0.0.1:" + server.getPort() + "/");
+    // ProxyConfig proxyConfig = ProxyConfig.parse("https://127.0.0.1:" + server.getPort() + "/");
+    ProxyRouteConfig proxyConfig = new ProxyRouteConfig(root.getConfig("xio.testProxyRoute"));
+    ClientFactory factory =
+        new ClientFactory() {
+          @Override
+          public Client createClient(ChannelHandlerContext ctx, ClientConfig config) {
+            ClientState clientState = new ClientState(channelConfig(ctx), config, () -> null);
+            return new Client(clientState, () -> new ProxyBackendHandler(ctx));
+          }
+        };
     XioServerBootstrap bootstrap =
         XioServerBootstrap.fromConfig("xio.testGrpcServer")
             .addToPipeline(
@@ -366,7 +382,8 @@ public class GrpcFunctionalTest extends Assert {
                   @Override
                   public ChannelHandler getApplicationRouter() {
                     return new PipelineRouter(
-                        ImmutableMap.of(), new ProxyHandler(config, proxyConfig));
+                        ImmutableMap.of(
+                            Route.build("/:*path"), new ProxyHandler(factory, proxyConfig)));
                   }
                 });
 

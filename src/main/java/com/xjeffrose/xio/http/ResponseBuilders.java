@@ -1,6 +1,7 @@
 package com.xjeffrose.xio.http;
 
 import com.xjeffrose.xio.core.internal.UnstableApi;
+import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.HttpResponseStatus;
 
 @UnstableApi
@@ -13,6 +14,7 @@ public class ResponseBuilders {
 
   public static Response newNotFound() {
     return defaultHeaders(DefaultFullResponse.builder())
+        .body(Unpooled.EMPTY_BUFFER)
         .status(HttpResponseStatus.NOT_FOUND)
         .build();
   }
