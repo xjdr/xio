@@ -360,7 +360,7 @@
         <version>1.2</version>
         <configuration>
           <id>bintray-xio-deploy</id>
-          <url>https://api.bintray.com/maven/nordstromoss/oss_maven/xio/maven</url>
+          <url>https://api.bintray.com/maven/nordstromoss/oss_maven/xio</url>
         </configuration>
         <executions>
           <execution>
