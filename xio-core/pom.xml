@@ -3,9 +3,9 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>org.sonatype.oss</groupId>
-    <artifactId>oss-parent</artifactId>
-    <version>9</version>
+    <groupId>com.xjeffrose</groupId>
+    <artifactId>xio-parent</artifactId>
+    <version>0.13.1-SNAPSHOT</version>
   </parent>
 
   <groupId>com.xjeffrose</groupId>
