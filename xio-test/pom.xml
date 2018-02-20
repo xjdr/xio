@@ -6,12 +6,12 @@
     <groupId>org.sonatype.oss</groupId>
     <artifactId>oss-parent</artifactId>
     <version>9</version>
-    <relativePath/>
+    <relativePath />
   </parent>
 
   <groupId>com.xjeffrose</groupId>
   <artifactId>xio-test</artifactId>
-  <version>0.13.0-SNAPSHOT</version>
+  <version>0.13.0</version>
   <packaging>jar</packaging>
   <name>xio-test</name>
   <description>Testing package for xio</description>
@@ -31,7 +31,7 @@
     <url>https://github.com/xjdr/xio/</url>
     <connection>scm:git:https://github.com/xjdr/xio.git</connection>
     <developerConnection>scm:git:git@github.com:xjdr/xio.git</developerConnection>
-    <tag>HEAD</tag>
+    <tag>v0.13.0</tag>
   </scm>
 
   <issueManagement>
