@@ -19,6 +19,12 @@ import okhttp3.OkHttpClient;
 import okhttp3.Protocol;
 import okhttp3.mockwebserver.MockWebServer;
 
+/**
+ * Create okhttp clients/servers using an unsafe trust manager for testing purposes.
+ *
+ * <p><strong>NOTE:</strong> Never use the objects created by this class in production. They are
+ * purely for testing purposes, and thus very insecure.
+ */
 public class OkHttpUnsafe {
 
   public static KeyManager[] getKeyManagers(
