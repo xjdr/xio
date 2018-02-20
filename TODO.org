@@ -50,8 +50,18 @@
    - https://stackoverflow.com/questions/38143744/how-to-make-maven-build-goal-site-fail-on-javadoc-warnings
    - https://www.sonarqube.org/
 
+** Application layer rate limiting
+
 ** separate integration tests
    - https://dzone.com/articles/separating-code-coverage-maven
+
+** use jesse kinkead's java precommit hook
+   - https://gist.github.com/jkinkead/042c8fd7bc71da316bbf77e67c12ade7/
+   - https://coderwall.com/p/jp7d5q/create-a-global-git-commit-hook
+
+** script this
+   - http://maven.apache.org/maven-release/maven-release-plugin/examples/prepare-release.html
+   - http://maven.apache.org/maven-release/maven-release-plugin/examples/non-interactive-release.html
 
 ** config update handler
    - sits in pipeline
