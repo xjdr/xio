@@ -1,0 +1,65 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                      https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.sonatype.oss</groupId>
+    <artifactId>oss-parent</artifactId>
+    <version>9</version>
+  </parent>
+
+  <groupId>com.xjeffrose</groupId>
+  <artifactId>xio-parent</artifactId>
+  <version>0.13.1-SNAPSHOT</version>
+  <packaging>pom</packaging>
+  <name>xio-parent</name>
+  <description>High performance Multithreaded Async I/O for Java 8</description>
+  <url>https://github.com/xjdr/xio.git</url>
+  <scm>
+    <url>https://github.com/xjdr/xio/</url>
+    <connection>scm:git:https://github.com/xjdr/xio.git</connection>
+    <developerConnection>scm:git:git@github.com:xjdr/xio.git</developerConnection>
+    <tag>HEAD</tag>
+  </scm>
+
+  <issueManagement>
+    <system>GitHub Issues</system>
+    <url>https://github.com/xjdr/xio/issues</url>
+  </issueManagement>
+
+  <licenses>
+    <license>
+      <name>Apache 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+    </license>
+  </licenses>
+
+  <distributionManagement>
+    <snapshotRepository>
+      <id>ossrh</id>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+    </snapshotRepository>
+    <repository>
+      <id>ossrh</id>
+      <url>https://oss.sonatype.org/httpService/local/staging/deploy/maven2/</url>
+    </repository>
+  </distributionManagement>
+
+  <pluginRepositories>
+    <pluginRepository>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+      <id>bintray-devexperts-Maven</id>
+      <name>bintray-plugins</name>
+      <url>https://dl.bintray.com/devexperts/Maven</url>
+    </pluginRepository>
+  </pluginRepositories>
+
+  <modules>
+    <module>xio-core</module>
+    <module>xio-test</module>
+  </modules>
+</project>
