@@ -683,6 +683,27 @@
           <url>packagecloud+https://packagecloud.io/${env.PACKAGECLOUD_USER}/xio</url>
         </snapshotRepository>
       </distributionManagement>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>com.devexperts.bintray</groupId>
+            <artifactId>bintray-maven-plugin</artifactId>
+            <version>1.2</version>
+            <configuration>
+              <skip>true</skip>
+            </configuration>
+            <executions>
+              <execution>
+                <id>bintray-deploy</id>
+                <goals>
+                  <goal>deploy</goal>
+                  <goal>publish</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
     <profile>
       <id>alpn-when-jdk8</id>

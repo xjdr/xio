@@ -23,4 +23,4 @@ deployment:
     branch: master
     commands:
       - mvn -N io.takari:maven:wrapper
-      - ./mvnw -P packagecloud -s .circleci.settings.xml -DskipTests deploy
+      - ./mvnw -pl xio-core -P packagecloud -s .circleci.settings.xml -DskipTests deploy
