@@ -5,10 +5,6 @@ import io.netty.channel.ChannelHandlerContext;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 
-import static com.xjeffrose.xio.http.ProxyRouteConfig.ProxyHostPolicy.UseConfigValue;
-import static com.xjeffrose.xio.http.ProxyRouteConfig.ProxyHostPolicy.UseRemoteAddress;
-import static com.xjeffrose.xio.http.ProxyRouteConfig.ProxyHostPolicy.UseRequestHeader;
-
 @Slf4j
 public class ProxyHandler implements PipelineRequestHandler {
 
