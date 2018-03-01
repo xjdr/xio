@@ -8,8 +8,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ProxyHandler implements PipelineRequestHandler {
 
-  private final ClientFactory factory;
-  private final ProxyRouteConfig config;
+  protected final ClientFactory factory;
+  protected final ProxyRouteConfig config;
 
   public ProxyHandler(ClientFactory factory, ProxyRouteConfig config) {
     this.factory = factory;
