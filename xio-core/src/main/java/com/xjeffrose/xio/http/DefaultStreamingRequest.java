@@ -62,7 +62,7 @@ public abstract class DefaultStreamingRequest implements StreamingRequest {
     }
   }
 
-  static Builder builder() {
+  public static Builder builder() {
     return new AutoValue_DefaultStreamingRequest.Builder().streamId(-1);
   }
 }

@@ -36,7 +36,7 @@ public abstract class DefaultFullResponse implements FullResponse {
     public abstract DefaultFullResponse build();
   }
 
-  static Builder builder() {
+  public static Builder builder() {
     return new AutoValue_DefaultFullResponse.Builder();
   }
 }

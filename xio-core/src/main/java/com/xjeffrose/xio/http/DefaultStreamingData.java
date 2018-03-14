@@ -26,7 +26,7 @@ public abstract class DefaultStreamingData implements StreamingData {
     public abstract DefaultStreamingData build();
   }
 
-  static Builder builder() {
+  public static Builder builder() {
     return new AutoValue_DefaultStreamingData.Builder().trailingHeaders(new DefaultHeaders());
   }
 }

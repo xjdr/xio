@@ -29,7 +29,7 @@ public abstract class DefaultStreamingResponse implements StreamingResponse {
     public abstract DefaultStreamingResponse build();
   }
 
-  static Builder builder() {
+  public static Builder builder() {
     return new AutoValue_DefaultStreamingResponse.Builder();
   }
 }

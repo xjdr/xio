@@ -10,7 +10,7 @@ public class DefaultHeaders
     extends io.netty.handler.codec.DefaultHeaders<CharSequence, CharSequence, Headers>
     implements Headers {
 
-  DefaultHeaders() {
+  public DefaultHeaders() {
     super(
         CASE_INSENSITIVE_HASHER,
         CharSequenceValueConverter.INSTANCE,

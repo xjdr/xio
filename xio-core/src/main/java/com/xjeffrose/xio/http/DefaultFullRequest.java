@@ -67,7 +67,7 @@ public abstract class DefaultFullRequest implements FullRequest {
     }
   }
 
-  static Builder builder() {
+  public static Builder builder() {
     return new AutoValue_DefaultFullRequest.Builder().streamId(-1);
   }
 }
