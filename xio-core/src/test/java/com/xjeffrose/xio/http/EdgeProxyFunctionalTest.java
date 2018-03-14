@@ -76,7 +76,6 @@ public class EdgeProxyFunctionalTest extends Assert {
     public ImmutableMap<String, RouteState> routes() {
       return (ImmutableMap<String, RouteState>) routes.get();
     }
-
   }
 
   public class EdgeProxyConfig extends ApplicationConfig {
@@ -128,7 +127,6 @@ public class EdgeProxyFunctionalTest extends Assert {
                           (ProxyRouteConfig c) ->
                               new ProxyRouteState(this, c, new ProxyHandler(clientFactory, c)))
                       .collect(toLinkedMap(s -> s.path(), s -> s))));
-
     }
 
     public ImmutableMap<String, RouteState> routes() {
