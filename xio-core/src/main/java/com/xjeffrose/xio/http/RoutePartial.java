@@ -1,22 +1,26 @@
 package com.xjeffrose.xio.http;
 
 import io.netty.channel.ChannelHandlerContext;
+import lombok.Getter;
 import lombok.ToString;
+import lombok.experimental.Accessors;
 
 @ToString
+@Accessors(fluent = true)
+@Getter
 public class RoutePartial {
 
-  protected final Request request;
-  protected final Route route;
-  protected final PipelineRequestHandler handler;
+  private final Request request;
+  private final String path;
+  private final RouteState route;
 
-  RoutePartial(Request request, Route route, PipelineRequestHandler handler) {
+  RoutePartial(Request request, String path, RouteState route) {
     this.request = request;
+    this.path = path;
     this.route = route;
-    this.handler = handler;
   }
 
   void apply(ChannelHandlerContext ctx) {
-    handler.handle(ctx, request, route);
+    route.handler().handle(ctx, request, route);
   }
 }

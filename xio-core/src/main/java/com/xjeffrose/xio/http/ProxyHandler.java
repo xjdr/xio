@@ -34,9 +34,10 @@ public class ProxyHandler implements PipelineRequestHandler {
     }
   }
 
-  public String buildProxyPath(Request request, Route route) {
+  public String buildProxyPath(Request request, RouteState state) {
     Optional<String> pathSuffix =
-        route
+        state
+            .route()
             .groups(request.path()) // apply the regex
             .entrySet()
             .stream() // stream the entry set of matches
@@ -78,7 +79,11 @@ public class ProxyHandler implements PipelineRequestHandler {
     return result;
   }
 
-  public void handle(ChannelHandlerContext ctx, Request request, Route route) {
+  private void appendXForwardedFor(Request request) {
+    // TODO(CK): update request headers
+  }
+
+  public void handle(ChannelHandlerContext ctx, Request request, RouteState route) {
 
     /*
     XioRequest request =
@@ -101,6 +106,8 @@ public class ProxyHandler implements PipelineRequestHandler {
 
     String proxyHost = buildProxyHost(request, clientConfig);
     Request proxyRequest = buildRequest(request, proxyHost, buildProxyPath(request, route));
+
+    appendXForwardedFor(proxyRequest);
 
     factory.getClient(ctx, clientConfig).write(proxyRequest);
   }

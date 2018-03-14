@@ -7,7 +7,7 @@ import com.xjeffrose.xio.http.Http1ClientCodec;
 import com.xjeffrose.xio.http.PipelineRequestHandler;
 import com.xjeffrose.xio.http.RawBackendHandler;
 import com.xjeffrose.xio.http.Request;
-import com.xjeffrose.xio.http.Route;
+import com.xjeffrose.xio.http.RouteState;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -62,7 +62,7 @@ public class ProxyPipelineRequestHandler implements PipelineRequestHandler {
     return b.connect(remote);
   }
 
-  public void handle(ChannelHandlerContext ctx, Request request, Route route) {
+  public void handle(ChannelHandlerContext ctx, Request request, RouteState route) {
     if (channel == null) {
       // queue writes
       writes.add(request);

@@ -6,10 +6,14 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.xjeffrose.xio.SSL.SslContextFactory;
 import com.xjeffrose.xio.SSL.TlsConfig;
+import com.xjeffrose.xio.application.ApplicationConfig;
+import com.xjeffrose.xio.application.ApplicationState;
 import com.xjeffrose.xio.bootstrap.XioServerBootstrap;
 import com.xjeffrose.xio.client.ClientConfig;
 import com.xjeffrose.xio.pipeline.SmartHttpPipeline;
 import com.xjeffrose.xio.server.XioServer;
+import com.xjeffrose.xio.server.XioServerConfig;
+import com.xjeffrose.xio.server.XioServerState;
 import helloworld.*;
 import io.grpc.ManagedChannel;
 import io.grpc.Server;
@@ -201,7 +205,7 @@ public class GrpcFunctionalTest extends Assert {
                         new PipelineRequestHandler() {
                           @Override
                           public void handle(
-                              ChannelHandlerContext ctx, Request request, Route route) {
+                              ChannelHandlerContext ctx, Request request, RouteState route) {
                             if (request instanceof StreamingRequestData) {
                               StreamingRequestData streaming = (StreamingRequestData) request;
 
@@ -375,15 +379,22 @@ public class GrpcFunctionalTest extends Assert {
             return new Client(clientState, () -> new ProxyBackendHandler(ctx));
           }
         };
+
+    ApplicationState appState =
+        new ApplicationState(ApplicationConfig.fromConfig("xio.defaultApplication"));
+    XioServerConfig serverConfig = XioServerConfig.fromConfig("xio.testGrpcServer");
+
     XioServerBootstrap bootstrap =
-        XioServerBootstrap.fromConfig("xio.testGrpcServer")
+        new XioServerBootstrap(appState, serverConfig, new XioServerState(serverConfig))
             .addToPipeline(
                 new SmartHttpPipeline() {
                   @Override
                   public ChannelHandler getApplicationRouter() {
                     return new PipelineRouter(
                         ImmutableMap.of(
-                            Route.build("/:*path"), new ProxyHandler(factory, proxyConfig)));
+                            "*",
+                            new ProxyRouteState(
+                                appState, proxyConfig, new ProxyHandler(factory, proxyConfig))));
                   }
                 });
 
