@@ -134,9 +134,9 @@ public class EdgeProxyFunctionalTest extends Assert {
                       .stream()
                       // for each ProxyRouteConfig create a ProxyRouteState
                       .map(
-                          (ProxyRouteConfig config) ->
+                          (ProxyRouteConfig prConfig) ->
                               new ProxyRouteState(
-                                  this, config, new ProxyHandler(clientFactory, config)))
+                                  this, prConfig, new ProxyHandler(clientFactory, prConfig)))
                       // collect the stream of ProxyRouteState into
                       // LinkedHashMap<String, ProxyRouteState> where the
                       // route path is the key and
