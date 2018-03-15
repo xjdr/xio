@@ -63,15 +63,15 @@
       <plugin>
         <groupId>com.coveo</groupId>
         <artifactId>fmt-maven-plugin</artifactId>
-        <version>2.3.0</version>
+        <version>2.1.0</version>
         <executions>
           <execution>
             <goals>
-                <goal>format</goal>
+              <goal>check</goal>
             </goals>
           </execution>
         </executions>
-      </plugin>
+      </plugin>      
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-deploy-plugin</artifactId>

@@ -9,26 +9,27 @@ import java.util.Map;
 // data structure and walking the tree looking for hits.
 public class PathToRequestHandler {
 
-  private final ImmutableMap<Route, PipelineRequestHandler> routes;
-  private final Map.Entry<Route, PipelineRequestHandler> defaultEntry;
+  private final ImmutableMap<String, RouteState> routes;
+  private final Map.Entry<String, RouteState> defaultEntry;
 
   public PathToRequestHandler(
-      ImmutableMap<Route, PipelineRequestHandler> routes, PipelineRequestHandler defaultHandler) {
+      ImmutableMap<String, RouteState> routes, PipelineRequestHandler defaultHandler) {
     this.routes = routes;
-    defaultEntry = new AbstractMap.SimpleEntry(Route.build("*"), defaultHandler);
+    RouteState defaultRoute = RouteState.defaultRoute(defaultHandler);
+    defaultEntry = new AbstractMap.SimpleEntry("*", defaultRoute);
   }
 
   public PathToRequestHandler(PipelineRequestHandler handler) {
     this(ImmutableMap.of(), handler);
   }
 
-  public PathToRequestHandler(ImmutableMap<Route, PipelineRequestHandler> routes) {
+  public PathToRequestHandler(ImmutableMap<String, RouteState> routes) {
     this(routes, new Status404RequestHandler());
   }
 
-  public Map.Entry<Route, PipelineRequestHandler> lookup(Request request) {
-    for (Map.Entry<Route, PipelineRequestHandler> entry : routes.entrySet()) {
-      Route route = entry.getKey();
+  public Map.Entry<String, RouteState> lookup(Request request) {
+    for (Map.Entry<String, RouteState> entry : routes.entrySet()) {
+      RouteState route = entry.getValue();
       if (route.matches(request.path())) {
         return entry;
       }
