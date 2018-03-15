@@ -89,7 +89,6 @@ public class ProxyHandler implements PipelineRequestHandler {
     }
 
     val remoteAddressComponents = rawRemoteAddress.toString().replace("/", "").split(":");
-
     if (remoteAddressComponents.length < 1) {
       return Optional.empty();
     }
