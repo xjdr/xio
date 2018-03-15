@@ -58,6 +58,7 @@ public class EdgeProxyFunctionalTest extends Assert {
       this.configs = configs;
     }
 
+    // Convenience method to get access to a stream of route configs
     public Stream<T> stream() {
       return configs.stream();
     }
@@ -92,7 +93,13 @@ public class EdgeProxyFunctionalTest extends Assert {
 
       routeConfigs =
           new RouteConfigs<>(
-              routes.stream().map(ProxyRouteConfig::new).collect(Collectors.toList()));
+              routes
+                  // iterate over a stream of Config
+                  .stream()
+                  // for each Config create a ProxyRouteConfig
+                  .map(ProxyRouteConfig::new)
+                  // collect the stream of ProxyRouteConfig into List<ProxyRouteConfig>
+                  .collect(Collectors.toList()));
       allPermissions = null;
     }
   }
@@ -108,8 +115,8 @@ public class EdgeProxyFunctionalTest extends Assert {
       return Collectors.toMap(
           keyMapper,
           valueMapper,
-          (u, v) -> {
-            throw new IllegalStateException(String.format("Duplicate key %s", u));
+          (key, ignored) -> {
+            throw new IllegalStateException(String.format("Duplicate key %s", key));
           },
           LinkedHashMap::new);
     }
@@ -119,14 +126,22 @@ public class EdgeProxyFunctionalTest extends Assert {
       clientFactory = new ProxyClientFactory(this);
       routeStates =
           new RouteStates<ProxyRouteState>(
+              // create an ImmutableMap from ...
               ImmutableMap.copyOf(
                   config
                       .routeConfigs
+                      // iterate over a stream of ProxyRouteConfig
                       .stream()
+                      // for each ProxyRouteConfig create a ProxyRouteState
                       .map(
-                          (ProxyRouteConfig c) ->
-                              new ProxyRouteState(this, c, new ProxyHandler(clientFactory, c)))
-                      .collect(toLinkedMap(s -> s.path(), s -> s))));
+                          (ProxyRouteConfig config) ->
+                              new ProxyRouteState(
+                                  this, config, new ProxyHandler(clientFactory, config)))
+                      // collect the stream of ProxyRouteState into
+                      // LinkedHashMap<String, ProxyRouteState> where the
+                      // route path is the key and
+                      // ProxyRouteState is the value
+                      .collect(toLinkedMap(state -> state.path(), state -> state))));
     }
 
     public ImmutableMap<String, RouteState> routes() {

@@ -29,7 +29,7 @@ public class RouteState {
 
   public static RouteState defaultRoute(PipelineRequestHandler handler) {
     RouteConfig config = new RouteConfig(ConfigFactory.load().getConfig("xio.defaultRoute"));
-    return new RouteState((c) -> Route.build("*"), config, handler);
+    return new RouteState((ignored) -> Route.build("*"), config, handler);
   }
 
   public boolean matches(String path) {

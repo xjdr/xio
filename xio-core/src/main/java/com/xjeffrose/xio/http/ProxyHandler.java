@@ -79,12 +79,15 @@ public class ProxyHandler implements PipelineRequestHandler {
     return result;
   }
 
-  private void appendXForwardedFor(Request request) {
+  private void appendXForwardedFor(ChannelHandlerContext ctx, Request request) {
     // TODO(CK): update request headers
   }
 
+  @Override
   public void handle(ChannelHandlerContext ctx, Request request, RouteState route) {
 
+    // TODO(CK): propagate any incoming tracing span to the outgoing request
+    // below is the old deprecated pattern for this.
     /*
     XioRequest request =
         HttpTracingState.hasSpan(ctx)
@@ -97,9 +100,11 @@ public class ProxyHandler implements PipelineRequestHandler {
     // 3) set the tracing span (if there is one)
 
     ClientConfig clientConfig = getClientConfig(request);
+    Client client = factory.getClient(ctx, clientConfig);
+
     if (!request.startOfStream()) {
       log.debug("not start of stream");
-      factory.getClient(ctx, clientConfig).write(request);
+      client.write(request);
       return;
     }
     log.debug("start of stream");
@@ -107,8 +112,8 @@ public class ProxyHandler implements PipelineRequestHandler {
     String proxyHost = buildProxyHost(request, clientConfig);
     Request proxyRequest = buildRequest(request, proxyHost, buildProxyPath(request, route));
 
-    appendXForwardedFor(proxyRequest);
+    appendXForwardedFor(ctx, proxyRequest);
 
-    factory.getClient(ctx, clientConfig).write(proxyRequest);
+    client.write(request);
   }
 }

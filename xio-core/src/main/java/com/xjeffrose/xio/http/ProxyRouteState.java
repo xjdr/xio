@@ -21,6 +21,9 @@ public class ProxyRouteState extends RouteState {
     return Route.build(config.path() + ":*path");
   }
 
+  // TODO(CK): This constructor is goofy and should be replaced with a factory method
+  // the new constructor should be ProxyRouteState(ProxyRouteConfig, ProxyHandler,
+  // List<ClientStates>)
   public ProxyRouteState(ApplicationState state, ProxyRouteConfig config, ProxyHandler handler) {
     super(ProxyRouteState::buildRoute, config, handler);
     clientStates = buildClientStates(state, config.clientConfigs());
