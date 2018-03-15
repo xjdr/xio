@@ -1,5 +1,6 @@
 package com.xjeffrose.xio.http;
 
+import com.typesafe.config.ConfigFactory;
 import java.util.function.Function;
 import lombok.Getter;
 import lombok.experimental.Accessors;
@@ -24,5 +25,18 @@ public class RouteState {
 
   public RouteState(RouteConfig config, PipelineRequestHandler handler) {
     this(RouteState::buildRoute, config, handler);
+  }
+
+  public static RouteState defaultRoute(PipelineRequestHandler handler) {
+    RouteConfig config = new RouteConfig(ConfigFactory.load().getConfig("xio.defaultRoute"));
+    return new RouteState((ignored) -> Route.build("*"), config, handler);
+  }
+
+  public boolean matches(String path) {
+    return route.matches(path);
+  }
+
+  public String path() {
+    return config.path();
   }
 }

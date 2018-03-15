@@ -6,7 +6,7 @@ import com.xjeffrose.xio.http.PipelineRequestHandler;
 import com.xjeffrose.xio.http.Request;
 import com.xjeffrose.xio.http.Response;
 import com.xjeffrose.xio.http.ResponseBuilders;
-import com.xjeffrose.xio.http.Route;
+import com.xjeffrose.xio.http.RouteState;
 import com.xjeffrose.xio.http.StreamingData;
 import com.xjeffrose.xio.http.StreamingRequestData;
 import io.netty.buffer.ByteBuf;
@@ -29,7 +29,7 @@ public class SamplePipelineRequestHandler implements PipelineRequestHandler {
     return Unpooled.copiedBuffer(buf.toString(), CharsetUtil.UTF_8);
   }
 
-  public void handle(ChannelHandlerContext ctx, Request request, Route route) {
+  public void handle(ChannelHandlerContext ctx, Request request, RouteState route) {
     buf.setLength(0);
     buf.append("WELCOME TO THE WILD WILD WEB SERVER\r\n");
     buf.append("===================================\r\n");

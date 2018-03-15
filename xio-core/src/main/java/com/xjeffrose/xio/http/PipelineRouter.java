@@ -10,11 +10,11 @@ public class PipelineRouter extends SimpleChannelInboundHandler<Request> {
   private final PathToRequestHandler requestHandlers;
 
   public PipelineRouter(
-      ImmutableMap<Route, PipelineRequestHandler> routes, PipelineRequestHandler defaultHandler) {
+      ImmutableMap<String, RouteState> routes, PipelineRequestHandler defaultHandler) {
     requestHandlers = new PathToRequestHandler(routes, defaultHandler);
   }
 
-  public PipelineRouter(ImmutableMap<Route, PipelineRequestHandler> routes) {
+  public PipelineRouter(ImmutableMap<String, RouteState> routes) {
     this.requestHandlers = new PathToRequestHandler(routes);
   }
 
@@ -24,7 +24,7 @@ public class PipelineRouter extends SimpleChannelInboundHandler<Request> {
 
   @Override
   protected void channelRead0(ChannelHandlerContext ctx, Request msg) {
-    Map.Entry<Route, PipelineRequestHandler> entry = requestHandlers.lookup(msg);
+    Map.Entry<String, RouteState> entry = requestHandlers.lookup(msg);
 
     ctx.fireChannelRead(new RoutePartial(msg, entry.getKey(), entry.getValue()));
   }

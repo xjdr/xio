@@ -1,6 +1,5 @@
 package com.xjeffrose.xio.http;
 
-import com.google.common.collect.ImmutableList;
 import com.xjeffrose.xio.client.ClientConfig;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.val;

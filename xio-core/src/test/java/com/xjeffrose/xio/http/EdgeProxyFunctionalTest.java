@@ -16,14 +16,15 @@ import com.xjeffrose.xio.fixtures.OkHttpUnsafe;
 import com.xjeffrose.xio.pipeline.SmartHttpPipeline;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
@@ -51,44 +52,30 @@ public class EdgeProxyFunctionalTest extends Assert {
   @Accessors(fluent = true)
   @Getter
   public class RouteConfigs<T extends RouteConfig> {
-    private final Function<Config, T> factory;
     private final List<T> configs;
 
-    private List<T> buildRouteConfigs(List<Config> configs) {
-      List<T> result = new ArrayList<>();
-      for (Config config : configs) {
-        result.add(factory.apply(config));
-      }
-      return result;
+    public RouteConfigs(List<T> configs) {
+      this.configs = configs;
     }
 
-    public RouteConfigs(Function<Config, T> factory, List<Config> configs) {
-      this.factory = factory;
-      this.configs = buildRouteConfigs(configs);
+    // Convenience method to get access to a stream of route configs
+    public Stream<T> stream() {
+      return configs.stream();
     }
   }
 
   @Accessors(fluent = true)
   @Getter
-  public class RouteStates<T extends RouteState, U extends RouteConfig> {
-    private final Function<U, T> factory;
-    private final List<T> states;
-    private final AtomicReference<ImmutableMap<Route, PipelineRequestHandler>> routes;
+  public class RouteStates<T extends RouteState> {
 
-    private List<T> buildRouteStates(List<U> configs) {
-      return configs.stream().map(factory).collect(Collectors.toList());
+    private final AtomicReference<ImmutableMap<String, T>> routes;
+
+    public RouteStates(ImmutableMap<String, T> routes) {
+      this.routes = new AtomicReference<>(routes);
     }
 
-    private ImmutableMap<Route, PipelineRequestHandler> buildRoutes(List<T> states) {
-      Map<Route, PipelineRequestHandler> map = new LinkedHashMap<>();
-      states.stream().forEachOrdered((RouteState t) -> map.put(t.route(), t.handler()));
-      return ImmutableMap.copyOf(map);
-    }
-
-    public RouteStates(Function<U, T> factory, RouteConfigs configs) {
-      this.factory = factory;
-      this.states = buildRouteStates(configs.configs());
-      routes = new AtomicReference<>(buildRoutes(states));
+    public ImmutableMap<String, RouteState> routes() {
+      return (ImmutableMap<String, RouteState>) routes.get();
     }
   }
 
@@ -103,29 +90,62 @@ public class EdgeProxyFunctionalTest extends Assert {
     public EdgeProxyConfig(Config config) {
       super(config);
       List<Config> routes = (List<Config>) config.getConfigList("routes");
+
       routeConfigs =
-          new RouteConfigs<ProxyRouteConfig>((Config c) -> new ProxyRouteConfig(c), routes);
+          new RouteConfigs<>(
+              routes
+                  // iterate over a stream of Config
+                  .stream()
+                  // for each Config create a ProxyRouteConfig
+                  .map(ProxyRouteConfig::new)
+                  // collect the stream of ProxyRouteConfig into List<ProxyRouteConfig>
+                  .collect(Collectors.toList()));
       allPermissions = null;
     }
   }
 
   public class EdgeProxyState extends ApplicationState {
 
-    private final RouteStates routeStates;
+    private final RouteStates<ProxyRouteState> routeStates;
     private final ProxyClientFactory clientFactory;
+
+    public <T, K, U> Collector<T, ?, Map<K, U>> toLinkedMap(
+        Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper) {
+
+      return Collectors.toMap(
+          keyMapper,
+          valueMapper,
+          (key, ignored) -> {
+            throw new IllegalStateException(String.format("Duplicate key %s", key));
+          },
+          LinkedHashMap::new);
+    }
 
     public EdgeProxyState(EdgeProxyConfig config) {
       super(config);
       clientFactory = new ProxyClientFactory(this);
       routeStates =
-          new RouteStates<ProxyRouteState, ProxyRouteConfig>(
-              (ProxyRouteConfig c) ->
-                  new ProxyRouteState(this, c, new ProxyHandler(clientFactory, c)),
-              config.routeConfigs);
+          new RouteStates<ProxyRouteState>(
+              // create an ImmutableMap from ...
+              ImmutableMap.copyOf(
+                  config
+                      .routeConfigs
+                      // iterate over a stream of ProxyRouteConfig
+                      .stream()
+                      // for each ProxyRouteConfig create a ProxyRouteState
+                      .map(
+                          (ProxyRouteConfig config) ->
+                              new ProxyRouteState(
+                                  this, config, new ProxyHandler(clientFactory, config)))
+                      // collect the stream of ProxyRouteState into
+                      // LinkedHashMap<String, ProxyRouteState> where the
+                      // route path is the key and
+                      // ProxyRouteState is the value
+                      .collect(toLinkedMap(state -> state.path(), state -> state))));
     }
 
-    public ImmutableMap<Route, PipelineRequestHandler> routes() {
-      return (ImmutableMap<Route, PipelineRequestHandler>) routeStates.routes().get();
+    public ImmutableMap<String, RouteState> routes() {
+      return routeStates.routes();
     }
   }
 
