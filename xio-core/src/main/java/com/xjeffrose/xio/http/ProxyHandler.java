@@ -2,11 +2,14 @@ package com.xjeffrose.xio.http;
 
 import com.xjeffrose.xio.client.ClientConfig;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.util.AsciiString;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 
 @Slf4j
 public class ProxyHandler implements PipelineRequestHandler {
+  private static final AsciiString X_FORWARDED_FOR = AsciiString.cached("x-forwarded-for");
 
   protected final ClientFactory factory;
   protected final ProxyRouteConfig config;
@@ -79,8 +82,37 @@ public class ProxyHandler implements PipelineRequestHandler {
     return result;
   }
 
+  private Optional<String> extractRemoteAddress(ChannelHandlerContext ctx) {
+    val rawRemoteAddress = ctx.channel().remoteAddress();
+    if (rawRemoteAddress == null) {
+      return Optional.empty();
+    }
+
+    val remoteAddressComponents = rawRemoteAddress.toString().replace("/", "").split(":");
+
+    if (remoteAddressComponents.length < 1) {
+      return Optional.empty();
+    }
+
+    return Optional.of(remoteAddressComponents[0]);
+  }
+
   private void appendXForwardedFor(ChannelHandlerContext ctx, Request request) {
     // TODO(CK): update request headers
+    val remoteAddress = extractRemoteAddress(ctx);
+    if (remoteAddress.isPresent()) {
+      // if there is rawXFF is valid then return that string with the remote address string
+      // appended,
+      // otherwise return the remote address string
+      val rawXFF = Optional.ofNullable(request.headers().get(X_FORWARDED_FOR));
+      val xForwardedForValue =
+          rawXFF
+              .map(CharSequence::toString)
+              .filter(value -> !value.isEmpty())
+              .map(value -> value + ", " + remoteAddress)
+              .orElse(String.valueOf(remoteAddress));
+      request.headers().set(X_FORWARDED_FOR, xForwardedForValue);
+    }
   }
 
   @Override

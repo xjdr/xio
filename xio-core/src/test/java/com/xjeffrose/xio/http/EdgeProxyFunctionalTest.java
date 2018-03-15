@@ -271,7 +271,7 @@ public class EdgeProxyFunctionalTest extends Assert {
 
   void get(String prefix, int port) throws Exception {
     String url = url(prefix, port);
-    Request request = new Request.Builder().url(url).build();
+    Request request = new Request.Builder().url(url).header("X-Forwarded-for", "werwerwe").build();
 
     server.enqueue(buildResponse());
     Response response = client.newCall(request).execute();
