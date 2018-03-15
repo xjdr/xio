@@ -3,10 +3,14 @@ package com.xjeffrose.xio.http;
 import com.xjeffrose.xio.client.ClientConfig;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.AsciiString;
+
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+
+import javax.annotation.Nullable;
 
 @Slf4j
 public class ProxyHandler implements PipelineRequestHandler {
@@ -85,12 +89,18 @@ public class ProxyHandler implements PipelineRequestHandler {
 
   @Nullable
   private String extractRemoteAddress(ChannelHandlerContext ctx) {
-    val rawRemoteAddress = ctx.channel().remoteAddress();
-    if (rawRemoteAddress == null) {
+    val socketAddress = ctx.channel().remoteAddress();
+    if(!(socketAddress instanceof InetSocketAddress)){
       return null;
     }
 
-    val remoteAddressComponents = rawRemoteAddress.toString().replace("/", "").split(":");
+    val remoteAddress = ((InetSocketAddress) socketAddress).getAddress();
+    if (remoteAddress == null || remoteAddress.getHostAddress() == null) {
+      return null;
+    }
+
+    val remoteHostAddress = remoteAddress.getHostAddress();
+    val remoteAddressComponents = remoteHostAddress.replace("/", "").split(":");
     if (remoteAddressComponents.length < 1) {
       return null;
     }
