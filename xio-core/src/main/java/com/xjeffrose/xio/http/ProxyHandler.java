@@ -4,6 +4,7 @@ import com.xjeffrose.xio.client.ClientConfig;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.AsciiString;
 import java.util.Optional;
+import javax.annotation.Nullable;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 
@@ -82,35 +83,31 @@ public class ProxyHandler implements PipelineRequestHandler {
     return result;
   }
 
-  private Optional<String> extractRemoteAddress(ChannelHandlerContext ctx) {
+  @Nullable
+  private String extractRemoteAddress(ChannelHandlerContext ctx) {
     val rawRemoteAddress = ctx.channel().remoteAddress();
     if (rawRemoteAddress == null) {
-      return Optional.empty();
+      return null;
     }
 
     val remoteAddressComponents = rawRemoteAddress.toString().replace("/", "").split(":");
     if (remoteAddressComponents.length < 1) {
-      return Optional.empty();
+      return null;
     }
 
-    return Optional.of(remoteAddressComponents[0]);
+    return remoteAddressComponents[0];
   }
 
   private void appendXForwardedFor(ChannelHandlerContext ctx, Request request) {
-    // TODO(CK): update request headers
     val remoteAddress = extractRemoteAddress(ctx);
-    if (remoteAddress.isPresent()) {
-      // if there is rawXFF is valid then return that string with the remote address string
-      // appended,
-      // otherwise return the remote address string
-      val rawXFF = Optional.ofNullable(request.headers().get(X_FORWARDED_FOR));
-      val xForwardedForValue =
-          rawXFF
-              .map(CharSequence::toString)
-              .filter(value -> !value.isEmpty())
-              .map(value -> value + ", " + remoteAddress)
-              .orElse(String.valueOf(remoteAddress));
-      request.headers().set(X_FORWARDED_FOR, xForwardedForValue);
+    if (remoteAddress != null) {
+      val rawXFF = request.headers().get(X_FORWARDED_FOR);
+      if (rawXFF == null || rawXFF.toString().trim().isEmpty()) {
+        request.headers().set(X_FORWARDED_FOR, remoteAddress);
+      } else {
+        val newXFF = rawXFF.toString().trim() + ", " + remoteAddress;
+        request.headers().set(X_FORWARDED_FOR, newXFF);
+      }
     }
   }
 
