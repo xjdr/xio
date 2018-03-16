@@ -23,20 +23,12 @@ public class SocketAddressHelper {
   }
 
   private static String computeAddress(InetSocketAddress inetSocketAddress) {
-    if (inetSocketAddress == null
-        || inetSocketAddress.getAddress() == null
-        || inetSocketAddress.getAddress().getHostAddress() == null) {
-      return null;
+    if (inetSocketAddress != null) {
+      val inetAddress = inetSocketAddress.getAddress();
+      if (inetAddress != null) {
+        return inetAddress.getHostAddress();
+      }
     }
-
-    val remoteInetAddress = inetSocketAddress.getAddress();
-    val remoteHostAddress = remoteInetAddress.getHostAddress();
-    val remoteAddressComponents = remoteHostAddress.trim().replace("/", "").split(":");
-
-    if (remoteAddressComponents.length < 1) {
-      return null;
-    }
-
-    return remoteAddressComponents[0];
+    return null;
   }
 }
