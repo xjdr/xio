@@ -91,12 +91,7 @@ public class ProxyHandler implements PipelineRequestHandler {
       return null;
     }
 
-    val remoteAddress = ((InetSocketAddress) socketAddress).getAddress();
-    if (remoteAddress == null || remoteAddress.getHostAddress() == null) {
-      return null;
-    }
-
-    val remoteHostAddress = remoteAddress.getHostAddress();
+    val remoteHostAddress = socketAddress.toString();
     val remoteAddressComponents = remoteHostAddress.replace("/", "").split(":");
     if (remoteAddressComponents.length < 1) {
       return null;
