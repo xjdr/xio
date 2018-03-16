@@ -1,6 +1,7 @@
 package com.xjeffrose.xio.http;
 
 import com.xjeffrose.xio.client.ClientConfig;
+import com.xjeffrose.xio.core.SocketAddressHelper;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.AsciiString;
 import java.net.InetSocketAddress;
@@ -84,24 +85,8 @@ public class ProxyHandler implements PipelineRequestHandler {
     return result;
   }
 
-  @Nullable
-  private String extractRemoteAddress(ChannelHandlerContext ctx) {
-    val socketAddress = ctx.channel().remoteAddress();
-    if (!(socketAddress instanceof InetSocketAddress)) {
-      return null;
-    }
-
-    val remoteHostAddress = socketAddress.toString();
-    val remoteAddressComponents = remoteHostAddress.replace("/", "").split(":");
-    if (remoteAddressComponents.length < 1) {
-      return null;
-    }
-
-    return remoteAddressComponents[0];
-  }
-
   private void appendXForwardedFor(ChannelHandlerContext ctx, Request request) {
-    val remoteAddress = extractRemoteAddress(ctx);
+    val remoteAddress = SocketAddressHelper.extractRemoteAddress(ctx.channel().remoteAddress());
     if (remoteAddress != null) {
       val rawXFF = request.headers().get(X_FORWARDED_FOR);
       if (rawXFF == null || rawXFF.toString().trim().isEmpty()) {
