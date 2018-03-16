@@ -14,13 +14,9 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 public class SocketAddressHelperTest extends Assert {
-
   @Mock private ServerSocketChannel serverSocketChannel;
-
   @Mock private SocketChannel socketChannel;
-
   @Mock private Channel channel;
-
   private SocketAddressHelper subject;
 
   @Before
