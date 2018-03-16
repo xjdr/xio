@@ -1,12 +1,16 @@
 package com.xjeffrose.xio.http;
 
 import com.xjeffrose.xio.client.ClientConfig;
+import com.xjeffrose.xio.core.SocketAddressHelper;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.util.AsciiString;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 
 @Slf4j
 public class ProxyHandler implements PipelineRequestHandler {
+  private static final AsciiString X_FORWARDED_FOR = AsciiString.cached("x-forwarded-for");
 
   protected final ClientFactory factory;
   protected final ProxyRouteConfig config;
@@ -80,7 +84,16 @@ public class ProxyHandler implements PipelineRequestHandler {
   }
 
   private void appendXForwardedFor(ChannelHandlerContext ctx, Request request) {
-    // TODO(CK): update request headers
+    val remoteAddress = SocketAddressHelper.extractRemoteAddress(ctx.channel());
+    if (remoteAddress != null) {
+      val rawXFF = request.headers().get(X_FORWARDED_FOR);
+      if (rawXFF == null || rawXFF.toString().trim().isEmpty()) {
+        request.headers().set(X_FORWARDED_FOR, remoteAddress);
+      } else {
+        val newXFF = rawXFF.toString().trim() + ", " + remoteAddress;
+        request.headers().set(X_FORWARDED_FOR, newXFF);
+      }
+    }
   }
 
   @Override
