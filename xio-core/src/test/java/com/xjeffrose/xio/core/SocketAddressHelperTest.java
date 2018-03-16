@@ -5,7 +5,6 @@ import static org.powermock.api.mockito.PowerMockito.when;
 import io.netty.channel.Channel;
 import io.netty.channel.socket.ServerSocketChannel;
 import io.netty.channel.socket.SocketChannel;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import lombok.val;
 import org.junit.Assert;
@@ -22,14 +21,17 @@ public class SocketAddressHelperTest extends Assert {
 
   @Mock private Channel channel;
 
+  private SocketAddressHelper subject;
+
   @Before
   public void setUp() throws Exception {
     MockitoAnnotations.initMocks(this);
+    subject = new SocketAddressHelper();
   }
 
   @Test
   public void testNonSocketOrSocketServerChannel() throws Exception {
-    val result = SocketAddressHelper.extractRemoteAddress(channel);
+    val result = subject.extractRemoteAddress(channel);
     assertTrue(result == null);
   }
 
@@ -37,7 +39,7 @@ public class SocketAddressHelperTest extends Assert {
   public void testWithoutInetSocketAddressSocketServerChannel() throws Exception {
     when(serverSocketChannel.remoteAddress()).thenReturn(null);
 
-    val result = SocketAddressHelper.extractRemoteAddress(serverSocketChannel);
+    val result = subject.extractRemoteAddress(serverSocketChannel);
     assertTrue(result == null);
   }
 
@@ -45,25 +47,26 @@ public class SocketAddressHelperTest extends Assert {
   public void testInetSocketAddressSocketChannel() throws Exception {
     when(socketChannel.remoteAddress()).thenReturn(null);
 
-    val result = SocketAddressHelper.extractRemoteAddress(socketChannel);
+    val result = subject.extractRemoteAddress(socketChannel);
     assertTrue(result == null);
   }
 
   @Test
   public void testValidAddressSocketServerChannel() throws Exception {
-    val inetSocketAddress = new InetSocketAddress(InetAddress.getLoopbackAddress(), 123);
+    val testAddress = "192.168.0.1";
+    val inetSocketAddress = new InetSocketAddress(testAddress, 123);
     when(serverSocketChannel.remoteAddress()).thenReturn(inetSocketAddress);
 
-    val result = SocketAddressHelper.extractRemoteAddress(serverSocketChannel);
-    assertTrue(result.equals("127.0.0.1"));
+    val result = subject.extractRemoteAddress(serverSocketChannel);
+    assertTrue(result.equals(testAddress));
   }
 
   @Test
   public void testValidAddressSocketChannel() throws Exception {
-    val inetSocketAddress = new InetSocketAddress(InetAddress.getLoopbackAddress(), 123);
+    val testAddress = "192.168.0.1";
+    val inetSocketAddress = new InetSocketAddress(testAddress, 2);
     when(socketChannel.remoteAddress()).thenReturn(inetSocketAddress);
-
-    val result = SocketAddressHelper.extractRemoteAddress(socketChannel);
-    assertTrue(result.equals("127.0.0.1"));
+    val result = subject.extractRemoteAddress(socketChannel);
+    assertTrue(result.equals(testAddress));
   }
 }

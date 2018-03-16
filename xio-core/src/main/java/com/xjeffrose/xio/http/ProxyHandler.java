@@ -14,10 +14,13 @@ public class ProxyHandler implements PipelineRequestHandler {
 
   protected final ClientFactory factory;
   protected final ProxyRouteConfig config;
+  protected final SocketAddressHelper addressHelper;
 
-  public ProxyHandler(ClientFactory factory, ProxyRouteConfig config) {
+  public ProxyHandler(
+      ClientFactory factory, ProxyRouteConfig config, SocketAddressHelper addressHelper) {
     this.factory = factory;
     this.config = config;
+    this.addressHelper = addressHelper;
   }
 
   public ClientConfig getClientConfig(Request request) {
@@ -84,7 +87,7 @@ public class ProxyHandler implements PipelineRequestHandler {
   }
 
   private void appendXForwardedFor(ChannelHandlerContext ctx, Request request) {
-    val remoteAddress = SocketAddressHelper.extractRemoteAddress(ctx.channel());
+    val remoteAddress = addressHelper.extractRemoteAddress(ctx.channel());
     if (remoteAddress != null) {
       val rawXFF = request.headers().get(X_FORWARDED_FOR);
       if (rawXFF == null || rawXFF.toString().trim().isEmpty()) {

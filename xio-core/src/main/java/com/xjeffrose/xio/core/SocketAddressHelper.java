@@ -10,7 +10,7 @@ import lombok.val;
 public class SocketAddressHelper {
 
   @Nullable
-  public static String extractRemoteAddress(Channel channel) {
+  public String extractRemoteAddress(Channel channel) {
     if (channel instanceof ServerSocketChannel) {
       val inetSocketAddress = ((ServerSocketChannel) channel).remoteAddress();
       return computeAddress(inetSocketAddress);
@@ -22,7 +22,8 @@ public class SocketAddressHelper {
     }
   }
 
-  private static String computeAddress(InetSocketAddress inetSocketAddress) {
+  @Nullable
+  private String computeAddress(InetSocketAddress inetSocketAddress) {
     if (inetSocketAddress != null) {
       val inetAddress = inetSocketAddress.getAddress();
       if (inetAddress != null) {

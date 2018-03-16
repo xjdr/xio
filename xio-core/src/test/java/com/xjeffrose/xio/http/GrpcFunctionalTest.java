@@ -10,6 +10,7 @@ import com.xjeffrose.xio.application.ApplicationConfig;
 import com.xjeffrose.xio.application.ApplicationState;
 import com.xjeffrose.xio.bootstrap.XioServerBootstrap;
 import com.xjeffrose.xio.client.ClientConfig;
+import com.xjeffrose.xio.core.SocketAddressHelper;
 import com.xjeffrose.xio.pipeline.SmartHttpPipeline;
 import com.xjeffrose.xio.server.XioServer;
 import com.xjeffrose.xio.server.XioServerConfig;
@@ -394,7 +395,10 @@ public class GrpcFunctionalTest extends Assert {
                         ImmutableMap.of(
                             "*",
                             new ProxyRouteState(
-                                appState, proxyConfig, new ProxyHandler(factory, proxyConfig))));
+                                appState,
+                                proxyConfig,
+                                new ProxyHandler(
+                                    factory, proxyConfig, new SocketAddressHelper()))));
                   }
                 });
 
