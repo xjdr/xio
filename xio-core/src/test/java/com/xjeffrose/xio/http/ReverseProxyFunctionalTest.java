@@ -8,6 +8,7 @@ import com.xjeffrose.xio.application.Application;
 import com.xjeffrose.xio.application.ApplicationConfig;
 import com.xjeffrose.xio.bootstrap.ApplicationBootstrap;
 import com.xjeffrose.xio.client.ClientConfig;
+import com.xjeffrose.xio.core.SocketAddressHelper;
 import com.xjeffrose.xio.fixtures.JulBridge;
 import com.xjeffrose.xio.fixtures.OkHttpUnsafe;
 import com.xjeffrose.xio.pipeline.SmartHttpPipeline;
@@ -69,7 +70,8 @@ public class ReverseProxyFunctionalTest extends Assert {
                       @Override
                       public ChannelHandler getApplicationRouter() {
                         return new PipelineRouter(
-                            ImmutableMap.of(), new ProxyHandler(factory, proxyConfig));
+                            ImmutableMap.of(),
+                            new ProxyHandler(factory, proxyConfig, new SocketAddressHelper()));
                       }
                     }))
         .build();

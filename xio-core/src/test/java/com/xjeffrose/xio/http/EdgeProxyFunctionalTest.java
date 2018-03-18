@@ -11,6 +11,7 @@ import com.xjeffrose.xio.application.Application;
 import com.xjeffrose.xio.application.ApplicationConfig;
 import com.xjeffrose.xio.application.ApplicationState;
 import com.xjeffrose.xio.bootstrap.ApplicationBootstrap;
+import com.xjeffrose.xio.core.SocketAddressHelper;
 import com.xjeffrose.xio.fixtures.JulBridge;
 import com.xjeffrose.xio.fixtures.OkHttpUnsafe;
 import com.xjeffrose.xio.pipeline.SmartHttpPipeline;
@@ -136,7 +137,10 @@ public class EdgeProxyFunctionalTest extends Assert {
                       .map(
                           (ProxyRouteConfig prConfig) ->
                               new ProxyRouteState(
-                                  this, prConfig, new ProxyHandler(clientFactory, prConfig)))
+                                  this,
+                                  prConfig,
+                                  new ProxyHandler(
+                                      clientFactory, prConfig, new SocketAddressHelper())))
                       // collect the stream of ProxyRouteState into
                       // LinkedHashMap<String, ProxyRouteState> where the
                       // route path is the key and
