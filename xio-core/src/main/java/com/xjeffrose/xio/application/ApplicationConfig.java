@@ -6,12 +6,13 @@ import com.typesafe.config.ConfigFactory;
 import com.xjeffrose.xio.bootstrap.ChannelConfiguration;
 import com.xjeffrose.xio.bootstrap.ServerChannelConfiguration;
 import com.xjeffrose.xio.core.NullZkClient;
+import com.xjeffrose.xio.core.XioTracingConfig;
 import com.xjeffrose.xio.core.ZkClient;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class ApplicationConfig {
+public class ApplicationConfig implements XioTracingConfig {
 
   private final Config config;
   @Getter private final String name;

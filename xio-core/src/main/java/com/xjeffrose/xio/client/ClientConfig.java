@@ -3,6 +3,7 @@ package com.xjeffrose.xio.client;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.xjeffrose.xio.SSL.TlsConfig;
+import com.xjeffrose.xio.core.XioTracingConfig;
 import io.netty.channel.ChannelOption;
 import java.net.InetSocketAddress;
 import java.util.Map;
@@ -13,13 +14,15 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Accessors(fluent = true)
 @Getter
-public class ClientConfig {
+public class ClientConfig implements XioTracingConfig {
   private final Map<ChannelOption<Object>, Object> bootstrapOptions;
   private final String name;
   private final TlsConfig tls;
   private final boolean messageLoggerEnabled;
   private final InetSocketAddress local;
   private final InetSocketAddress remote;
+  private final String zipkinUrl;
+  private final float samplingRate;
 
   public String getName() {
     return name;
@@ -27,6 +30,14 @@ public class ClientConfig {
 
   public TlsConfig getTls() {
     return tls;
+  }
+
+  public String getZipkinUrl() {
+    return zipkinUrl;
+  }
+
+  public float getSamplingRate() {
+    return samplingRate;
   }
 
   public boolean isMessageLoggerEnabled() {
@@ -40,8 +51,9 @@ public class ClientConfig {
     if (!tls.isUseSsl() && tls.isLogInsecureConfig()) {
       log.warn("Client '{}' has useSsl set to false!", name);
     }
+    zipkinUrl = config.getString("settings.tracing.zipkinUrl");
+    samplingRate = ((Double) config.getDouble("settings.tracing.samplingRate")).floatValue();
     messageLoggerEnabled = config.getBoolean("settings.messageLoggerEnabled");
-
     if (config.getString("localIp").isEmpty()) {
       local = null;
     } else {
