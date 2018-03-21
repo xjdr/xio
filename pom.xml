@@ -1,4 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0                       https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
@@ -9,7 +9,7 @@
 
   <groupId>com.xjeffrose</groupId>
   <artifactId>xio-parent</artifactId>
-  <version>0.13.1</version>
+  <version>0.13.2-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>xio-parent</name>
   <description>High performance Multithreaded Async I/O for Java 8</description>
@@ -18,7 +18,7 @@
     <url>https://github.com/xjdr/xio/</url>
     <connection>scm:git:https://github.com/xjdr/xio.git</connection>
     <developerConnection>scm:git:git@github.com:xjdr/xio.git</developerConnection>
-    <tag>v0.13.1</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <issueManagement>
