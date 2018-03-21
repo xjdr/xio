@@ -7,6 +7,8 @@ import com.xjeffrose.xio.http.internal.Http1StreamingData;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelDuplexHandler;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
@@ -20,116 +22,179 @@ import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpObject;
 import io.netty.handler.codec.http.HttpRequest;
-import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.util.AttributeKey;
+import lombok.extern.slf4j.Slf4j;
 
 @UnstableApi
+@Slf4j
 public class Http1ServerCodec extends ChannelDuplexHandler {
 
-  private static final AttributeKey<Request> CHANNEL_REQUEST_KEY =
-      AttributeKey.newInstance("xio_channel_request");
+  private static final AttributeKey<Http1MessageSession> CHANNEL_MESSAGE_SESSION_KEY =
+      AttributeKey.newInstance("xio_channel_h1_message_session");
 
-  private static void setChannelRequest(ChannelHandlerContext ctx, Request request) {
-    ctx.channel().attr(CHANNEL_REQUEST_KEY).set(request);
-  }
-
-  private static Request getChannelRequest(ChannelHandlerContext ctx) {
-    // TODO(CK): Deal with null?
-    return ctx.channel().attr(CHANNEL_REQUEST_KEY).get();
-  }
-
-  Request wrapRequest(ChannelHandlerContext ctx, HttpObject msg) {
-    if (msg instanceof FullHttpRequest) {
-      Request request = new FullHttp1Request((FullHttpRequest) msg);
-      setChannelRequest(ctx, request);
-      return request;
-    } else if (msg instanceof HttpRequest) {
-      Request request = new Http1Request((HttpRequest) msg);
-      setChannelRequest(ctx, request);
-      return request;
-    } else if (msg instanceof HttpContent) {
-      Request request =
-          new StreamingRequestData(
-              getChannelRequest(ctx), new Http1StreamingData((HttpContent) msg));
-      return request;
+  private static Http1MessageSession setDefaultMessageSession(ChannelHandlerContext ctx) {
+    Http1MessageSession session = ctx.channel().attr(CHANNEL_MESSAGE_SESSION_KEY).get();
+    if (session == null) {
+      session = new Http1MessageSession();
+      ctx.channel().attr(CHANNEL_MESSAGE_SESSION_KEY).set(session);
     }
-    // TODO(CK): throw an exception?
-    return null;
+    return session;
   }
 
+  /** Wrap the HttpObject with the appropriate type and fire read on the next handler. */
+  private void wrapRequest(ChannelHandlerContext ctx, HttpObject msg) {
+    Http1MessageSession session = setDefaultMessageSession(ctx);
+    try {
+      Request request;
+      if (msg instanceof FullHttpRequest) {
+        request = new FullHttp1Request((FullHttpRequest) msg);
+        session.onRequest(request);
+      } else if (msg instanceof HttpRequest) {
+        request = new Http1Request((HttpRequest) msg);
+        session.onRequest(request);
+      } else if (msg instanceof HttpContent) {
+        StreamingData data = new Http1StreamingData((HttpContent) msg);
+        session.onRequestData(data);
+        Request sessionRequest = session.currentRequest();
+        if (sessionRequest == null) {
+          // We don't have a sessionRequest so we can't construct a StreamingRequestData.
+          // Don't log as session.onRequestData should have logged.
+          return;
+        }
+        request = new StreamingRequestData(sessionRequest, data);
+      } else {
+        log.error("Dropping unsupported http object: {}", msg);
+        return;
+      }
+
+      ctx.fireChannelRead(request);
+    } finally {
+      session.flush();
+    }
+  }
+
+  /** Handles instances of HttpObject, all other types are forwarded to the next handler. */
   @Override
   public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
     if (msg instanceof HttpObject) {
-      ctx.fireChannelRead(wrapRequest(ctx, (HttpObject) msg));
+      wrapRequest(ctx, (HttpObject) msg);
     } else {
       ctx.fireChannelRead(msg);
     }
   }
 
-  HttpResponse buildResponse(ChannelHandlerContext ctx, Response response) {
-    if (!response.headers().contains(HttpHeaderNames.CONTENT_TYPE)) {
-      response.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/plain; charset=UTF-8");
-    }
+  /** Translate the Response object into a netty HttpResponse and fire write on the next handler. */
+  private void buildResponse(ChannelHandlerContext ctx, Response response, ChannelPromise promise) {
+    Http1MessageSession session = setDefaultMessageSession(ctx);
+    try {
+      session.onResponse(response);
+      Request request = session.currentRequest();
 
-    Request request = getChannelRequest(ctx);
-    if (request.keepAlive()) {
-      response.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
-    }
-
-    if (response instanceof FullResponse) {
-      FullResponse full = (FullResponse) response;
-      ByteBuf content;
-      if (full.body() != null) {
-        content = full.body();
+      if (request != null) {
+        if (request.keepAlive()) {
+          response.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
+        }
       } else {
-        content = Unpooled.EMPTY_BUFFER;
-      }
-      if (!full.headers().contains(HttpHeaderNames.CONTENT_LENGTH)) {
-        full.headers().setInt(HttpHeaderNames.CONTENT_LENGTH, content.readableBytes());
-      }
-
-      setChannelRequest(ctx, null);
-
-      return new DefaultFullHttpResponse(
-          HttpVersion.HTTP_1_1,
-          full.status(),
-          content,
-          full.headers().http1Headers(false, false),
-          EmptyHttpHeaders.INSTANCE);
-    } else {
-      // TODO(CK): TransferEncoding
-      // We don't know the size of the message payload so set TransferEncoding to chunked
-      if (!response.headers().contains(HttpHeaderNames.TRANSFER_ENCODING)) {
-        response.headers().set(HttpHeaderNames.TRANSFER_ENCODING, HttpHeaderValues.CHUNKED);
+        // We don't have a request object associated with this
+        // session, so we can't determine the appropriate KeepAlive
+        // header. Don't log as session.onResponse should have logged.
+        return;
       }
 
-      return new DefaultHttpResponse(
-          HttpVersion.HTTP_1_1, response.status(), response.headers().http1Headers(false, false));
+      HttpObject obj;
+
+      if (!response.headers().contains(HttpHeaderNames.CONTENT_TYPE)) {
+        response.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/plain; charset=UTF-8");
+      }
+
+      boolean closeConnection = session.closeConnection() && (response instanceof FullResponse);
+      if (session.closeConnection()) {
+        response.headers().set(HttpHeaderNames.CONNECTION, "close");
+      }
+
+      if (response instanceof FullResponse) {
+        FullResponse full = (FullResponse) response;
+        ByteBuf content;
+        if (full.body() != null) {
+          content = full.body();
+        } else {
+          content = Unpooled.EMPTY_BUFFER;
+        }
+        if (!full.headers().contains(HttpHeaderNames.CONTENT_LENGTH)) {
+          full.headers().setInt(HttpHeaderNames.CONTENT_LENGTH, content.readableBytes());
+        }
+
+        obj =
+            new DefaultFullHttpResponse(
+                HttpVersion.HTTP_1_1,
+                full.status(),
+                content,
+                full.headers().http1Headers(false, false),
+                EmptyHttpHeaders.INSTANCE);
+      } else {
+        // TODO(CK): TransferEncoding
+        // We don't know the size of the message payload so set TransferEncoding to chunked
+        if (!response.headers().contains(HttpHeaderNames.TRANSFER_ENCODING)) {
+          response.headers().set(HttpHeaderNames.TRANSFER_ENCODING, HttpHeaderValues.CHUNKED);
+        }
+
+        obj =
+            new DefaultHttpResponse(
+                HttpVersion.HTTP_1_1,
+                response.status(),
+                response.headers().http1Headers(false, false));
+      }
+
+      ChannelFuture future = ctx.write(obj, promise);
+      if (closeConnection) {
+        future.addListener(ChannelFutureListener.CLOSE);
+      }
+    } finally {
+      session.flush();
     }
   }
 
-  HttpContent buildContent(ChannelHandlerContext ctx, StreamingData data) {
-    if (data.endOfStream()) {
-      LastHttpContent last = new DefaultLastHttpContent(data.content());
-      if (data.trailingHeaders() != null) {
-        last.trailingHeaders().add(data.trailingHeaders().http1Headers(true, false));
+  /**
+   * Translate the StreamingData object into a netty HttpContent and fire write on the next handler.
+   */
+  private void buildContent(ChannelHandlerContext ctx, StreamingData data, ChannelPromise promise) {
+    Http1MessageSession session = setDefaultMessageSession(ctx);
+    try {
+      session.onResponseData(data);
+      HttpObject obj;
+
+      if (data.endOfStream()) {
+        LastHttpContent last = new DefaultLastHttpContent(data.content());
+        if (data.trailingHeaders() != null) {
+          last.trailingHeaders().add(data.trailingHeaders().http1Headers(true, false));
+        }
+        obj = last;
+      } else {
+        obj = new DefaultHttpContent(data.content());
       }
-      setChannelRequest(ctx, null);
-      return last;
-    } else {
-      return new DefaultHttpContent(data.content());
+
+      ChannelFuture future = ctx.write(obj, promise);
+      if (session.closeConnection() && data.endOfStream()) {
+        future.addListener(ChannelFutureListener.CLOSE);
+      }
+    } finally {
+      session.flush();
     }
   }
 
+  /**
+   * Handles instances of StreamingData and Response, all other types are forwarded to the next
+   * handler.
+   */
   @Override
   public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise)
       throws Exception {
     if (msg instanceof StreamingData) {
-      ctx.write(buildContent(ctx, (StreamingData) msg), promise);
+      buildContent(ctx, (StreamingData) msg, promise);
     } else if (msg instanceof Response) {
-      ctx.write(buildResponse(ctx, (Response) msg), promise);
+      buildResponse(ctx, (Response) msg, promise);
     } else {
       ctx.write(msg, promise);
     }
