@@ -10,7 +10,7 @@
 
   <groupId>com.xjeffrose</groupId>
   <artifactId>xio-test</artifactId>
-  <version>0.13.0</version>
+  <version>0.13.1-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>xio-test</name>
   <description>Testing package for xio</description>
