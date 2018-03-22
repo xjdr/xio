@@ -3,8 +3,11 @@ package com.xjeffrose.xio.http;
 import com.xjeffrose.xio.SSL.SslContextFactory;
 import com.xjeffrose.xio.bootstrap.ClientChannelConfiguration;
 import com.xjeffrose.xio.client.ClientConfig;
+import com.xjeffrose.xio.tracing.XioTracing;
 import io.netty.channel.ChannelHandler;
 import io.netty.handler.ssl.SslContext;
+import lombok.val;
+
 import java.net.InetSocketAddress;
 import java.util.function.Supplier;
 
@@ -56,5 +59,16 @@ public class ClientState {
     this.remote = config.remote();
     this.sslContext = sslContext(config.isTlsEnabled(), config);
     this.tracingHandler = tracingHandler;
+  }
+
+  public ClientState(
+    ClientChannelConfiguration channelConfig,
+    ClientConfig config) {
+    this.channelConfig = channelConfig;
+    this.config = config;
+    this.remote = config.remote();
+    this.sslContext = sslContext(config.isTlsEnabled(), config);
+    val tracing = new XioTracing(config);
+    this.tracingHandler = () -> tracing.newClientHandler(config.isTlsEnabled());
   }
 }

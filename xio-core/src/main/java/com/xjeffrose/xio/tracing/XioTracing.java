@@ -5,6 +5,7 @@ import brave.context.slf4j.MDCCurrentTraceContext;
 import brave.http.HttpTracing;
 import brave.sampler.Sampler;
 import com.xjeffrose.xio.application.ApplicationConfig;
+import com.xjeffrose.xio.core.XioTracingConfig;
 import zipkin.Span;
 import zipkin.reporter.AsyncReporter;
 import zipkin.reporter.Reporter;
@@ -14,11 +15,11 @@ public class XioTracing {
 
   private final Tracing tracing;
 
-  private Reporter<Span> buildReporter(ApplicationConfig config) {
+  private Reporter<Span> buildReporter(XioTracingConfig config) {
     return AsyncReporter.builder(OkHttpSender.create(config.getZipkinUrl())).build();
   }
 
-  private Tracing buildTracing(ApplicationConfig config) {
+  private Tracing buildTracing(XioTracingConfig config) {
     if (config.getZipkinUrl().isEmpty() || !(config.getSamplingRate() > 0f)) {
       return null;
     }
@@ -31,7 +32,7 @@ public class XioTracing {
         .build();
   }
 
-  public XioTracing(ApplicationConfig config) {
+  public XioTracing(XioTracingConfig config) {
     tracing = buildTracing(config);
   }
 

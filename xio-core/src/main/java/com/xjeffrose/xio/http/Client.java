@@ -69,6 +69,7 @@ public class Client {
                     "negotiation handler",
                     new HttpClientNegotiationHandler(Client.this::buildHttp2Handler))
                 .addLast("codec", CodecPlaceholderHandler.INSTANCE)
+                .addLast("distributed tracing", state.tracingHandler.get())
                 .addLast("application codec", ApplicationCodecPlaceholderHandler.INSTANCE)
                 .addLast("idle handler", new XioIdleDisconnectHandler(60, 60, 60))
                 .addLast("message logging", new XioMessageLogger(Client.class, "objects"))
