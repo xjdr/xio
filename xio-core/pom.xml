@@ -24,6 +24,7 @@
     <!-- Dependencies -->
     <jmh.version>1.4.1</jmh.version>
     <argLine>-Xbootclasspath/p:${bootclasspathPrefix} -Xms512m -Xmx512m</argLine>
+    <bintray.package>xio</bintray.package>
   </properties>
 
   <scm>
@@ -44,28 +45,6 @@
       <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
     </license>
   </licenses>
-
-  <distributionManagement>
-    <snapshotRepository>
-      <id>ossrh</id>
-      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-    </snapshotRepository>
-    <repository>
-      <id>ossrh</id>
-      <url>https://oss.sonatype.org/httpService/local/staging/deploy/maven2/</url>
-    </repository>
-  </distributionManagement>
-
-  <pluginRepositories>
-    <pluginRepository>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-      <id>bintray-devexperts-Maven</id>
-      <name>bintray-plugins</name>
-      <url>https://dl.bintray.com/devexperts/Maven</url>
-    </pluginRepository>
-  </pluginRepositories>
 
   <dependencies>
     <dependency>
@@ -344,34 +323,6 @@
       </extension>
     </extensions>
     <plugins>
-
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-deploy-plugin</artifactId>
-        <version>2.8.2</version>
-        <configuration>
-          <skip>true</skip>
-        </configuration>
-      </plugin>
-
-      <plugin>
-        <groupId>com.devexperts.bintray</groupId>
-        <artifactId>bintray-maven-plugin</artifactId>
-        <version>1.2</version>
-        <configuration>
-          <id>bintray-xio-deploy</id>
-          <url>https://api.bintray.com/maven/nordstromoss/oss_maven/xio</url>
-        </configuration>
-        <executions>
-          <execution>
-            <id>bintray-deploy</id>
-            <goals>
-              <goal>deploy</goal>
-              <goal>publish</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -683,27 +634,6 @@
           <url>packagecloud+https://packagecloud.io/${env.PACKAGECLOUD_USER}/xio</url>
         </snapshotRepository>
       </distributionManagement>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>com.devexperts.bintray</groupId>
-            <artifactId>bintray-maven-plugin</artifactId>
-            <version>1.2</version>
-            <configuration>
-              <skip>true</skip>
-            </configuration>
-            <executions>
-              <execution>
-                <id>bintray-deploy</id>
-                <goals>
-                  <goal>deploy</goal>
-                  <goal>publish</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
     </profile>
     <profile>
       <id>alpn-when-jdk8</id>
