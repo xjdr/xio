@@ -10,6 +10,11 @@ jobs:
       - run:
           name: install depdendencies
           command: sudo apt-get install openssl libssl-dev
+workflows:
+  version: 2
+  build:
+    jobs:
+      - build-jdk8
 #  dependencies:
 #    cache_directories:
 #      - ~/.m2
