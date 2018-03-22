@@ -2,7 +2,7 @@ version: 2
 jobs:
   build-jdk8:
     docker:
-      - image: openjdk/8-jdk-stretch
+      - image: openjdk:8-jdk-stretch
     steps:
       - run:
           name: update image
