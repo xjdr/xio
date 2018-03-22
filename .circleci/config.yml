@@ -12,7 +12,7 @@ jobs:
           command: apt-get install -y openssl libssl-dev maven
       - checkout
       - restore_cache:
-        key: v1-cache-xio-{{ arch }}-{{ checksum "pom.xml" }}
+          key: v1-cache-xio-{{ arch }}-{{ checksum "pom.xml" }}
       - run:
           name: install maven dependencies
           command: mvn --batch-mode -DskipTests=true -Dmaven.javadoc.skip=true clean test-compile dependency:resolve-plugins dependency:go-offline
