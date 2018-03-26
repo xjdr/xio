@@ -4,7 +4,9 @@ import brave.Tracing;
 import brave.context.slf4j.MDCCurrentTraceContext;
 import brave.http.HttpTracing;
 import brave.sampler.Sampler;
-import com.xjeffrose.xio.application.ApplicationConfig;
+import com.typesafe.config.Config;
+import lombok.NonNull;
+import lombok.val;
 import zipkin.Span;
 import zipkin.reporter.AsyncReporter;
 import zipkin.reporter.Reporter;
@@ -14,25 +16,29 @@ public class XioTracing {
 
   private final Tracing tracing;
 
-  private Reporter<Span> buildReporter(ApplicationConfig config) {
-    return AsyncReporter.builder(OkHttpSender.create(config.getZipkinUrl())).build();
+  private Reporter<Span> buildReporter(@NonNull String zipkinUrl) {
+    return AsyncReporter.builder(OkHttpSender.create(zipkinUrl)).build();
   }
 
-  private Tracing buildTracing(ApplicationConfig config) {
-    if (config.getZipkinUrl().isEmpty() || !(config.getSamplingRate() > 0f)) {
+  private Tracing buildTracing(
+      @NonNull String name, @NonNull String zipkinUrl, float samplingRate) {
+    if (zipkinUrl.isEmpty() || !(samplingRate > 0f)) {
       return null;
     }
     return Tracing.newBuilder()
-        .localServiceName(config.getName())
+        .localServiceName(name)
         // puts trace IDs into logs
         .currentTraceContext(MDCCurrentTraceContext.create())
-        .reporter(buildReporter(config))
-        .sampler(Sampler.create(config.getSamplingRate()))
+        .reporter(buildReporter(zipkinUrl))
+        .sampler(Sampler.create(samplingRate))
         .build();
   }
 
-  public XioTracing(ApplicationConfig config) {
-    tracing = buildTracing(config);
+  public XioTracing(Config config) {
+    val name = config.getString("name");
+    val zipkinUrl = config.getString("settings.tracing.zipkinUrl");
+    float samplingRate = ((Double) config.getDouble("settings.tracing.samplingRate")).floatValue();
+    tracing = buildTracing(name, zipkinUrl, samplingRate);
   }
 
   public boolean enabled() {

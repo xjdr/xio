@@ -7,6 +7,7 @@ import com.xjeffrose.xio.bootstrap.ChannelConfiguration;
 import com.xjeffrose.xio.bootstrap.ServerChannelConfiguration;
 import com.xjeffrose.xio.core.NullZkClient;
 import com.xjeffrose.xio.core.ZkClient;
+import com.xjeffrose.xio.tracing.XioTracing;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -22,8 +23,7 @@ public class ApplicationConfig {
   @Getter private final String zookeeperCluster;
   @Getter private final String ipFilterPath;
   @Getter private final String http1FilterPath;
-  @Getter private final String zipkinUrl;
-  @Getter private final float samplingRate;
+  @Getter private final XioTracing tracing;
 
   public ApplicationConfig(Config config) {
     this.config = config;
@@ -35,8 +35,7 @@ public class ApplicationConfig {
     zookeeperCluster = config.getString("settings.zookeeper.cluster");
     ipFilterPath = config.getString("settings.configurationManager.ipFilter.path");
     http1FilterPath = config.getString("settings.configurationManager.http1Filter.path");
-    zipkinUrl = config.getString("settings.tracing.zipkinUrl");
-    samplingRate = ((Double) config.getDouble("settings.tracing.samplingRate")).floatValue();
+    tracing = new XioTracing(config);
   }
 
   public static ApplicationConfig fromConfig(String key, Config config) {

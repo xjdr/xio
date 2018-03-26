@@ -2,6 +2,7 @@ package com.xjeffrose.xio.http;
 
 import com.xjeffrose.xio.client.ClientConfig;
 import com.xjeffrose.xio.core.SocketAddressHelper;
+import com.xjeffrose.xio.tracing.XioTracing;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.AsciiString;
 import java.util.Optional;
@@ -15,12 +16,17 @@ public class ProxyHandler implements PipelineRequestHandler {
   protected final ClientFactory factory;
   protected final ProxyRouteConfig config;
   protected final SocketAddressHelper addressHelper;
+  protected final XioTracing tracing;
 
   public ProxyHandler(
-      ClientFactory factory, ProxyRouteConfig config, SocketAddressHelper addressHelper) {
+      ClientFactory factory,
+      ProxyRouteConfig config,
+      SocketAddressHelper addressHelper,
+      XioTracing tracing) {
     this.factory = factory;
     this.config = config;
     this.addressHelper = addressHelper;
+    this.tracing = tracing;
   }
 
   public ClientConfig getClientConfig(Request request) {
@@ -116,7 +122,7 @@ public class ProxyHandler implements PipelineRequestHandler {
     // 3) set the tracing span (if there is one)
 
     ClientConfig clientConfig = getClientConfig(request);
-    Client client = factory.getClient(ctx, clientConfig);
+    Client client = factory.getClient(ctx, clientConfig, tracing);
 
     if (!request.startOfStream()) {
       log.debug("not start of stream");

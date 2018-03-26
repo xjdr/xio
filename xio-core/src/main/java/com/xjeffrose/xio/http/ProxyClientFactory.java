@@ -2,6 +2,7 @@ package com.xjeffrose.xio.http;
 
 import com.xjeffrose.xio.application.ApplicationState;
 import com.xjeffrose.xio.client.ClientConfig;
+import com.xjeffrose.xio.tracing.XioTracing;
 import io.netty.channel.ChannelHandlerContext;
 
 /** Generates an http proxy Client objects */
@@ -25,9 +26,9 @@ public class ProxyClientFactory extends ClientFactory {
   }
 
   @Override
-  public Client createClient(ChannelHandlerContext ctx, ClientConfig config) {
+  public Client createClient(ChannelHandlerContext ctx, ClientConfig config, XioTracing tracing) {
     ClientState clientState = state.createClientState(channelConfig(ctx), config);
     // TODO(CK): this handler should be notifying a connection pool on release
-    return new Client(clientState, () -> new ProxyBackendHandler(ctx));
+    return new Client(clientState, () -> new ProxyBackendHandler(ctx), tracing);
   }
 }
