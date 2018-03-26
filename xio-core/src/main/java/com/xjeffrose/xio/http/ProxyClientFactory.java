@@ -27,9 +27,9 @@ public class ProxyClientFactory extends ClientFactory {
   }
 
   @Override
-  public Client createClient(ChannelHandlerContext ctx, ClientConfig config, XioTracing tracing) {
+  public Client createClient(ChannelHandlerContext ctx, ClientConfig config) {
     ClientState clientState = state.createClientState(channelConfig(ctx), config);
     // TODO(CK): this handler should be notifying a connection pool on release
-    return new Client(clientState, () -> new ProxyBackendHandler(ctx), tracing);
+    return new Client(clientState, () -> new ProxyBackendHandler(ctx), getTracing());
   }
 }

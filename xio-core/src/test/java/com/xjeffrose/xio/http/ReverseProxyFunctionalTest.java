@@ -57,10 +57,9 @@ public class ReverseProxyFunctionalTest extends Assert {
     ClientFactory factory =
         new ClientFactory(tracing) {
           @Override
-          public Client createClient(
-              ChannelHandlerContext ctx, ClientConfig config, XioTracing tracing) {
+          public Client createClient(ChannelHandlerContext ctx, ClientConfig config) {
             ClientState clientState = new ClientState(channelConfig(ctx), config);
-            return new Client(clientState, () -> new ProxyBackendHandler(ctx), this.tracing);
+            return new Client(clientState, () -> new ProxyBackendHandler(ctx), getTracing());
           }
         };
 

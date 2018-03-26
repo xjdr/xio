@@ -378,10 +378,9 @@ public class GrpcFunctionalTest extends Assert {
         new ClientFactory(
             new XioTracing(ConfigFactory.load().getConfig("xio.defaultApplication"))) {
           @Override
-          public Client createClient(
-              ChannelHandlerContext ctx, ClientConfig config, XioTracing tracing) {
+          public Client createClient(ChannelHandlerContext ctx, ClientConfig config) {
             ClientState clientState = new ClientState(channelConfig(ctx), config);
-            return new Client(clientState, () -> new ProxyBackendHandler(ctx), tracing);
+            return new Client(clientState, () -> new ProxyBackendHandler(ctx), getTracing());
           }
         };
 
