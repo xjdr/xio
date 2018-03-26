@@ -140,7 +140,10 @@ public class EdgeProxyFunctionalTest extends Assert {
                                   this,
                                   prConfig,
                                   new ProxyHandler(
-                                      clientFactory, prConfig, new SocketAddressHelper())))
+                                      clientFactory,
+                                      prConfig,
+                                      new SocketAddressHelper(),
+                                      this.tracing())))
                       // collect the stream of ProxyRouteState into
                       // LinkedHashMap<String, ProxyRouteState> where the
                       // route path is the key and

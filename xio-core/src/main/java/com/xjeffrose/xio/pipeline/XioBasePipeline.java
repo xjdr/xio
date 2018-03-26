@@ -18,6 +18,7 @@ import com.xjeffrose.xio.server.XioServerState;
 import com.xjeffrose.xio.server.XioWebApplicationFirewall;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelPipeline;
+import lombok.val;
 
 public abstract class XioBasePipeline implements XioPipelineFragment {
 
@@ -86,7 +87,10 @@ public abstract class XioBasePipeline implements XioPipelineFragment {
     } else {
       throw new RuntimeException("No codec configured");
     }
-    addHandler(pipeline, "distributed tracing", state.tracingHandler(appState));
+    val traceHandler = state.tracingHandler(appState);
+    if (traceHandler != null) {
+      addHandler(pipeline, "distributed tracing", traceHandler);
+    }
     addHandler(pipeline, "application codec", getApplicationCodec());
     addHandler(pipeline, "application router", getApplicationRouter());
     addHandler(pipeline, "authentication handler", getAuthenticationHandler());
