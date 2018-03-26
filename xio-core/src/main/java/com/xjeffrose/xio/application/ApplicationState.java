@@ -11,12 +11,11 @@ import com.xjeffrose.xio.http.ClientState;
 import com.xjeffrose.xio.http.DefaultRouter;
 import com.xjeffrose.xio.http.Router;
 import com.xjeffrose.xio.tracing.XioTracing;
-import io.netty.channel.ChannelHandler;
 import io.netty.channel.EventLoopGroup;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Supplier;
 import lombok.Getter;
 import lombok.experimental.Accessors;
+import lombok.val;
 
 public class ApplicationState {
 
@@ -42,9 +41,11 @@ public class ApplicationState {
 
   public ApplicationState(ApplicationConfig config) {
     this.config = config;
+    val settings = config.settings();
+    this.tracing = config.getTracing();
+
     zkClient = config.zookeeperClient();
     channelConfiguration = config.serverChannelConfig();
-    tracing = new XioTracing(config);
 
     ipFilterConfig = new AtomicReference<>(new IpFilterConfig());
     zkClient.registerUpdater(
@@ -90,11 +91,7 @@ public class ApplicationState {
 
   public ClientState createClientState(
       ClientChannelConfiguration channelConfig, ClientConfig config) {
-
-    Supplier<ChannelHandler> tracingHandler =
-        () -> tracing().newClientHandler(config.isTlsEnabled());
-
-    return new ClientState(channelConfig, config, tracingHandler);
+    return new ClientState(channelConfig, config);
   }
 
   public ClientState createClientState(ClientConfig config) {
