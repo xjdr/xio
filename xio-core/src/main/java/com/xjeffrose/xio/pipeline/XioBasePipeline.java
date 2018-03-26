@@ -18,7 +18,6 @@ import com.xjeffrose.xio.server.XioServerState;
 import com.xjeffrose.xio.server.XioWebApplicationFirewall;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelPipeline;
-import lombok.val;
 
 public abstract class XioBasePipeline implements XioPipelineFragment {
 
@@ -73,9 +72,7 @@ public abstract class XioBasePipeline implements XioPipelineFragment {
     pipeline.addLast("connectionContext", new ConnectionContextHandler());
     pipeline.addLast("globalChannelStatistics", state.getChannelStatistics());
     ChannelHandler encryptionHandler = getEncryptionHandler(config, state);
-    if (encryptionHandler != null) {
-      pipeline.addLast("encryptionHandler", encryptionHandler);
-    }
+    addHandler(pipeline, "encryptionHandler", encryptionHandler);
     addHandler(pipeline, "tls authentication handler", getTlsAuthenticationHandler());
     if (config.isMessageLoggerEnabled()) {
       pipeline.addLast("messageLogger", new XioMessageLogger(XioServer.class, config.getName()));
@@ -87,10 +84,7 @@ public abstract class XioBasePipeline implements XioPipelineFragment {
     } else {
       throw new RuntimeException("No codec configured");
     }
-    val traceHandler = state.tracingHandler(appState);
-    if (traceHandler != null) {
-      addHandler(pipeline, "distributed tracing", traceHandler);
-    }
+    addHandler(pipeline, "distributed tracing", state.tracingHandler(appState));
     addHandler(pipeline, "application codec", getApplicationCodec());
     addHandler(pipeline, "application router", getApplicationRouter());
     addHandler(pipeline, "authentication handler", getAuthenticationHandler());
@@ -109,8 +103,6 @@ public abstract class XioBasePipeline implements XioPipelineFragment {
         "xioResponseClassifier", new XioResponseClassifier(true)); // / TODO(JR): This is a maybe
     pipeline.addLast("exceptionLogger", new XioExceptionLogger());
     ChannelHandler applicationHandler = getApplicationHandler();
-    if (applicationHandler != null) {
-      pipeline.addLast("applicationHandler", applicationHandler);
-    }
+    addHandler(pipeline, "applicationHandler", applicationHandler);
   }
 }

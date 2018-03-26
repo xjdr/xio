@@ -15,7 +15,6 @@ import io.netty.channel.EventLoopGroup;
 import java.util.concurrent.atomic.AtomicReference;
 import lombok.Getter;
 import lombok.experimental.Accessors;
-import lombok.val;
 
 public class ApplicationState {
 
@@ -41,7 +40,6 @@ public class ApplicationState {
 
   public ApplicationState(ApplicationConfig config) {
     this.config = config;
-    val settings = config.settings();
     this.tracing = config.getTracing();
 
     zkClient = config.zookeeperClient();

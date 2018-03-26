@@ -375,7 +375,8 @@ public class GrpcFunctionalTest extends Assert {
     ProxyRouteConfig proxyConfig =
         new ProxyRouteConfig(ConfigFactory.load().getConfig("xio.testProxyRoute"));
     ClientFactory factory =
-        new ClientFactory() {
+        new ClientFactory(
+            new XioTracing(ConfigFactory.load().getConfig("xio.defaultApplication"))) {
           @Override
           public Client createClient(
               ChannelHandlerContext ctx, ClientConfig config, XioTracing tracing) {
@@ -401,10 +402,7 @@ public class GrpcFunctionalTest extends Assert {
                                 appState,
                                 proxyConfig,
                                 new ProxyHandler(
-                                    factory,
-                                    proxyConfig,
-                                    new SocketAddressHelper(),
-                                    appState.tracing()))));
+                                    factory, proxyConfig, new SocketAddressHelper()))));
                   }
                 });
 

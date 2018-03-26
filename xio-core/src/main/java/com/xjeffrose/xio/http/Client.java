@@ -2,6 +2,7 @@ package com.xjeffrose.xio.http;
 
 import com.xjeffrose.xio.core.XioIdleDisconnectHandler;
 import com.xjeffrose.xio.core.XioMessageLogger;
+import com.xjeffrose.xio.pipeline.Pipelines;
 import com.xjeffrose.xio.tracing.XioTracing;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
@@ -75,9 +76,7 @@ public class Client {
                 .addLast("codec", CodecPlaceholderHandler.INSTANCE);
             if (tracing != null) {
               val traceHandler = tracing.newClientHandler(state.config.isTlsEnabled());
-              if (traceHandler != null) {
-                channel.pipeline().addLast("distributed tracing", traceHandler);
-              }
+              Pipelines.addHandler(channel.pipeline(), "distributed tracing", traceHandler);
             }
             channel
                 .pipeline()

@@ -11,8 +11,14 @@ import io.netty.util.AttributeKey;
 /** Base class for generating http clients */
 public abstract class ClientFactory {
 
+  protected XioTracing tracing;
+
   private static final AttributeKey<Client> CLIENT_KEY =
       AttributeKey.newInstance("xio_http_client_key");
+
+  public ClientFactory(XioTracing tracing) {
+    this.tracing = tracing;
+  }
 
   public ClientChannelConfiguration channelConfig(ChannelHandlerContext ctx) {
     return ChannelConfiguration.clientConfig(ctx.channel().eventLoop());
@@ -21,7 +27,7 @@ public abstract class ClientFactory {
   public abstract Client createClient(
       ChannelHandlerContext ctx, ClientConfig config, XioTracing tracing);
 
-  public Client getClient(ChannelHandlerContext ctx, ClientConfig config, XioTracing tracing) {
+  public Client getClient(ChannelHandlerContext ctx, ClientConfig config) {
     Client client = ctx.channel().attr(CLIENT_KEY).get();
     if (client == null) {
       client = createClient(ctx, config, tracing);

@@ -1,6 +1,7 @@
 package com.xjeffrose.xio.http;
 
 import static io.netty.handler.codec.http.HttpMethod.GET;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.times;
 import static org.powermock.api.mockito.PowerMockito.when;
 
@@ -12,7 +13,6 @@ import com.xjeffrose.xio.tracing.XioTracing;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
 import lombok.val;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,26 +42,13 @@ public class ClientTest extends Assert {
     MockitoAnnotations.initMocks(this);
   }
 
-  @After
-  public void tearDown() {
-    Mockito.reset(tracing);
-    Mockito.reset(tracingHandler);
-  }
-
   @Test
   public void testDisabledTracing() {
     val channelConfig = ChannelConfiguration.clientConfig(1, "worker");
-    val clientConfig =
-        new ClientConfig(ConfigFactory.load().getConfig("xio.invalidZipkinParameters"));
+    val clientConfig = new ClientConfig(ConfigFactory.load().getConfig("xio.basicClient"));
     val clientState = new ClientState(channelConfig, clientConfig);
 
-    subject =
-        new Client(
-            clientState,
-            () -> {
-              return appHandler;
-            },
-            null);
+    subject = new Client(clientState, () -> appHandler, null);
 
     Request request =
         DefaultFullRequest.builder()
@@ -79,18 +66,11 @@ public class ClientTest extends Assert {
   @Test
   public void testEnabledTracing() {
     val channelConfig = ChannelConfiguration.clientConfig(1, "worker");
-    val clientConfig =
-        new ClientConfig(ConfigFactory.load().getConfig("xio.validZipkinParameters"));
+    val clientConfig = new ClientConfig(ConfigFactory.load().getConfig("xio.basicClient"));
     val clientState = new ClientState(channelConfig, clientConfig);
     when(tracing.newClientHandler(clientConfig.getTls().isUseSsl())).thenReturn(tracingHandler);
 
-    subject =
-        new Client(
-            clientState,
-            () -> {
-              return appHandler;
-            },
-            tracing);
+    subject = new Client(clientState, () -> appHandler, tracing);
     Request request =
         DefaultFullRequest.builder()
             .body(Unpooled.EMPTY_BUFFER)
@@ -102,9 +82,7 @@ public class ClientTest extends Assert {
 
     // Assert that we did DO call handlerAdded when the tracing/traceHandler is non-null
     try {
-      ArgumentCaptor<ChannelHandlerContext> captor =
-          ArgumentCaptor.forClass(ChannelHandlerContext.class);
-      Mockito.verify(tracingHandler, times(1)).handlerAdded(captor.capture());
+      Mockito.verify(tracingHandler, times(1)).handlerAdded(any(ChannelHandlerContext.class));
     } catch (Exception e) {
       fail();
     }

@@ -22,19 +22,19 @@ public class XioTracingTest extends Assert {
   public void testValidParametersConfig() {
     // This when the zipkinurl is non-empty AND the sampling rate is > 0.0f
     subject = new XioTracing(validParametersConfig);
-    assertTrue(subject.newClientHandler(true) != null);
-    assertTrue(subject.newClientHandler(false) != null);
-    assertTrue(subject.newServerHandler(true) != null);
-    assertTrue(subject.newServerHandler(false) != null);
+    assertNotNull(subject.newClientHandler(true));
+    assertNotNull(subject.newClientHandler(false));
+    assertNotNull(subject.newServerHandler(true));
+    assertNotNull(subject.newServerHandler(false));
   }
 
   @Test
   public void testInvalidParametersConfig() {
     // This when the zipkinurl is empty OR the sampling rate is <= 0.0f
     subject = new XioTracing(invalidParametersConfig);
-    assertTrue(subject.newClientHandler(true) == null);
-    assertTrue(subject.newClientHandler(false) == null);
-    assertTrue(subject.newServerHandler(true) == null);
-    assertTrue(subject.newServerHandler(false) == null);
+    assertNull(subject.newClientHandler(true));
+    assertNull(subject.newClientHandler(false));
+    assertNull(subject.newServerHandler(true));
+    assertNull(subject.newServerHandler(false));
   }
 }

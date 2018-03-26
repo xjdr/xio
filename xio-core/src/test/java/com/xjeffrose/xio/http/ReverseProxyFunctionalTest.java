@@ -55,12 +55,12 @@ public class ReverseProxyFunctionalTest extends Assert {
   static Application setupReverseProxy(
       ApplicationConfig appConfig, ProxyRouteConfig proxyConfig, XioTracing tracing) {
     ClientFactory factory =
-        new ClientFactory() {
+        new ClientFactory(tracing) {
           @Override
           public Client createClient(
               ChannelHandlerContext ctx, ClientConfig config, XioTracing tracing) {
             ClientState clientState = new ClientState(channelConfig(ctx), config);
-            return new Client(clientState, () -> new ProxyBackendHandler(ctx), tracing);
+            return new Client(clientState, () -> new ProxyBackendHandler(ctx), this.tracing);
           }
         };
 
@@ -74,8 +74,7 @@ public class ReverseProxyFunctionalTest extends Assert {
                       public ChannelHandler getApplicationRouter() {
                         return new PipelineRouter(
                             ImmutableMap.of(),
-                            new ProxyHandler(
-                                factory, proxyConfig, new SocketAddressHelper(), tracing));
+                            new ProxyHandler(factory, proxyConfig, new SocketAddressHelper()));
                       }
                     }))
         .build();
