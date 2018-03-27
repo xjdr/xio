@@ -2,6 +2,8 @@ package com.xjeffrose.xio.http;
 
 import com.xjeffrose.xio.core.XioIdleDisconnectHandler;
 import com.xjeffrose.xio.core.XioMessageLogger;
+import com.xjeffrose.xio.pipeline.Pipelines;
+import com.xjeffrose.xio.tracing.XioTracing;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -12,19 +14,22 @@ import io.netty.channel.ChannelPromise;
 import io.netty.util.concurrent.PromiseCombiner;
 import java.util.function.Supplier;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 
 @Slf4j
 public class Client {
 
   private final ClientState state;
   private final Supplier<ChannelHandler> appHandler;
+  private final XioTracing tracing;
   private final ChannelFutureListener connectionListener;
   private final ChannelFutureListener writeListener;
   private Channel channel;
 
-  public Client(ClientState state, Supplier<ChannelHandler> appHandler) {
+  public Client(ClientState state, Supplier<ChannelHandler> appHandler, XioTracing tracing) {
     this.state = state;
     this.appHandler = appHandler;
+    this.tracing = tracing;
     connectionListener =
         f -> {
           if (f.isDone() && f.isSuccess()) {
@@ -68,7 +73,13 @@ public class Client {
                 .addLast(
                     "negotiation handler",
                     new HttpClientNegotiationHandler(Client.this::buildHttp2Handler))
-                .addLast("codec", CodecPlaceholderHandler.INSTANCE)
+                .addLast("codec", CodecPlaceholderHandler.INSTANCE);
+            if (tracing != null) {
+              val traceHandler = tracing.newClientHandler(state.config.isTlsEnabled());
+              Pipelines.addHandler(channel.pipeline(), "distributed tracing", traceHandler);
+            }
+            channel
+                .pipeline()
                 .addLast("application codec", ApplicationCodecPlaceholderHandler.INSTANCE)
                 .addLast("idle handler", new XioIdleDisconnectHandler(60, 60, 60))
                 .addLast("message logging", new XioMessageLogger(Client.class, "objects"))

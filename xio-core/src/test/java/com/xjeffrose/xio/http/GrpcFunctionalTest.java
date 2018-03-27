@@ -15,6 +15,7 @@ import com.xjeffrose.xio.pipeline.SmartHttpPipeline;
 import com.xjeffrose.xio.server.XioServer;
 import com.xjeffrose.xio.server.XioServerConfig;
 import com.xjeffrose.xio.server.XioServerState;
+import com.xjeffrose.xio.tracing.XioTracing;
 import helloworld.*;
 import io.grpc.ManagedChannel;
 import io.grpc.Server;
@@ -371,13 +372,15 @@ public class GrpcFunctionalTest extends Assert {
 
     ClientConfig config = ClientConfig.fromConfig("xio.h2TestClient");
     // ProxyConfig proxyConfig = ProxyConfig.parse("https://127.0.0.1:" + server.getPort() + "/");
-    ProxyRouteConfig proxyConfig = new ProxyRouteConfig(root.getConfig("xio.testProxyRoute"));
+    ProxyRouteConfig proxyConfig =
+        new ProxyRouteConfig(ConfigFactory.load().getConfig("xio.testProxyRoute"));
     ClientFactory factory =
-        new ClientFactory() {
+        new ClientFactory(
+            new XioTracing(ConfigFactory.load().getConfig("xio.defaultApplication"))) {
           @Override
           public Client createClient(ChannelHandlerContext ctx, ClientConfig config) {
-            ClientState clientState = new ClientState(channelConfig(ctx), config, () -> null);
-            return new Client(clientState, () -> new ProxyBackendHandler(ctx));
+            ClientState clientState = new ClientState(channelConfig(ctx), config);
+            return new Client(clientState, () -> new ProxyBackendHandler(ctx), getTracing());
           }
         };
 

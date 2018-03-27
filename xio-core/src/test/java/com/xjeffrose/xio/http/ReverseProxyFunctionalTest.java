@@ -12,6 +12,7 @@ import com.xjeffrose.xio.core.SocketAddressHelper;
 import com.xjeffrose.xio.fixtures.JulBridge;
 import com.xjeffrose.xio.fixtures.OkHttpUnsafe;
 import com.xjeffrose.xio.pipeline.SmartHttpPipeline;
+import com.xjeffrose.xio.tracing.XioTracing;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.EventLoopGroup;
@@ -51,13 +52,14 @@ public class ReverseProxyFunctionalTest extends Assert {
   Application reverseProxy;
   MockWebServer server;
 
-  static Application setupReverseProxy(ApplicationConfig appConfig, ProxyRouteConfig proxyConfig) {
+  static Application setupReverseProxy(
+      ApplicationConfig appConfig, ProxyRouteConfig proxyConfig, XioTracing tracing) {
     ClientFactory factory =
-        new ClientFactory() {
+        new ClientFactory(tracing) {
           @Override
           public Client createClient(ChannelHandlerContext ctx, ClientConfig config) {
-            ClientState clientState = new ClientState(channelConfig(ctx), config, () -> null);
-            return new Client(clientState, () -> new ProxyBackendHandler(ctx));
+            ClientState clientState = new ClientState(channelConfig(ctx), config);
+            return new Client(clientState, () -> new ProxyBackendHandler(ctx), getTracing());
           }
         };
 
@@ -115,7 +117,9 @@ public class ReverseProxyFunctionalTest extends Assert {
     Config root = ConfigFactory.load();
     ProxyRouteConfig proxyConfig = new ProxyRouteConfig(root.getConfig("xio.testProxyRoute"));
 
-    reverseProxy = setupReverseProxy(appConfig, proxyConfig);
+    reverseProxy =
+        setupReverseProxy(
+            appConfig, proxyConfig, new XioTracing(root.getConfig("xio.testProxyRoute")));
   }
 
   void setupClient(boolean h2) throws Exception {
