@@ -57,8 +57,10 @@ public class ClientChannelInitializerTest extends Assert {
 
     subject = new ClientChannelInitializer(clientState, () -> appHandler, tracing);
 
-    // Assert that we did not call handlerAdded when the tracing/traceHandler is null
-    // This would crash if we tried adding a null handler, thus no explicit assertion
+    // Assert that we did not add a HttpClientTracingHandler to the pipeline
+    val testChannel = new EmbeddedChannel(subject);
+    val result = testChannel.pipeline().get(HttpClientTracingHandler.class);
+    assertEquals(result, null);
   }
 
   @Test
@@ -71,10 +73,9 @@ public class ClientChannelInitializerTest extends Assert {
 
     subject = new ClientChannelInitializer(clientState, () -> appHandler, tracing);
 
-    // the EmbeddedChannel will invoke the channelInit on the ChannelInitializer and add the
-    // handlers
+    // Assert that we did not add a HttpClientTracingHandler to the pipeline
     val testChannel = new EmbeddedChannel(subject);
-    val result = testChannel.pipeline().get("distributed tracing");
+    val result = testChannel.pipeline().get(HttpClientTracingHandler.class);
     assertEquals(result, tracingHandler);
   }
 }
