@@ -10,16 +10,7 @@ import io.netty.channel.ChannelInitializer;
 import java.util.function.Supplier;
 import lombok.val;
 
-public class ClientChannelInitializer {
-  public static final String sslHandlerName = "ssl handler";
-  public static final String negotiationHandlerName = "negotiation handler";
-  public static final String codecName = "codec";
-  public static final String tracingName = "distributed tracing";
-  public static final String applicationCodecName = "application codec";
-  public static final String idleHandlerName = "idle handler";
-  public static final String messageLoggingName = "message logging";
-  public static final String requestBufferName = "request buffer";
-  public static final String appHandlerName = "app handler";
+public class ClientChannelInitializer extends ChannelInitializer {
 
   private final ClientState state;
   private final Supplier<ChannelHandler> appHandler;
@@ -32,39 +23,36 @@ public class ClientChannelInitializer {
     this.tracing = tracing;
   }
 
-  public ChannelInitializer createChannelInitializer() {
-    return new ChannelInitializer() {
-      public void initChannel(Channel channel) {
-        if (state.sslContext != null) {
-          channel
-              .pipeline()
-              .addLast(
-                  sslHandlerName,
-                  state.sslContext.newHandler(
-                      channel.alloc(), state.remote.getHostString(), state.remote.getPort()));
-        }
-        channel
-            .pipeline()
-            .addLast(
-                negotiationHandlerName,
-                new HttpClientNegotiationHandler(ClientChannelInitializer.this::buildHttp2Handler))
-            .addLast(codecName, CodecPlaceholderHandler.INSTANCE);
-        if (tracing != null) {
-          val traceHandler = tracing.newClientHandler(state.config.isTlsEnabled());
-          Pipelines.addHandler(channel.pipeline(), tracingName, traceHandler);
-        }
-        channel
-            .pipeline()
-            .addLast(applicationCodecName, ApplicationCodecPlaceholderHandler.INSTANCE)
-            .addLast(idleHandlerName, new XioIdleDisconnectHandler(60, 60, 60))
-            .addLast(messageLoggingName, new XioMessageLogger(Client.class, "objects"))
-            .addLast(requestBufferName, new RequestBuffer())
-            .addLast(appHandlerName, appHandler.get());
-      }
-    };
-  }
-
   private ChannelHandler buildHttp2Handler() {
     return new Http2HandlerBuilder().server(false).build();
+  }
+
+  @Override
+  protected void initChannel(Channel channel) throws Exception {
+    if (state.sslContext != null) {
+      channel
+          .pipeline()
+          .addLast(
+              "ssl handler",
+              state.sslContext.newHandler(
+                  channel.alloc(), state.remote.getHostString(), state.remote.getPort()));
+    }
+    channel
+        .pipeline()
+        .addLast(
+            "negotiation handler",
+            new HttpClientNegotiationHandler(ClientChannelInitializer.this::buildHttp2Handler))
+        .addLast("codec", CodecPlaceholderHandler.INSTANCE);
+    if (tracing != null) {
+      val traceHandler = tracing.newClientHandler(state.config.isTlsEnabled());
+      Pipelines.addHandler(channel.pipeline(), "distributed tracing", traceHandler);
+    }
+    channel
+        .pipeline()
+        .addLast("application codec", ApplicationCodecPlaceholderHandler.INSTANCE)
+        .addLast("idle handler", new XioIdleDisconnectHandler(60, 60, 60))
+        .addLast("message logging", new XioMessageLogger(Client.class, "objects"))
+        .addLast("request buffer", new RequestBuffer())
+        .addLast("app handler", appHandler.get());
   }
 }

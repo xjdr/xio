@@ -70,12 +70,11 @@ public class ClientChannelInitializerTest extends Assert {
     when(tracing.newClientHandler(clientConfig.getTls().isUseSsl())).thenReturn(tracingHandler);
 
     subject = new ClientChannelInitializer(clientState, () -> appHandler, tracing);
-    val channelInitializer = subject.createChannelInitializer();
 
     // the EmbeddedChannel will invoke the channelInit on the ChannelInitializer and add the
     // handlers
-    val testChannel = new EmbeddedChannel(channelInitializer);
-    val result = testChannel.pipeline().get(ClientChannelInitializer.tracingName);
+    val testChannel = new EmbeddedChannel(subject);
+    val result = testChannel.pipeline().get("distributed tracing");
     assertEquals(result, tracingHandler);
   }
 }

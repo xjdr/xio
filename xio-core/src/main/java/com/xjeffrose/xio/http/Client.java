@@ -47,7 +47,7 @@ public class Client {
     Bootstrap b = new Bootstrap();
     b.channel(state.channelConfig.channel());
     b.group(state.channelConfig.workerGroup());
-    b.handler(clientChannelInitializer.createChannelInitializer());
+    b.handler(clientChannelInitializer);
     return b.connect(state.remote);
   }
 
