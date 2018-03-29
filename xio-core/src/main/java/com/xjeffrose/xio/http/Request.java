@@ -7,7 +7,7 @@ import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
 
 @UnstableApi
-public interface Request {
+public interface Request extends Traceable {
 
   boolean startOfStream();
 

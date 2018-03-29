@@ -21,7 +21,7 @@ public class HttpClient {
 
   public void write(HttpRequest request, TraceContext context) {
     request.headers().set("Host", hostHeader);
-    client.write(new XioRequest(request, context));
+    client.write(new XioRequest<>(request, context));
   }
 
   public void write(HttpRequest request) {

@@ -1,12 +1,13 @@
 package com.xjeffrose.xio.http;
 
+import brave.Span;
 import com.google.auto.value.AutoValue;
 import com.xjeffrose.xio.core.internal.UnstableApi;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
 import java.util.Optional;
-import lombok.Builder;
+import javax.annotation.Nullable;
 import lombok.ToString;
 
 /** Value class for representing an outgoing HTTP1/2 Request, for use in a client. */
@@ -30,6 +31,9 @@ public abstract class DefaultFullRequest implements FullRequest {
 
   public abstract int streamId();
 
+  @Nullable
+  public abstract Span traceSpan();
+
   /** Not intended to be called. */
   @Override
   public String version() {
@@ -52,6 +56,8 @@ public abstract class DefaultFullRequest implements FullRequest {
     public abstract Builder headers(Headers headers);
 
     public abstract Builder streamId(int streamId);
+
+    public abstract Builder traceSpan(Span span);
 
     public abstract DefaultFullRequest build();
 
