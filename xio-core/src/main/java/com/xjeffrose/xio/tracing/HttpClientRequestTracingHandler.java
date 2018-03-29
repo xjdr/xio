@@ -1,11 +1,6 @@
 package com.xjeffrose.xio.tracing;
 
-import brave.Span;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelOutboundHandlerAdapter;
-import io.netty.channel.ChannelPromise;
+import io.netty.channel.*;
 import io.netty.handler.codec.http.HttpRequest;
 
 class HttpClientRequestTracingHandler extends ChannelOutboundHandlerAdapter {
@@ -26,7 +21,7 @@ class HttpClientRequestTracingHandler extends ChannelOutboundHandlerAdapter {
     }
 
     HttpRequest request = (HttpRequest) msg;
-    Span span = state.onRequest(ctx, request);
+    state.onRequest(ctx, request);
 
     ctx.write(msg, promise)
         .addListener(

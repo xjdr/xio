@@ -1,18 +1,19 @@
 package com.xjeffrose.xio.http;
 
+import brave.Span;
 import com.google.auto.value.AutoValue;
 import com.xjeffrose.xio.core.internal.UnstableApi;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
 import java.util.Optional;
-import lombok.Builder;
+import javax.annotation.Nullable;
 import lombok.ToString;
 
 /** Value class for representing a streaming outgoing HTTP1/2 Request, for use in a client. */
 @UnstableApi
 @AutoValue
 @ToString
-public abstract class DefaultStreamingRequest implements StreamingRequest {
+public abstract class DefaultStreamingRequest implements StreamingRequest, Traceable {
 
   @Override
   public boolean startOfStream() {
@@ -26,6 +27,9 @@ public abstract class DefaultStreamingRequest implements StreamingRequest {
   public abstract Headers headers();
 
   public abstract int streamId();
+
+  @Nullable
+  public abstract Span traceSpan();
 
   /** Not intended to be called. */
   @Override
@@ -47,6 +51,8 @@ public abstract class DefaultStreamingRequest implements StreamingRequest {
     public abstract Builder headers(Headers headers);
 
     public abstract Builder streamId(int streamId);
+
+    public abstract Builder traceSpan(Span span);
 
     public abstract DefaultStreamingRequest build();
 

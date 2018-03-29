@@ -31,6 +31,7 @@ public class HttpTracingState {
     ctx.channel().attr(context_key).set(context);
   }
 
+  // get the context set by outbound request XioRequestEncoder (outbound)
   public static TraceContext popContext(ChannelHandlerContext ctx) {
     return ctx.channel().attr(context_key).getAndSet(null);
   }

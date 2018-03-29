@@ -37,7 +37,7 @@ public class HttpClientTracingState extends HttpTracingState {
     return headers;
   }
 
-  public Span onRequest(ChannelHandlerContext ctx, HttpRequest request) {
+  public void onRequest(ChannelHandlerContext ctx, HttpRequest request) {
     TraceContext parent = popContext(ctx);
     CurrentTraceContext.Scope scope = null;
     if (parent != null) {
@@ -49,8 +49,6 @@ public class HttpClientTracingState extends HttpTracingState {
     if (scope != null) {
       scope.close();
     }
-
-    return span;
   }
 
   public void onResponse(ChannelHandlerContext ctx, HttpResponse response) {
