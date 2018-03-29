@@ -90,5 +90,6 @@
   <modules>
     <module>xio-core</module>
     <module>xio-test</module>
+    <module>xio-depr</module>
   </modules>
 </project>
