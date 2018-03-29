@@ -4,7 +4,7 @@ import brave.Span;
 import com.xjeffrose.xio.core.internal.UnstableApi;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.HttpMethod;
-import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import lombok.ToString;
 
 @UnstableApi
@@ -76,7 +76,7 @@ public class StreamingRequestData implements Request, StreamingData {
 
   // region Traceable
 
-  @Nonnull
+  @Nullable
   @Override
   public Span traceSpan() {
     return span;

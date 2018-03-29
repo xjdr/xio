@@ -8,7 +8,6 @@ import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpUtil;
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import lombok.ToString;
 
@@ -78,7 +77,7 @@ public class Http1Request implements StreamingRequest {
 
   // region Traceable
 
-  @Nonnull
+  @Nullable
   @Override
   public Span traceSpan() {
     return span;

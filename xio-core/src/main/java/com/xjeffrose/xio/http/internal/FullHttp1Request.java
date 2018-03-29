@@ -74,6 +74,7 @@ public class FullHttp1Request implements FullRequest {
 
   // region Traceable
 
+  @Nullable
   @Override
   public Span traceSpan() {
     return null;
