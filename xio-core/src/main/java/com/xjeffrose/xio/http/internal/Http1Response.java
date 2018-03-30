@@ -2,6 +2,7 @@ package com.xjeffrose.xio.http.internal;
 
 import com.xjeffrose.xio.http.Headers;
 import com.xjeffrose.xio.http.StreamingResponse;
+import com.xjeffrose.xio.http.TraceInfo;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.HttpResponse;
@@ -16,11 +17,19 @@ public class Http1Response implements StreamingResponse {
 
   private final HttpResponse delegate;
   private final Headers headers;
+  private final TraceInfo traceInfo;
+
+  public Http1Response(HttpResponse delegate, TraceInfo traceInfo) {
+    this.delegate = delegate;
+    this.headers = new Http1Headers(delegate.headers());
+    this.traceInfo = traceInfo;
+  }
 
   public Http1Response(HttpResponse delegate) {
-    this.delegate = delegate;
-    headers = new Http1Headers(delegate.headers());
+    this(delegate, new TraceInfo());
   }
+
+  // region Response
 
   public HttpResponseStatus status() {
     return delegate.status();
@@ -37,4 +46,15 @@ public class Http1Response implements StreamingResponse {
   public ByteBuf body() {
     return Unpooled.EMPTY_BUFFER;
   }
+
+  // endregion
+
+  // region Traceable
+
+  @Override
+  public TraceInfo httpTraceInfo() {
+    return traceInfo;
+  }
+
+  // endregion
 }

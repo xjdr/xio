@@ -4,6 +4,7 @@ import com.google.auto.value.AutoValue;
 import com.xjeffrose.xio.core.internal.UnstableApi;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import java.util.Optional;
 import lombok.ToString;
 
 // TODO(CK): Consolidate Full/Streaming Response Builder into a single builder
@@ -19,6 +20,9 @@ public abstract class DefaultFullResponse implements FullResponse {
   public abstract HttpResponseStatus status();
 
   public abstract Headers headers();
+
+  public abstract TraceInfo httpTraceInfo();
+
   /** Not intended to be called. */
   @Override
   public String version() {
@@ -33,7 +37,18 @@ public abstract class DefaultFullResponse implements FullResponse {
 
     public abstract Builder headers(Headers headers);
 
-    public abstract DefaultFullResponse build();
+    public abstract Builder httpTraceInfo(TraceInfo span);
+
+    abstract Optional<TraceInfo> httpTraceInfo();
+
+    abstract DefaultFullResponse autoBuild();
+
+    public DefaultFullResponse build() {
+      if (!httpTraceInfo().isPresent()) {
+        httpTraceInfo(new TraceInfo());
+      }
+      return autoBuild();
+    }
   }
 
   public static Builder builder() {
