@@ -5,7 +5,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.*;
 import static io.netty.handler.codec.http.HttpVersion.*;
 import static org.junit.Assert.*;
 
-import brave.Span;
 import brave.Tracer;
 import brave.http.HttpTracing;
 import com.xjeffrose.xio.bootstrap.XioServerBootstrap;
@@ -65,10 +64,10 @@ public class HttpServerTracingHandlerIntegrationTest { // extends ITHttpServer {
 
           Tracer tracer = httpTracing.tracing().tracer();
 
-          Span parent = HttpTracingState.getSpan(ctx);
-          Span span = tracer.newChild(parent.context()).name("child").start();
+          // Span parent = HttpTracingState.getSpan(ctx);
+          // Span span = tracer.newChild(parent.context()).name("child").start();
           //        System.out.println("channelRead0: " + span);
-          span.finish();
+          // span.finish();
 
         } else if (request.uri().startsWith("/exception")) {
           throw new IOException("exception");

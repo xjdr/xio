@@ -31,6 +31,11 @@ public class FullHttp2Response implements FullResponse {
 
   // region Response
 
+  @Override
+  public boolean endOfStream() {
+    return true;
+  }
+
   /**
    * Throws a RuntimeException if the underlying status cannot be converted to an HttpResponseStatus
    */

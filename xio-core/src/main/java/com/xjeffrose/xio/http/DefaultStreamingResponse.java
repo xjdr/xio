@@ -18,6 +18,8 @@ public abstract class DefaultStreamingResponse implements StreamingResponse {
 
   public abstract TraceInfo httpTraceInfo();
 
+  public abstract boolean endOfStream();
+
   /** Not intended to be called. */
   @Override
   public String version() {
@@ -36,8 +38,11 @@ public abstract class DefaultStreamingResponse implements StreamingResponse {
       if (!httpTraceInfo().isPresent()) {
         httpTraceInfo(new TraceInfo());
       }
+      endOfStream(true);
       return autoBuild();
     }
+
+    abstract Builder endOfStream(boolean endOfStream);
 
     abstract Optional<TraceInfo> httpTraceInfo();
 

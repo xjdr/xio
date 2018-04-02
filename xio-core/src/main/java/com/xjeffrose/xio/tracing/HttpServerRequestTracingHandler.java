@@ -1,22 +1,23 @@
 package com.xjeffrose.xio.tracing;
 
-import brave.Span;
+import com.xjeffrose.xio.http.Request;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.handler.codec.http.HttpRequest;
 
-class HttpServerRequestTracingHandler extends SimpleChannelInboundHandler<HttpRequest> {
+class HttpServerRequestTracingHandler extends SimpleChannelInboundHandler<Request> {
 
-  private final HttpServerTracingState state;
+  private final HttpServerTracingDispatch state;
 
-  public HttpServerRequestTracingHandler(HttpServerTracingState state) {
+  public HttpServerRequestTracingHandler(HttpServerTracingDispatch state) {
     super();
     this.state = state;
   }
 
   @Override
-  public void channelRead0(ChannelHandlerContext ctx, HttpRequest request) throws Exception {
-    Span span = state.onRequest(ctx, request);
+  public void channelRead0(ChannelHandlerContext ctx, Request request) throws Exception {
+    if (request.startOfStream()) {
+      state.onRequest(ctx, request);
+    }
     ctx.fireChannelRead(request);
   }
 

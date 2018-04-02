@@ -6,7 +6,7 @@ public class Status404RequestHandler implements PipelineRequestHandler {
 
   @Override
   public void handle(ChannelHandlerContext ctx, Request request, RouteState route) {
-    Response notFound = ResponseBuilders.newNotFound();
+    Response notFound = ResponseBuilders.newNotFound(request);
     ctx.writeAndFlush(notFound);
   }
 }

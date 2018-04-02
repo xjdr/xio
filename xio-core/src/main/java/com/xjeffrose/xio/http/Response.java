@@ -7,6 +7,8 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 @UnstableApi
 public interface Response extends Traceable {
 
+  boolean endOfStream();
+
   HttpResponseStatus status();
 
   String version();
