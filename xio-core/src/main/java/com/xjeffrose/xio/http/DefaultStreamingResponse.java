@@ -34,13 +34,13 @@ public abstract class DefaultStreamingResponse implements StreamingResponse {
 
     public DefaultStreamingResponse build() {
       if (!httpTraceInfo().isPresent()) {
-        httpTraceInfo(new TraceInfo());
+        httpTraceInfo(new TraceInfo(headers()));
       }
       return autoBuild();
     }
 
+    abstract Headers headers();
     abstract Optional<TraceInfo> httpTraceInfo();
-
     abstract DefaultStreamingResponse autoBuild();
   }
 

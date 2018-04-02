@@ -72,8 +72,8 @@ public abstract class DefaultFullRequest implements FullRequest {
     abstract DefaultFullRequest autoBuild();
 
     public DefaultFullRequest build() {
-      if (!httpTraceInfo().isPresent()) {
-        httpTraceInfo(new TraceInfo());
+      if (!httpTraceInfo().isPresent() && headers().isPresent()) {
+        httpTraceInfo(new TraceInfo(headers().get()));
       }
       streamId(-1);
       return autoBuild();

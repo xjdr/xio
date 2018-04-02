@@ -23,11 +23,11 @@ public class Http1Request implements StreamingRequest {
   public Http1Request(HttpRequest delegate, TraceInfo traceInfo) {
     this.delegate = delegate;
     this.headers = new Http1Headers(delegate.headers());
-    this.traceInfo = traceInfo;
+    this.traceInfo = traceInfo == null ? new TraceInfo(headers) : traceInfo;
   }
 
   public Http1Request(HttpRequest delegate) {
-    this(delegate, new TraceInfo());
+    this(delegate, null);
   }
 
   // region Request

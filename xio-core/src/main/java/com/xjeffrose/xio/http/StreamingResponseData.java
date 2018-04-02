@@ -16,11 +16,11 @@ public class StreamingResponseData implements Response, StreamingData {
   public StreamingResponseData(Response response, StreamingData data, TraceInfo traceInfo) {
     this.response = response;
     this.data = data;
-    this.traceInfo = traceInfo;
+    this.traceInfo = traceInfo == null ? new TraceInfo(response.headers()) : traceInfo;
   }
 
   public StreamingResponseData(Response response, StreamingData data) {
-    this(response, data, new TraceInfo());
+    this(response, data, null);
   }
 
   // region Response
