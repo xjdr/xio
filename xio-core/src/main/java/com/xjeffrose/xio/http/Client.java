@@ -7,9 +7,12 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelPromise;
+import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.GenericFutureListener;
 import io.netty.util.concurrent.PromiseCombiner;
 import java.util.function.Supplier;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 
 @Slf4j
 public class Client {
@@ -56,13 +59,33 @@ public class Client {
       ChannelFuture future = connect();
       channel = future.channel();
       ChannelPromise promise = channel.newPromise();
-      PromiseCombiner combiner = new PromiseCombiner();
-      combiner.add(future.addListener(connectionListener));
-      combiner.add(channel.writeAndFlush(request).addListener(writeListener));
-      combiner.finish(promise);
+      future.addListeners(connectionListener, new GenericFutureListener<Future<? super Void>>() {
+        @Override
+        public void operationComplete(Future<? super Void> future) throws Exception {
+          if (future.isDone() && future.isSuccess()) {
+            writeOperation(request, promise);
+          } else {
+            promise.setFailure(future.cause());
+          }
+        }
+      });
       return promise;
     } else {
       return channel.writeAndFlush(request).addListener(writeListener);
     }
+  }
+
+  private void writeOperation(Request request, ChannelPromise promise) {
+    val writeFuture = channel.writeAndFlush(request);
+    writeFuture.addListeners(writeListener, new GenericFutureListener<Future<? super Void>>() {
+      @Override
+      public void operationComplete(Future<? super Void> future) throws Exception {
+        if (future.isDone() && future.isSuccess()) {
+          promise.setSuccess();
+        } else {
+          promise.setFailure(future.cause());
+        }
+      }
+    });
   }
 }
