@@ -28,7 +28,7 @@ class HttpClientRequestTracingHandler extends ChannelOutboundHandlerAdapter {
         .addListener(
             future -> {
               if (!future.isSuccess()) {
-                state.onError(request, future.cause());
+                state.onError(ctx, request, future.cause());
               }
             });
   }

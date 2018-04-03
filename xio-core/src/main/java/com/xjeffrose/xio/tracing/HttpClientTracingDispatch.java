@@ -65,7 +65,8 @@ public class HttpClientTracingDispatch extends HttpTracingState {
     popSpan(ctx).ifPresent((span -> handler.handleReceive(null, cause, span)));
   }
 
-  public void onError(Traceable traceable, Throwable cause) {
+  public void onError(ChannelHandlerContext ctx, Traceable traceable, Throwable cause) {
+    popSpan(ctx);
     traceable.httpTraceInfo().getSpan().ifPresent(span -> handler.handleReceive(null, cause, span));
   }
 }
