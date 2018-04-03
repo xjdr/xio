@@ -1,13 +1,11 @@
 package com.xjeffrose.xio.http;
 
-import brave.Span;
 import com.google.auto.value.AutoValue;
 import com.xjeffrose.xio.core.internal.UnstableApi;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import lombok.ToString;
 
 /** Value class for representing an outgoing HTTP1/2 Request, for use in a client. */
@@ -31,8 +29,7 @@ public abstract class DefaultFullRequest implements FullRequest {
 
   public abstract int streamId();
 
-  @Nullable
-  public abstract Span traceSpan();
+  public abstract TraceInfo httpTraceInfo();
 
   /** Not intended to be called. */
   @Override
@@ -57,9 +54,7 @@ public abstract class DefaultFullRequest implements FullRequest {
 
     public abstract Builder streamId(int streamId);
 
-    public abstract Builder traceSpan(Span span);
-
-    public abstract DefaultFullRequest build();
+    public abstract Builder httpTraceInfo(TraceInfo traceInfo);
 
     abstract Optional<Headers> headers();
 
@@ -70,6 +65,17 @@ public abstract class DefaultFullRequest implements FullRequest {
 
       headers().get().set(HttpHeaderNames.HOST, host);
       return this;
+    }
+
+    abstract Optional<TraceInfo> httpTraceInfo();
+
+    abstract DefaultFullRequest autoBuild();
+
+    public DefaultFullRequest build() {
+      if (!httpTraceInfo().isPresent() && headers().isPresent()) {
+        httpTraceInfo(new TraceInfo(headers().get()));
+      }
+      return autoBuild();
     }
   }
 

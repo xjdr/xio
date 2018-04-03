@@ -1,10 +1,8 @@
 package com.xjeffrose.xio.http;
 
-import brave.Span;
 import com.xjeffrose.xio.core.internal.UnstableApi;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.HttpMethod;
-import javax.annotation.Nullable;
 import lombok.ToString;
 
 @UnstableApi
@@ -13,12 +11,12 @@ public class StreamingRequestData implements Request, StreamingData {
 
   private final Request request;
   private final StreamingData data;
-  private final Span span;
+  private final TraceInfo traceInfo;
 
-  public StreamingRequestData(Request request, StreamingData data, Span span) {
+  public StreamingRequestData(Request request, StreamingData data, TraceInfo traceInfo) {
     this.request = request;
     this.data = data;
-    this.span = span;
+    this.traceInfo = traceInfo;
   }
 
   public StreamingRequestData(Request request, StreamingData data) {
@@ -76,10 +74,9 @@ public class StreamingRequestData implements Request, StreamingData {
 
   // region Traceable
 
-  @Nullable
   @Override
-  public Span traceSpan() {
-    return span;
+  public TraceInfo httpTraceInfo() {
+    return traceInfo;
   }
 
   // endregion

@@ -23,7 +23,7 @@ public interface Request extends Traceable {
   Headers headers();
 
   default String host() {
-    return headers().get(HttpHeaderNames.HOST).toString();
+    return headers().get(HttpHeaderNames.HOST.toString());
   }
 
   default String host(String defaultValue) {

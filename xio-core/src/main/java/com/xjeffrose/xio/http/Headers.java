@@ -6,11 +6,25 @@ import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.Http2Headers;
 import java.util.Map.Entry;
+import javax.annotation.Nullable;
 
 @UnstableApi
 public interface Headers
     extends io.netty.handler.codec.Headers<CharSequence, CharSequence, Headers>,
         Iterable<Entry<CharSequence, CharSequence>> {
+
+  @Nullable
+  CharSequence get(CharSequence name);
+
+  @Nullable
+  default String get(String name) {
+    CharSequence value = get((CharSequence) name);
+    if (value != null) {
+      return value.toString();
+    } else {
+      return null;
+    }
+  }
 
   /**
    * @param isTrailer this Headers object will be used for trailers.

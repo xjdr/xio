@@ -1,14 +1,13 @@
 package com.xjeffrose.xio.http.internal;
 
-import brave.Span;
 import com.xjeffrose.xio.http.Headers;
 import com.xjeffrose.xio.http.StreamingRequest;
+import com.xjeffrose.xio.http.TraceInfo;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpUtil;
-import javax.annotation.Nullable;
 import lombok.ToString;
 
 // TODO(CK): Rename this to StreamingHttp1Request
@@ -19,12 +18,12 @@ public class Http1Request implements StreamingRequest {
 
   protected final HttpRequest delegate;
   private final Http1Headers headers;
-  private final Span span;
+  private final TraceInfo traceInfo;
 
-  public Http1Request(HttpRequest delegate, @Nullable Span span) {
+  public Http1Request(HttpRequest delegate, TraceInfo traceInfo) {
     this.delegate = delegate;
-    headers = new Http1Headers(delegate.headers());
-    this.span = span;
+    this.headers = new Http1Headers(delegate.headers());
+    this.traceInfo = traceInfo == null ? new TraceInfo(headers) : traceInfo;
   }
 
   public Http1Request(HttpRequest delegate) {
@@ -77,10 +76,9 @@ public class Http1Request implements StreamingRequest {
 
   // region Traceable
 
-  @Nullable
   @Override
-  public Span traceSpan() {
-    return span;
+  public TraceInfo httpTraceInfo() {
+    return traceInfo;
   }
 
   // endregion

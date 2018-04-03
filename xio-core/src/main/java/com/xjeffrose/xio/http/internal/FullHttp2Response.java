@@ -2,6 +2,7 @@ package com.xjeffrose.xio.http.internal;
 
 import com.xjeffrose.xio.http.FullResponse;
 import com.xjeffrose.xio.http.Headers;
+import com.xjeffrose.xio.http.TraceInfo;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -15,11 +16,24 @@ public class FullHttp2Response implements FullResponse {
   private final Http2Headers delegate;
   private final Http2HeadersWrapper headers;
   private final int streamId;
+  private final TraceInfo traceInfo;
+
+  public FullHttp2Response(Http2Headers delegate, int streamId, TraceInfo traceInfo) {
+    this.delegate = delegate;
+    this.headers = new Http2HeadersWrapper(delegate);
+    this.streamId = streamId;
+    this.traceInfo = traceInfo == null ? new TraceInfo(headers) : traceInfo;
+  }
 
   public FullHttp2Response(Http2Headers delegate, int streamId) {
-    this.delegate = delegate;
-    headers = new Http2HeadersWrapper(delegate);
-    this.streamId = streamId;
+    this(delegate, streamId, null);
+  }
+
+  // region Response
+
+  @Override
+  public boolean endOfStream() {
+    return true;
   }
 
   /**
@@ -58,4 +72,15 @@ public class FullHttp2Response implements FullResponse {
   public ByteBuf body() {
     return Unpooled.EMPTY_BUFFER;
   }
+
+  // endregion
+
+  // region Traceable
+
+  @Override
+  public TraceInfo httpTraceInfo() {
+    return traceInfo;
+  }
+
+  // endregion
 }

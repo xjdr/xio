@@ -1,13 +1,12 @@
 package com.xjeffrose.xio.http.internal;
 
-import brave.Span;
 import com.xjeffrose.xio.http.Headers;
 import com.xjeffrose.xio.http.StreamingRequest;
+import com.xjeffrose.xio.http.TraceInfo;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http2.Http2Headers;
-import javax.annotation.Nullable;
 import lombok.ToString;
 
 /** Wrap an incoming Http2 Request, for use in a server. */
@@ -17,13 +16,13 @@ public class StreamingHttp2Request implements StreamingRequest {
   private final Http2Headers delegate;
   private final Http2HeadersWrapper headers;
   private final int streamId;
-  private final Span span;
+  private final TraceInfo traceInfo;
 
-  public StreamingHttp2Request(Http2Headers delegate, int streamId, @Nullable Span span) {
+  public StreamingHttp2Request(Http2Headers delegate, int streamId, TraceInfo traceInfo) {
     this.delegate = delegate;
     this.headers = new Http2HeadersWrapper(delegate);
     this.streamId = streamId;
-    this.span = span;
+    this.traceInfo = traceInfo == null ? new TraceInfo(headers) : traceInfo;
   }
 
   public StreamingHttp2Request(Http2Headers delegate, int streamId) {
@@ -81,10 +80,9 @@ public class StreamingHttp2Request implements StreamingRequest {
 
   // region Traceable
 
-  @Nullable
   @Override
-  public Span traceSpan() {
-    return span;
+  public TraceInfo httpTraceInfo() {
+    return traceInfo;
   }
 
   // endregion

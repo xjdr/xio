@@ -1,24 +1,23 @@
 package com.xjeffrose.xio.http.internal;
 
-import brave.Span;
 import com.xjeffrose.xio.http.FullRequest;
 import com.xjeffrose.xio.http.Headers;
+import com.xjeffrose.xio.http.TraceInfo;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http2.Http2Headers;
-import javax.annotation.Nullable;
 
 public class FullHttp2Request implements FullRequest {
 
   private final Http2Headers delegate;
   private final Http2HeadersWrapper headers;
   private final int streamId;
-  private final Span span;
+  private final TraceInfo traceInfo;
 
-  public FullHttp2Request(Http2Headers delegate, int streamId, @Nullable Span span) {
+  public FullHttp2Request(Http2Headers delegate, int streamId, TraceInfo traceInfo) {
     this.delegate = delegate;
     this.headers = new Http2HeadersWrapper(delegate);
     this.streamId = streamId;
-    this.span = span;
+    this.traceInfo = traceInfo == null ? new TraceInfo(headers) : traceInfo;
   }
 
   public FullHttp2Request(Http2Headers delegate, int streamId) {
@@ -71,10 +70,9 @@ public class FullHttp2Request implements FullRequest {
 
   // region Traceable
 
-  @Nullable
   @Override
-  public Span traceSpan() {
-    return span;
+  public TraceInfo httpTraceInfo() {
+    return traceInfo;
   }
 
   // endregion
