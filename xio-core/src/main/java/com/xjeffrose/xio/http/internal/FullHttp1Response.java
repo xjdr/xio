@@ -26,6 +26,11 @@ public class FullHttp1Response implements FullResponse {
 
   // region Response
 
+  @Override
+  public boolean endOfStream() {
+    return true;
+  }
+
   public HttpResponseStatus status() {
     return delegate.status();
   }

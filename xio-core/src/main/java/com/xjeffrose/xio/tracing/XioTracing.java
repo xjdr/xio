@@ -50,7 +50,7 @@ public class XioTracing {
       return null;
     }
     HttpTracing httpTracing = HttpTracing.create(tracing);
-    HttpServerTracingState state = new HttpServerTracingState(httpTracing, tls);
+    HttpServerTracingDispatch state = new HttpServerTracingDispatch(httpTracing, tls);
     return new HttpServerTracingHandler(state);
   }
 
@@ -59,7 +59,7 @@ public class XioTracing {
       return null;
     }
     HttpTracing httpTracing = HttpTracing.create(tracing);
-    HttpClientTracingState state = new HttpClientTracingState(httpTracing, tls);
-    return new HttpClientTracingHandler(state);
+    HttpClientTracingDispatch tracingDispatch = new HttpClientTracingDispatch(httpTracing, tls);
+    return new HttpClientTracingHandler(tracingDispatch);
   }
 }

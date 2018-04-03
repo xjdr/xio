@@ -33,6 +33,11 @@ public class StreamingHttp2Response implements StreamingResponse {
 
   // region Response
 
+  @Override
+  public boolean endOfStream() {
+    return false;
+  }
+
   public HttpResponseStatus status() {
     try {
       return HttpConversionUtil.parseStatus(delegate.status());

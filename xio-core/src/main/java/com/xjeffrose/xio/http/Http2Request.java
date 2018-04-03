@@ -18,10 +18,10 @@ public class Http2Request<T> {
   }
 
   public static Http2Request<Http2DataFrame> build(int streamId, Http2DataFrame data, boolean eos) {
-    return new Http2Request<Http2DataFrame>(streamId, data, eos);
+    return new Http2Request<>(streamId, data, eos);
   }
 
   public static Http2Request<Http2Headers> build(int streamId, Http2Headers headers, boolean eos) {
-    return new Http2Request<Http2Headers>(streamId, headers, eos);
+    return new Http2Request<>(streamId, headers, eos);
   }
 }

@@ -23,6 +23,8 @@ public abstract class DefaultFullResponse implements FullResponse {
 
   public abstract TraceInfo httpTraceInfo();
 
+  public abstract boolean endOfStream();
+
   /** Not intended to be called. */
   @Override
   public String version() {
@@ -39,18 +41,21 @@ public abstract class DefaultFullResponse implements FullResponse {
 
     public abstract Builder httpTraceInfo(TraceInfo span);
 
-    abstract Optional<TraceInfo> httpTraceInfo();
-
-    abstract DefaultFullResponse autoBuild();
-
     abstract Headers headers();
 
     public DefaultFullResponse build() {
       if (!httpTraceInfo().isPresent()) {
         httpTraceInfo(new TraceInfo(headers()));
       }
+      endOfStream(true);
       return autoBuild();
     }
+
+    abstract Builder endOfStream(boolean endOfStream);
+
+    abstract Optional<TraceInfo> httpTraceInfo();
+
+    abstract DefaultFullResponse autoBuild();
   }
 
   public static Builder builder() {

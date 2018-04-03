@@ -1,13 +1,13 @@
 package com.xjeffrose.xio.tracing;
 
+import com.xjeffrose.xio.http.Request;
 import io.netty.channel.*;
-import io.netty.handler.codec.http.HttpRequest;
 
 class HttpClientRequestTracingHandler extends ChannelOutboundHandlerAdapter {
 
-  private final HttpClientTracingState state;
+  private final HttpClientTracingDispatch state;
 
-  public HttpClientRequestTracingHandler(HttpClientTracingState state) {
+  public HttpClientRequestTracingHandler(HttpClientTracingDispatch state) {
     super();
     this.state = state;
   }
@@ -15,22 +15,20 @@ class HttpClientRequestTracingHandler extends ChannelOutboundHandlerAdapter {
   @Override
   public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise)
       throws Exception {
-    if (!(msg instanceof HttpRequest)) {
+    if (!(msg instanceof Request)) {
       ctx.write(msg, promise);
       return;
     }
+    Request request = (Request) msg;
 
-    HttpRequest request = (HttpRequest) msg;
-    state.onRequest(ctx, request);
-
+    if (request.startOfStream()) {
+      state.onRequest(ctx, request);
+    }
     ctx.write(msg, promise)
         .addListener(
-            new ChannelFutureListener() {
-              @Override
-              public void operationComplete(ChannelFuture future) throws Exception {
-                if (!future.isSuccess()) {
-                  state.onError(ctx, future.cause());
-                }
+            future -> {
+              if (!future.isSuccess()) {
+                state.onError(ctx, request, future.cause());
               }
             });
   }
