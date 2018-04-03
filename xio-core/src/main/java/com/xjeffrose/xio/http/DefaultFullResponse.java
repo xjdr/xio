@@ -40,7 +40,9 @@ public abstract class DefaultFullResponse implements FullResponse {
     public abstract Builder httpTraceInfo(TraceInfo span);
 
     abstract Optional<TraceInfo> httpTraceInfo();
+
     abstract DefaultFullResponse autoBuild();
+
     abstract Headers headers();
 
     public DefaultFullResponse build() {

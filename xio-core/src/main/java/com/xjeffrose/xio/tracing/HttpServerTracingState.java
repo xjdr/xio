@@ -5,7 +5,6 @@ import brave.Tracer;
 import brave.http.HttpServerHandler;
 import brave.http.HttpTracing;
 import brave.propagation.TraceContext;
-import com.xjeffrose.xio.http.Traceable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpRequest;

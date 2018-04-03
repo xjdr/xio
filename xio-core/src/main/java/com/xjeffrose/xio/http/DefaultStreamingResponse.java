@@ -40,7 +40,9 @@ public abstract class DefaultStreamingResponse implements StreamingResponse {
     }
 
     abstract Headers headers();
+
     abstract Optional<TraceInfo> httpTraceInfo();
+
     abstract DefaultStreamingResponse autoBuild();
   }
 

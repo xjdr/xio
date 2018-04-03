@@ -1,10 +1,6 @@
 package com.xjeffrose.xio.http;
 
 import brave.Span;
-import com.xjeffrose.xio.http.internal.Http1Headers;
-import io.netty.handler.codec.http2.Http2Headers;
-
-import java.util.Map;
 import java.util.Optional;
 
 /** Mutable data object storing http tracing information. */
