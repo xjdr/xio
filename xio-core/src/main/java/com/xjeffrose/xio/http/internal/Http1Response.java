@@ -22,11 +22,11 @@ public class Http1Response implements StreamingResponse {
   public Http1Response(HttpResponse delegate, TraceInfo traceInfo) {
     this.delegate = delegate;
     this.headers = new Http1Headers(delegate.headers());
-    this.traceInfo = traceInfo;
+    this.traceInfo = traceInfo == null ? new TraceInfo(headers) : traceInfo;
   }
 
   public Http1Response(HttpResponse delegate) {
-    this(delegate, new TraceInfo());
+    this(delegate, null);
   }
 
   // region Response

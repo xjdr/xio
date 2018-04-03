@@ -24,11 +24,11 @@ public class StreamingHttp2Response implements StreamingResponse {
     this.delegate = delegate;
     this.headers = new Http2HeadersWrapper(delegate);
     this.streamId = streamId;
-    this.traceInfo = traceInfo;
+    this.traceInfo = traceInfo == null ? new TraceInfo(headers) : traceInfo;
   }
 
   public StreamingHttp2Response(Http2Headers delegate, int streamId) {
-    this(delegate, streamId, new TraceInfo());
+    this(delegate, streamId, null);
   }
 
   // region Response

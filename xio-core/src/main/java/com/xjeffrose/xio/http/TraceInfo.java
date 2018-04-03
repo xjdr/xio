@@ -7,6 +7,11 @@ import java.util.Optional;
 public class TraceInfo {
 
   private Span span = null;
+  private final Headers headers;
+
+  public TraceInfo(Headers headers) {
+    this.headers = headers;
+  }
 
   public Optional<Span> getSpan() {
     return Optional.ofNullable(span);
@@ -14,5 +19,9 @@ public class TraceInfo {
 
   public void setSpan(Span span) {
     this.span = span;
+  }
+
+  public Headers getHeaders() {
+    return headers;
   }
 }

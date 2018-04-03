@@ -17,11 +17,11 @@ public class FullHttp2Request implements FullRequest {
     this.delegate = delegate;
     this.headers = new Http2HeadersWrapper(delegate);
     this.streamId = streamId;
-    this.traceInfo = traceInfo;
+    this.traceInfo = traceInfo == null ? new TraceInfo(headers) : traceInfo;
   }
 
   public FullHttp2Request(Http2Headers delegate, int streamId) {
-    this(delegate, streamId, new TraceInfo());
+    this(delegate, streamId, null);
   }
 
   // region Request

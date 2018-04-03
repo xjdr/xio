@@ -67,15 +67,14 @@ public abstract class DefaultStreamingRequest implements StreamingRequest, Trace
     abstract DefaultStreamingRequest autoBuild();
 
     public DefaultStreamingRequest build() {
-      if (!httpTraceInfo().isPresent()) {
-        httpTraceInfo(new TraceInfo());
+      if (!httpTraceInfo().isPresent() && headers().isPresent()) {
+        httpTraceInfo(new TraceInfo(headers().get()));
       }
-      streamId(-1);
       return autoBuild();
     }
   }
 
   public static Builder builder() {
-    return new AutoValue_DefaultStreamingRequest.Builder();
+    return new AutoValue_DefaultStreamingRequest.Builder().streamId(-1);
   }
 }

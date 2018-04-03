@@ -72,15 +72,14 @@ public abstract class DefaultFullRequest implements FullRequest {
     abstract DefaultFullRequest autoBuild();
 
     public DefaultFullRequest build() {
-      if (!httpTraceInfo().isPresent()) {
-        httpTraceInfo(new TraceInfo());
+      if (!httpTraceInfo().isPresent() && headers().isPresent()) {
+        httpTraceInfo(new TraceInfo(headers().get()));
       }
-      streamId(-1);
       return autoBuild();
     }
   }
 
   public static Builder builder() {
-    return new AutoValue_DefaultFullRequest.Builder();
+    return new AutoValue_DefaultFullRequest.Builder().streamId(-1);
   }
 }

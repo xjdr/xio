@@ -17,11 +17,11 @@ public class FullHttp1Response implements FullResponse {
   public FullHttp1Response(FullHttpResponse delegate, TraceInfo traceInfo) {
     this.delegate = delegate;
     this.headers = new Http1Headers(delegate.headers());
-    this.traceInfo = traceInfo;
+    this.traceInfo = traceInfo == null ? new TraceInfo(headers) : traceInfo;
   }
 
   public FullHttp1Response(FullHttpResponse delegate) {
-    this(delegate, new TraceInfo());
+    this(delegate, null);
   }
 
   // region Response

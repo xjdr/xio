@@ -41,9 +41,11 @@ public abstract class DefaultFullResponse implements FullResponse {
 
     public abstract Builder httpTraceInfo(TraceInfo span);
 
+    abstract Headers headers();
+
     public DefaultFullResponse build() {
       if (!httpTraceInfo().isPresent()) {
-        httpTraceInfo(new TraceInfo());
+        httpTraceInfo(new TraceInfo(headers()));
       }
       endOfStream(true);
       return autoBuild();
