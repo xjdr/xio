@@ -34,7 +34,7 @@ class XioServiceRateLimiter extends ChannelDuplexHandler {
   private final RateLimiter globalSoftLimiter;
 
   private Map<ChannelHandlerContext, Timer.Context> timerMap =
-    PlatformDependent.newConcurrentHashMap();
+      PlatformDependent.newConcurrentHashMap();
 
   public XioServiceRateLimiter(MetricRegistry metrics, ApplicationConfig config) {
     this.reqs = metrics.meter(name("requests", "Rate"));
@@ -44,13 +44,13 @@ class XioServiceRateLimiter extends ChannelDuplexHandler {
     this.globalSoftLimiter = RateLimiter.create(config.getGlobalSoftReqPerSec());
 
     softRateLimitHasher =
-      buildHasher(softLimiterMap, config.getRateLimiterPoolSize(), config.getSoftReqPerSec());
+        buildHasher(softLimiterMap, config.getRateLimiterPoolSize(), config.getSoftReqPerSec());
     hardRateLimitHasher =
-      buildHasher(hardLimiterMap, config.getRateLimiterPoolSize(), config.getHardReqPerSec());
+        buildHasher(hardLimiterMap, config.getRateLimiterPoolSize(), config.getHardReqPerSec());
   }
 
   private RendezvousHash<CharSequence> buildHasher(
-    Map<String, RateLimiter> limiterMap, int poolSize, double rate) {
+      Map<String, RateLimiter> limiterMap, int poolSize, double rate) {
     List<String> tempPool = new ArrayList<>();
 
     for (int i = 0; i < poolSize; i++) {
@@ -68,7 +68,7 @@ class XioServiceRateLimiter extends ChannelDuplexHandler {
 
     // Rate Limit per server
     String remoteAddress =
-      ((InetSocketAddress) ctx.channel().remoteAddress()).getAddress().getHostAddress();
+        ((InetSocketAddress) ctx.channel().remoteAddress()).getAddress().getHostAddress();
 
     if (config.getClientRateLimitOverride().containsKey(remoteAddress)) {
       if (hardLimiterMap.containsKey(remoteAddress)) {
@@ -80,22 +80,22 @@ class XioServiceRateLimiter extends ChannelDuplexHandler {
         }
       } else {
         hardLimiterMap.put(
-          remoteAddress,
-          RateLimiter.create(config.getClientRateLimitOverride().get(remoteAddress).get(1)));
+            remoteAddress,
+            RateLimiter.create(config.getClientRateLimitOverride().get(remoteAddress).get(1)));
         softLimiterMap.put(
-          remoteAddress,
-          RateLimiter.create(config.getClientRateLimitOverride().get(remoteAddress).get(0)));
+            remoteAddress,
+            RateLimiter.create(config.getClientRateLimitOverride().get(remoteAddress).get(0)));
       }
 
     } else {
       if (!hardLimiterMap
-        .get(hardRateLimitHasher.getOne(remoteAddress.getBytes(Constants.DEFAULT_CHARSET)))
-        .tryAcquire()) {
+          .get(hardRateLimitHasher.getOne(remoteAddress.getBytes(Constants.DEFAULT_CHARSET)))
+          .tryAcquire()) {
         log.debug("Hard Rate limit fired for " + remoteAddress);
         ctx.channel().attr(Constants.HARD_RATE_LIMITED).set(Boolean.TRUE);
       } else if (!softLimiterMap
-        .get(softRateLimitHasher.getOne(remoteAddress.getBytes(Constants.DEFAULT_CHARSET)))
-        .tryAcquire()) {
+          .get(softRateLimitHasher.getOne(remoteAddress.getBytes(Constants.DEFAULT_CHARSET)))
+          .tryAcquire()) {
         ctx.channel().attr(Constants.SOFT_RATE_LIMITED).set(Boolean.TRUE);
       }
     }

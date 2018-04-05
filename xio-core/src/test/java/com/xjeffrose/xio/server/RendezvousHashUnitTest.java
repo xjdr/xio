@@ -1,5 +1,7 @@
 package com.xjeffrose.xio.server;
 
+import static org.junit.Assert.assertEquals;
+
 import com.google.common.collect.ImmutableMap;
 import com.google.common.hash.Funnels;
 import com.xjeffrose.xio.core.Constants;
@@ -12,8 +14,6 @@ import java.util.Random;
 import org.junit.Assert;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-
 public class RendezvousHashUnitTest extends Assert {
   @Test
   public void get() throws Exception {
@@ -25,23 +25,23 @@ public class RendezvousHashUnitTest extends Assert {
     }
 
     RendezvousHash<CharSequence> rendezvousHash =
-      new RendezvousHash<>(Funnels.stringFunnel(Charset.defaultCharset()), nodeList);
+        new RendezvousHash<>(Funnels.stringFunnel(Charset.defaultCharset()), nodeList);
     Random r = new Random();
     for (int i = 0; i < 100000; i++) {
       String thing = (Integer.toString(r.nextInt(123456789)));
       List<CharSequence> hosts = rendezvousHash.get(thing.getBytes(), 3);
       hosts.forEach(
-        xs -> {
-          mm.get(xs).add(thing);
-        });
+          xs -> {
+            mm.get(xs).add(thing);
+          });
     }
 
     List<Integer> xx = new ArrayList<>();
     mm.keySet()
-      .forEach(
-        xs -> {
-          xx.add(mm.get(xs).size());
-        });
+        .forEach(
+            xs -> {
+              xx.add(mm.get(xs).size());
+            });
 
     Double xd = xx.stream().mapToInt(x -> x).average().orElse(-1);
     assertEquals(3000, xd.intValue());
@@ -50,15 +50,15 @@ public class RendezvousHashUnitTest extends Assert {
   @Test
   public void simpleGet() {
     Map<String, String> map =
-      new ImmutableMap.Builder<String, String>()
-        .put("a", "1")
-        .put("b", "2")
-        .put("c", "3")
-        .put("d", "4")
-        .put("e", "5")
-        .build();
+        new ImmutableMap.Builder<String, String>()
+            .put("a", "1")
+            .put("b", "2")
+            .put("c", "3")
+            .put("d", "4")
+            .put("e", "5")
+            .build();
     RendezvousHash<CharSequence> hasher =
-      new RendezvousHash<>(Funnels.stringFunnel(Constants.DEFAULT_CHARSET), map.keySet());
+        new RendezvousHash<>(Funnels.stringFunnel(Constants.DEFAULT_CHARSET), map.keySet());
     String k1 = "foo";
     String k2 = "bar";
     String k3 = "baz";

@@ -45,10 +45,10 @@ public class RendezvousHash<T> {
     hashMap.clear();
 
     nodeList.forEach(
-      node -> {
-        hashMap.put(
-          hasher.newHasher().putBytes(key).putObject(node, nodeFunnel).hash().asLong(), node);
-      });
+        node -> {
+          hashMap.put(
+              hasher.newHasher().putBytes(key).putObject(node, nodeFunnel).hash().asLong(), node);
+        });
 
     return hashMap.remove(hashMap.keySet().stream().max(Long::compare).orElse(null));
   }
@@ -58,9 +58,10 @@ public class RendezvousHash<T> {
     List<T> nodes = new ArrayList<>(listSize);
 
     nodeList.forEach(
-      node ->
-        hashMap.put(
-          hasher.newHasher().putBytes(key).putObject(node, nodeFunnel).hash().asLong(), node));
+        node ->
+            hashMap.put(
+                hasher.newHasher().putBytes(key).putObject(node, nodeFunnel).hash().asLong(),
+                node));
 
     TreeSet<Long> set = Sets.newTreeSet(hashMap.keySet());
 
