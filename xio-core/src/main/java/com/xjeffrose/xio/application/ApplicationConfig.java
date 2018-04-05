@@ -8,6 +8,9 @@ import com.xjeffrose.xio.bootstrap.ServerChannelConfiguration;
 import com.xjeffrose.xio.core.NullZkClient;
 import com.xjeffrose.xio.core.ZkClient;
 import com.xjeffrose.xio.tracing.XioTracing;
+import io.netty.util.internal.PlatformDependent;
+import java.util.List;
+import java.util.Map;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -23,7 +26,14 @@ public class ApplicationConfig {
   @Getter private final String zookeeperCluster;
   @Getter private final String ipFilterPath;
   @Getter private final String http1FilterPath;
+  @Getter private final double globalSoftReqPerSec;
+  @Getter private final double globalHardReqPerSec;
+  @Getter private final double softReqPerSec;
+  @Getter private final double hardReqPerSec;
+  @Getter private final int rateLimiterPoolSize;
   @Getter private final XioTracing tracing;
+  @Getter private final Map<String, List<Double>> clientRateLimitOverride =
+    PlatformDependent.newConcurrentHashMap();
 
   public ApplicationConfig(Config config) {
     this.config = config;
@@ -35,6 +45,11 @@ public class ApplicationConfig {
     zookeeperCluster = config.getString("settings.zookeeper.cluster");
     ipFilterPath = config.getString("settings.configurationManager.ipFilter.path");
     http1FilterPath = config.getString("settings.configurationManager.http1Filter.path");
+    globalSoftReqPerSec = config.getDouble("settings.global_soft_req_per_sec");
+    globalHardReqPerSec = config.getDouble("settings.global_hard_req_per_sec");
+    softReqPerSec = config.getDouble("settings.soft_req_per_sec");
+    hardReqPerSec = config.getDouble("settings.hard_req_per_sec");
+    rateLimiterPoolSize = config.getInt("settings.rate_limiter_pool_size");
     tracing = new XioTracing(config);
   }
 
