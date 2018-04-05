@@ -1,7 +1,9 @@
 package com.xjeffrose.xio.config;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import java.io.File;
@@ -36,14 +38,13 @@ public class ConfigReloader<T> {
 
   private final ScheduledExecutorService executor;
   private final Function<Config, T> factory;
-  private final BiConsumer<T, T> updater;
+  private BiConsumer<T, T> updater;
   private Meta<T> metadata;
 
-  public ConfigReloader(
-      ScheduledExecutorService executor, Function<Config, T> factory, BiConsumer<T, T> updater) {
+  public ConfigReloader(ScheduledExecutorService executor, Function<Config, T> factory) {
     this.executor = executor;
     this.factory = factory;
-    this.updater = updater;
+    this.updater = null;
   }
 
   private Reader buildDigestReader(File file, MessageDigest digest) throws FileNotFoundException {
@@ -99,8 +100,16 @@ public class ConfigReloader<T> {
     return metadata.value;
   }
 
-  public void start() {
+  @VisibleForTesting
+  public void setUpdater(BiConsumer<T, T> updater) {
+    this.updater = updater;
+  }
+
+  public void start(BiConsumer<T, T> updater) {
+    checkNotNull(updater, "updater cannot be null");
     checkNotNull(metadata, "init must be called before start");
+    checkState(this.updater == null, "start cannot be called more than once");
+    setUpdater(updater);
     executor.scheduleWithFixedDelay(this::checkForUpdates, 2000, 2000, TimeUnit.MILLISECONDS);
   }
 }
