@@ -32,8 +32,10 @@ public class ApplicationConfig {
   @Getter private final double hardReqPerSec;
   @Getter private final int rateLimiterPoolSize;
   @Getter private final XioTracing tracing;
-  @Getter private final Map<String, List<Double>> clientRateLimitOverride =
-    PlatformDependent.newConcurrentHashMap();
+
+  @Getter
+  private final Map<String, List<Double>> clientRateLimitOverride =
+      PlatformDependent.newConcurrentHashMap();
 
   public ApplicationConfig(Config config) {
     this.config = config;
