@@ -10,6 +10,7 @@ import com.xjeffrose.xio.tracing.XioTracing;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.embedded.EmbeddedChannel;
+import io.netty.handler.ssl.SslHandler;
 import lombok.val;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.SocketPolicy;
@@ -77,5 +78,37 @@ public class ClientChannelInitializerTest extends Assert {
     val testChannel = new EmbeddedChannel(subject);
     val result = testChannel.pipeline().get(HttpClientTracingHandler.class);
     assertEquals(result, tracingHandler);
+  }
+
+  @Test
+  public void testEnableSsl() {
+    val channelConfig = ChannelConfiguration.clientConfig(1, "worker");
+    val clientConfig = new ClientConfig(ConfigFactory.load().getConfig("xio.sslClient"));
+    val clientState = new ClientState(channelConfig, clientConfig);
+    // when we have enabled Tracing the tracing returns a non-null newClientHandler
+    when(tracing.newClientHandler(clientConfig.getTls().isUseSsl())).thenReturn(tracingHandler);
+
+    subject = new ClientChannelInitializer(clientState, () -> appHandler, tracing);
+
+    // Assert that we did not add a HttpClientTracingHandler to the pipeline
+    val testChannel = new EmbeddedChannel(subject);
+    val result = testChannel.pipeline().get(SslHandler.class);
+    assertNotNull(result);
+  }
+
+  @Test
+  public void testDisableSsl() {
+    val channelConfig = ChannelConfiguration.clientConfig(1, "worker");
+    val clientConfig = new ClientConfig(ConfigFactory.load().getConfig("xio.basicClient"));
+    val clientState = new ClientState(channelConfig, clientConfig);
+    // when we have enabled Tracing the tracing returns a non-null newClientHandler
+    when(tracing.newClientHandler(clientConfig.getTls().isUseSsl())).thenReturn(tracingHandler);
+
+    subject = new ClientChannelInitializer(clientState, () -> appHandler, tracing);
+
+    // Assert that we did not add a HttpClientTracingHandler to the pipeline
+    val testChannel = new EmbeddedChannel(subject);
+    val result = testChannel.pipeline().get(SslHandler.class);
+    assertNull(result);
   }
 }
