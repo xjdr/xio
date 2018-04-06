@@ -42,14 +42,14 @@ public class ClientChannelInitializer extends ChannelInitializer {
         .addLast(
             "negotiation handler",
             new HttpClientNegotiationHandler(ClientChannelInitializer.this::buildHttp2Handler))
-        .addLast("codec", CodecPlaceholderHandler.INSTANCE);
+        .addLast("codec", CodecPlaceholderHandler.INSTANCE)
+        .addLast("application codec", ApplicationCodecPlaceholderHandler.INSTANCE);
     if (tracing != null) {
       val traceHandler = tracing.newClientHandler(state.config.isTlsEnabled());
       Pipelines.addHandler(channel.pipeline(), "distributed tracing", traceHandler);
     }
     channel
         .pipeline()
-        .addLast("application codec", ApplicationCodecPlaceholderHandler.INSTANCE)
         .addLast("idle handler", new XioIdleDisconnectHandler(60, 60, 60))
         .addLast("message logging", new XioMessageLogger(Client.class, "objects"))
         .addLast("request buffer", new RequestBuffer())

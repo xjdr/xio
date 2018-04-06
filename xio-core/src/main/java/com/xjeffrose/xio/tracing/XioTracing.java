@@ -16,12 +16,11 @@ public class XioTracing {
 
   private final Tracing tracing;
 
-  private Reporter<Span> buildReporter(@NonNull String zipkinUrl) {
+  Reporter<Span> buildReporter(@NonNull String zipkinUrl) {
     return AsyncReporter.builder(OkHttpSender.create(zipkinUrl)).build();
   }
 
-  private Tracing buildTracing(
-      @NonNull String name, @NonNull String zipkinUrl, float samplingRate) {
+  Tracing buildTracing(@NonNull String name, @NonNull String zipkinUrl, float samplingRate) {
     if (zipkinUrl.isEmpty() || !(samplingRate > 0f)) {
       return null;
     }
