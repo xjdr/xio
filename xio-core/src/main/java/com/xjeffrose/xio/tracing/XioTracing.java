@@ -14,13 +14,13 @@ import zipkin.reporter.okhttp3.OkHttpSender;
 
 public class XioTracing {
 
-  private final Tracing tracing;
+  protected final Tracing tracing;
 
   private Reporter<Span> buildReporter(@NonNull String zipkinUrl) {
     return AsyncReporter.builder(OkHttpSender.create(zipkinUrl)).build();
   }
 
-  private Tracing buildTracing(
+  protected Tracing buildTracing(
       @NonNull String name, @NonNull String zipkinUrl, float samplingRate) {
     if (zipkinUrl.isEmpty() || !(samplingRate > 0f)) {
       return null;

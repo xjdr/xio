@@ -8,6 +8,7 @@ import com.xjeffrose.xio.bootstrap.ServerChannelConfiguration;
 import com.xjeffrose.xio.core.NullZkClient;
 import com.xjeffrose.xio.core.ZkClient;
 import com.xjeffrose.xio.tracing.XioTracing;
+import java.util.function.Function;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -25,17 +26,25 @@ public class ApplicationConfig {
   @Getter private final String http1FilterPath;
   @Getter private final XioTracing tracing;
 
-  public ApplicationConfig(Config config) {
+  public ApplicationConfig(Config config, XioTracing tracing) {
     this.config = config;
-    name = config.getString("name");
-    bossThreads = config.getInt("settings.bossThreads");
-    bossNameFormat = config.getString("settings.bossNameFormat");
-    workerThreads = config.getInt("settings.workerThreads");
-    workerNameFormat = config.getString("settings.workerNameFormat");
-    zookeeperCluster = config.getString("settings.zookeeper.cluster");
-    ipFilterPath = config.getString("settings.configurationManager.ipFilter.path");
-    http1FilterPath = config.getString("settings.configurationManager.http1Filter.path");
-    tracing = new XioTracing(config);
+    this.name = config.getString("name");
+    this.bossThreads = config.getInt("settings.bossThreads");
+    this.bossNameFormat = config.getString("settings.bossNameFormat");
+    this.workerThreads = config.getInt("settings.workerThreads");
+    this.workerNameFormat = config.getString("settings.workerNameFormat");
+    this.zookeeperCluster = config.getString("settings.zookeeper.cluster");
+    this.ipFilterPath = config.getString("settings.configurationManager.ipFilter.path");
+    this.http1FilterPath = config.getString("settings.configurationManager.http1Filter.path");
+    this.tracing = tracing;
+  }
+
+  public ApplicationConfig(Config config, Function<Config, XioTracing> tracingSupplier) {
+    this(config, tracingSupplier.apply(config));
+  }
+
+  public ApplicationConfig(Config config) {
+    this(config, new XioTracing(config));
   }
 
   public static ApplicationConfig fromConfig(String key, Config config) {

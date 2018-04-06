@@ -16,7 +16,7 @@ public class StreamingRequestData implements Request, StreamingData {
   public StreamingRequestData(Request request, StreamingData data, TraceInfo traceInfo) {
     this.request = request;
     this.data = data;
-    this.traceInfo = traceInfo;
+    this.traceInfo = traceInfo == null ? new TraceInfo(request.headers()) : traceInfo;
   }
 
   public StreamingRequestData(Request request, StreamingData data) {

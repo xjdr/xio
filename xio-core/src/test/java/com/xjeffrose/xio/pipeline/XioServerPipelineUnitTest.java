@@ -120,10 +120,10 @@ public class XioServerPipelineUnitTest {
     inOrder.verify(pipeline, times(1)).addLast(eq("messageLogger"), isA(XioMessageLogger.class));
     inOrder.verify(pipeline, times(1)).addLast(eq("codecNegotiation"), isA(XioNoOpHandler.class));
     inOrder.verify(pipeline, times(1)).addLast(eq("codec"), isA(XioNoOpHandler.class));
+    inOrder.verify(pipeline, times(1)).addLast(eq("application codec"), isA(XioNoOpHandler.class));
     inOrder
         .verify(pipeline, times(1))
         .addLast(eq("distributed tracing"), isA(HttpServerTracingHandler.class));
-    inOrder.verify(pipeline, times(1)).addLast(eq("application codec"), isA(XioNoOpHandler.class));
     inOrder.verify(pipeline, times(1)).addLast(eq("application router"), isA(XioNoOpHandler.class));
     inOrder
         .verify(pipeline, times(1))
