@@ -1,4 +1,0 @@
-#!/bin/bash
-JAVA=${JAVA:-java}
-${JAVA} -javaagent:${LOMBOK_JAR}=ECJ -jar ${JAR_ECJ} -d ${PROJECT_ROOT}/ecj-cache -cp ${CLASSPATH_COMPILE}:${TARGET_DIR} -8 -Xemacs *.java
-exit 0
