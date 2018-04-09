@@ -10,11 +10,12 @@ import com.xjeffrose.xio.bootstrap.ApplicationBootstrap;
 import com.xjeffrose.xio.helpers.ClientHelper;
 import com.xjeffrose.xio.http.DefaultFullResponse;
 import com.xjeffrose.xio.http.DefaultHeaders;
+import com.xjeffrose.xio.http.FullRequest;
 import com.xjeffrose.xio.http.Request;
 import com.xjeffrose.xio.http.StreamingRequestData;
+import com.xjeffrose.xio.http.TraceInfo;
 import com.xjeffrose.xio.pipeline.SmartHttpPipeline;
 import io.netty.buffer.Unpooled;
-import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -22,6 +23,7 @@ import java.net.InetSocketAddress;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import lombok.val;
+import okhttp3.Protocol;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -47,10 +49,19 @@ public class HttpServerTracingHandlerIntegrationTest extends Assert {
   }
 
   @Test
-  public void testSpanDispatched() throws Exception {
+  public void testSpanDispatchedH1() throws Exception {
     latch = new CountDownLatch(1);
     InetSocketAddress address = application.instrumentation("exampleServer").boundAddress();
-    ClientHelper.https(address);
+    ClientHelper.https(address, Protocol.HTTP_1_1);
+    latch.await(1, TimeUnit.SECONDS);
+    assertEquals(0, latch.getCount());
+  }
+
+  @Test
+  public void testSpanDispatchedH2() throws Exception {
+    latch = new CountDownLatch(1);
+    InetSocketAddress address = application.instrumentation("exampleServer").boundAddress();
+    ClientHelper.https(address, Protocol.HTTP_2, Protocol.HTTP_1_1);
     latch.await(1, TimeUnit.SECONDS);
     assertEquals(0, latch.getCount());
   }
@@ -78,22 +89,25 @@ public class HttpServerTracingHandlerIntegrationTest extends Assert {
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Request msg) throws Exception {
 
-      if (msg instanceof StreamingRequestData) {
-        val request = (StreamingRequestData) msg;
-        if (request.endOfStream()) {
-          val resp =
-              DefaultFullResponse.builder()
-                  .httpTraceInfo(msg.httpTraceInfo())
-                  .headers(new DefaultHeaders())
-                  .status(HttpResponseStatus.OK)
-                  .body(Unpooled.EMPTY_BUFFER)
-                  .build();
-          ctx.writeAndFlush(resp).addListener(ChannelFutureListener.CLOSE);
-          return;
-        }
+      if (msg instanceof StreamingRequestData && ((StreamingRequestData) msg).endOfStream()) {
+        sendResponse(ctx, msg.httpTraceInfo());
+        return;
+      } else if (msg instanceof FullRequest) {
+        sendResponse(ctx, msg.httpTraceInfo());
       }
 
       ctx.write(msg);
+    }
+
+    private void sendResponse(ChannelHandlerContext ctx, TraceInfo traceInfo) {
+      val resp =
+          DefaultFullResponse.builder()
+              .httpTraceInfo(traceInfo)
+              .headers(new DefaultHeaders())
+              .status(HttpResponseStatus.OK)
+              .body(Unpooled.EMPTY_BUFFER)
+              .build();
+      ctx.writeAndFlush(resp);
     }
   }
 }

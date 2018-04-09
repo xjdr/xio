@@ -7,11 +7,11 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
-import javax.net.ssl.HostnameVerifier;
+import java.util.Collections;
+import java.util.List;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
@@ -26,15 +26,6 @@ public class OkHttpUnsafe {
     keystore.load(null, "".toCharArray());
     keystore.setKeyEntry(
         "server", config.getPrivateKey(), "".toCharArray(), config.getCertificateAndChain());
-    KeyManagerFactory keyManagerFactory =
-        KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-    keyManagerFactory.init(keystore, "".toCharArray());
-    return keyManagerFactory.getKeyManagers();
-  }
-
-  public static KeyManager[] getEmptyKeyManager() throws Exception {
-    KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
-    keystore.load(null, "".toCharArray());
     KeyManagerFactory keyManagerFactory =
         KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
     keyManagerFactory.init(keystore, "".toCharArray());
@@ -78,25 +69,21 @@ public class OkHttpUnsafe {
     return sslSocketFactory;
   }
 
-  public static OkHttpClient getUnsafeClient() {
+  public static OkHttpClient getUnsafeClient(Protocol... protocols) {
     try {
       X509TrustManager trustManager = unsafeTrustManager();
       final SSLSocketFactory sslSocketFactory = getUnsafeSSLSocketFactory(null, trustManager);
-
-      OkHttpClient okHttpClient =
-          new OkHttpClient.Builder()
-              .sslSocketFactory(sslSocketFactory, trustManager)
-              .hostnameVerifier(
-                  new HostnameVerifier() {
-                    @Override
-                    public boolean verify(String hostname, SSLSession session) {
-                      return true;
-                    }
-                  })
-              .protocols(Arrays.asList(Protocol.HTTP_1_1))
-              .build();
-
-      return okHttpClient;
+      final List<Protocol> protocolList;
+      if (protocols.length == 0) {
+        protocolList = Collections.singletonList(Protocol.HTTP_1_1);
+      } else {
+        protocolList = Arrays.asList(protocols);
+      }
+      return new OkHttpClient.Builder()
+          .sslSocketFactory(sslSocketFactory, trustManager)
+          .hostnameVerifier((hostname, session) -> true)
+          .protocols(protocolList)
+          .build();
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
