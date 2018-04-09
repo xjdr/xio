@@ -56,6 +56,13 @@ public class Client {
     return connectFuture;
   }
 
+  /**
+   * Combines the connection and writing into one command. This method dispatches both a connect and
+   * command call concurrently
+   *
+   * @param request The Request object that we ultimately want to send outbound
+   * @return A ChannelFuture that succeeds when both the connect and write succeed
+   */
   public ChannelFuture connectAndWrite(Request request) {
     if (channel == null) {
       ChannelFuture future = internalConnect();
@@ -70,20 +77,38 @@ public class Client {
     }
   }
 
+  /**
+   * Creates a channel and initiates a connection
+   *
+   * @return A CompletableFuture-ClientChannelResponse that transfers the results of the underlying
+   *     ChannelFuture
+   */
   public CompletableFuture<ClientChannelResponse> connect() {
     val outerResult = new CompletableFuture<ClientChannelResponse>();
-    internalConnect()
-        .addListeners(
-            connectionListener,
-            (resultFuture) -> {
-              val response =
-                  new ClientChannelResponse(
-                      resultFuture.isDone(), resultFuture.isSuccess(), resultFuture.cause());
-              outerResult.complete(response);
-            });
+    if (channel != null) {
+      outerResult.complete(
+          new ClientChannelResponse(false, false, new Throwable("Channel already connected")));
+    } else {
+      internalConnect()
+          .addListeners(
+              connectionListener,
+              (resultFuture) -> {
+                val response =
+                    new ClientChannelResponse(
+                        resultFuture.isDone(), resultFuture.isSuccess(), resultFuture.cause());
+                outerResult.complete(response);
+              });
+    }
     return outerResult;
   }
 
+  /**
+   * Writes to a channel if it already exists. If the channel does not exists this resolves the
+   * response with a Throwable
+   *
+   * @return A CompletableFuture-ClientChannelResponse that transfers the results of the underlying
+   *     ChannelFuture
+   */
   public CompletableFuture<ClientChannelResponse> write(Request request) {
     val outerResult = new CompletableFuture<ClientChannelResponse>();
     if (channel == null) {
