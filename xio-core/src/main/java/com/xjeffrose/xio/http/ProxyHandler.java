@@ -132,6 +132,6 @@ public class ProxyHandler implements PipelineRequestHandler {
 
     appendXForwardedFor(ctx, proxyRequest);
 
-    client.write(proxyRequest);
+    client.connectAndWrite(proxyRequest);
   }
 }

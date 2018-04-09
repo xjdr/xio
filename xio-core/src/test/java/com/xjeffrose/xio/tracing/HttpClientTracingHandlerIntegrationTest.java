@@ -147,7 +147,10 @@ public class HttpClientTracingHandlerIntegrationTest { // extends ITHttpClient<X
             .host("127.0.0.1" + ":" + server.getPort())
             .build();
 
-    val writeFuture = client.write(request);
+    // we call connect first then we call write
+    client.connect().thenAccept(result -> {
+      client.write(request);
+    });
     // We wait on the local future because this signals the full roundtrip between outbound and
     // return trip from
     // the Application Handler out and then back in.
@@ -158,7 +161,6 @@ public class HttpClientTracingHandlerIntegrationTest { // extends ITHttpClient<X
     byte[] bytes = Hex.decodeHex(responseHex.toCharArray());
     assertEquals(expectedResponse, new String(bytes, "UTF-8"));
   }
-  /*
   // @Override
   @Test(expected = ComparisonFailure.class)
   public void redirect() throws Exception {
@@ -176,5 +178,4 @@ public class HttpClientTracingHandlerIntegrationTest { // extends ITHttpClient<X
   public void httpPathTagExcludesQueryParams() throws Exception {
     throw new AssumptionViolatedException("test is flaky");
   }
-  */
 }
