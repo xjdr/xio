@@ -10,7 +10,7 @@ constants whenever possible.  Static configuration in XIO is done with
 `Typesafe Config <https://github.com/typesafehub/config/blob/master/README.md>`_.
 XIO provides sensible defaults static configuration values.
 
-.. literalinclude:: ../../src/main/resources/reference.conf
+.. literalinclude:: ../../xio-core/src/main/resources/reference.conf
    :linenos:
 
 .. _dynamic_configuration:
