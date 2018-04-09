@@ -1,64 +1,338 @@
-* config
+* completed
 
-** TLS - startup configurable
+** DONE Add application codec to base pipeline
 
-*** TODO Load from Typesafe Config, attach to XioServerConfig
+** DONE Add application router to http pipeline
 
-** Circuit Breakers - runtime configurable
+** DONE handle keep alive
 
-** Ip Address - runtime configurable
+** DONE handle content type
 
-   * Config Class: IpAddressDeterministicRuleEngineConfig
-   * Marshall Classes: ThriftMarshaller / ThriftUnmarshaller
+** DONE Add route applicator to http pipeline
 
-*** DONE Define Config class
+** DONE Wrap Http/2 Request/Response objects
 
-*** DONE Define Marshall classes
+*** DONE Wrap Http2Headers
 
-** Host Address - runtime configurable
+*** DONE Http2ServerCodec
 
-   * Config Class: HostnameDeterministicRuleEngineConfig
-   * Marshall Classes: ThriftMarshaller / ThriftUnmarshaller
+*** DONE Http2ClientCodec
 
-*** DONE Define Config class
+** DONE Update proxy to use application request object
 
-*** DONE Define Marshall classes
+* on deck
 
-** Layer 4 Behavioral - runtime configurable
+** Refactor Http1Headers and Http2Headers to use java8 interface default methods
 
-   * Config Class:
+** publish to maven central
+   - http://www.sonatype.org/nexus/2015/06/02/how-to-publish-software-artifacts-to-maven-central/
 
-*** TODO Define Config class
+** Authorization uses route pipeline
 
-** Application Codec - startup configurable
+** Http1ServerCodec sets response Transfer-Encoding
+   https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Transfer-Encoding
 
-*** TODO Load from Typesafe Config
+** Http1ServerCodec sets Content-Length for FullResponse
+   https://tools.ietf.org/html/rfc7230#section-3.3.2
 
-** Aggregation & Compression - startup configurable
+** How to handle http 100 Continue?
 
-*** TODO Load from Typesafe Config
+** Update WAF to use application request object
 
-** Decode Token - startup configurable
+* backlog
 
-*** TODO Load from Typesafe Config
+** upgrade to java 9
 
-** Http1 Rules - runtime configurable
+*** blocker lombok?
+    - https://github.com/rzwitserloot/lombok/blob/v1.16.20/doc/changelog.markdown
 
-   * Config Class: Http1DeterministicRuleEngineConfig
-   * Marshall Classes: ThriftMarshaller / ThriftUnmarshaller
+** build should fail on javadoc warnings
+   - https://stackoverflow.com/questions/38143744/how-to-make-maven-build-goal-site-fail-on-javadoc-warnings
+   - https://www.sonarqube.org/
 
-*** DONE Define Config class
+** Application layer rate limiting
 
-*** DONE Define Marshall classes
+** separate integration tests
+   - https://dzone.com/articles/separating-code-coverage-maven
 
-** Layer 7 Behavioral - runtime configurable
+** use jesse kinkead's java precommit hook
+   - https://gist.github.com/jkinkead/042c8fd7bc71da316bbf77e67c12ade7/
+   - https://coderwall.com/p/jp7d5q/create-a-global-git-commit-hook
 
-*** TODO Define Config class
+** script this
+   - http://maven.apache.org/maven-release/maven-release-plugin/examples/prepare-release.html
+   - http://maven.apache.org/maven-release/maven-release-plugin/examples/non-interactive-release.html
 
-** Multiplex Req - startup configurable
+** config update handler
+   - sits in pipeline
+   - fires config update event
+   - channel handlers further down the pipeline know how to handle event
+   - questions
+     - how to fire once for each channel?
+     - how to fire in thread?
+   - answers keep a collection of open channel objects
+     - write the config update to the pipeline
+     - well behaved pipeline should just pass along the object
+     - config update handler catches the object before it tries to go to the wire
+   - answers keep a collections of open channel objects
+     - fire user event for config update
+     - well behaved pipeline should just pass along the object
+     - each interested party should inform the event that they consumed it
+   - how to deal with stale connections holding onto old config data
+     - at some point old shitty things should die
+       - how to make them die?
+** ResponseBuilder that takes a Request to build a response for.
+   - pull in tracing and anything else the response would otherwise have to go look for
 
-*** TODO Load from Typesafe Config
+** RequestBuilder that takes a Request
+   - used proxy logic
+   - propagate tracing
 
-** Persistent Connection Manager - startup configurable
+** connection pool that is optimized to worker loop allocation
+   for a worker loop group of size N create at least N connections to the remote endpoint
 
-*** TODO Load from Typesafe Config
+** get rid of jetty helpers, replace them with MockWebServer
+
+** setup errorprone
+   - https://github.com/square/okhttp/blob/master/pom.xml#L148
+   - http://errorprone.info/docs/installation
+   - https://github.com/rzwitserloot/lombok/issues/1440
+
+** document how to write a netty handler
+
+*** it's ok to throw exceptions
+
+*** use ChannelFuture's cause() to catch exceptions
+
+** document immutable object testing concepts
+#+begin_src java
+public class ClassUnderTest {
+  private final Value value;
+  public ClassUnderTest(Value v) {
+    value = preconditions.notNull(v);
+  }
+}
+#+end_src
+
+* in code
+
+#+begin_src shell :results output value drawer
+git grep -n TODO src | sed -e 's/^/** /g'
+#+end_src
+
+#+RESULTS:
+:RESULTS:
+** src/example/java/com/xjeffrose/xio/client/chicago/ChicagoNode.java:95:    // TODO schedule a timeout to fail this write
+** src/example/java/com/xjeffrose/xio/client/chicago/ChicagoNode.java:104:          // TODO could maybe put a listener here to track successful writes
+** src/example/java/com/xjeffrose/xio/client/chicago/XioChicagoClient.java:78:            // TODO retry?
+** src/main/java/com/xjeffrose/xio/SSL/X509CertificateGenerator.java:52:      // TODO(JR): This is bad practice, we should fix this more elegantly
+** src/main/java/com/xjeffrose/xio/SSL/X509CertificateGenerator.java:145:      // TODO(JR): We should verify key after creation
+** src/main/java/com/xjeffrose/xio/SSL/XioSecurityHandlerImpl.java:145:        // TODO(JR): Fix this or only enable for certain service as this is insecure
+** src/main/java/com/xjeffrose/xio/SSL/XioTrustManagerFactory.java:122:    // TODO(CK): return our root certs here?
+** src/main/java/com/xjeffrose/xio/application/Application.java:10:// TODO(CK): Application<S extends ApplicationState> ???
+** src/main/java/com/xjeffrose/xio/application/Application.java:17:  // TODO(CK): move this into ApplicationState
+** src/main/java/com/xjeffrose/xio/application/Application.java:22:  // TODO(CK): move this into ApplicationState
+** src/main/java/com/xjeffrose/xio/application/ApplicationConfig.java:50:  // TODO(CK): parse servers at construction time
+** src/main/java/com/xjeffrose/xio/application/ApplicationConfig.java:68:  // TODO(CK): parse settings at construction time
+** src/main/java/com/xjeffrose/xio/application/ApplicationState.java:31:  // TODO(CK): store ClientChannelConfiguration here as well
+** src/main/java/com/xjeffrose/xio/bootstrap/ApplicationBootstrap.java:19:  // TODO(CK): Make this configurable
+** src/main/java/com/xjeffrose/xio/bootstrap/ChannelConfiguration.java:17:// TODO(CK): Configuration is the wrong name as we store
+** src/main/java/com/xjeffrose/xio/bootstrap/XioServerBootstrap.java:43:  // TODO(CK): refactor tests and remove this
+** src/main/java/com/xjeffrose/xio/bootstrap/XioServerBootstrap.java:58:    // TODO(CK): interrogate fragment for channel options
+** src/main/java/com/xjeffrose/xio/client/ChannelConfiguration.java:16:// TODO(CK): this needs to move into the bootstrap package
+** src/main/java/com/xjeffrose/xio/client/RequestMuxer.java:38:// TODO(CK): consider renaming this to something not including Request
+** src/main/java/com/xjeffrose/xio/client/RequestMuxer.java:40:  // TODO(CK): remove
+** src/main/java/com/xjeffrose/xio/client/RequestMuxer.java:43:  // TODO(CK): this isn't being used
+** src/main/java/com/xjeffrose/xio/client/RequestMuxer.java:45:  // TODO(CK): this should be a method
+** src/main/java/com/xjeffrose/xio/client/RequestMuxer.java:95:          // TODO(CK): fix this
+** src/main/java/com/xjeffrose/xio/client/RequestMuxer.java:104:          // TODO(CK): fix this
+** src/main/java/com/xjeffrose/xio/client/RequestMuxer.java:147:    // TODO(CK): fix this
+** src/main/java/com/xjeffrose/xio/client/RequestMuxer.java:188:  // TODO(CK): split out some of this complexity?
+** src/main/java/com/xjeffrose/xio/client/XioClientBootstrap.java:80:    // TODO(CK): This logic should be move outside of XioClientBootstrap to something HTTP related
+** src/main/java/com/xjeffrose/xio/client/loadbalancer/Distributor.java:149:    // TODO(CK): Not sure what to close
+** src/main/java/com/xjeffrose/xio/client/loadbalancer/Node.java:83:    // TODO(CK): This be passed in, we're not really taking advantage of pooling
+** src/main/java/com/xjeffrose/xio/client/loadbalancer/Node.java:229:    // TODO(CK): Not sure what to close
+** src/main/java/com/xjeffrose/xio/client/loadbalancer/NodeHealthCheck.java:167:              // TODO: close will happen after true ecv check is done
+** src/main/java/com/xjeffrose/xio/core/ChannelStatistics.java:35:  // TODO: Properly implement
+** src/main/java/com/xjeffrose/xio/core/ShutdownUtil.java:39:      // TODO: Find netty4 equivalent (may not be nessisary with shutdown gracefully)
+** src/main/java/com/xjeffrose/xio/core/ShutdownUtil.java:46:      // TODO : allow an option here to control if we need to drain connections and wait instead of
+** src/main/java/com/xjeffrose/xio/core/ShutdownUtil.java:60:  // TODO : make wait time configurable ?
+** src/main/java/com/xjeffrose/xio/core/XioMessageLogger.java:6:// TODO(CK): Consider renaming this to either MessageLogger or XioLoggingHandler
+** src/main/java/com/xjeffrose/xio/core/ZkClient.java:135:      // TODO: I need to deal with the error better
+** src/main/java/com/xjeffrose/xio/core/ZkClient.java:172:      // TODO: I need to deal with the error better
+** src/main/java/com/xjeffrose/xio/filter/IpFilter.java:8:// TODO(CK): emit user events when we filter
+** src/main/java/com/xjeffrose/xio/http/DefaultFullResponse.java:9:// TODO(CK): Consolidate Full/Streaming Response Builder into a single builder
+** src/main/java/com/xjeffrose/xio/http/EmptyHeaders.java:5:// TODO(CK): optimize emptiness with get calls that return null;
+** src/main/java/com/xjeffrose/xio/http/Headers.java:21:    // TODO(CK): filter out headers that can't be in a trailer
+** src/main/java/com/xjeffrose/xio/http/Headers.java:22:    // TODO(CK): filter out headers that can't be in a request
+** src/main/java/com/xjeffrose/xio/http/Http1ClientCodec.java:41:    // TODO(CK): Deal with null?
+** src/main/java/com/xjeffrose/xio/http/Http1ClientCodec.java:61:    // TODO(CK): throw an exception?
+** src/main/java/com/xjeffrose/xio/http/Http1ClientCodec.java:107:      // TODO(CK): TransferEncoding
+** src/main/java/com/xjeffrose/xio/http/Http1ServerCodec.java:39:    // TODO(CK): Deal with null?
+** src/main/java/com/xjeffrose/xio/http/Http1ServerCodec.java:58:    // TODO(CK): throw an exception?
+** src/main/java/com/xjeffrose/xio/http/Http1ServerCodec.java:102:      // TODO(CK): TransferEncoding
+** src/main/java/com/xjeffrose/xio/http/Http2ClientCodec.java:29:    // TODO(CK): Deal with null?
+** src/main/java/com/xjeffrose/xio/http/Http2ClientCodec.java:61:    // TODO(CK): throw an exception?
+** src/main/java/com/xjeffrose/xio/http/Http2ClientCodec.java:104:    int streamId = 0; // TODO(CK): need a no stream constant somewhere
+** src/main/java/com/xjeffrose/xio/http/Http2FrameForwarder.java:12:// TODO(CK): break this out into client/server classes
+** src/main/java/com/xjeffrose/xio/http/Http2FrameForwarder.java:84:    // TODO(CK): We don't currently have a use case for these frames
+** src/main/java/com/xjeffrose/xio/http/Http2FrameForwarder.java:90:    // TODO(CK): We don't currently have a use case for these frames
+** src/main/java/com/xjeffrose/xio/http/Http2FrameForwarder.java:95:    // TODO(CK): We don't currently have a use case for these frames
+** src/main/java/com/xjeffrose/xio/http/Http2FrameForwarder.java:109:    // TODO(CK): We don't currently have a use case for these frames
+** src/main/java/com/xjeffrose/xio/http/Http2FrameForwarder.java:114:    // TODO(CK): We don't currently have a use case for these frames
+** src/main/java/com/xjeffrose/xio/http/Http2FrameForwarder.java:125:    // TODO(CK): We don't currently have a use case for these frames
+** src/main/java/com/xjeffrose/xio/http/Http2FrameForwarder.java:132:    // TODO(CK): We don't currently have a use case for these frames
+** src/main/java/com/xjeffrose/xio/http/Http2FrameForwarder.java:138:    // TODO(CK): We don't currently have a use case for these frames
+** src/main/java/com/xjeffrose/xio/http/Http2FrameForwarder.java:144:    // TODO(CK): We don't currently have a use case for these frames
+** src/main/java/com/xjeffrose/xio/http/Http2Handler.java:15:// TODO(CK): break this out into client/server classes
+** src/main/java/com/xjeffrose/xio/http/Http2Handler.java:16:// TODO(CK): Rename this to Http2ServerHandler
+** src/main/java/com/xjeffrose/xio/http/Http2Handler.java:96:    // TODO(CK): This should be broken out into Http2ClientHandler
+** src/main/java/com/xjeffrose/xio/http/Http2HandlerBuilder.java:14:// TODO(CK): break this out into client/server classes
+** src/main/java/com/xjeffrose/xio/http/Http2ProxyHandler.java:48:      // TODO(CK): This is a little goofy we only want to call close once for each implementation
+** src/main/java/com/xjeffrose/xio/http/Http2ProxyRoute.java:22:// TODO(CK): This class should be given a pool of clients to use.
+** src/main/java/com/xjeffrose/xio/http/Http2ProxyRoute.java:39:    // TODO(CK): Remove this hack after xio client is refactored
+** src/main/java/com/xjeffrose/xio/http/Http2ProxyRoute.java:127:    // TODO(CK): How do we trace over http2?
+** src/main/java/com/xjeffrose/xio/http/Http2RouteProvider.java:5:// TODO(CK): Refactor this after we find a way to unify HTTP/1 and HTTP/2
+** src/main/java/com/xjeffrose/xio/http/Http2RouteProvider.java:8:  // TODO(CK): ChannelHandlerContext should come first
+** src/main/java/com/xjeffrose/xio/http/Http2ServerCodec.java:28:    // TODO(CK): Deal with null?
+** src/main/java/com/xjeffrose/xio/http/Http2ServerCodec.java:59:    // TODO(CK): throw an exception?
+** src/main/java/com/xjeffrose/xio/http/PathToRequestHandler.java:7:// TODO(CK): both this and Route.java need to be refactored so that the load order of routes
+** src/main/java/com/xjeffrose/xio/http/ProxyBackendHandler.java:38:                  // TODO(CK): move this into a logger class
+** src/main/java/com/xjeffrose/xio/http/ProxyBackendHandler.java:58:    // TODO(CK): this should really be some sort of notification to the frontend
+** src/main/java/com/xjeffrose/xio/http/ProxyConfig.java:7:// TODO(CK): reconcile ProxyConfig with ClientConfig
+** src/main/java/com/xjeffrose/xio/http/RawBackendHandler.java:28:                  // TODO(CK): move this into a logger class
+** src/main/java/com/xjeffrose/xio/http/RawBackendHandler.java:45:    // TODO(CK): this should really be some sort of notification to the frontend
+** src/main/java/com/xjeffrose/xio/http/Request.java:14:  // TODO(CK): move this here from StreamingData?
+** src/main/java/com/xjeffrose/xio/http/RequestBuffer.java:16:  // TODO(CK): look into using this event as well?
+** src/main/java/com/xjeffrose/xio/http/ResponseBuilders.java:10:  // TODO(CK): move this into the builder?
+** src/main/java/com/xjeffrose/xio/http/internal/Http1Headers.java:19:// TODO(CK): Rename this to Http1HeadersWrapper
+** src/main/java/com/xjeffrose/xio/http/internal/Http1Headers.java:594:  TODO(CK): maybe move this to request/response
+** src/main/java/com/xjeffrose/xio/http/internal/Http1Request.java:12:// TODO(CK): Rename this to StreamingHttp1Request
+** src/main/java/com/xjeffrose/xio/http/internal/Http1Response.java:11:// TODO(CK): Rename this to StreamingHttp1Response
+** src/main/java/com/xjeffrose/xio/mux/ConnectionPool.java:18:  // TODO(CK): move to config
+** src/main/java/com/xjeffrose/xio/mux/ConnectionPool.java:42:          // TODO(CK): this error needs to get bubbled back up to the requestor
+** src/main/java/com/xjeffrose/xio/mux/ConnectionPool.java:50:    // TODO(CK): handle failures and retry
+** src/main/java/com/xjeffrose/xio/mux/ConnectionPool.java:79:            // TODO(CK): this error needs to get bubbled back up to the requestor
+** src/main/java/com/xjeffrose/xio/mux/ConnectionPool.java:100:              // TODO(CK): change this to a not and get rid of the else
+** src/main/java/com/xjeffrose/xio/mux/ConnectionPool.java:113:                      // TODO(CK): this error needs to get bubbled back up to the requestor
+** src/main/java/com/xjeffrose/xio/mux/Connector.java:44:  // TODO(CK): get this from the constructor?
+** src/main/java/com/xjeffrose/xio/mux/Connector.java:71:    // TODO(CK): move all of these constants out into Config
+** src/main/java/com/xjeffrose/xio/pipeline/XioBasePipeline.java:60:    // TODO(CK): pull globalConnectionLimiter from state
+** src/main/java/com/xjeffrose/xio/pipeline/XioBasePipeline.java:62:        "globalConnectionLimiter", globalConnectionLimiter); // TODO(JR): Need to make this config
+** src/main/java/com/xjeffrose/xio/pipeline/XioBasePipeline.java:71:            appState.getZkClient(), true)); // TODO(JR): Need to make this config
+** src/main/java/com/xjeffrose/xio/pipeline/XioBasePipeline.java:97:            appState.getZkClient(), true)); // TODO(JR): Need to make this config
+** src/main/java/com/xjeffrose/xio/pipeline/XioBasePipeline.java:101:            appState.getZkClient(), true)); // TODO(JR): Need to make this config
+** src/main/java/com/xjeffrose/xio/pipeline/XioBasePipeline.java:105:        "xioResponseClassifier", new XioResponseClassifier(true)); // / TODO(JR): This is a maybe
+** src/main/java/com/xjeffrose/xio/pipeline/XioServerPipeline.java:9:// TODO(CK): merge this with XioBasePipeline
+** src/main/java/com/xjeffrose/xio/server/XioFirewall.java:40:    // TODO(JR): ZK should populate this in the constructor?
+** src/main/java/com/xjeffrose/xio/server/XioFirewall.java:63:      // TODO(JR): Throw probably?
+** src/main/java/com/xjeffrose/xio/server/XioServer.java:10:  // TODO(CK): move this into server state
+** src/main/java/com/xjeffrose/xio/server/XioServer.java:13:  // TODO(CK): move this into server state
+** src/main/java/com/xjeffrose/xio/server/XioServer.java:16:  // TODO(CK): move this into server state
+** src/main/java/com/xjeffrose/xio/server/XioServerConfig.java:12:// TODO(CK): rename this to ServerConfig
+** src/main/java/com/xjeffrose/xio/server/XioServerInstrumentation.java:5:// TODO(CK): this can be folded into XioServerState
+** src/main/java/com/xjeffrose/xio/server/XioServerLimits.java:6:// TODO(CK): rename this to ServerLimits
+** src/main/java/com/xjeffrose/xio/server/XioServerState.java:15:// TODO(CK): rename this to ServerState
+** src/main/resources/reference.conf:85:    // TODO(CK): deprecate
+** src/main/resources/reference.conf:87:    // TODO(CK): deprecate
+** src/test/java/com/xjeffrose/xio/SSL/HeldCertificate.java:111:      // TODO(CK): Maybe throw to inform the user that they're doing something silly
+** src/test/java/com/xjeffrose/xio/client/RequestMuxerUnitTest.java:65:    // TODO(CK): Override connection pool request node instead of connector.connect
+** src/test/java/com/xjeffrose/xio/client/RequestMuxerUnitTest.java:110:  // TODO(CK): Refactor this into a helper class
+** src/test/java/com/xjeffrose/xio/client/RequestMuxerUnitTest.java:119:  // TODO(CK): Refactor this into a helper class
+** src/test/java/com/xjeffrose/xio/client/RequestMuxerUnitTest.java:140:  // TODO(CK): Refactor this into a functional test
+** src/test/java/com/xjeffrose/xio/filter/IpFilterUnitTest.java:36:    // TODO(CK): This is a bit kludgy, basically we create a new logger for every test
+** src/test/java/com/xjeffrose/xio/http/GrpcFunctionalTest.java:361:    // TODO(CK): this creates global state across tests we should do something smarter
+** src/test/java/com/xjeffrose/xio/http/ReverseProxyFunctionalTest.java:109:    // TODO(CK): this creates global state across tests we should do something smarter
+** src/test/java/com/xjeffrose/xio/http/internal/Http2HeadersWrapperUnitTest.java:124:    // TODO(CK): netty bug? we can't call getTimeMillis() here
+** src/test/java/com/xjeffrose/xio/http/internal/Http2HeadersWrapperUnitTest.java:516:    // TODO(CK): netty bug? we can't call addTimeMillis() here
+** src/test/java/com/xjeffrose/xio/http/internal/Http2HeadersWrapperUnitTest.java:523:    // TODO(CK): netty bug? we can't call addTimeMillis() here
+** src/test/java/com/xjeffrose/xio/http/internal/Http2HeadersWrapperUnitTest.java:531:    // TODO(CK): netty bug? we can't call addTimeMillis() here
+** src/test/java/com/xjeffrose/xio/http/internal/Http2HeadersWrapperUnitTest.java:539:    // TODO(CK): netty bug? we can't call addTimeMillis() here
+** src/test/java/com/xjeffrose/xio/http/internal/Http2HeadersWrapperUnitTest.java:727:    // TODO(CK): netty bug? we can't call getTimeMillis() here
+** src/test/java/com/xjeffrose/xio/pipeline/XioSslHttp1_1PipelineFunctionalTest.java:93:  // TODO(CK): This is actually an integration test and a flaky one at that
+** src/test/java/com/xjeffrose/xio/server/XioServerFunctionalTest.java:86:      //TODO(JR): Figure out why \n seems to get chopped off
+** src/test/java/com/xjeffrose/xio/tracing/HttpClientTracingHandlerIntegrationTest.java:7:// TODO(CK): These brave integration tests are flaky and stall out sometimes
+:END:
+
+* re-file
+
+** todo.md
+   - Create default implementations for each of the most important interfaces
+
+   - Add better tests around config
+
+   - Add better testing around client failure modes
+
+   - Add full HttpParser for BBtoHttpResponse
+
+** config
+
+*** TLS - startup configurable
+
+**** TODO Load from Typesafe Config, attach to XioServerConfig
+
+*** Circuit Breakers - runtime configurable
+
+*** Ip Address - runtime configurable
+
+    * Config Class: IpAddressDeterministicRuleEngineConfig
+    * Marshall Classes: ThriftMarshaller / ThriftUnmarshaller
+
+**** DONE Define Config class
+
+**** DONE Define Marshall classes
+
+*** Host Address - runtime configurable
+
+    * Config Class: HostnameDeterministicRuleEngineConfig
+    * Marshall Classes: ThriftMarshaller / ThriftUnmarshaller
+
+**** DONE Define Config class
+
+**** DONE Define Marshall classes
+
+*** Layer 4 Behavioral - runtime configurable
+
+    * Config Class:
+
+**** TODO Define Config class
+
+*** Application Codec - startup configurable
+
+**** TODO Load from Typesafe Config
+
+*** Aggregation & Compression - startup configurable
+
+**** TODO Load from Typesafe Config
+
+*** Decode Token - startup configurable
+
+**** TODO Load from Typesafe Config
+
+*** Http1 Rules - runtime configurable
+
+    * Config Class: Http1DeterministicRuleEngineConfig
+    * Marshall Classes: ThriftMarshaller / ThriftUnmarshaller
+
+**** DONE Define Config class
+
+**** DONE Define Marshall classes
+
+*** Layer 7 Behavioral - runtime configurable
+
+**** TODO Define Config class
+
+*** Multiplex Req - startup configurable
+
+**** TODO Load from Typesafe Config
+
+*** Persistent Connection Manager - startup configurable
+
+**** TODO Load from Typesafe Config
+
+* Local Variables
+
+# Local Variables:
+# eval: (org-babel-do-load-languages 'org-babel-load-languages '((shell . t)))
+# org-confirm-babel-evaluate: nil
+# End:

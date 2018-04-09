@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>XIO</title>
+<meta name="author" content="(Chris Keating and Jeff Rose)"/>
+<style type="text/css">
+.underline { text-decoration: underline; }
+</style>
+<link rel="stylesheet" href="http://cdn.jsdelivr.net/reveal.js/3.0.0/css/reveal.css"/>
+
+<link rel="stylesheet" href="http://cdn.jsdelivr.net/reveal.js/3.0.0/css/theme/moon.css" id="theme"/>
+
+<link rel="stylesheet" href="http://cdn.jsdelivr.net/reveal.js/3.0.0/lib/css/zenburn.css"/>
+<!-- If the query includes 'print-pdf', include the PDF print sheet -->
+<script>
+    if( window.location.search.match( /print-pdf/gi ) ) {
+        var link = document.createElement( 'link' );
+        link.rel = 'stylesheet';
+        link.type = 'text/css';
+        link.href = 'http://cdn.jsdelivr.net/reveal.js/3.0.0/css/print/pdf.css';
+        document.getElementsByTagName( 'head' )[0].appendChild( link );
+    }
+</script>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+<section id="sec-title-slide"><h1 class="title">XIO</h1><h2 class="author">Chris Keating and Jeff Rose</h2><p class="date">Created: 2017-07-19 Wed 13:36</p>
+</section>
+
+<section>
+<section id="slide-org56ff7b4">
+<h2 id="org56ff7b4">XIO - High performance Multithreaded Async I/O for Java 8</h2>
+<ul>
+<li>questions welcome</li>
+
+</ul>
+
+</section>
+</section>
+<section>
+<section id="slide-org9903971">
+<h2 id="org9903971">Features</h2>
+<ul>
+<li>SSL/TLS</li>
+<li>application</li>
+<li>client</li>
+<li>http</li>
+<li>mux</li>
+<li>server</li>
+<li>tracing</li>
+
+</ul>
+
+</section>
+</section>
+<section>
+<section id="slide-orgb6a87f1">
+<h2 id="orgb6a87f1">SSL/TLS</h2>
+<ul>
+<li>accepts x509 certificates</li>
+<li>generates self signed certificates</li>
+<li>uses native SSL libraries instead of JSSE
+<ul>
+<li>OpenSSL</li>
+<li>boringssl</li>
+<li>configurable at deploy time</li>
+
+</ul></li>
+
+</ul>
+
+</section>
+</section>
+<section>
+<section id="slide-org61806e9">
+<h2 id="org61806e9">application</h2>
+<ul>
+<li>dynamic runtime configuration
+<ul>
+<li>IP whitelist/blacklist</li>
+<li>Web Application Firewall</li>
+
+</ul></li>
+<li>manages multiple server instances</li>
+<li>will use epoll if available</li>
+<li>channel statistics</li>
+<li>good support for Typesafe/Lightbend Config</li>
+
+</ul>
+
+</section>
+</section>
+<section>
+<section id="slide-orgb988492">
+<h2 id="orgb988492">application example</h2>
+<div class="org-src-container">
+
+<pre><code class="java" >new ApplicationBootstrap(appConfig)
+  // configure the main server
+  .addServer("nfe-main", (bs) -&gt; {
+    // configure the pipeline
+    bs.addToPipeline(proxyFragment())
+      // setup distributed tracing
+      .configureServerState(this::addServerTracing))
+      // build the application and start receiving connections
+      .build()
+    ;
+</code></pre>
+</div>
+
+</section>
+</section>
+<section>
+<section id="slide-org5d73591">
+<h2 id="org5d73591">application configuration example</h2>
+<pre class="example">
+nfe {
+  application {
+    servers {
+      nfe-main {
+        settings {
+          bindIp = "0.0.0.0"
+          bindPort = 80
+        }
+      }
+    }
+  }
+
+  proxy {
+    routes {
+      /api/v1/fives {
+        name = fives
+        version = v1
+        url = "http://172.18.242.20"
+      }
+    }
+  }
+}
+</pre>
+
+</section>
+</section>
+<section>
+<section id="slide-orgf77101e">
+<h2 id="orgf77101e">client</h2>
+<ul>
+<li>connection pooling</li>
+<li>cluster aware</li>
+<li>multiple cluster load balancing strategies</li>
+<li>multiple retry strategies</li>
+
+</ul>
+
+</section>
+</section>
+<section>
+<section id="slide-org1b7fe2c">
+<h2 id="org1b7fe2c">client example</h2>
+<div class="org-src-container">
+
+<pre><code class="java" >XioClient client = new XioClientBootstrap()
+  // use an existing EventLoop
+  .channelConfig(ChannelConfiguration.clientConfig(eventLoop))
+  .address(config.address)
+  // enable ssl
+  .ssl(config.needSSL)
+  // HTTP client
+  .applicationProtocol(() -&gt; new HttpClientCodec())
+  // proxy backend
+  .handler(new RawBackendHandler(ctx))
+  // build
+  .build()
+  ;
+
+// send request
+client.write(httpRequest);
+</code></pre>
+</div>
+
+</section>
+</section>
+<section>
+<section id="slide-org7486f19">
+<h2 id="org7486f19">http</h2>
+<ul>
+<li>serve http content</li>
+<li>request http content</li>
+<li>serve proxied http content</li>
+
+</ul>
+
+</section>
+</section>
+<section>
+<section id="slide-orga8646af">
+<h2 id="orga8646af">mux</h2>
+<ul>
+<li>request/response connection multiplexing</li>
+<li>uses connection pooling</li>
+<li>persistent connections maintained</li>
+<li>reduced connection overhead (especially TLS)</li>
+<li>higher throughput</li>
+<li>lower latency</li>
+
+</ul>
+
+</section>
+</section>
+<section>
+<section id="slide-org457a2c2">
+<h2 id="org457a2c2">server</h2>
+<ul>
+<li>servers built with common sense defaults</li>
+<li>wired into waf, etc.</li>
+<li>idle connection handlers</li>
+<li>connection limiters</li>
+<li>rate limiters</li>
+
+</ul>
+
+</section>
+</section>
+<section>
+<section id="slide-org27f5252">
+<h2 id="org27f5252">server example</h2>
+<div class="org-src-container">
+
+<pre><code class="java" >// load config from "application.conf"
+XioServer server = XioServerBootstrap.fromConfig("xio.testApplication")
+  // configure pipeline
+  .addToPipeline(new XioHttp1_1Pipeline(() -&gt; new AppHandler())
+  // enable tracing
+  .configureServerState(s -&gt; s.setTracingHandler(tracingHandler))
+  // build and start receiving connections
+  .build()
+  ;
+</code></pre>
+</div>
+
+</section>
+</section>
+<section>
+<section id="slide-orgb9c4c85">
+<h2 id="orgb9c4c85">tracing</h2>
+<ul>
+<li>distributed tracing with zipkin</li>
+
+</ul>
+
+</section>
+</section>
+<section>
+<section id="slide-org783e072">
+<h2 id="org783e072">tracing example</h2>
+
+<div class="figure">
+<p><img src="./tracing_example.png" alt="tracing_example.png" />
+</p>
+</div>
+
+</section>
+</section>
+<section>
+<section id="slide-orgcf416ed">
+<h2 id="orgcf416ed">Example Apps</h2>
+<div class="outline-text-2" id="text-orgcf416ed">
+</div></section>
+<section id="slide-org7487028">
+<h3 id="org7487028">Trailhead - a simple reverse proxy</h3>
+
+</section>
+<section id="slide-org74cfb94">
+<h3 id="org74cfb94">Chicago - a key/value store database</h3>
+
+</section>
+<section id="slide-orgeed82e1">
+<h3 id="orgeed82e1">NFE / NLP</h3>
+<ul>
+<li>Live demo</li>
+
+</ul>
+</section>
+</section>
+</div>
+</div>
+<script src="http://cdn.jsdelivr.net/reveal.js/3.0.0/lib/js/head.min.js"></script>
+<script src="http://cdn.jsdelivr.net/reveal.js/3.0.0/js/reveal.js"></script>
+
+<script>
+// Full list of configuration options available here:
+// https://github.com/hakimel/reveal.js#configuration
+Reveal.initialize({
+
+controls: true,
+progress: true,
+history: false,
+center: true,
+slideNumber: 'c',
+rollingLinks: false,
+keyboard: true,
+overview: true,
+
+theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+transition: Reveal.getQueryHash().transition || 'default', // default/cube/page/concave/zoom/linear/fade/none
+transitionSpeed: 'default',
+multiplex: {
+    secret: '', // null if client
+    id: '', // id, obtained from socket.io server
+    url: '' // Location of socket.io server
+},
+
+// Optional libraries used to extend on reveal.js
+dependencies: [
+ { src: 'http://cdn.jsdelivr.net/reveal.js/3.0.0/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }]
+});
+</script>
+</body>
+</html>

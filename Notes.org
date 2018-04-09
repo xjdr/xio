@@ -1,0 +1,161 @@
+* xio 0.13.0
+
+** must have
+
+*** DONE open tracing
+    - [X] setup openzipkin/brave
+    - Proper integration with opentracing might have to wait as it
+      appears that they are engaged in some serious bikeshedding.
+
+**** set proper semantic tags
+
+***** https://github.com/opentracing/specification/blob/master/semantic_conventions.md
+
+*** DONE move concrete trailhead classes into http package
+
+*** DONE streamline ssl usage
+    - server
+      - [X] by default secure http connections unless configured not to
+      - [X] use http 426 to inform cleartext clients that they need to secure
+      - [X] use alpn to negotiate http protocol
+    - client
+      - [X] by default secure http connections unless configured not to
+    - [X] fix performance issues with xio ssl
+    - [X] fail fast if OpenSsl is not available
+
+** nice to have
+
+*** clean up test data in reference.conf, etc.
+
+*** better openzipkin/brave integration
+
+**** custom CurrentTraceContext
+
+**** better thread state management
+
+*** remove dead build tools
+
+*** clean up javadoc linting errors
+
+*** DONE add http Recipes
+    - [X] copy recipes over from xrpc
+
+**** hide netty http traps in http Recipes
+
+*** better usage of findbugs annotations
+
+**** http://findbugs.sourceforge.net/
+
+*** bump checkstyle version and setup maven to checkstyle
+
+**** clean up links to google styleguide
+
+**** stop vendoring style guide
+
+*** InetSocketAddress fixed in java7 update
+
+**** https://docs.oracle.com/javase/8/docs/api/java/net/InetSocketAddress.html#getHostString--
+
+**** use getHostString instead of getAddress().getHostName()
+
+* Naming conventions
+  - Put Xio in front of a class name to avoid clashing with an existing class name
+    - good example XioServerBootstrap uses netty ServerBootstrap
+    - bad example XioBasePipeline doesn't use anything called BasePipeline and does not clash
+** package naming conventions
+   - com.xjeffrose.xio
+     - core: put common classes here
+       - client: base classes for clients here
+       - server: base classes for servers here
+     - http: put http common classes here
+       - client: http classes for clients here
+       - server: http classes for servers here
+
+* speeding up maven invocation
+
+** drip
+
+*** https://github.com/ninjudd/drip
+
+*** brew install drip
+
+*** ~/.mavenrc
+
+#+begin_src
+JAVACMD=/usr/local/bin/drip
+JAVA_HOME="$(/usr/libexec/java_home)"
+MAVEN_OPTS="-ea -Xmx512m"
+#+end_src
+
+** JVM startup time appears to be negligable
+
+* maven jvm options per project
+
+** https://maven.apache.org/docs/3.3.1/release-notes.html#JVM_and_Command_Line_Options
+
+* project
+
+** use phabricator?
+
+*** https://www.phacility.com/phabricator/
+
+* Hocon and Config docs
+
+** https://github.com/typesafehub/config/blob/master/HOCON.md
+
+** https://github.com/typesafehub/config/blob/master/README.md
+
+** https://typesafehub.github.io/config/latest/api/index.html
+
+* ontology
+
+** think about classifying the semantics of traffic replay
+
+** https://protegewiki.stanford.edu/wiki/Protege4Pizzas10Minutes
+
+* PEM/ASN.1
+
+** https://wiki.openssl.org/index.php/Manual:Asn1parse(1)
+
+* Creating pkcs8 private key pem files
+
+#+begin_src shell
+openssl pkcs8 -in foo.pem -inform PEM -outform PEM -out pkcs8.pem -topk8 -passout pass: -nocrypt
+#+end_src
+
+* various http/2 and ssl notes
+
+** HSTS isn't going to help us unless we're dealing with browsers:
+*** https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Strict-Transport-Security
+
+** Server can force client to upgrade with 426
+*** https://tools.ietf.org/html/rfc2817#section-4
+
+** JDK doesn't do ALPN
+*** https://github.com/jetty-project/jetty-alpn
+
+** ALPN allows the server to upgrade the request to http/2 after TLS has been negotiated.
+*** https://en.wikipedia.org/wiki/Application-Layer_Protocol_Negotiation
+
+** http/1.1 allows for an upgrade header
+*** https://en.wikipedia.org/wiki/HTTP/1.1_Upgrade_header
+** http implementation guidelines
+*** https://http2.github.io/faq/#can-i-implement-http2-without-implementing-http11
+
+* java source code formatting
+
+** google java style formatter
+
+*** https://github.com/google/google-java-format
+
+*** https://github.com/coveo/fmt-maven-plugin
+
+** diff/merge clutter
+
+*** diamond operators
+
+*** javadoc generation
+
+*** java imports sorting
+
+*** channel future listener -> lambda

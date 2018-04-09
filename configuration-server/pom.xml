@@ -72,7 +72,7 @@
     <dependency>
       <groupId>com.xjeffrose</groupId>
       <artifactId>xio</artifactId>
-      <version>0.12.0-SNAPSHOT</version>
+      <version>0.13.0-SNAPSHOT</version>
     </dependency>
 
     <dependency>
