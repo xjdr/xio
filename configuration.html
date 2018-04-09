@@ -1,0 +1,499 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Configuration &#8212; xio 1.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="top" title="xio 1.0.0 documentation" href="index.html" />
+    <link rel="next" title="XIO Examples" href="examples.html" />
+    <link rel="prev" title="Core" href="core.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="configuration">
+<h1>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="static-configuration">
+<h2>Static Configuration<a class="headerlink" href="#static-configuration" title="Permalink to this headline">¶</a></h2>
+<p>XIO strives to use static configuration values over hard coded
+constants whenever possible.  Static configuration in XIO is done with
+<a class="reference external" href="https://github.com/typesafehub/config/blob/master/README.md">Typesafe Config</a>.
+XIO provides sensible defaults static configuration values.</p>
+<div class="highlight-default"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>  1
+  2
+  3
+  4
+  5
+  6
+  7
+  8
+  9
+ 10
+ 11
+ 12
+ 13
+ 14
+ 15
+ 16
+ 17
+ 18
+ 19
+ 20
+ 21
+ 22
+ 23
+ 24
+ 25
+ 26
+ 27
+ 28
+ 29
+ 30
+ 31
+ 32
+ 33
+ 34
+ 35
+ 36
+ 37
+ 38
+ 39
+ 40
+ 41
+ 42
+ 43
+ 44
+ 45
+ 46
+ 47
+ 48
+ 49
+ 50
+ 51
+ 52
+ 53
+ 54
+ 55
+ 56
+ 57
+ 58
+ 59
+ 60
+ 61
+ 62
+ 63
+ 64
+ 65
+ 66
+ 67
+ 68
+ 69
+ 70
+ 71
+ 72
+ 73
+ 74
+ 75
+ 76
+ 77
+ 78
+ 79
+ 80
+ 81
+ 82
+ 83
+ 84
+ 85
+ 86
+ 87
+ 88
+ 89
+ 90
+ 91
+ 92
+ 93
+ 94
+ 95
+ 96
+ 97
+ 98
+ 99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183
+184</pre></div></td><td class="code"><div class="highlight"><pre><span></span>xio {
+
+  // default values for application limits
+  applicationLimits {
+    // maximum number of connections across all servers in the application
+    maxConnections = 15000
+  }
+
+  // default values for server limits
+  serverLimits {
+    // maximum number of connections for a single server instance
+    maxConnections = 500
+    // maximum frame size per connection
+    maxFrameSize = 9600
+    // triggered when no read was performed for the specified period of time. Specify 0 to disable.
+    maxReadIdleTime = 60seconds
+    // triggered when no write was performed for the specified period of time. Specify 0 to disable.
+    maxWriteIdleTime = 60seconds
+    // triggered when neither read nor write was performed for the specified period of time. Specify 0 to disable.
+    maxAllIdleTime = 60seconds
+  }
+
+  // default values for application settings
+  applicationSettings {
+    // location of the zookeeper cluster DEPRECATED
+    zookeeperCluster = &quot;&quot;
+    zookeeper {
+      // location of the zookeeper cluster
+      cluster = &quot;localhost:2181&quot;
+      client {
+        retry {
+          // zookeeper client retry policy
+          policy = RetryOneTime
+          // policy must match one of the following sections:
+          BoundedExponentialBackoffRetry {
+            // see: https://curator.apache.org/apidocs/org/apache/curator/retry/BoundedExponentialBackoffRetry.html
+            baseSleepDuration = 2seconds
+            maxSleepDuration = 10seconds
+            maxRetries = 10
+          }
+          ExponentialBackoffRetry {
+            // https://curator.apache.org/apidocs/org/apache/curator/retry/ExponentialBackoffRetry.html
+            baseSleepDuration = 2seconds
+            maxRetries = 10
+          }
+          RetryForever {
+            // https://curator.apache.org/apidocs/org/apache/curator/retry/RetryForever.html
+            sleepDuration = 2seconds
+          }
+          RetryNTimes {
+            // https://curator.apache.org/apidocs/org/apache/curator/retry/RetryNTimes.html
+            n = 10
+            sleepDuration = 2seconds
+          }
+          RetryOneTime {
+            // https://curator.apache.org/apidocs/org/apache/curator/retry/RetryOneTime.html
+            sleepDuration = 2seconds
+          }
+          RetryUntilElapsed {
+            // https://curator.apache.org/apidocs/org/apache/curator/retry/RetryUntilElapsed.html
+            maxElapsedDuration = 10seconds
+            sleepDuration = 2seconds
+          }
+        }
+      }
+    }
+    // number of boss threads to create
+    bossThreads = 5
+    // boss thread name format
+    bossNameFormat = &quot;xio-application-boss-%d&quot;
+    // number of worker threads to create
+    workerThreads = 10
+    // worker thread name format
+    workerNameFormat = &quot;xio-application-worker-%d&quot;
+    // global rate limiter
+    global_soft_req_per_sec = 700.0
+    global_hard_req_per_sec = 750.0
+    // per server rate limiter
+    soft_req_per_sec = 500.0
+    hard_req_per_sec = 550.0
+    // pool size should be approximate to the number of unique clients expected during a steady state condition
+    rate_limiter_pool_size = 24
+    // settings for dynamic configuration manager
+    configurationManager {
+      ipFilter {
+        // path to monitor for ip filter rules
+        path = &quot;/xio/ipFilterRules&quot;
+      }
+      http1Filter {
+        // path to monitor for http filter rules
+        path = &quot;/xio/http1FilterRules&quot;
+      }
+    }
+    // settings for configuration update server
+    configurationUpdateServer {
+      // update server is disabled by default
+      enabled = false
+      // update server is bound to port 9999 on loopback by default
+      bindIp = 127.0.0.1
+      bindPort = 9999
+      // update server will coalesce changes and persist them every 5 seconds by default
+      writeInterval = 5seconds
+    }
+    // settings for muxing client
+    requestMuxer {
+      messagesPerBatch = 100
+      drainMessageQInterval = 1millisecond
+      multiplierIncrementInterval = 500milliseconds
+      multiplierDecrementInterval = 750milliseconds
+      rebuildConnectionLoopInterval = 250milliseconds
+    }
+    tracing {
+      zipkinUrl = &quot;&quot;
+      samplingRate = &quot;1.0&quot;
+    }
+  }
+
+  serverSettings {
+    // servers bind to port 80 on loopback by default
+    bindIp = 127.0.0.1
+    bindPort = 80
+    // DEPRECATED
+    // TODO(CK): deprecate and remove
+    bossThreads = 5
+    // DEPRECATED
+    // TODO(CK): deprecate and remove
+    workerThreads = 10
+    // xio message logger is enabled by default
+    messageLoggerEnabled = true
+    // load self signed cert by default
+    tls {
+      include classpath(&quot;tls-reference.conf&quot;)
+    }
+  }
+
+  applicationTemplate {
+    // application name defaults to blank
+    name = &quot;&quot;
+    limits = ${xio.applicationLimits}
+    settings = ${xio.applicationSettings}
+    servers {
+    }
+    clients {
+    }
+  }
+
+  serverTemplate {
+    // server name defaults to blank
+    name = &quot;&quot;
+    limits = ${xio.serverLimits}
+    settings = ${xio.serverSettings}
+  }
+
+  clientTemplate {
+    name = &quot;&quot;
+    remoteIp = &quot;&quot;
+    remotePort = 0
+    localIp = &quot;&quot;
+    localPort = 0
+    settings {
+      messageLoggerEnabled = true
+      tls {
+        include classpath(&quot;tls-reference.conf&quot;)
+        privateKeyPath = &quot;classpath:xio-default-client-private-key-pkcs8.pem&quot;
+        x509CertPath = &quot;classpath:xio-default-client-certificate-x509.pem&quot;
+      }
+    }
+  }
+
+  routeTemplate {
+    methods = []
+    host = &quot;&quot;
+    path = &quot;&quot;
+    permissionNeeded = &quot;*&quot;
+  }
+
+  defaultApplication = ${xio.applicationTemplate} {
+    name = &quot;defaultApplication&quot;
+  }
+
+  defaultRoute = ${xio.routeTemplate} {
+    path = &quot;/&quot;
+  }
+}
+</pre></div>
+</td></tr></table></div>
+</div>
+<div class="section" id="dynamic-configuration">
+<span id="id1"></span><h2>Dynamic Configuration<a class="headerlink" href="#dynamic-configuration" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="configuration-server">
+<span id="id2"></span><h3>Configuration Server<a class="headerlink" href="#configuration-server" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="configuration-client">
+<h3>Configuration Client<a class="headerlink" href="#configuration-client" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Configuration</a><ul>
+<li><a class="reference internal" href="#static-configuration">Static Configuration</a></li>
+<li><a class="reference internal" href="#dynamic-configuration">Dynamic Configuration</a><ul>
+<li><a class="reference internal" href="#configuration-server">Configuration Server</a></li>
+<li><a class="reference internal" href="#configuration-client">Configuration Client</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="core.html" title="previous chapter">Core</a></li>
+      <li>Next: <a href="examples.html" title="next chapter">XIO Examples</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/configuration.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, xio.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.8</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+      |
+      <a href="_sources/configuration.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
