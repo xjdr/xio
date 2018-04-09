@@ -148,9 +148,12 @@ public class HttpClientTracingHandlerIntegrationTest { // extends ITHttpClient<X
             .build();
 
     // we call connect first then we call write
-    client.connect().thenAccept(result -> {
-      client.write(request);
-    });
+    client
+        .connect()
+        .thenAccept(
+            result -> {
+              client.write(request);
+            });
     // We wait on the local future because this signals the full roundtrip between outbound and
     // return trip from
     // the Application Handler out and then back in.

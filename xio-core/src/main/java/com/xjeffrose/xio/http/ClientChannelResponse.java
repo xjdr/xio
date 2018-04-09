@@ -1,13 +1,14 @@
 package com.xjeffrose.xio.http;
 
+import javax.annotation.Nullable;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 
-import javax.annotation.Nullable;
-
 public class ClientChannelResponse {
   @Accessors(fluent = true)
-  @Getter private boolean isDone;
+  @Getter
+  private boolean isDone;
+
   @Getter private boolean isSuccess;
   @Getter private Throwable cause;
 

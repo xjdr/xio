@@ -8,7 +8,6 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelPromise;
 import io.netty.util.concurrent.PromiseCombiner;
-
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 import lombok.extern.slf4j.Slf4j;
@@ -73,22 +72,34 @@ public class Client {
 
   public CompletableFuture<ClientChannelResponse> connect() {
     val outerResult = new CompletableFuture<ClientChannelResponse>();
-    internalConnect().addListeners(connectionListener, (resultFuture) -> {
-      val response = new ClientChannelResponse(resultFuture.isDone(), resultFuture.isSuccess(), resultFuture.cause());
-      outerResult.complete(response);
-    });
+    internalConnect()
+        .addListeners(
+            connectionListener,
+            (resultFuture) -> {
+              val response =
+                  new ClientChannelResponse(
+                      resultFuture.isDone(), resultFuture.isSuccess(), resultFuture.cause());
+              outerResult.complete(response);
+            });
     return outerResult;
   }
 
   public CompletableFuture<ClientChannelResponse> write(Request request) {
     val outerResult = new CompletableFuture<ClientChannelResponse>();
     if (channel == null) {
-      outerResult.complete(new ClientChannelResponse(false, false, new Throwable("No channel exists yet")));
+      outerResult.complete(
+          new ClientChannelResponse(false, false, new Throwable("No channel exists yet")));
     } else {
-      channel.writeAndFlush(request).addListeners(writeListener, (resultFuture) -> {
-        val response = new ClientChannelResponse(resultFuture.isDone(), resultFuture.isSuccess(), resultFuture.cause());
-        outerResult.complete(response);
-      });
+      channel
+          .writeAndFlush(request)
+          .addListeners(
+              writeListener,
+              (resultFuture) -> {
+                val response =
+                    new ClientChannelResponse(
+                        resultFuture.isDone(), resultFuture.isSuccess(), resultFuture.cause());
+                outerResult.complete(response);
+              });
     }
     return outerResult;
   }
