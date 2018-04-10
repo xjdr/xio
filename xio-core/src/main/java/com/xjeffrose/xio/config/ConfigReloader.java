@@ -76,7 +76,8 @@ public class ConfigReloader<T> {
     return !MessageDigest.isEqual(oldValue.digest, newValue.digest);
   }
 
-  public void checkForUpdates() {
+  @VisibleForTesting
+  void checkForUpdates() {
     try {
       File path = new File(metadata.path);
       if (path.lastModified() > metadata.lastModified) {
@@ -101,7 +102,7 @@ public class ConfigReloader<T> {
   }
 
   @VisibleForTesting
-  public void setUpdater(BiConsumer<T, T> updater) {
+  void setUpdater(BiConsumer<T, T> updater) {
     this.updater = updater;
   }
 
