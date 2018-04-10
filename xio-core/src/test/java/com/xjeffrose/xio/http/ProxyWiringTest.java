@@ -1,14 +1,16 @@
 package com.xjeffrose.xio.http;
 
+import static com.xjeffrose.xio.helpers.TlsHelper.getKeyManagers;
+
 import com.google.common.collect.ImmutableMap;
 import com.xjeffrose.xio.SSL.TlsConfig;
 import com.xjeffrose.xio.application.Application;
 import com.xjeffrose.xio.bootstrap.ApplicationBootstrap;
 import com.xjeffrose.xio.fixtures.JulBridge;
-import com.xjeffrose.xio.fixtures.OkHttpUnsafe;
 import com.xjeffrose.xio.helpers.ProxyPipelineRequestHandler;
 import com.xjeffrose.xio.pipeline.SmartHttpPipeline;
 import com.xjeffrose.xio.pipeline.XioPipelineFragment;
+import com.xjeffrose.xio.test.OkHttpUnsafe;
 import io.netty.channel.ChannelHandler;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -33,14 +35,14 @@ public class ProxyWiringTest extends Assert {
     JulBridge.initialize();
   }
 
-  OkHttpClient client = OkHttpUnsafe.getUnsafeClient();
-
-  public MockWebServer server;
+  private OkHttpClient client;
+  private MockWebServer server;
 
   @Before
   public void setUp() throws Exception {
     TlsConfig tlsConfig = TlsConfig.fromConfig("xio.testServer.settings.tls");
-    server = OkHttpUnsafe.getSslMockWebServer(tlsConfig);
+    client = OkHttpUnsafe.getUnsafeClient();
+    server = OkHttpUnsafe.getSslMockWebServer(getKeyManagers(tlsConfig));
     server.start();
   }
 

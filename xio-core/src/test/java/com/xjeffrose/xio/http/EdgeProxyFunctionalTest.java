@@ -1,5 +1,7 @@
 package com.xjeffrose.xio.http;
 
+import static com.xjeffrose.xio.helpers.TlsHelper.getKeyManagers;
+
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.typesafe.config.Config;
@@ -13,8 +15,8 @@ import com.xjeffrose.xio.application.ApplicationState;
 import com.xjeffrose.xio.bootstrap.ApplicationBootstrap;
 import com.xjeffrose.xio.core.SocketAddressHelper;
 import com.xjeffrose.xio.fixtures.JulBridge;
-import com.xjeffrose.xio.fixtures.OkHttpUnsafe;
 import com.xjeffrose.xio.pipeline.SmartHttpPipeline;
+import com.xjeffrose.xio.test.OkHttpUnsafe;
 import com.xjeffrose.xio.tracing.XioTracing;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -243,7 +245,7 @@ public class EdgeProxyFunctionalTest extends Assert {
 
     TlsConfig tlsConfig =
         TlsConfig.fromConfig("xio.h2BackendServer.settings.tls", ConfigFactory.load());
-    server = OkHttpUnsafe.getSslMockWebServer(tlsConfig);
+    server = OkHttpUnsafe.getSslMockWebServer(getKeyManagers(tlsConfig));
     server.setProtocols(Arrays.asList(Protocol.HTTP_2, Protocol.HTTP_1_1));
     server.start();
   }

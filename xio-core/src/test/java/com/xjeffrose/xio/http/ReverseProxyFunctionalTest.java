@@ -1,5 +1,7 @@
 package com.xjeffrose.xio.http;
 
+import static com.xjeffrose.xio.helpers.TlsHelper.getKeyManagers;
+
 import com.google.common.collect.ImmutableMap;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
@@ -10,13 +12,14 @@ import com.xjeffrose.xio.bootstrap.ApplicationBootstrap;
 import com.xjeffrose.xio.client.ClientConfig;
 import com.xjeffrose.xio.core.SocketAddressHelper;
 import com.xjeffrose.xio.fixtures.JulBridge;
-import com.xjeffrose.xio.fixtures.OkHttpUnsafe;
 import com.xjeffrose.xio.pipeline.SmartHttpPipeline;
+import com.xjeffrose.xio.test.OkHttpUnsafe;
 import com.xjeffrose.xio.tracing.XioTracing;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.EventLoopGroup;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.MediaType;
@@ -96,10 +99,10 @@ public class ReverseProxyFunctionalTest extends Assert {
     if (h2) {
       protocols = Arrays.asList(Protocol.HTTP_2, Protocol.HTTP_1_1);
     } else {
-      protocols = Arrays.asList(Protocol.HTTP_1_1);
+      protocols = Collections.singletonList(Protocol.HTTP_1_1);
     }
 
-    server = OkHttpUnsafe.getSslMockWebServer(tlsConfig);
+    server = OkHttpUnsafe.getSslMockWebServer(getKeyManagers(tlsConfig));
     server.setProtocols(protocols);
     server.start();
   }

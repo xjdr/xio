@@ -26,3 +26,7 @@ depend
 ### python
 *.pyc
 *.pyo
+
+#docs
+docs/.env
+docs/build

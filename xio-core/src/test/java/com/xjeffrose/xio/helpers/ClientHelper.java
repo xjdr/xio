@@ -1,9 +1,13 @@
 package com.xjeffrose.xio.helpers;
 
-import com.xjeffrose.xio.fixtures.OkHttpUnsafe;
+import com.xjeffrose.xio.test.OkHttpUnsafe;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import okhttp3.OkHttpClient;
+import okhttp3.Protocol;
 import okhttp3.Request;
 import okhttp3.Response;
 
@@ -26,13 +30,33 @@ public class ClientHelper {
     return protocol + address.getHostString() + ":" + address.getPort() + "/";
   }
 
-  public static Response http(InetSocketAddress address) {
+  /**
+   * Make a synchronous http request.
+   *
+   * @param address the request address.
+   * @param protocols the protocol(s) to support.
+   * @return a response.
+   */
+  public static Response http(InetSocketAddress address, Protocol... protocols) {
+    final List<Protocol> protocolList;
+    if (protocols.length == 0) {
+      protocolList = Collections.singletonList(Protocol.HTTP_1_1);
+    } else {
+      protocolList = Arrays.asList(protocols);
+    }
     String url = buildUrl("http://", address);
-    return request(url, new OkHttpClient());
+    return request(url, new OkHttpClient.Builder().protocols(protocolList).build());
   }
 
-  public static Response https(InetSocketAddress address) {
+  /**
+   * Make a synchronous https request using an unsafe http client.
+   *
+   * @param address the request address.
+   * @param protocols the protocol(s) to support.
+   * @return a response.
+   */
+  public static Response https(InetSocketAddress address, Protocol... protocols) throws Exception {
     String url = buildUrl("https://", address);
-    return request(url, OkHttpUnsafe.getUnsafeClient());
+    return request(url, OkHttpUnsafe.getUnsafeClient(protocols));
   }
 }
