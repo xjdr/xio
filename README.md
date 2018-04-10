@@ -49,3 +49,17 @@ following maven plugins maintain the source code standards:
 
  * [maven-checkstyle-plugin](https://maven.apache.org/plugins/maven-checkstyle-plugin/index.html)
    is run during `mvn verify` to ensure that style conventions are being adhered to.
+
+### Testing new jdk versions
+
+#### build the docker image
+
+docker build -t xio-jdk9 .
+
+#### test the build
+
+docker run  --mount type=bind,src=`pwd`,dst=/home -t xio-jdk9 ./mvnw verify
+
+#### interactive prompt
+
+docker run  --mount type=bind,src=`pwd`,dst=/home -it xio-jdk9
