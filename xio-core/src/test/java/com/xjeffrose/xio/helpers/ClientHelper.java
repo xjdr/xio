@@ -1,6 +1,6 @@
 package com.xjeffrose.xio.helpers;
 
-import com.xjeffrose.xio.fixtures.OkHttpUnsafe;
+import com.xjeffrose.xio.test.OkHttpUnsafe;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
@@ -55,7 +55,7 @@ public class ClientHelper {
    * @param protocols the protocol(s) to support.
    * @return a response.
    */
-  public static Response https(InetSocketAddress address, Protocol... protocols) {
+  public static Response https(InetSocketAddress address, Protocol... protocols) throws Exception {
     String url = buildUrl("https://", address);
     return request(url, OkHttpUnsafe.getUnsafeClient(protocols));
   }

@@ -14,7 +14,7 @@ import zipkin.reporter.okhttp3.OkHttpSender;
 
 public class XioTracing {
 
-  protected final Tracing tracing;
+  private final Tracing tracing;
 
   private Reporter<Span> buildReporter(@NonNull String zipkinUrl) {
     return AsyncReporter.builder(OkHttpSender.create(zipkinUrl)).build();
