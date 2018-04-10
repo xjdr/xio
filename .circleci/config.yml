@@ -36,10 +36,10 @@ jobs:
     docker:
       - image: openjdk:9.0-jdk-slim-sid
     <<: *common_steps
-# build-jdk10:
-#   docker:
-#     - image: openjdk:10-jdk-slim
-#   <<: *common_steps
+  build-jdk10:
+    docker:
+      - image: openjdk:10-jdk-slim
+    <<: *common_steps
 
 workflows:
   version: 2
@@ -47,22 +47,4 @@ workflows:
     jobs:
       - build-jdk8
       - build-jdk9
-      - build-jdk10
-#  dependencies:
-#    cache_directories:
-#      - ~/.m2
-#  test:
-#    override:
-#      - mvn clean verify -Dmaven.javadoc.skip=true -DCOVERAGE=1
-#      - mvn package javadoc:jar -Dmaven.javadoc.skip=true
-#      - mvn -pl xio-core coveralls:report -Dmaven.javadoc.skip=true -DrepoToken=${COVERALLS_REPO_TOKEN}
-#    post:
-#      - cp xio-core/target/xio*jar pom.xml $CIRCLE_ARTIFACTS
-#      - mkdir -p $CIRCLE_TEST_REPORTS/junit/
-#      - find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} $CIRCLE_TEST_REPORTS/junit/ \;
-#  deployment:
-#    main:
-#      branch: master
-#      commands:
-#        - mvn -N io.takari:maven:wrapper
-#        - ./mvnw -pl xio-core -P packagecloud -s .circleci.settings.xml -DskipTests deploy
+#     - build-jdk10
