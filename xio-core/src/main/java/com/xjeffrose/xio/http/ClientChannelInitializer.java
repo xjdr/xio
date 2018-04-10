@@ -55,13 +55,6 @@ public class ClientChannelInitializer extends ChannelInitializer {
           .addLast("codec", new HttpServerCodec())
           .addLast("application codec", new Http1ServerCodec());
     }
-    channel
-        .pipeline()
-        .addLast(
-            "negotiation handler",
-            new HttpClientNegotiationHandler(ClientChannelInitializer.this::buildHttp2Handler))
-        .addLast("codec", CodecPlaceholderHandler.INSTANCE)
-        .addLast("application codec", ApplicationCodecPlaceholderHandler.INSTANCE);
     if (tracing != null) {
       val traceHandler = tracing.newClientHandler(state.config.isTlsEnabled());
       Pipelines.addHandler(channel.pipeline(), "distributed tracing", traceHandler);
