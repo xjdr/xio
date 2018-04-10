@@ -11,6 +11,7 @@ import com.xjeffrose.xio.tracing.XioTracing;
 import io.netty.util.internal.PlatformDependent;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -37,7 +38,7 @@ public class ApplicationConfig {
   private final Map<String, List<Double>> clientRateLimitOverride =
       PlatformDependent.newConcurrentHashMap();
 
-  public ApplicationConfig(Config config) {
+  public ApplicationConfig(Config config, XioTracing tracing) {
     this.config = config;
     name = config.getString("name");
     bossThreads = config.getInt("settings.bossThreads");
@@ -52,7 +53,15 @@ public class ApplicationConfig {
     softReqPerSec = config.getDouble("settings.soft_req_per_sec");
     hardReqPerSec = config.getDouble("settings.hard_req_per_sec");
     rateLimiterPoolSize = config.getInt("settings.rate_limiter_pool_size");
-    tracing = new XioTracing(config);
+    this.tracing = tracing;
+  }
+
+  public ApplicationConfig(Config config, Function<Config, XioTracing> tracingSupplier) {
+    this(config, tracingSupplier.apply(config));
+  }
+
+  public ApplicationConfig(Config config) {
+    this(config, new XioTracing(config));
   }
 
   public static ApplicationConfig fromConfig(String key, Config config) {

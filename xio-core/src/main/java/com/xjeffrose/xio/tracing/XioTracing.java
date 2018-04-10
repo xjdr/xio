@@ -20,7 +20,7 @@ public class XioTracing {
     return AsyncReporter.builder(OkHttpSender.create(zipkinUrl)).build();
   }
 
-  private Tracing buildTracing(
+  protected Tracing buildTracing(
       @NonNull String name, @NonNull String zipkinUrl, float samplingRate) {
     if (zipkinUrl.isEmpty() || !(samplingRate > 0f)) {
       return null;

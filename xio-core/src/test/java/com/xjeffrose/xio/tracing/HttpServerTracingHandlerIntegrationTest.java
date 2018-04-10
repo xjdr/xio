@@ -1,128 +1,113 @@
 package com.xjeffrose.xio.tracing;
 
-import static io.netty.handler.codec.http.HttpMethod.*;
-import static io.netty.handler.codec.http.HttpResponseStatus.*;
-import static io.netty.handler.codec.http.HttpVersion.*;
-import static org.junit.Assert.*;
-
-import brave.Tracer;
-import brave.http.HttpTracing;
-import com.xjeffrose.xio.bootstrap.XioServerBootstrap;
-import com.xjeffrose.xio.fixtures.JulBridge;
+import brave.Tracing;
+import brave.internal.StrictCurrentTraceContext;
+import brave.propagation.CurrentTraceContext;
+import brave.sampler.Sampler;
+import com.typesafe.config.Config;
+import com.xjeffrose.xio.application.Application;
+import com.xjeffrose.xio.bootstrap.ApplicationBootstrap;
+import com.xjeffrose.xio.helpers.ClientHelper;
+import com.xjeffrose.xio.http.DefaultFullResponse;
+import com.xjeffrose.xio.http.DefaultHeaders;
+import com.xjeffrose.xio.http.FullRequest;
+import com.xjeffrose.xio.http.Request;
+import com.xjeffrose.xio.http.StreamingRequestData;
+import com.xjeffrose.xio.http.TraceInfo;
 import com.xjeffrose.xio.pipeline.SmartHttpPipeline;
-import com.xjeffrose.xio.server.XioServer;
-import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpObject;
-import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.util.CharsetUtil;
-import java.io.IOException;
-import java.util.logging.*;
+import java.net.InetSocketAddress;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import lombok.val;
+import okhttp3.Protocol;
 import org.junit.After;
-import org.junit.BeforeClass;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
-// TODO(CK): These brave integration tests are flaky and stall out sometimes
-// Turn them back on when they are fixed
-public class HttpServerTracingHandlerIntegrationTest { // extends ITHttpServer {
+public class HttpServerTracingHandlerIntegrationTest extends Assert {
 
-  @BeforeClass
-  public static void setupJul() {
-    JulBridge.initialize();
-  }
+  Application application = null;
+  CountDownLatch latch;
 
-  static Logger disableJavaLogging() {
-    Logger logger = Logger.getLogger("okhttp3.mockwebserver.MockWebServer");
-    logger.setLevel(Level.WARNING);
-    return logger;
-  }
-
-  Logger hush = disableJavaLogging();
-
-  XioServer server = null;
-
-  public static class BraveHandler extends SimpleChannelInboundHandler<HttpObject> {
-    private final HttpTracing httpTracing;
-
-    public BraveHandler(HttpTracing httpTracing) {
-      this.httpTracing = httpTracing;
-    }
-
-    @Override
-    public void channelRead0(ChannelHandlerContext ctx, HttpObject msg) throws Exception {
-      if (msg instanceof HttpRequest) {
-        HttpRequest request = (HttpRequest) msg;
-        String content = "Here is the default content that is returned";
-        HttpResponseStatus status = OK;
-        if (request.uri().startsWith("/foo")) {
-        } else if (request.uri().startsWith("/child")) {
-
-          Tracer tracer = httpTracing.tracing().tracer();
-
-          // Span parent = HttpTracingState.getSpan(ctx);
-          // Span span = tracer.newChild(parent.context()).name("child").start();
-          //        System.out.println("channelRead0: " + span);
-          // span.finish();
-
-        } else if (request.uri().startsWith("/exception")) {
-          throw new IOException("exception");
-        } else if (request.uri().startsWith("/async")) {
-        } else if (request.uri().startsWith("/badrequest")) {
-          status = BAD_REQUEST;
-        } else { // not found
-          status = NOT_FOUND;
-        }
-
-        writeResponse(ctx, status, Unpooled.copiedBuffer(content, CharsetUtil.UTF_8));
-      }
-    }
-
-    private void writeResponse(
-        ChannelHandlerContext ctx, HttpResponseStatus responseStatus, ByteBuf content) {
-
-      // Build the response object.
-      DefaultFullHttpResponse response =
-          new DefaultFullHttpResponse(HTTP_1_1, responseStatus, content);
-
-      response.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/plain; charset=UTF-8");
-      response.headers().set(HttpHeaderNames.CONTENT_LENGTH, content.readableBytes());
-
-      // Write the response.
-      ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
-    }
-
-    @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-      // Write the response.
-      writeResponse(ctx, EXPECTATION_FAILED, Unpooled.EMPTY_BUFFER);
-    }
-  }
-
-  // @Override
-  protected void init() throws Exception {
-
-    HttpTracing httpTracing = null; // TODO(CK): remove this when the tests are fixed
-    XioServerBootstrap bootstrap =
-        XioServerBootstrap.fromConfig("xio.testHttpServer")
-            .addToPipeline(new SmartHttpPipeline(() -> new BraveHandler(httpTracing)));
-
-    server = bootstrap.build();
-  }
-
-  // @Override
-  protected String url(String path) {
-    return "http://localhost:" + server.getInstrumentation().boundAddress().getPort() + path;
+  @Before
+  public void before() throws Exception {
+    application =
+        new ApplicationBootstrap("xio.testZipkinApplication", XioTracingDecorator::new)
+            .addServer(
+                "exampleServer", (bs) -> bs.addToPipeline(new SmartHttpPipeline(TestHandler::new)))
+            .build();
   }
 
   @After
   public void stop() throws Exception {
-    if (server != null) {
-      server.close();
+    application.close();
+  }
+
+  @Test
+  public void testSpanDispatchedH1() throws Exception {
+    latch = new CountDownLatch(1);
+    InetSocketAddress address = application.instrumentation("exampleServer").boundAddress();
+    ClientHelper.https(address, Protocol.HTTP_1_1);
+    latch.await(1, TimeUnit.SECONDS);
+    assertEquals(0, latch.getCount());
+  }
+
+  @Test
+  public void testSpanDispatchedH2() throws Exception {
+    latch = new CountDownLatch(1);
+    InetSocketAddress address = application.instrumentation("exampleServer").boundAddress();
+    ClientHelper.https(address, Protocol.HTTP_2, Protocol.HTTP_1_1);
+    latch.await(1, TimeUnit.SECONDS);
+    assertEquals(0, latch.getCount());
+  }
+
+  private class XioTracingDecorator extends XioTracing {
+
+    CurrentTraceContext currentTraceContext = new StrictCurrentTraceContext();
+
+    public XioTracingDecorator(Config config) {
+      super(config);
+    }
+
+    @Override
+    protected Tracing buildTracing(String name, String zipkinUrl, float samplingRate) {
+      return Tracing.newBuilder()
+          .reporter(ignored -> latch.countDown())
+          .currentTraceContext(currentTraceContext)
+          .sampler(Sampler.ALWAYS_SAMPLE)
+          .build();
+    }
+  }
+
+  private class TestHandler extends SimpleChannelInboundHandler<Request> {
+
+    @Override
+    protected void channelRead0(ChannelHandlerContext ctx, Request msg) throws Exception {
+
+      if (msg instanceof StreamingRequestData && ((StreamingRequestData) msg).endOfStream()) {
+        sendResponse(ctx, msg.httpTraceInfo());
+        return;
+      } else if (msg instanceof FullRequest) {
+        sendResponse(ctx, msg.httpTraceInfo());
+      }
+
+      ctx.write(msg);
+    }
+
+    private void sendResponse(ChannelHandlerContext ctx, TraceInfo traceInfo) {
+      val resp =
+          DefaultFullResponse.builder()
+              .httpTraceInfo(traceInfo)
+              .headers(new DefaultHeaders())
+              .status(HttpResponseStatus.OK)
+              .body(Unpooled.EMPTY_BUFFER)
+              .build();
+      ctx.writeAndFlush(resp);
     }
   }
 }

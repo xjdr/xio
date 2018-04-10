@@ -13,7 +13,7 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import lombok.Getter;
 
-class HttpServerTracingDispatch {
+class HttpServerTracingDispatch extends HttpTracingState {
 
   @Getter private final Tracer tracer;
   @Getter private final HttpServerHandler<Request, Response> handler;
@@ -35,10 +35,16 @@ class HttpServerTracingDispatch {
 
   public void onRequest(ChannelHandlerContext ctx, Request request) {
     Span span = handler.handleReceive(extractor, addRemoteIp(ctx, request.headers()), request);
+    setSpan(ctx, span);
     request.httpTraceInfo().setSpan(span);
   }
 
-  public void onResponse(Response response, Throwable error) {
-    response.httpTraceInfo().getSpan().ifPresent(span -> handler.handleSend(response, error, span));
+  public void onResponse(ChannelHandlerContext ctx, Response response, Throwable error) {
+    popSpan(ctx)
+        .ifPresent(
+            span -> {
+              response.httpTraceInfo().setSpan(span);
+              handler.handleSend(response, error, span);
+            });
   }
 }

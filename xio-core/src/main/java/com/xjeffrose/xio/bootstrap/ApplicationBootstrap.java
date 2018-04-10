@@ -9,8 +9,10 @@ import com.xjeffrose.xio.config.Configurator;
 import com.xjeffrose.xio.server.XioServer;
 import com.xjeffrose.xio.server.XioServerConfig;
 import com.xjeffrose.xio.server.XioServerState;
+import com.xjeffrose.xio.tracing.XioTracing;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import lombok.Getter;
 
@@ -72,6 +74,10 @@ public class ApplicationBootstrap {
 
   public ApplicationBootstrap(String application) {
     this(application, ConfigFactory.load());
+  }
+
+  public ApplicationBootstrap(String application, Function<Config, XioTracing> supplier) {
+    this(new ApplicationConfig(ConfigFactory.load().getConfig(application), supplier));
   }
 
   public ApplicationBootstrap addServer(
