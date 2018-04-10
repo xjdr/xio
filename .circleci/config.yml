@@ -36,10 +36,10 @@ jobs:
     docker:
       - image: openjdk:9.0-jdk-slim-sid
     <<: *common_steps
-  build-jdk10:
-    docker:
-      - image: openjdk:10-jdk-slim
-    <<: *common_steps
+# build-jdk10:
+#   docker:
+#     - image: openjdk:10-jdk-slim
+#   <<: *common_steps
 
 workflows:
   version: 2
