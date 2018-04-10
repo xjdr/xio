@@ -8,10 +8,8 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelPromise;
 import io.netty.util.concurrent.PromiseCombiner;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 import lombok.extern.slf4j.Slf4j;
-import lombok.val;
 
 @Slf4j
 public class Client {
@@ -46,7 +44,13 @@ public class Client {
         };
   }
 
-  private ChannelFuture internalConnect() {
+  /**
+   * Creates a channel and returns a channel connection future This also sets the channel instance
+   * variable so if we later call write it will not try to reconnect
+   *
+   * @return A ChannelFuture that succeeds on connect
+   */
+  public ChannelFuture connect() {
     Bootstrap b = new Bootstrap();
     b.channel(state.channelConfig.channel());
     b.group(state.channelConfig.workerGroup());
@@ -58,14 +62,14 @@ public class Client {
 
   /**
    * Combines the connection and writing into one command. This method dispatches both a connect and
-   * command call concurrently
+   * command call concurrently. If there is already an existing channel we just do the write
    *
    * @param request The Request object that we ultimately want to send outbound
    * @return A ChannelFuture that succeeds when both the connect and write succeed
    */
-  public ChannelFuture connectAndWrite(Request request) {
+  public ChannelFuture write(Request request) {
     if (channel == null) {
-      ChannelFuture future = internalConnect();
+      ChannelFuture future = connect();
       ChannelPromise promise = channel.newPromise();
       PromiseCombiner combiner = new PromiseCombiner();
       combiner.add(future.addListener(connectionListener));
@@ -75,57 +79,5 @@ public class Client {
     } else {
       return channel.writeAndFlush(request).addListener(writeListener);
     }
-  }
-
-  /**
-   * Creates a channel and initiates a connection
-   *
-   * @return A CompletableFuture-ClientChannelResponse that transfers the results of the underlying
-   *     ChannelFuture
-   */
-  public CompletableFuture<ClientChannelResponse> connect() {
-    val outerResult = new CompletableFuture<ClientChannelResponse>();
-    if (channel != null) {
-      outerResult.complete(
-          new ClientChannelResponse(false, false, new Throwable("Channel already connected")));
-    } else {
-      internalConnect()
-          .addListeners(
-              connectionListener,
-              (resultFuture) -> {
-                val response =
-                    new ClientChannelResponse(
-                        resultFuture.isDone(), resultFuture.isSuccess(), resultFuture.cause());
-                outerResult.complete(response);
-              });
-    }
-    return outerResult;
-  }
-
-  /**
-   * Writes to a channel if it already exists. If the channel does not exists this resolves the
-   * response with a Throwable
-   *
-   * @return A CompletableFuture-ClientChannelResponse that transfers the results of the underlying
-   *     ChannelFuture
-   */
-  public CompletableFuture<ClientChannelResponse> write(Request request) {
-    val outerResult = new CompletableFuture<ClientChannelResponse>();
-    if (channel == null) {
-      outerResult.complete(
-          new ClientChannelResponse(false, false, new Throwable("No channel exists yet")));
-    } else {
-      channel
-          .writeAndFlush(request)
-          .addListeners(
-              writeListener,
-              (resultFuture) -> {
-                val response =
-                    new ClientChannelResponse(
-                        resultFuture.isDone(), resultFuture.isSuccess(), resultFuture.cause());
-                outerResult.complete(response);
-              });
-    }
-    return outerResult;
   }
 }
