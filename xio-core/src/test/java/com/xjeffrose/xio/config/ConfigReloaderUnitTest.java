@@ -39,12 +39,45 @@ public class ConfigReloaderUnitTest extends Assert {
     }
   }
 
+  public static class TrivialState {
+    TrivialConfig config;
+
+    TrivialState(TrivialConfig config) {
+      this.config = config;
+    }
+
+    public void update(TrivialConfig oldValue, TrivialConfig newValue) {
+      this.config = newValue;
+    }
+
+    public void fireUpdated() {}
+  }
+
+  @Test
+  public void testWiring() throws Exception {
+    ScheduledExecutorService executor = new ScheduledThreadPoolExecutor(1);
+    ConfigReloader<TrivialConfig> reloader = new ConfigReloader<>(executor, TrivialConfig::new);
+    TrivialConfig config = reloader.init(createConfig("10"));
+    TrivialState state =
+        new TrivialState(config) {
+          @Override
+          public void fireUpdated() {
+            assertEquals(20, this.config.limit);
+            executor.shutdown();
+          }
+        };
+    assertEquals(10, config.limit);
+    reloader.start(state::update);
+
+    Thread.sleep(2000);
+
+    createConfig("20");
+  }
+
   @Test
   public void testInitHappyPath() throws Exception {
     ScheduledExecutorService executor = new ScheduledThreadPoolExecutor(1);
-    BiConsumer<TrivialConfig, TrivialConfig> updater = null;
-    ConfigReloader<TrivialConfig> reloader =
-        new ConfigReloader<>(executor, TrivialConfig::new, updater);
+    ConfigReloader<TrivialConfig> reloader = new ConfigReloader<>(executor, TrivialConfig::new);
     TrivialConfig config = reloader.init(createConfig("10"));
     assertEquals(10, config.limit);
   }
@@ -52,9 +85,7 @@ public class ConfigReloaderUnitTest extends Assert {
   @Test(expected = IllegalStateException.class)
   public void testInitBadValue() throws Exception {
     ScheduledExecutorService executor = new ScheduledThreadPoolExecutor(1);
-    BiConsumer<TrivialConfig, TrivialConfig> updater = null;
-    ConfigReloader<TrivialConfig> reloader =
-        new ConfigReloader<>(executor, TrivialConfig::new, updater);
+    ConfigReloader<TrivialConfig> reloader = new ConfigReloader<>(executor, TrivialConfig::new);
     TrivialConfig config = reloader.init(createConfig("str"));
   }
 
@@ -66,8 +97,8 @@ public class ConfigReloaderUnitTest extends Assert {
           assertEquals(10, oldValue.limit);
           assertEquals(20, newValue.limit);
         };
-    ConfigReloader<TrivialConfig> reloader =
-        new ConfigReloader<>(executor, TrivialConfig::new, updater);
+    ConfigReloader<TrivialConfig> reloader = new ConfigReloader<>(executor, TrivialConfig::new);
+    reloader.setUpdater(updater);
     TrivialConfig config = reloader.init(createConfig("10"));
     assertEquals(10, config.limit);
 
@@ -86,8 +117,8 @@ public class ConfigReloaderUnitTest extends Assert {
           assertEquals(10, oldValue.limit);
           assertEquals(20, newValue.limit);
         };
-    ConfigReloader<TrivialConfig> reloader =
-        new ConfigReloader<>(executor, TrivialConfig::new, updater);
+    ConfigReloader<TrivialConfig> reloader = new ConfigReloader<>(executor, TrivialConfig::new);
+    reloader.setUpdater(updater);
     TrivialConfig config = reloader.init(createConfig("10"));
     assertEquals(10, config.limit);
 
@@ -104,8 +135,8 @@ public class ConfigReloaderUnitTest extends Assert {
           assertEquals(10, oldValue.limit);
           assertEquals(20, newValue.limit);
         };
-    ConfigReloader<TrivialConfig> reloader =
-        new ConfigReloader<>(executor, TrivialConfig::new, updater);
+    ConfigReloader<TrivialConfig> reloader = new ConfigReloader<>(executor, TrivialConfig::new);
+    reloader.setUpdater(updater);
     TrivialConfig config = reloader.init(createConfig("10"));
     assertEquals(10, config.limit);
 
@@ -123,8 +154,8 @@ public class ConfigReloaderUnitTest extends Assert {
         (oldValue, newValue) -> {
           assertTrue(false);
         };
-    ConfigReloader<TrivialConfig> reloader =
-        new ConfigReloader<>(executor, TrivialConfig::new, updater);
+    ConfigReloader<TrivialConfig> reloader = new ConfigReloader<>(executor, TrivialConfig::new);
+    reloader.setUpdater(updater);
     TrivialConfig config = reloader.init(createConfig("10"));
     assertEquals(10, config.limit);
 
@@ -138,24 +169,29 @@ public class ConfigReloaderUnitTest extends Assert {
   @Test(expected = NullPointerException.class)
   public void testStartWithoutInit() throws Exception {
     ScheduledExecutorService executor = new ScheduledThreadPoolExecutor(1);
-    BiConsumer<TrivialConfig, TrivialConfig> updater = null;
-    ConfigReloader<TrivialConfig> reloader =
-        new ConfigReloader<>(executor, TrivialConfig::new, updater);
-    reloader.start();
+    BiConsumer<TrivialConfig, TrivialConfig> updater =
+        (oldValue, newValue) -> {
+          assertTrue(true);
+        };
+    ConfigReloader<TrivialConfig> reloader = new ConfigReloader<>(executor, TrivialConfig::new);
+    reloader.start(updater);
   }
 
   @Test
   public void testStartHappyPath() throws Exception {
     final ScheduledExecutorService executor = new ScheduledThreadPoolExecutor(1);
-    BiConsumer<TrivialConfig, TrivialConfig> updater = null;
+    BiConsumer<TrivialConfig, TrivialConfig> updater =
+        (oldValue, newValue) -> {
+          assertTrue(true);
+        };
     ConfigReloader<TrivialConfig> reloader =
-        new ConfigReloader<TrivialConfig>(executor, TrivialConfig::new, updater) {
+        new ConfigReloader<TrivialConfig>(executor, TrivialConfig::new) {
           @Override
           public void checkForUpdates() {
             executor.shutdown();
           }
         };
     TrivialConfig config = reloader.init(createConfig("10"));
-    reloader.start();
+    reloader.start(updater);
   }
 }
