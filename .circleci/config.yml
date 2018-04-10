@@ -1,47 +1,45 @@
 common_steps: &common_steps
-  - run:
-      name: update image
-      command: apt-get update
-  - run:
-      name: install debian dependencies
-      command: apt-get install -y openssl libssl-dev
-  - checkout
-  - restore_cache:
-      key: v1-cache-xio-{{ arch }}-{{ checksum "pom.xml" }}
-  - run:
-      name: install maven dependencies
-      command: ./mvnw --batch-mode -DskipTests=true -Dmaven.javadoc.skip=true clean test-compile dependency:resolve-plugins dependency:go-offline
-  - run:
-      name: run tests
-      command: ./mvnw --batch-mode clean verify -DCOVERAGE=1
-  - run:
-      name: build package
-      command: ./mvnw --batch-mode package javadoc:jar
-  - run:
-      name: build reports
-      command: ./mvnw --batch-mode -pl xio-core coveralls:report -Dmaven.javadoc.skip=true -DrepoToken=${COVERALLS_REPO_TOKEN}
-  - save_cache:
-      key: v1-cache-xio-{{ arch }}-{{ checksum "pom.xml" }}
-      paths:
-        - ~/.m2
+  steps:
+    - run:
+        name: update image
+        command: apt-get update
+    - run:
+        name: install debian dependencies
+        command: apt-get install -y openssl libssl-dev
+    - checkout
+    - restore_cache:
+        key: v1-cache-xio-{{ arch }}-{{ checksum "pom.xml" }}
+    - run:
+        name: install maven dependencies
+        command: ./mvnw --batch-mode -DskipTests=true -Dmaven.javadoc.skip=true clean test-compile dependency:resolve-plugins dependency:go-offline
+    - run:
+        name: run tests
+        command: ./mvnw --batch-mode clean verify -DCOVERAGE=1
+    - run:
+        name: build package
+        command: ./mvnw --batch-mode package javadoc:jar
+    - run:
+        name: build reports
+        command: ./mvnw --batch-mode -pl xio-core coveralls:report -Dmaven.javadoc.skip=true -DrepoToken=${COVERALLS_REPO_TOKEN}
+    - save_cache:
+        key: v1-cache-xio-{{ arch }}-{{ checksum "pom.xml" }}
+        paths:
+          - ~/.m2
 
 version: 2
 jobs:
   build-jdk8:
     docker:
       - image: openjdk:8u162-jdk-stretch
-    steps:
-      <<: *common_steps
+    <<: *common_steps
   build-jdk9:
     docker:
       - image: openjdk:9.0-jdk-sid
-    steps:
-      <<: *common_steps
+    <<: *common_steps
   build-jdk10:
     docker:
       - image: openjdk:10-jdk
-    steps:
-      <<: *common_steps
+    <<: *common_steps
 
 workflows:
   version: 2
