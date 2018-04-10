@@ -33,7 +33,7 @@ public class Http1Response implements StreamingResponse {
 
   @Override
   public boolean endOfStream() {
-    return true;
+    return false;
   }
 
   public HttpResponseStatus status() {

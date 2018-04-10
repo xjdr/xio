@@ -19,6 +19,7 @@ public class Client {
   private final ChannelFutureListener connectionListener;
   private final ChannelFutureListener writeListener;
   private Channel channel;
+  private ChannelFuture connectionFuture;
 
   public Client(ClientState state, Supplier<ChannelHandler> appHandler, XioTracing tracing) {
     this.state = state;
@@ -43,18 +44,32 @@ public class Client {
         };
   }
 
-  private ChannelFuture connect() {
+  /**
+   * Creates a channel and returns a channel connection future This also sets the channel instance
+   * variable so if we later call write it will not try to reconnect
+   *
+   * @return A ChannelFuture that succeeds on connect
+   */
+  public ChannelFuture connect() {
     Bootstrap b = new Bootstrap();
     b.channel(state.channelConfig.channel());
     b.group(state.channelConfig.workerGroup());
     b.handler(clientChannelInitializer);
-    return b.connect(state.remote);
+    ChannelFuture connectFuture = b.connect(state.remote);
+    channel = connectFuture.channel();
+    return connectFuture;
   }
 
+  /**
+   * Combines the connection and writing into one command. This method dispatches both a connect and
+   * command call concurrently. If there is already an existing channel we just do the write
+   *
+   * @param request The Request object that we ultimately want to send outbound
+   * @return A ChannelFuture that succeeds when both the connect and write succeed
+   */
   public ChannelFuture write(Request request) {
     if (channel == null) {
       ChannelFuture future = connect();
-      channel = future.channel();
       ChannelPromise promise = channel.newPromise();
       PromiseCombiner combiner = new PromiseCombiner();
       combiner.add(future.addListener(connectionListener));

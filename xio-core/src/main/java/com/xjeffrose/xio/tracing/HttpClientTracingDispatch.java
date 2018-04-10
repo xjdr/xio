@@ -14,6 +14,7 @@ import com.xjeffrose.xio.http.Traceable;
 import io.netty.channel.ChannelHandlerContext;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.util.Optional;
 import lombok.Getter;
 import lombok.val;
 
@@ -54,11 +55,12 @@ public class HttpClientTracingDispatch extends HttpTracingState {
   }
 
   public void onResponse(ChannelHandlerContext ctx, Response response) {
-    popSpan(ctx);
-    response
-        .httpTraceInfo()
-        .getSpan()
-        .ifPresent(span -> handler.handleReceive(response, null, span));
+    Optional<Span> requestSpan = popSpan(ctx);
+    requestSpan.ifPresent(
+        span -> {
+          response.httpTraceInfo().setSpan(span);
+          handler.handleReceive(response, null, span);
+        });
   }
 
   public void onError(ChannelHandlerContext ctx, Throwable cause) {
