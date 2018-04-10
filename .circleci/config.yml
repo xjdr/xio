@@ -5,7 +5,7 @@ common_steps: &common_steps
         command: apt-get update
     - run:
         name: install debian dependencies
-        command: apt-get install -y openssl libssl-dev
+        command: apt-get install -y openssl libssl-dev ca-certificates-java
     - checkout
     - restore_cache:
         key: v1-cache-xio-{{ arch }}-{{ checksum "pom.xml" }}
