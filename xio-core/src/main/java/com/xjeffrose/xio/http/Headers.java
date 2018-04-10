@@ -26,6 +26,11 @@ public interface Headers
     }
   }
 
+  default Headers setLowerCase(CharSequence name, CharSequence value) {
+    set(name.toString().toLowerCase(), value);
+    return this;
+  }
+
   /**
    * @param isTrailer this Headers object will be used for trailers.
    * @param isRequest this Headers object will be used in a request header.

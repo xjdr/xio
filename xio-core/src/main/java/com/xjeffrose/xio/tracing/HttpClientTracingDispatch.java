@@ -29,7 +29,7 @@ public class HttpClientTracingDispatch extends HttpTracingState {
     tracing = httpTracing.tracing();
     tracer = tracing.tracer();
     handler = HttpClientHandler.create(httpTracing, new XioHttpClientAdapter(ssl));
-    injector = httpTracing.tracing().propagation().injector(Headers::set);
+    injector = httpTracing.tracing().propagation().injector(Headers::setLowerCase);
   }
 
   private Headers addRemoteIp(ChannelHandlerContext ctx, Headers headers) {
