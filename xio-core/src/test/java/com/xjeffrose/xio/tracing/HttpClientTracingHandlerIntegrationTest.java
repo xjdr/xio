@@ -1,5 +1,6 @@
 package com.xjeffrose.xio.tracing;
 
+import static com.xjeffrose.xio.helpers.TlsHelper.getKeyManagers;
 import static io.netty.handler.codec.http.HttpMethod.*;
 import static org.junit.Assert.assertEquals;
 
@@ -9,8 +10,8 @@ import com.xjeffrose.xio.SSL.TlsConfig;
 import com.xjeffrose.xio.bootstrap.ChannelConfiguration;
 import com.xjeffrose.xio.client.ClientConfig;
 import com.xjeffrose.xio.fixtures.JulBridge;
-import com.xjeffrose.xio.fixtures.OkHttpUnsafe;
 import com.xjeffrose.xio.http.*;
+import com.xjeffrose.xio.test.OkHttpUnsafe;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.channel.*;
 import java.util.ArrayList;
@@ -125,7 +126,7 @@ public class HttpClientTracingHandlerIntegrationTest { // extends ITHttpClient<X
 
     TlsConfig tlsConfig =
         TlsConfig.fromConfig("xio.h2BackendServer.settings.tls", ConfigFactory.load());
-    server = OkHttpUnsafe.getSslMockWebServer(tlsConfig);
+    server = OkHttpUnsafe.getSslMockWebServer(getKeyManagers(tlsConfig));
     server.setProtocols(Arrays.asList(Protocol.HTTP_1_1));
     server.enqueue(buildResponse());
     server.start();
