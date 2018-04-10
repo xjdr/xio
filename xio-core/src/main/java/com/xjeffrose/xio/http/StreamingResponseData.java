@@ -11,11 +11,19 @@ public class StreamingResponseData implements Response, StreamingData {
 
   private final Response response;
   private final StreamingData data;
+  private final TraceInfo traceInfo;
 
-  public StreamingResponseData(Response response, StreamingData data) {
+  public StreamingResponseData(Response response, StreamingData data, TraceInfo traceInfo) {
     this.response = response;
     this.data = data;
+    this.traceInfo = traceInfo == null ? new TraceInfo(response.headers()) : traceInfo;
   }
+
+  public StreamingResponseData(Response response, StreamingData data) {
+    this(response, data, null);
+  }
+
+  // region Response
 
   public HttpResponseStatus status() {
     return response.status();
@@ -37,6 +45,10 @@ public class StreamingResponseData implements Response, StreamingData {
     return response.body();
   }
 
+  // endregion
+
+  // region StreamingData
+
   public ByteBuf content() {
     return data.content();
   }
@@ -48,4 +60,15 @@ public class StreamingResponseData implements Response, StreamingData {
   public Headers trailingHeaders() {
     return data.trailingHeaders();
   }
+
+  // endregion
+
+  // region Traceable
+
+  @Override
+  public TraceInfo httpTraceInfo() {
+    return traceInfo;
+  }
+
+  // endregion
 }

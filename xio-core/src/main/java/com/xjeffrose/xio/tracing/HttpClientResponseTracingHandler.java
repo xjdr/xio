@@ -1,21 +1,23 @@
 package com.xjeffrose.xio.tracing;
 
+import com.xjeffrose.xio.http.Response;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.handler.codec.http.HttpResponse;
 
-class HttpClientResponseTracingHandler extends SimpleChannelInboundHandler<HttpResponse> {
+class HttpClientResponseTracingHandler extends SimpleChannelInboundHandler<Response> {
 
-  private final HttpClientTracingState state;
+  private final HttpClientTracingDispatch state;
 
-  public HttpClientResponseTracingHandler(HttpClientTracingState state) {
+  public HttpClientResponseTracingHandler(HttpClientTracingDispatch state) {
     super();
     this.state = state;
   }
 
   @Override
-  public void channelRead0(ChannelHandlerContext ctx, HttpResponse response) throws Exception {
-    state.onResponse(ctx, response);
+  public void channelRead0(ChannelHandlerContext ctx, Response response) throws Exception {
+    if (response.endOfStream()) {
+      state.onResponse(ctx, response);
+    }
     ctx.fireChannelRead(response);
   }
 

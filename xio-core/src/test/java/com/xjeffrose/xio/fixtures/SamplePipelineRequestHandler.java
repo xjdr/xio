@@ -71,7 +71,7 @@ public class SamplePipelineRequestHandler implements PipelineRequestHandler {
         buf.append(content.toString(CharsetUtil.UTF_8));
         buf.append("\r\n");
       }
-      response = ResponseBuilders.newOk().body(this.body()).build();
+      response = ResponseBuilders.newOk(request).body(this.body()).build();
     }
 
     if (request instanceof StreamingRequestData) {
@@ -89,7 +89,7 @@ public class SamplePipelineRequestHandler implements PipelineRequestHandler {
           }
           buf.append("\r\n");
         }
-        response = ResponseBuilders.newOk().body(this.body()).build();
+        response = ResponseBuilders.newOk(request).body(this.body()).build();
       }
     }
 

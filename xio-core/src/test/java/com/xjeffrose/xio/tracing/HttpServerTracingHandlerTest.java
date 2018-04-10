@@ -12,42 +12,53 @@ import brave.internal.StrictCurrentTraceContext;
 import brave.propagation.CurrentTraceContext;
 import brave.propagation.TraceContext;
 import brave.sampler.Sampler;
+import com.xjeffrose.xio.http.DefaultFullResponse;
+import com.xjeffrose.xio.http.DefaultHeaders;
+import com.xjeffrose.xio.http.Http1ServerCodec;
+import com.xjeffrose.xio.http.Request;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.embedded.EmbeddedChannel;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.DefaultHttpRequest;
-import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.CharsetUtil;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import lombok.val;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 public class HttpServerTracingHandlerTest extends Assert {
 
-  public class ApplicationHandler extends SimpleChannelInboundHandler<HttpRequest> {
+  public class ApplicationHandler extends SimpleChannelInboundHandler<Request> {
     @Override
-    public void channelRead0(ChannelHandlerContext ctx, HttpRequest request) throws Exception {
+    public void channelRead0(ChannelHandlerContext ctx, Request request) throws Exception {
       ByteBuf content =
           Unpooled.copiedBuffer("Here is the default content that is returned", CharsetUtil.UTF_8);
       HttpResponseStatus status = OK;
 
       Tracer tracer = httpTracing.tracing().tracer();
 
-      Span parent = HttpTracingState.getSpan(ctx);
-      Span span = tracer.newChild(parent.context()).name("child").start();
-      span.finish();
+      request
+          .httpTraceInfo()
+          .getSpan()
+          .ifPresent(
+              parent -> {
+                Span span = tracer.newChild(parent.context()).name("child").start();
+                span.finish();
+              });
 
-      DefaultFullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, status, content);
-
-      response.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/plain; charset=UTF-8");
-      response.headers().set(HttpHeaderNames.CONTENT_LENGTH, content.readableBytes());
+      val response =
+          DefaultFullResponse.builder()
+              .status(status)
+              .headers(new DefaultHeaders())
+              .httpTraceInfo(request.httpTraceInfo())
+              .status(status)
+              .body(content)
+              .build();
 
       ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
     }
@@ -57,7 +68,7 @@ public class HttpServerTracingHandlerTest extends Assert {
 
   CurrentTraceContext currentTraceContext = new StrictCurrentTraceContext();
   HttpTracing httpTracing;
-  HttpServerTracingState httpTracingState;
+  HttpServerTracingDispatch httpTracingState;
 
   Tracing.Builder tracingBuilder(Sampler sampler) {
     return Tracing.newBuilder()
@@ -77,7 +88,7 @@ public class HttpServerTracingHandlerTest extends Assert {
   @Before
   public void setup() throws Exception {
     httpTracing = HttpTracing.create(tracingBuilder(Sampler.ALWAYS_SAMPLE).build());
-    httpTracingState = new HttpServerTracingState(httpTracing, false);
+    httpTracingState = new HttpServerTracingDispatch(httpTracing, false);
   }
 
   @Test
@@ -85,19 +96,18 @@ public class HttpServerTracingHandlerTest extends Assert {
 
     Thread thread =
         new Thread(
-            new Runnable() {
-              public void run() {
-                EmbeddedChannel channel =
-                    new EmbeddedChannel(
-                        new HttpServerTracingHandler(httpTracingState), new ApplicationHandler());
+            () -> {
+              EmbeddedChannel channel =
+                  new EmbeddedChannel(
+                      new Http1ServerCodec(),
+                      new HttpServerTracingHandler(httpTracingState),
+                      new ApplicationHandler());
+              DefaultHttpRequest request = new DefaultHttpRequest(HTTP_1_1, GET, "/foo");
+              channel.writeInbound(request);
+              channel.runPendingTasks();
 
-                DefaultHttpRequest request = new DefaultHttpRequest(HTTP_1_1, GET, "/foo");
-                channel.writeInbound(request);
-                channel.runPendingTasks();
-
-                synchronized (httpTracing) {
-                  httpTracing.notify();
-                }
+              synchronized (httpTracing) {
+                httpTracing.notify();
               }
             });
     thread.start();

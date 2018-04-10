@@ -11,11 +11,19 @@ public class StreamingRequestData implements Request, StreamingData {
 
   private final Request request;
   private final StreamingData data;
+  private final TraceInfo traceInfo;
 
-  public StreamingRequestData(Request request, StreamingData data) {
+  public StreamingRequestData(Request request, StreamingData data, TraceInfo traceInfo) {
     this.request = request;
     this.data = data;
+    this.traceInfo = traceInfo == null ? new TraceInfo(request.headers()) : traceInfo;
   }
+
+  public StreamingRequestData(Request request, StreamingData data) {
+    this(request, data, null);
+  }
+
+  // region Request
 
   @Override
   public boolean startOfStream() {
@@ -62,6 +70,19 @@ public class StreamingRequestData implements Request, StreamingData {
     return request.body();
   }
 
+  // endregion
+
+  // region Traceable
+
+  @Override
+  public TraceInfo httpTraceInfo() {
+    return traceInfo;
+  }
+
+  // endregion
+
+  // region StreamingData
+
   @Override
   public ByteBuf content() {
     return data.content();
@@ -76,4 +97,7 @@ public class StreamingRequestData implements Request, StreamingData {
   public Headers trailingHeaders() {
     return data.trailingHeaders();
   }
+
+  // endregion
+
 }

@@ -6,7 +6,6 @@ import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
 import java.util.Optional;
-import lombok.Builder;
 import lombok.ToString;
 
 /** Value class for representing an outgoing HTTP1/2 Request, for use in a client. */
@@ -29,6 +28,8 @@ public abstract class DefaultFullRequest implements FullRequest {
   public abstract Headers headers();
 
   public abstract int streamId();
+
+  public abstract TraceInfo httpTraceInfo();
 
   /** Not intended to be called. */
   @Override
@@ -53,7 +54,7 @@ public abstract class DefaultFullRequest implements FullRequest {
 
     public abstract Builder streamId(int streamId);
 
-    public abstract DefaultFullRequest build();
+    public abstract Builder httpTraceInfo(TraceInfo traceInfo);
 
     abstract Optional<Headers> headers();
 
@@ -64,6 +65,17 @@ public abstract class DefaultFullRequest implements FullRequest {
 
       headers().get().set(HttpHeaderNames.HOST, host);
       return this;
+    }
+
+    abstract Optional<TraceInfo> httpTraceInfo();
+
+    abstract DefaultFullRequest autoBuild();
+
+    public DefaultFullRequest build() {
+      if (!httpTraceInfo().isPresent() && headers().isPresent()) {
+        httpTraceInfo(new TraceInfo(headers().get()));
+      }
+      return autoBuild();
     }
   }
 

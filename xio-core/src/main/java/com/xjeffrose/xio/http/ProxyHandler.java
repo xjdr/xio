@@ -68,6 +68,7 @@ public class ProxyHandler implements PipelineRequestHandler {
               .method(request.method())
               .path(path)
               .headers(request.headers())
+              .httpTraceInfo(request.httpTraceInfo())
               .host(proxyHost)
               .build();
     } else if (request instanceof StreamingRequest) {
@@ -76,6 +77,7 @@ public class ProxyHandler implements PipelineRequestHandler {
               .method(request.method())
               .path(path)
               .headers(request.headers())
+              .httpTraceInfo(request.httpTraceInfo())
               .host(proxyHost)
               .build();
     } else { // this should never happen!

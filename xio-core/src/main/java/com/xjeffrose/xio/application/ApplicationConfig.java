@@ -7,6 +7,11 @@ import com.xjeffrose.xio.bootstrap.ChannelConfiguration;
 import com.xjeffrose.xio.bootstrap.ServerChannelConfiguration;
 import com.xjeffrose.xio.core.NullZkClient;
 import com.xjeffrose.xio.core.ZkClient;
+import com.xjeffrose.xio.tracing.XioTracing;
+import io.netty.util.internal.PlatformDependent;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -22,10 +27,18 @@ public class ApplicationConfig {
   @Getter private final String zookeeperCluster;
   @Getter private final String ipFilterPath;
   @Getter private final String http1FilterPath;
-  @Getter private final String zipkinUrl;
-  @Getter private final float samplingRate;
+  @Getter private final double globalSoftReqPerSec;
+  @Getter private final double globalHardReqPerSec;
+  @Getter private final double softReqPerSec;
+  @Getter private final double hardReqPerSec;
+  @Getter private final int rateLimiterPoolSize;
+  @Getter private final XioTracing tracing;
 
-  public ApplicationConfig(Config config) {
+  @Getter
+  private final Map<String, List<Double>> clientRateLimitOverride =
+      PlatformDependent.newConcurrentHashMap();
+
+  public ApplicationConfig(Config config, XioTracing tracing) {
     this.config = config;
     name = config.getString("name");
     bossThreads = config.getInt("settings.bossThreads");
@@ -35,8 +48,20 @@ public class ApplicationConfig {
     zookeeperCluster = config.getString("settings.zookeeper.cluster");
     ipFilterPath = config.getString("settings.configurationManager.ipFilter.path");
     http1FilterPath = config.getString("settings.configurationManager.http1Filter.path");
-    zipkinUrl = config.getString("settings.tracing.zipkinUrl");
-    samplingRate = ((Double) config.getDouble("settings.tracing.samplingRate")).floatValue();
+    globalSoftReqPerSec = config.getDouble("settings.global_soft_req_per_sec");
+    globalHardReqPerSec = config.getDouble("settings.global_hard_req_per_sec");
+    softReqPerSec = config.getDouble("settings.soft_req_per_sec");
+    hardReqPerSec = config.getDouble("settings.hard_req_per_sec");
+    rateLimiterPoolSize = config.getInt("settings.rate_limiter_pool_size");
+    this.tracing = tracing;
+  }
+
+  public ApplicationConfig(Config config, Function<Config, XioTracing> tracingSupplier) {
+    this(config, tracingSupplier.apply(config));
+  }
+
+  public ApplicationConfig(Config config) {
+    this(config, new XioTracing(config));
   }
 
   public static ApplicationConfig fromConfig(String key, Config config) {

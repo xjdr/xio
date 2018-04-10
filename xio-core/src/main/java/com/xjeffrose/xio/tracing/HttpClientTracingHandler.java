@@ -6,15 +6,15 @@ public class HttpClientTracingHandler
     extends CombinedChannelDuplexHandler<
         HttpClientResponseTracingHandler, HttpClientRequestTracingHandler> {
 
-  private static HttpClientResponseTracingHandler buildInbound(HttpClientTracingState state) {
+  private static HttpClientResponseTracingHandler buildInbound(HttpClientTracingDispatch state) {
     return new HttpClientResponseTracingHandler(state);
   }
 
-  private static HttpClientRequestTracingHandler buildOutbound(HttpClientTracingState state) {
+  private static HttpClientRequestTracingHandler buildOutbound(HttpClientTracingDispatch state) {
     return new HttpClientRequestTracingHandler(state);
   }
 
-  public HttpClientTracingHandler(HttpClientTracingState state) {
+  public HttpClientTracingHandler(HttpClientTracingDispatch state) {
     super(buildInbound(state), buildOutbound(state));
   }
 }

@@ -7,7 +7,7 @@ import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
 
 @UnstableApi
-public interface Request {
+public interface Request extends Traceable {
 
   boolean startOfStream();
 
@@ -23,7 +23,7 @@ public interface Request {
   Headers headers();
 
   default String host() {
-    return headers().get(HttpHeaderNames.HOST).toString();
+    return headers().get(HttpHeaderNames.HOST.toString());
   }
 
   default String host(String defaultValue) {

@@ -2,6 +2,7 @@ package com.xjeffrose.xio.http.internal;
 
 import com.xjeffrose.xio.http.Headers;
 import com.xjeffrose.xio.http.StreamingRequest;
+import com.xjeffrose.xio.http.TraceInfo;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.HttpMethod;
@@ -17,11 +18,19 @@ public class Http1Request implements StreamingRequest {
 
   protected final HttpRequest delegate;
   private final Http1Headers headers;
+  private final TraceInfo traceInfo;
+
+  public Http1Request(HttpRequest delegate, TraceInfo traceInfo) {
+    this.delegate = delegate;
+    this.headers = new Http1Headers(delegate.headers());
+    this.traceInfo = traceInfo == null ? new TraceInfo(headers) : traceInfo;
+  }
 
   public Http1Request(HttpRequest delegate) {
-    this.delegate = delegate;
-    headers = new Http1Headers(delegate.headers());
+    this(delegate, null);
   }
+
+  // region Request
 
   @Override
   public boolean startOfStream() {
@@ -62,4 +71,16 @@ public class Http1Request implements StreamingRequest {
   public ByteBuf body() {
     return Unpooled.EMPTY_BUFFER;
   }
+
+  // endregion
+
+  // region Traceable
+
+  @Override
+  public TraceInfo httpTraceInfo() {
+    return traceInfo;
+  }
+
+  // endregion
+
 }
