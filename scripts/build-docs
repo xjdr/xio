@@ -1,0 +1,7 @@
+#!/bin/bash
+
+mvn javadoc:javadoc
+rm -fr docs/build/html/apidocs
+cp -R xio-core/target/apidocs docs/build/html/
+. docs/.env/bin/activate
+make -C docs html
