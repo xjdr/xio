@@ -2,8 +2,8 @@ package com.xjeffrose.xio.http;
 
 import com.xjeffrose.xio.core.internal.UnstableApi;
 import com.xjeffrose.xio.http.internal.FullHttp2Request;
-import com.xjeffrose.xio.http.internal.Http2StreamingData;
-import com.xjeffrose.xio.http.internal.StreamingHttp2Request;
+import com.xjeffrose.xio.http.internal.Http2SegmentedData;
+import com.xjeffrose.xio.http.internal.SegmentedHttp2Request;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
@@ -33,7 +33,7 @@ public class Http2ServerCodec extends ChannelDuplexHandler {
     if (eos) {
       return new FullHttp2Request(headers, streamId);
     } else {
-      return new StreamingHttp2Request(headers, streamId);
+      return new SegmentedHttp2Request(headers, streamId);
     }
   }
 
@@ -42,7 +42,7 @@ public class Http2ServerCodec extends ChannelDuplexHandler {
       Http2Headers headers = (Http2Headers) msg.payload;
       if (msg.eos && headers.method() == null && headers.status() == null) {
         Request request =
-            new StreamingRequestData(getChannelRequest(ctx), new Http2StreamingData(headers));
+            new SegmentedRequestData(getChannelRequest(ctx), new Http2SegmentedData(headers));
         return request;
       } else {
         Request request = wrapHeaders(headers, msg.streamId, msg.eos);
@@ -51,9 +51,9 @@ public class Http2ServerCodec extends ChannelDuplexHandler {
       }
     } else if (msg.payload instanceof Http2DataFrame) {
       Request request =
-          new StreamingRequestData(
+          new SegmentedRequestData(
               getChannelRequest(ctx),
-              new Http2StreamingData(((Http2DataFrame) msg.payload).content(), msg.eos));
+              new Http2SegmentedData(((Http2DataFrame) msg.payload).content(), msg.eos));
       return request;
     }
     // TODO(CK): throw an exception?
@@ -96,7 +96,7 @@ public class Http2ServerCodec extends ChannelDuplexHandler {
     }
   }
 
-  void writeContent(ChannelHandlerContext ctx, StreamingData data, ChannelPromise promise) {
+  void writeContent(ChannelHandlerContext ctx, SegmentedData data, ChannelPromise promise) {
     Request request = getChannelRequest(ctx);
     int streamId = request.streamId();
     if (data.endOfMessage()) {
@@ -122,8 +122,8 @@ public class Http2ServerCodec extends ChannelDuplexHandler {
   @Override
   public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise)
       throws Exception {
-    if (msg instanceof StreamingData) {
-      writeContent(ctx, (StreamingData) msg, promise);
+    if (msg instanceof SegmentedData) {
+      writeContent(ctx, (SegmentedData) msg, promise);
     } else if (msg instanceof Response) {
       writeResponse(ctx, (Response) msg, promise);
     } else {

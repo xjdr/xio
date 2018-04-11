@@ -134,7 +134,7 @@ public class Http1ServerCodecUnitTest extends Assert {
     Request requestOut = requests.remove(0);
 
     assertTrue(requestOut != null);
-    assertTrue(requestOut instanceof StreamingRequest);
+    assertTrue(requestOut instanceof SegmentedRequest);
     assertEquals("HTTP/1.1", requestOut.version());
     assertEquals(HttpMethod.GET, requestOut.method());
     assertEquals("/", requestOut.path());
@@ -145,28 +145,28 @@ public class Http1ServerCodecUnitTest extends Assert {
     Request bodyOut1 = requests.remove(0);
 
     assertTrue(bodyOut1 != null);
-    assertTrue(bodyOut1 instanceof StreamingRequestData);
+    assertTrue(bodyOut1 instanceof SegmentedRequestData);
     assertEquals("HTTP/1.1", bodyOut1.version());
     assertEquals(HttpMethod.GET, bodyOut1.method());
     assertEquals("/", bodyOut1.path());
     assertFalse(bodyOut1.hasBody());
     assertFalse(bodyOut1.body() == null);
-    assertFalse(((StreamingRequestData) bodyOut1).content() == null);
-    assertEquals(body1, ((StreamingRequestData) bodyOut1).content());
-    assertFalse(((StreamingRequestData) bodyOut1).endOfMessage());
+    assertFalse(((SegmentedRequestData) bodyOut1).content() == null);
+    assertEquals(body1, ((SegmentedRequestData) bodyOut1).content());
+    assertFalse(((SegmentedRequestData) bodyOut1).endOfMessage());
 
     Request bodyOut2 = requests.remove(0);
 
     assertTrue(bodyOut2 != null);
-    assertTrue(bodyOut2 instanceof StreamingRequestData);
+    assertTrue(bodyOut2 instanceof SegmentedRequestData);
     assertEquals("HTTP/1.1", bodyOut2.version());
     assertEquals(HttpMethod.GET, bodyOut2.method());
     assertEquals("/", bodyOut2.path());
     assertFalse(bodyOut2.hasBody());
     assertFalse(bodyOut2.body() == null);
-    assertFalse(((StreamingRequestData) bodyOut2).content() == null);
-    assertEquals(body2, ((StreamingRequestData) bodyOut2).content());
-    assertTrue(((StreamingRequestData) bodyOut2).endOfMessage());
+    assertFalse(((SegmentedRequestData) bodyOut2).content() == null);
+    assertEquals(body2, ((SegmentedRequestData) bodyOut2).content());
+    assertTrue(((SegmentedRequestData) bodyOut2).endOfMessage());
   }
 
   @Test
@@ -201,14 +201,14 @@ public class Http1ServerCodecUnitTest extends Assert {
     ByteBuf body = ByteBufUtil.writeUtf8(UnpooledByteBufAllocator.DEFAULT, "response");
 
     FullHttpRequest requestIn = new DefaultFullHttpRequest(HTTP_1_1, GET, "/");
-    StreamingResponse responseIn =
-        DefaultStreamingResponse.builder().status(OK).headers(new DefaultHeaders()).build();
+    SegmentedResponse responseIn =
+        DefaultSegmentedResponse.builder().status(OK).headers(new DefaultHeaders()).build();
     ByteBuf body1 = ByteBufUtil.writeUtf8(UnpooledByteBufAllocator.DEFAULT, "body1");
-    StreamingData content =
-        DefaultStreamingData.builder().content(body1).endOfMessage(false).build();
+    SegmentedData content =
+        DefaultSegmentedData.builder().content(body1).endOfMessage(false).build();
     ByteBuf body2 = ByteBufUtil.writeUtf8(UnpooledByteBufAllocator.DEFAULT, "body2");
-    StreamingData lastContent =
-        DefaultStreamingData.builder()
+    SegmentedData lastContent =
+        DefaultSegmentedData.builder()
             .content(body2)
             .endOfMessage(true)
             .trailingHeaders(new DefaultHeaders())

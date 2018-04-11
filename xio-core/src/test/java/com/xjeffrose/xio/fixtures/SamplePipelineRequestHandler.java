@@ -7,8 +7,8 @@ import com.xjeffrose.xio.http.Request;
 import com.xjeffrose.xio.http.Response;
 import com.xjeffrose.xio.http.ResponseBuilders;
 import com.xjeffrose.xio.http.RouteState;
-import com.xjeffrose.xio.http.StreamingData;
-import com.xjeffrose.xio.http.StreamingRequestData;
+import com.xjeffrose.xio.http.SegmentedData;
+import com.xjeffrose.xio.http.SegmentedRequestData;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
@@ -74,8 +74,8 @@ public class SamplePipelineRequestHandler implements PipelineRequestHandler {
       response = ResponseBuilders.newOk(request).body(this.body()).build();
     }
 
-    if (request instanceof StreamingRequestData) {
-      StreamingData data = (StreamingData) request;
+    if (request instanceof SegmentedRequestData) {
+      SegmentedData data = (SegmentedData) request;
       if (data.endOfMessage()) {
         buf.append("END OF CONTENT\r\n");
 

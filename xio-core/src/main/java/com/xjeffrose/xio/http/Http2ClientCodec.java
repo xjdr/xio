@@ -2,8 +2,8 @@ package com.xjeffrose.xio.http;
 
 import com.xjeffrose.xio.core.internal.UnstableApi;
 import com.xjeffrose.xio.http.internal.FullHttp2Response;
-import com.xjeffrose.xio.http.internal.Http2StreamingData;
-import com.xjeffrose.xio.http.internal.StreamingHttp2Response;
+import com.xjeffrose.xio.http.internal.Http2SegmentedData;
+import com.xjeffrose.xio.http.internal.SegmentedHttp2Response;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
@@ -34,7 +34,7 @@ public class Http2ClientCodec extends ChannelDuplexHandler {
     if (eos) {
       return new FullHttp2Response(headers, streamId);
     } else {
-      return new StreamingHttp2Response(headers, streamId);
+      return new SegmentedHttp2Response(headers, streamId);
     }
   }
 
@@ -44,7 +44,7 @@ public class Http2ClientCodec extends ChannelDuplexHandler {
       Http2Headers headers = (Http2Headers) msg.payload;
       if (msg.eos && headers.method() == null && headers.status() == null) {
         Response response =
-            new StreamingResponseData(getChannelResponse(ctx), new Http2StreamingData(headers));
+            new SegmentedResponseData(getChannelResponse(ctx), new Http2SegmentedData(headers));
         return response;
       } else {
         Response response = wrapHeaders(headers, msg.streamId, msg.eos);
@@ -53,9 +53,9 @@ public class Http2ClientCodec extends ChannelDuplexHandler {
       }
     } else if (msg.payload instanceof Http2DataFrame) {
       Response response =
-          new StreamingResponseData(
+          new SegmentedResponseData(
               getChannelResponse(ctx),
-              new Http2StreamingData(((Http2DataFrame) msg.payload).content(), msg.eos));
+              new Http2SegmentedData(((Http2DataFrame) msg.payload).content(), msg.eos));
       return response;
     }
     // TODO(CK): throw an exception?
@@ -100,7 +100,7 @@ public class Http2ClientCodec extends ChannelDuplexHandler {
     }
   }
 
-  void writeContent(ChannelHandlerContext ctx, StreamingData data, ChannelPromise promise) {
+  void writeContent(ChannelHandlerContext ctx, SegmentedData data, ChannelPromise promise) {
     int streamId = 0; // TODO(CK): need a no stream constant somewhere
     boolean dataEos = data.endOfMessage() && data.trailingHeaders().size() == 0;
     Http2Request request =
@@ -122,8 +122,8 @@ public class Http2ClientCodec extends ChannelDuplexHandler {
   public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise)
       throws Exception {
     log.debug("write: msg={}", msg);
-    if (msg instanceof StreamingData) {
-      writeContent(ctx, (StreamingData) msg, promise);
+    if (msg instanceof SegmentedData) {
+      writeContent(ctx, (SegmentedData) msg, promise);
     } else if (msg instanceof Request) {
       writeRequest(ctx, (Request) msg, promise);
     } else {

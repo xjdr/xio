@@ -8,19 +8,19 @@ import lombok.ToString;
 /** Interface representing a segmented HTTP1/2 response */
 @UnstableApi
 @ToString
-public class StreamingResponseData implements Response, StreamingData {
+public class SegmentedResponseData implements Response, SegmentedData {
 
   private final Response response;
-  private final StreamingData data;
+  private final SegmentedData data;
   private final TraceInfo traceInfo;
 
-  public StreamingResponseData(Response response, StreamingData data, TraceInfo traceInfo) {
+  public SegmentedResponseData(Response response, SegmentedData data, TraceInfo traceInfo) {
     this.response = response;
     this.data = data;
     this.traceInfo = traceInfo == null ? new TraceInfo(response.headers()) : traceInfo;
   }
 
-  public StreamingResponseData(Response response, StreamingData data) {
+  public SegmentedResponseData(Response response, SegmentedData data) {
     this(response, data, null);
   }
 
@@ -53,7 +53,7 @@ public class StreamingResponseData implements Response, StreamingData {
 
   // endregion
 
-  // region StreamingData
+  // region SegmentedData
 
   @Override
   public ByteBuf content() {

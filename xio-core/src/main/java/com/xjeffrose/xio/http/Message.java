@@ -4,9 +4,10 @@ import io.netty.buffer.ByteBuf;
 import javax.annotation.Nullable;
 
 /**
- * Interface representing a HTTP1/2 Message (Request/Response) Message: A complete sequence of
- * frames that map to a logical request or response message.
- * See: <a href=https://developers.google.com/web/fundamentals/performance/http2/></a>
+ * Interface representing a HTTP1/2 Message (Request/Response)
+ *
+ * <p>See: <a href=https://developers.google.com/web/fundamentals/performance/http2/></a> Message: A
+ * complete sequence of frames that map to a logical request or response message.
  */
 public interface Message {
 

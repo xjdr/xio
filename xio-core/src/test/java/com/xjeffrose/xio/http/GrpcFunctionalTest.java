@@ -208,8 +208,8 @@ public class GrpcFunctionalTest extends Assert {
                           @Override
                           public void handle(
                               ChannelHandlerContext ctx, Request request, RouteState route) {
-                            if (request instanceof StreamingRequestData) {
-                              StreamingRequestData streaming = (StreamingRequestData) request;
+                            if (request instanceof SegmentedRequestData) {
+                              SegmentedRequestData streaming = (SegmentedRequestData) request;
 
                               if (streaming.endOfMessage()) {
                                 ctx.write(Http2Response.build(request.streamId(), cannedHeaders));

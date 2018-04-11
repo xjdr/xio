@@ -2,8 +2,8 @@ package com.xjeffrose.xio.http;
 
 import com.xjeffrose.xio.core.internal.UnstableApi;
 import com.xjeffrose.xio.http.internal.FullHttp1Response;
-import com.xjeffrose.xio.http.internal.Http1StreamingData;
-import com.xjeffrose.xio.http.internal.StreamingHttp1Response;
+import com.xjeffrose.xio.http.internal.Http1SegmentedData;
+import com.xjeffrose.xio.http.internal.SegmentedHttp1Response;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelDuplexHandler;
@@ -49,13 +49,13 @@ public class Http1ClientCodec extends ChannelDuplexHandler {
       setChannelResponse(ctx, response);
       return response;
     } else if (msg instanceof HttpResponse) {
-      Response response = new StreamingHttp1Response((HttpResponse) msg);
+      Response response = new SegmentedHttp1Response((HttpResponse) msg);
       setChannelResponse(ctx, response);
       return response;
     } else if (msg instanceof HttpContent) {
       Response response =
-          new StreamingResponseData(
-              getChannelResponse(ctx), new Http1StreamingData((HttpContent) msg));
+          new SegmentedResponseData(
+              getChannelResponse(ctx), new Http1SegmentedData((HttpContent) msg));
       return response;
     }
     // TODO(CK): throw an exception?
@@ -113,7 +113,7 @@ public class Http1ClientCodec extends ChannelDuplexHandler {
     }
   }
 
-  HttpContent buildContent(ChannelHandlerContext ctx, StreamingData data) {
+  HttpContent buildContent(ChannelHandlerContext ctx, SegmentedData data) {
     if (data.endOfMessage()) {
       LastHttpContent last = new DefaultLastHttpContent(data.content());
       if (data.trailingHeaders() != null) {
@@ -130,8 +130,8 @@ public class Http1ClientCodec extends ChannelDuplexHandler {
   public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise)
       throws Exception {
     log.debug("write: msg={}", msg);
-    if (msg instanceof StreamingData) {
-      ctx.write(buildContent(ctx, (StreamingData) msg), promise);
+    if (msg instanceof SegmentedData) {
+      ctx.write(buildContent(ctx, (SegmentedData) msg), promise);
     } else if (msg instanceof Request) {
       log.debug("writing request {}", msg);
       ctx.write(buildRequest(ctx, (Request) msg), promise);

@@ -5,7 +5,7 @@ import io.netty.buffer.ByteBuf;
 
 /** Interface representing a segmented HTTP1/2 request */
 @UnstableApi
-public interface StreamingData {
+public interface SegmentedData {
 
   ByteBuf content();
 

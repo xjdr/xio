@@ -12,7 +12,7 @@ import com.xjeffrose.xio.http.DefaultFullResponse;
 import com.xjeffrose.xio.http.DefaultHeaders;
 import com.xjeffrose.xio.http.FullRequest;
 import com.xjeffrose.xio.http.Request;
-import com.xjeffrose.xio.http.StreamingRequestData;
+import com.xjeffrose.xio.http.SegmentedRequestData;
 import com.xjeffrose.xio.http.TraceInfo;
 import com.xjeffrose.xio.pipeline.SmartHttpPipeline;
 import io.netty.buffer.Unpooled;
@@ -89,7 +89,7 @@ public class HttpServerTracingHandlerIntegrationTest extends Assert {
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Request msg) throws Exception {
 
-      if (msg instanceof StreamingRequestData && ((StreamingRequestData) msg).endOfMessage()) {
+      if (msg instanceof SegmentedRequestData && ((SegmentedRequestData) msg).endOfMessage()) {
         sendResponse(ctx, msg.httpTraceInfo());
         return;
       } else if (msg instanceof FullRequest) {

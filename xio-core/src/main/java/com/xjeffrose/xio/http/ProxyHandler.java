@@ -71,9 +71,9 @@ public class ProxyHandler implements PipelineRequestHandler {
               .httpTraceInfo(request.httpTraceInfo())
               .host(proxyHost)
               .build();
-    } else if (request instanceof StreamingRequest) {
+    } else if (request instanceof SegmentedRequest) {
       result =
-          DefaultStreamingRequest.builder()
+          DefaultSegmentedRequest.builder()
               .method(request.method())
               .path(path)
               .headers(request.headers())

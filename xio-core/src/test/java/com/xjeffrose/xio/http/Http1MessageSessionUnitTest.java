@@ -2,7 +2,6 @@ package com.xjeffrose.xio.http;
 
 import static io.netty.handler.codec.http.HttpMethod.*;
 import static io.netty.handler.codec.http.HttpResponseStatus.*;
-import static io.netty.handler.codec.http.HttpVersion.*;
 
 import io.netty.buffer.Unpooled;
 import org.junit.Assert;
@@ -36,7 +35,7 @@ public class Http1MessageSessionUnitTest extends Assert {
   @Test
   public void testOnRequestStreaming() {
     Request request =
-        DefaultStreamingRequest.builder()
+        DefaultSegmentedRequest.builder()
             .headers(new DefaultHeaders())
             .method(GET)
             .path("/")
@@ -69,7 +68,7 @@ public class Http1MessageSessionUnitTest extends Assert {
   @Test
   public void testOnRequestData() {
     Request request =
-        DefaultStreamingRequest.builder()
+        DefaultSegmentedRequest.builder()
             .headers(new DefaultHeaders())
             .method(GET)
             .path("/")
@@ -80,8 +79,8 @@ public class Http1MessageSessionUnitTest extends Assert {
     assertFalse(session.initialRequest().responseFinished);
     assertFalse(session.closeConnection());
 
-    StreamingData data =
-        DefaultStreamingData.builder()
+    SegmentedData data =
+        DefaultSegmentedData.builder()
             .content(Unpooled.EMPTY_BUFFER)
             .endOfMessage(true)
             .trailingHeaders(new DefaultHeaders())
@@ -130,7 +129,7 @@ public class Http1MessageSessionUnitTest extends Assert {
     assertFalse(session.initialRequest().responseFinished);
 
     Response response =
-        DefaultStreamingResponse.builder().status(OK).headers(new DefaultHeaders()).build();
+        DefaultSegmentedResponse.builder().status(OK).headers(new DefaultHeaders()).build();
     session.onResponse(response);
     assertTrue(session.initialRequest().requestFinished);
     assertFalse(session.initialRequest().responseFinished);
@@ -151,13 +150,13 @@ public class Http1MessageSessionUnitTest extends Assert {
     assertFalse(session.initialRequest().responseFinished);
 
     Response response =
-        DefaultStreamingResponse.builder().status(OK).headers(new DefaultHeaders()).build();
+        DefaultSegmentedResponse.builder().status(OK).headers(new DefaultHeaders()).build();
     session.onResponse(response);
     assertTrue(session.initialRequest().requestFinished);
     assertFalse(session.initialRequest().responseFinished);
 
-    StreamingData data =
-        DefaultStreamingData.builder()
+    SegmentedData data =
+        DefaultSegmentedData.builder()
             .content(Unpooled.EMPTY_BUFFER)
             .endOfMessage(true)
             .trailingHeaders(new DefaultHeaders())

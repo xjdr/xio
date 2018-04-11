@@ -1,7 +1,7 @@
 package com.xjeffrose.xio.http.internal;
 
 import com.xjeffrose.xio.http.Headers;
-import com.xjeffrose.xio.http.StreamingResponse;
+import com.xjeffrose.xio.http.SegmentedResponse;
 import com.xjeffrose.xio.http.TraceInfo;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -11,19 +11,19 @@ import lombok.ToString;
 
 /** Wrap an incoming HttpResponse, for use in a client. */
 @ToString
-public class StreamingHttp1Response implements StreamingResponse {
+public class SegmentedHttp1Response implements SegmentedResponse {
 
   private final HttpResponse delegate;
   private final Headers headers;
   private final TraceInfo traceInfo;
 
-  public StreamingHttp1Response(HttpResponse delegate, TraceInfo traceInfo) {
+  public SegmentedHttp1Response(HttpResponse delegate, TraceInfo traceInfo) {
     this.delegate = delegate;
     this.headers = new Http1Headers(delegate.headers());
     this.traceInfo = traceInfo == null ? new TraceInfo(headers) : traceInfo;
   }
 
-  public StreamingHttp1Response(HttpResponse delegate) {
+  public SegmentedHttp1Response(HttpResponse delegate) {
     this(delegate, null);
   }
 

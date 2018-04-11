@@ -7,11 +7,11 @@ import io.netty.handler.codec.http.HttpMethod;
 import java.util.Optional;
 import lombok.ToString;
 
-/** Value class for representing a streaming outgoing HTTP1/2 Request, for use in a client. */
+/** Value class for representing a segmented outgoing HTTP1/2 Request, for use in a client. */
 @UnstableApi
 @AutoValue
 @ToString
-public abstract class DefaultStreamingRequest implements StreamingRequest {
+public abstract class DefaultSegmentedRequest implements SegmentedRequest {
 
   @Override
   public boolean startOfMessage() {
@@ -69,9 +69,9 @@ public abstract class DefaultStreamingRequest implements StreamingRequest {
 
     abstract Optional<TraceInfo> httpTraceInfo();
 
-    abstract DefaultStreamingRequest autoBuild();
+    abstract DefaultSegmentedRequest autoBuild();
 
-    public DefaultStreamingRequest build() {
+    public DefaultSegmentedRequest build() {
       if (!httpTraceInfo().isPresent() && headers().isPresent()) {
         httpTraceInfo(new TraceInfo(headers().get()));
       }
@@ -80,6 +80,6 @@ public abstract class DefaultStreamingRequest implements StreamingRequest {
   }
 
   public static Builder builder() {
-    return new AutoValue_DefaultStreamingRequest.Builder().streamId(-1);
+    return new AutoValue_DefaultSegmentedRequest.Builder().streamId(-1);
   }
 }

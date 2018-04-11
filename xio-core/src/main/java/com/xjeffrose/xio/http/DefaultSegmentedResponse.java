@@ -6,11 +6,11 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import java.util.Optional;
 import lombok.ToString;
 
-/** Value class for representing a streaming outgoing HTTP1/2 Response, for use in a server. */
+/** Value class for representing a segmented outgoing HTTP1/2 Response, for use in a server. */
 @UnstableApi
 @AutoValue
 @ToString
-public abstract class DefaultStreamingResponse implements StreamingResponse {
+public abstract class DefaultSegmentedResponse implements SegmentedResponse {
 
   public abstract HttpResponseStatus status();
 
@@ -42,7 +42,7 @@ public abstract class DefaultStreamingResponse implements StreamingResponse {
 
     public abstract Builder httpTraceInfo(TraceInfo traceInfo);
 
-    public DefaultStreamingResponse build() {
+    public DefaultSegmentedResponse build() {
       if (!httpTraceInfo().isPresent()) {
         httpTraceInfo(new TraceInfo(headers()));
       }
@@ -53,10 +53,10 @@ public abstract class DefaultStreamingResponse implements StreamingResponse {
 
     abstract Optional<TraceInfo> httpTraceInfo();
 
-    abstract DefaultStreamingResponse autoBuild();
+    abstract DefaultSegmentedResponse autoBuild();
   }
 
   public static Builder builder() {
-    return new AutoValue_DefaultStreamingResponse.Builder();
+    return new AutoValue_DefaultSegmentedResponse.Builder();
   }
 }

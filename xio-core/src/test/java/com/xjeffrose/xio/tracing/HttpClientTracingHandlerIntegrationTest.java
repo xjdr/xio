@@ -142,7 +142,7 @@ public class HttpClientTracingHandlerIntegrationTest { // extends ITHttpClient<X
     val client = newClient(server.getPort(), new FakeTracer(config()));
 
     val request =
-        DefaultStreamingRequest.builder()
+        DefaultSegmentedRequest.builder()
             .method(GET)
             .path("/v1/authinit")
             .host("127.0.0.1" + ":" + server.getPort())
@@ -160,7 +160,7 @@ public class HttpClientTracingHandlerIntegrationTest { // extends ITHttpClient<X
     local.get();
     assertEquals(reportedSpans.size(), 1);
 
-    val responseHex = ByteBufUtil.hexDump(((StreamingData) response).content());
+    val responseHex = ByteBufUtil.hexDump(((SegmentedData) response).content());
     byte[] bytes = Hex.decodeHex(responseHex.toCharArray());
     assertEquals(expectedResponse, new String(bytes, "UTF-8"));
   }

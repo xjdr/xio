@@ -9,19 +9,19 @@ public class HttpBuilders {
     return DefaultFullRequest.builder();
   }
 
-  public static DefaultStreamingRequest.Builder newStreamingRequest() {
-    return DefaultStreamingRequest.builder();
+  public static DefaultSegmentedRequest.Builder newSegmentedRequest() {
+    return DefaultSegmentedRequest.builder();
   }
 
   public static DefaultFullResponse.Builder newFullResponse() {
     return DefaultFullResponse.builder();
   }
 
-  public static DefaultStreamingResponse.Builder newStreamingResponse() {
-    return DefaultStreamingResponse.builder();
+  public static DefaultSegmentedResponse.Builder newSegmentedResponse() {
+    return DefaultSegmentedResponse.builder();
   }
 
-  public static DefaultStreamingData.Builder newStreamingData() {
-    return DefaultStreamingData.builder();
+  public static DefaultSegmentedData.Builder newSegmentedData() {
+    return DefaultSegmentedData.builder();
   }
 }
