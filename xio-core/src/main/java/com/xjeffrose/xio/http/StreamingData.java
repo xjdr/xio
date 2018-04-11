@@ -3,7 +3,7 @@ package com.xjeffrose.xio.http;
 import com.xjeffrose.xio.core.internal.UnstableApi;
 import io.netty.buffer.ByteBuf;
 
-/** Interface representing a partial HTTP1/2 Request */
+/** Interface representing a segmented HTTP1/2 request */
 @UnstableApi
 public interface StreamingData {
 

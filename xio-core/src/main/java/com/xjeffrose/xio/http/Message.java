@@ -5,7 +5,8 @@ import javax.annotation.Nullable;
 
 /**
  * Interface representing a HTTP1/2 Message (Request/Response) Message: A complete sequence of
- * frames that map to a logical request or response message. See: <a href= ></a>
+ * frames that map to a logical request or response message.
+ * See: <a href=https://developers.google.com/web/fundamentals/performance/http2/></a>
  */
 public interface Message {
 

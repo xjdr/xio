@@ -5,7 +5,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import lombok.ToString;
 
-/** Interface representing a partial HTTP1/2 Request */
+/** Interface representing a segmented HTTP1/2 response */
 @UnstableApi
 @ToString
 public class StreamingResponseData implements Response, StreamingData {
