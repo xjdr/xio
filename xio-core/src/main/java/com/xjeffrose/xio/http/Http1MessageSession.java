@@ -103,13 +103,13 @@ public class Http1MessageSession {
    *
    * @param data The StreamingData object that the client has sent
    */
-  public void onRequestData(StreamingData data) {
+  public void onRequestData(SegmentedData data) {
     if (initialRequest == null) {
       log.error("Received StreamingData without a current Request, dropping data: {}", data);
       return;
     }
 
-    if (data.endOfStream()) {
+    if (data.endOfMessage()) {
       initialRequest.requestFinished = true;
     }
   }
@@ -141,9 +141,9 @@ public class Http1MessageSession {
    *
    * @param data The StreamingData object the server is about to send
    */
-  public void onResponseData(StreamingData data) {
+  public void onResponseData(SegmentedData data) {
     if (initialRequest != null) {
-      if (data.endOfStream()) {
+      if (data.endOfMessage()) {
         initialRequest.responseFinished = true;
       }
     } else {

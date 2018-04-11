@@ -1,7 +1,7 @@
 package com.xjeffrose.xio.http.internal;
 
 import com.xjeffrose.xio.http.Headers;
-import com.xjeffrose.xio.http.StreamingData;
+import com.xjeffrose.xio.http.SegmentedData;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.LastHttpContent;
@@ -9,7 +9,7 @@ import lombok.ToString;
 
 /** Wrap an incoming HttpContent, for use by streaming clients or servers */
 @ToString
-public class Http1StreamingData implements StreamingData {
+public class Http1SegmentedData implements SegmentedData {
 
   private final HttpContent content;
   private final boolean eos;
@@ -28,7 +28,7 @@ public class Http1StreamingData implements StreamingData {
     }
   }
 
-  public Http1StreamingData(HttpContent content) {
+  public Http1SegmentedData(HttpContent content) {
     this.content = content;
     eos = content instanceof LastHttpContent;
     trailingHeaders = buildHeaders(content);
@@ -38,7 +38,7 @@ public class Http1StreamingData implements StreamingData {
     return content.content();
   }
 
-  public boolean endOfStream() {
+  public boolean endOfMessage() {
     return eos;
   }
 

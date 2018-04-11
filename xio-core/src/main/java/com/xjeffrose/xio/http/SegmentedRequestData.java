@@ -7,26 +7,26 @@ import lombok.ToString;
 
 @UnstableApi
 @ToString
-public class StreamingRequestData implements Request, StreamingData {
+public class SegmentedRequestData implements Request, SegmentedData {
 
   private final Request request;
-  private final StreamingData data;
+  private final SegmentedData data;
   private final TraceInfo traceInfo;
 
-  public StreamingRequestData(Request request, StreamingData data, TraceInfo traceInfo) {
+  public SegmentedRequestData(Request request, SegmentedData data, TraceInfo traceInfo) {
     this.request = request;
     this.data = data;
     this.traceInfo = traceInfo == null ? new TraceInfo(request.headers()) : traceInfo;
   }
 
-  public StreamingRequestData(Request request, StreamingData data) {
+  public SegmentedRequestData(Request request, SegmentedData data) {
     this(request, data, null);
   }
 
   // region Request
 
   @Override
-  public boolean startOfStream() {
+  public boolean startOfMessage() {
     return false;
   }
 
@@ -81,7 +81,7 @@ public class StreamingRequestData implements Request, StreamingData {
 
   // endregion
 
-  // region StreamingData
+  // region SegmentedData
 
   @Override
   public ByteBuf content() {
@@ -89,8 +89,8 @@ public class StreamingRequestData implements Request, StreamingData {
   }
 
   @Override
-  public boolean endOfStream() {
-    return data.endOfStream();
+  public boolean endOfMessage() {
+    return data.endOfMessage();
   }
 
   @Override

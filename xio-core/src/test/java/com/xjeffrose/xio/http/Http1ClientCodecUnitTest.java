@@ -119,20 +119,20 @@ public class Http1ClientCodecUnitTest extends Assert {
   public void testStreamingRequest() throws Exception {
     outputReceived = new CountDownLatch(3);
 
-    StreamingRequest requestIn =
-        DefaultStreamingRequest.builder()
+    SegmentedRequest requestIn =
+        DefaultSegmentedRequest.builder()
             .method(POST)
             .path("/")
             .headers(new DefaultHeaders())
             .build();
     ByteBuf body1 = ByteBufUtil.writeUtf8(UnpooledByteBufAllocator.DEFAULT, "body1");
-    StreamingData content =
-        DefaultStreamingData.builder().content(body1).endOfStream(false).build();
+    SegmentedData content =
+        DefaultSegmentedData.builder().content(body1).endOfMessage(false).build();
     ByteBuf body2 = ByteBufUtil.writeUtf8(UnpooledByteBufAllocator.DEFAULT, "body2");
-    StreamingData lastContent =
-        DefaultStreamingData.builder()
+    SegmentedData lastContent =
+        DefaultSegmentedData.builder()
             .content(body2)
-            .endOfStream(true)
+            .endOfMessage(true)
             .trailingHeaders(new DefaultHeaders())
             .build();
 
@@ -205,7 +205,7 @@ public class Http1ClientCodecUnitTest extends Assert {
 
     Uninterruptibles.awaitUninterruptibly(outputReceived);
 
-    StreamingResponse responseOut = (StreamingResponse) responses.remove(0);
+    SegmentedResponse responseOut = (SegmentedResponse) responses.remove(0);
 
     assertTrue(responseOut != null);
     assertEquals("HTTP/1.1", responseOut.version());
@@ -214,7 +214,7 @@ public class Http1ClientCodecUnitTest extends Assert {
     assertFalse(responseOut.body() == null);
     assertEquals(0, responseOut.body().readableBytes());
 
-    StreamingResponseData bodyOut1 = (StreamingResponseData) responses.remove(0);
+    SegmentedResponseData bodyOut1 = (SegmentedResponseData) responses.remove(0);
 
     assertTrue(bodyOut1 != null);
     assertEquals("HTTP/1.1", responseOut.version());
@@ -223,9 +223,9 @@ public class Http1ClientCodecUnitTest extends Assert {
     assertFalse(bodyOut1.body() == null);
     assertFalse(bodyOut1.content() == null);
     assertEquals(body1, bodyOut1.content());
-    assertFalse(bodyOut1.endOfStream());
+    assertFalse(bodyOut1.endOfMessage());
 
-    StreamingResponseData bodyOut2 = (StreamingResponseData) responses.remove(0);
+    SegmentedResponseData bodyOut2 = (SegmentedResponseData) responses.remove(0);
 
     assertTrue(bodyOut2 != null);
     assertEquals("HTTP/1.1", responseOut.version());
@@ -234,6 +234,6 @@ public class Http1ClientCodecUnitTest extends Assert {
     assertFalse(bodyOut2.body() == null);
     assertFalse(bodyOut2.content() == null);
     assertEquals(body2, bodyOut2.content());
-    assertTrue(bodyOut2.endOfStream());
+    assertTrue(bodyOut2.endOfMessage());
   }
 }

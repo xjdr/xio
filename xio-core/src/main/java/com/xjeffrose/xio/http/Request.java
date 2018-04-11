@@ -6,21 +6,13 @@ import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
 
+/** Interface representing a HTTP1/2 Request */
 @UnstableApi
-public interface Request extends Traceable {
-
-  boolean startOfStream();
-
-  // TODO(CK): move this here from StreamingData?
-  // boolean endOfStream();
+public interface Request extends Message {
 
   HttpMethod method();
 
   String path();
-
-  String version();
-
-  Headers headers();
 
   default String host() {
     return headers().get(HttpHeaderNames.HOST.toString());
@@ -34,45 +26,15 @@ public interface Request extends Traceable {
     return result;
   }
 
-  int streamId();
+  boolean keepAlive();
 
+  @Override
   default boolean hasBody() {
     return false;
   }
 
+  @Override
   default ByteBuf body() {
     return Unpooled.EMPTY_BUFFER;
   }
-
-  boolean keepAlive();
-
-  /*
-    boolean hasBody()
-    requestPrepare
-    requestProcess
-    requestFinish
-
-    public interface StreamingRequestHandler {
-    void prepare();
-    void process();
-    void finish();
-    }
-
-    public interace FullRequestHandler {
-    void process();
-    }
-
-  public class ResponseBuilder {
-    public ResponseBuilder addHeader(CharSequence key, CharSequence value);
-    public ResponseBuilder headers(Headers headers);
-    public ResponseBuilder status(int status);
-    public ResponseBuilder body(Body);
-    public Response build();
-  }
-
-  full response
-  streaming response
-
-    */
-
 }

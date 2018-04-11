@@ -23,7 +23,7 @@ class HttpServerResponseTracingHandler extends ChannelOutboundHandlerAdapter {
     }
 
     Response response = (Response) msg;
-    if (response.endOfStream()) {
+    if (response.endOfMessage()) {
       ctx.write(msg, promise)
           .addListener(future -> state.onResponse(ctx, response, future.cause()));
     } else {

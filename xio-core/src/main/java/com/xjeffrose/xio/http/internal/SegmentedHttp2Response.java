@@ -1,7 +1,7 @@
 package com.xjeffrose.xio.http.internal;
 
 import com.xjeffrose.xio.http.Headers;
-import com.xjeffrose.xio.http.StreamingResponse;
+import com.xjeffrose.xio.http.SegmentedResponse;
 import com.xjeffrose.xio.http.TraceInfo;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -13,28 +13,33 @@ import lombok.ToString;
 
 /** Wrap an incoming Http2 Response, for use in a client. */
 @ToString
-public class StreamingHttp2Response implements StreamingResponse {
+public class SegmentedHttp2Response implements SegmentedResponse {
 
   private final Http2Headers delegate;
   private final Http2HeadersWrapper headers;
   private final int streamId;
   private final TraceInfo traceInfo;
 
-  public StreamingHttp2Response(Http2Headers delegate, int streamId, TraceInfo traceInfo) {
+  public SegmentedHttp2Response(Http2Headers delegate, int streamId, TraceInfo traceInfo) {
     this.delegate = delegate;
     this.headers = new Http2HeadersWrapper(delegate);
     this.streamId = streamId;
     this.traceInfo = traceInfo == null ? new TraceInfo(headers) : traceInfo;
   }
 
-  public StreamingHttp2Response(Http2Headers delegate, int streamId) {
+  public SegmentedHttp2Response(Http2Headers delegate, int streamId) {
     this(delegate, streamId, null);
   }
 
   // region Response
 
   @Override
-  public boolean endOfStream() {
+  public boolean startOfMessage() {
+    return false;
+  }
+
+  @Override
+  public boolean endOfMessage() {
     return false;
   }
 

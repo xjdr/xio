@@ -21,7 +21,7 @@ class HttpClientRequestTracingHandler extends ChannelOutboundHandlerAdapter {
     }
     Request request = (Request) msg;
 
-    if (request.startOfStream()) {
+    if (request.startOfMessage()) {
       state.onRequest(ctx, request);
     }
     ctx.write(msg, promise)

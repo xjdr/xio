@@ -27,7 +27,12 @@ public class FullHttp1Request implements FullRequest {
   // region Request
 
   @Override
-  public boolean startOfStream() {
+  public boolean startOfMessage() {
+    return true;
+  }
+
+  @Override
+  public boolean endOfMessage() {
     return true;
   }
 
@@ -53,7 +58,7 @@ public class FullHttp1Request implements FullRequest {
 
   @Override
   public int streamId() {
-    return -1;
+    return H1_STREAM_ID_NONE;
   }
 
   @Override

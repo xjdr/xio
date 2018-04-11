@@ -15,7 +15,7 @@ class HttpServerRequestTracingHandler extends SimpleChannelInboundHandler<Reques
 
   @Override
   public void channelRead0(ChannelHandlerContext ctx, Request request) throws Exception {
-    if (request.startOfStream()) {
+    if (request.startOfMessage()) {
       state.onRequest(ctx, request);
     }
     ctx.fireChannelRead(request);

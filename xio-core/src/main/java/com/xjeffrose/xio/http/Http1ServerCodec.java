@@ -2,8 +2,8 @@ package com.xjeffrose.xio.http;
 
 import com.xjeffrose.xio.core.internal.UnstableApi;
 import com.xjeffrose.xio.http.internal.FullHttp1Request;
-import com.xjeffrose.xio.http.internal.Http1Request;
-import com.xjeffrose.xio.http.internal.Http1StreamingData;
+import com.xjeffrose.xio.http.internal.Http1SegmentedData;
+import com.xjeffrose.xio.http.internal.SegmentedHttp1Request;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelDuplexHandler;
@@ -52,18 +52,18 @@ public class Http1ServerCodec extends ChannelDuplexHandler {
         request = new FullHttp1Request((FullHttpRequest) msg);
         session.onRequest(request);
       } else if (msg instanceof HttpRequest) {
-        request = new Http1Request((HttpRequest) msg);
+        request = new SegmentedHttp1Request((HttpRequest) msg);
         session.onRequest(request);
       } else if (msg instanceof HttpContent) {
-        StreamingData data = new Http1StreamingData((HttpContent) msg);
+        SegmentedData data = new Http1SegmentedData((HttpContent) msg);
         session.onRequestData(data);
         Request sessionRequest = session.currentRequest();
         if (sessionRequest == null) {
-          // We don't have a sessionRequest so we can't construct a StreamingRequestData.
+          // We don't have a sessionRequest so we can't construct a SegmentedRequestData.
           // Don't log as session.onRequestData should have logged.
           return;
         }
-        request = new StreamingRequestData(sessionRequest, data);
+        request = new SegmentedRequestData(sessionRequest, data);
       } else {
         log.error("Dropping unsupported http object: {}", msg);
         return;
@@ -157,15 +157,15 @@ public class Http1ServerCodec extends ChannelDuplexHandler {
   }
 
   /**
-   * Translate the StreamingData object into a netty HttpContent and fire write on the next handler.
+   * Translate the SegmentedData object into a netty HttpContent and fire write on the next handler.
    */
-  private void buildContent(ChannelHandlerContext ctx, StreamingData data, ChannelPromise promise) {
+  private void buildContent(ChannelHandlerContext ctx, SegmentedData data, ChannelPromise promise) {
     Http1MessageSession session = setDefaultMessageSession(ctx);
     try {
       session.onResponseData(data);
       HttpObject obj;
 
-      if (data.endOfStream()) {
+      if (data.endOfMessage()) {
         LastHttpContent last = new DefaultLastHttpContent(data.content());
         if (data.trailingHeaders() != null) {
           last.trailingHeaders().add(data.trailingHeaders().http1Headers(true, false));
@@ -176,7 +176,7 @@ public class Http1ServerCodec extends ChannelDuplexHandler {
       }
 
       ChannelFuture future = ctx.write(obj, promise);
-      if (session.closeConnection() && data.endOfStream()) {
+      if (session.closeConnection() && data.endOfMessage()) {
         future.addListener(ChannelFutureListener.CLOSE);
       }
     } finally {
@@ -185,14 +185,14 @@ public class Http1ServerCodec extends ChannelDuplexHandler {
   }
 
   /**
-   * Handles instances of StreamingData and Response, all other types are forwarded to the next
+   * Handles instances of SegmentedData and Response, all other types are forwarded to the next
    * handler.
    */
   @Override
   public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise)
       throws Exception {
-    if (msg instanceof StreamingData) {
-      buildContent(ctx, (StreamingData) msg, promise);
+    if (msg instanceof SegmentedData) {
+      buildContent(ctx, (SegmentedData) msg, promise);
     } else if (msg instanceof Response) {
       buildResponse(ctx, (Response) msg, promise);
     } else {

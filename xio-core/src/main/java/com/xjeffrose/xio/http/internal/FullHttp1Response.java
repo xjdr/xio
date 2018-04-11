@@ -27,7 +27,12 @@ public class FullHttp1Response implements FullResponse {
   // region Response
 
   @Override
-  public boolean endOfStream() {
+  public boolean startOfMessage() {
+    return true;
+  }
+
+  @Override
+  public boolean endOfMessage() {
     return true;
   }
 

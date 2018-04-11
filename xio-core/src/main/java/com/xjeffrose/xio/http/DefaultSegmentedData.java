@@ -8,10 +8,10 @@ import lombok.ToString;
 @UnstableApi
 @AutoValue
 @ToString
-public abstract class DefaultStreamingData implements StreamingData {
+public abstract class DefaultSegmentedData implements SegmentedData {
   public abstract ByteBuf content();
 
-  public abstract boolean endOfStream();
+  public abstract boolean endOfMessage();
 
   public abstract Headers trailingHeaders();
 
@@ -19,14 +19,14 @@ public abstract class DefaultStreamingData implements StreamingData {
   public abstract static class Builder {
     public abstract Builder content(ByteBuf content);
 
-    public abstract Builder endOfStream(boolean endOfStream);
+    public abstract Builder endOfMessage(boolean isEnd);
 
     public abstract Builder trailingHeaders(Headers headers);
 
-    public abstract DefaultStreamingData build();
+    public abstract DefaultSegmentedData build();
   }
 
   public static Builder builder() {
-    return new AutoValue_DefaultStreamingData.Builder().trailingHeaders(new DefaultHeaders());
+    return new AutoValue_DefaultSegmentedData.Builder().trailingHeaders(new DefaultHeaders());
   }
 }

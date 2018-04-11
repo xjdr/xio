@@ -15,6 +15,16 @@ import lombok.ToString;
 @ToString
 public abstract class DefaultFullResponse implements FullResponse {
 
+  @Override
+  public boolean endOfMessage() {
+    return true;
+  }
+
+  @Override
+  public boolean startOfMessage() {
+    return true;
+  }
+
   public abstract ByteBuf body();
 
   public abstract HttpResponseStatus status();
@@ -22,8 +32,6 @@ public abstract class DefaultFullResponse implements FullResponse {
   public abstract Headers headers();
 
   public abstract TraceInfo httpTraceInfo();
-
-  public abstract boolean endOfStream();
 
   /** Not intended to be called. */
   @Override
@@ -47,11 +55,8 @@ public abstract class DefaultFullResponse implements FullResponse {
       if (!httpTraceInfo().isPresent()) {
         httpTraceInfo(new TraceInfo(headers()));
       }
-      endOfStream(true);
       return autoBuild();
     }
-
-    abstract Builder endOfStream(boolean endOfStream);
 
     abstract Optional<TraceInfo> httpTraceInfo();
 
