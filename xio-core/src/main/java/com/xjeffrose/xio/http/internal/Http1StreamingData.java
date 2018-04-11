@@ -38,7 +38,7 @@ public class Http1StreamingData implements StreamingData {
     return content.content();
   }
 
-  public boolean endOfStream() {
+  public boolean endOfMessage() {
     return eos;
   }
 

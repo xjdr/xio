@@ -18,7 +18,15 @@ public abstract class DefaultStreamingResponse implements StreamingResponse {
 
   public abstract TraceInfo httpTraceInfo();
 
-  public abstract boolean endOfStream();
+  @Override
+  public boolean startOfMessage() {
+    return true;
+  }
+
+  @Override
+  public boolean endOfMessage() {
+    return false;
+  }
 
   /** Not intended to be called. */
   @Override
@@ -38,13 +46,10 @@ public abstract class DefaultStreamingResponse implements StreamingResponse {
       if (!httpTraceInfo().isPresent()) {
         httpTraceInfo(new TraceInfo(headers()));
       }
-      endOfStream(true);
       return autoBuild();
     }
 
     abstract Headers headers();
-
-    abstract Builder endOfStream(boolean endOfStream);
 
     abstract Optional<TraceInfo> httpTraceInfo();
 

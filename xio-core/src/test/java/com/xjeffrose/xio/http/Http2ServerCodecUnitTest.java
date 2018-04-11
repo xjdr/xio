@@ -1,8 +1,6 @@
 package com.xjeffrose.xio.http;
 
-import static io.netty.handler.codec.http.HttpMethod.*;
 import static io.netty.handler.codec.http.HttpResponseStatus.*;
-import static io.netty.handler.codec.http.HttpVersion.*;
 
 import com.google.common.util.concurrent.Uninterruptibles;
 import io.netty.buffer.ByteBuf;
@@ -127,7 +125,7 @@ public class Http2ServerCodecUnitTest extends Assert {
     assertFalse(bodyOut1.body() == null);
     assertFalse(((StreamingRequestData) bodyOut1).content() == null);
     assertEquals(body1, ((StreamingRequestData) bodyOut1).content());
-    assertFalse(((StreamingRequestData) bodyOut1).endOfStream());
+    assertFalse(((StreamingRequestData) bodyOut1).endOfMessage());
 
     Request bodyOut2 = requests.remove(0);
 
@@ -140,7 +138,7 @@ public class Http2ServerCodecUnitTest extends Assert {
     assertFalse(bodyOut2.body() == null);
     assertFalse(((StreamingRequestData) bodyOut2).content() == null);
     assertEquals(body2, ((StreamingRequestData) bodyOut2).content());
-    assertTrue(((StreamingRequestData) bodyOut2).endOfStream());
+    assertTrue(((StreamingRequestData) bodyOut2).endOfMessage());
   }
 
   @Test
@@ -187,7 +185,7 @@ public class Http2ServerCodecUnitTest extends Assert {
     assertFalse(bodyOut1.body() == null);
     assertFalse(((StreamingRequestData) bodyOut1).content() == null);
     assertEquals(body1, ((StreamingRequestData) bodyOut1).content());
-    assertFalse(((StreamingRequestData) bodyOut1).endOfStream());
+    assertFalse(((StreamingRequestData) bodyOut1).endOfMessage());
 
     Request bodyOut2 = requests.remove(0);
 
@@ -200,7 +198,7 @@ public class Http2ServerCodecUnitTest extends Assert {
     assertFalse(bodyOut2.body() == null);
     assertFalse(((StreamingRequestData) bodyOut2).content() == null);
     assertEquals(body2, ((StreamingRequestData) bodyOut2).content());
-    assertFalse(((StreamingRequestData) bodyOut2).endOfStream());
+    assertFalse(((StreamingRequestData) bodyOut2).endOfMessage());
 
     Request trailersOut = requests.remove(0);
 
@@ -214,7 +212,7 @@ public class Http2ServerCodecUnitTest extends Assert {
     assertEquals(0, trailersOut.body().readableBytes());
     assertEquals(1, ((StreamingRequestData) trailersOut).trailingHeaders().size());
     assertEquals("bar", ((StreamingRequestData) trailersOut).trailingHeaders().get("foo"));
-    assertTrue(((StreamingRequestData) trailersOut).endOfStream());
+    assertTrue(((StreamingRequestData) trailersOut).endOfMessage());
   }
 
   @Test
@@ -285,12 +283,12 @@ public class Http2ServerCodecUnitTest extends Assert {
         DefaultStreamingResponse.builder().status(OK).headers(new DefaultHeaders()).build();
     ByteBuf body1 = ByteBufUtil.writeUtf8(UnpooledByteBufAllocator.DEFAULT, "body1");
     StreamingData content =
-        DefaultStreamingData.builder().content(body1).endOfStream(false).build();
+        DefaultStreamingData.builder().content(body1).endOfMessage(false).build();
     ByteBuf body2 = ByteBufUtil.writeUtf8(UnpooledByteBufAllocator.DEFAULT, "body2");
     StreamingData lastContent =
         DefaultStreamingData.builder()
             .content(body2)
-            .endOfStream(true)
+            .endOfMessage(true)
             .trailingHeaders(new DefaultHeaders())
             .build();
 
@@ -339,12 +337,12 @@ public class Http2ServerCodecUnitTest extends Assert {
         DefaultStreamingResponse.builder().status(OK).headers(new DefaultHeaders()).build();
     ByteBuf body1 = ByteBufUtil.writeUtf8(UnpooledByteBufAllocator.DEFAULT, "body1");
     StreamingData content =
-        DefaultStreamingData.builder().content(body1).endOfStream(false).build();
+        DefaultStreamingData.builder().content(body1).endOfMessage(false).build();
     ByteBuf body2 = ByteBufUtil.writeUtf8(UnpooledByteBufAllocator.DEFAULT, "body2");
     StreamingData lastContent =
         DefaultStreamingData.builder()
             .content(body2)
-            .endOfStream(true)
+            .endOfMessage(true)
             .trailingHeaders(new DefaultHeaders().set("foo", "bar"))
             .build();
 

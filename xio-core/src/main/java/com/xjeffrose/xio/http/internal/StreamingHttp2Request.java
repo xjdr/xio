@@ -32,8 +32,13 @@ public class StreamingHttp2Request implements StreamingRequest {
   // region Request
 
   @Override
-  public boolean startOfStream() {
+  public boolean startOfMessage() {
     return true;
+  }
+
+  @Override
+  public boolean endOfMessage() {
+    return false;
   }
 
   @Override

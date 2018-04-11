@@ -27,7 +27,12 @@ public class FullHttp2Request implements FullRequest {
   // region Request
 
   @Override
-  public boolean startOfStream() {
+  public boolean startOfMessage() {
+    return true;
+  }
+
+  @Override
+  public boolean endOfMessage() {
     return true;
   }
 

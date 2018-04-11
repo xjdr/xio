@@ -2,8 +2,8 @@ package com.xjeffrose.xio.http;
 
 import com.xjeffrose.xio.core.internal.UnstableApi;
 import com.xjeffrose.xio.http.internal.FullHttp1Request;
-import com.xjeffrose.xio.http.internal.Http1Request;
 import com.xjeffrose.xio.http.internal.Http1StreamingData;
+import com.xjeffrose.xio.http.internal.StreamingHttp1Request;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelDuplexHandler;
@@ -52,7 +52,7 @@ public class Http1ServerCodec extends ChannelDuplexHandler {
         request = new FullHttp1Request((FullHttpRequest) msg);
         session.onRequest(request);
       } else if (msg instanceof HttpRequest) {
-        request = new Http1Request((HttpRequest) msg);
+        request = new StreamingHttp1Request((HttpRequest) msg);
         session.onRequest(request);
       } else if (msg instanceof HttpContent) {
         StreamingData data = new Http1StreamingData((HttpContent) msg);
@@ -165,7 +165,7 @@ public class Http1ServerCodec extends ChannelDuplexHandler {
       session.onResponseData(data);
       HttpObject obj;
 
-      if (data.endOfStream()) {
+      if (data.endOfMessage()) {
         LastHttpContent last = new DefaultLastHttpContent(data.content());
         if (data.trailingHeaders() != null) {
           last.trailingHeaders().add(data.trailingHeaders().http1Headers(true, false));
@@ -176,7 +176,7 @@ public class Http1ServerCodec extends ChannelDuplexHandler {
       }
 
       ChannelFuture future = ctx.write(obj, promise);
-      if (session.closeConnection() && data.endOfStream()) {
+      if (session.closeConnection() && data.endOfMessage()) {
         future.addListener(ChannelFutureListener.CLOSE);
       }
     } finally {

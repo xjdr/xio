@@ -102,7 +102,7 @@ public class Http2ClientCodec extends ChannelDuplexHandler {
 
   void writeContent(ChannelHandlerContext ctx, StreamingData data, ChannelPromise promise) {
     int streamId = 0; // TODO(CK): need a no stream constant somewhere
-    boolean dataEos = data.endOfStream() && data.trailingHeaders().size() == 0;
+    boolean dataEos = data.endOfMessage() && data.trailingHeaders().size() == 0;
     Http2Request request =
         Http2Request.build(streamId, new DefaultHttp2DataFrame(data.content(), dataEos), dataEos);
 

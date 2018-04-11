@@ -120,7 +120,7 @@ public class ProxyHandler implements PipelineRequestHandler {
     ClientConfig clientConfig = getClientConfig(request);
     Client client = factory.getClient(ctx, clientConfig);
 
-    if (!request.startOfStream()) {
+    if (!request.startOfMessage()) {
       log.debug("not start of stream");
       client.write(request);
       return;

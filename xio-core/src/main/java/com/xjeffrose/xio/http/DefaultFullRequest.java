@@ -15,7 +15,12 @@ import lombok.ToString;
 public abstract class DefaultFullRequest implements FullRequest {
 
   @Override
-  public boolean startOfStream() {
+  public boolean startOfMessage() {
+    return true;
+  }
+
+  @Override
+  public boolean endOfMessage() {
     return true;
   }
 

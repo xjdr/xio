@@ -32,7 +32,12 @@ public class FullHttp2Response implements FullResponse {
   // region Response
 
   @Override
-  public boolean endOfStream() {
+  public boolean endOfMessage() {
+    return true;
+  }
+
+  @Override
+  public boolean startOfMessage() {
     return true;
   }
 

@@ -83,7 +83,7 @@ public class Http1MessageSessionUnitTest extends Assert {
     StreamingData data =
         DefaultStreamingData.builder()
             .content(Unpooled.EMPTY_BUFFER)
-            .endOfStream(true)
+            .endOfMessage(true)
             .trailingHeaders(new DefaultHeaders())
             .build();
     session.onRequestData(data);
@@ -159,7 +159,7 @@ public class Http1MessageSessionUnitTest extends Assert {
     StreamingData data =
         DefaultStreamingData.builder()
             .content(Unpooled.EMPTY_BUFFER)
-            .endOfStream(true)
+            .endOfMessage(true)
             .trailingHeaders(new DefaultHeaders())
             .build();
     session.onResponseData(data);

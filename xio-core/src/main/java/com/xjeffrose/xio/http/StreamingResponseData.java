@@ -5,6 +5,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import lombok.ToString;
 
+/** Interface representing a partial HTTP1/2 Request */
 @UnstableApi
 @ToString
 public class StreamingResponseData implements Response, StreamingData {
@@ -25,22 +26,27 @@ public class StreamingResponseData implements Response, StreamingData {
 
   // region Response
 
+  @Override
   public HttpResponseStatus status() {
     return response.status();
   }
 
+  @Override
   public String version() {
     return response.version();
   }
 
+  @Override
   public Headers headers() {
     return response.headers();
   }
 
+  @Override
   public boolean hasBody() {
     return response.hasBody();
   }
 
+  @Override
   public ByteBuf body() {
     return response.body();
   }
@@ -49,14 +55,22 @@ public class StreamingResponseData implements Response, StreamingData {
 
   // region StreamingData
 
+  @Override
   public ByteBuf content() {
     return data.content();
   }
 
-  public boolean endOfStream() {
-    return data.endOfStream();
+  @Override
+  public boolean startOfMessage() {
+    return false;
   }
 
+  @Override
+  public boolean endOfMessage() {
+    return data.endOfMessage();
+  }
+
+  @Override
   public Headers trailingHeaders() {
     return data.trailingHeaders();
   }

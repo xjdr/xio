@@ -89,7 +89,7 @@ public class HttpServerTracingHandlerIntegrationTest extends Assert {
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Request msg) throws Exception {
 
-      if (msg instanceof StreamingRequestData && ((StreamingRequestData) msg).endOfStream()) {
+      if (msg instanceof StreamingRequestData && ((StreamingRequestData) msg).endOfMessage()) {
         sendResponse(ctx, msg.httpTraceInfo());
         return;
       } else if (msg instanceof FullRequest) {

@@ -109,7 +109,7 @@ public class Http1MessageSession {
       return;
     }
 
-    if (data.endOfStream()) {
+    if (data.endOfMessage()) {
       initialRequest.requestFinished = true;
     }
   }
@@ -143,7 +143,7 @@ public class Http1MessageSession {
    */
   public void onResponseData(StreamingData data) {
     if (initialRequest != null) {
-      if (data.endOfStream()) {
+      if (data.endOfMessage()) {
         initialRequest.responseFinished = true;
       }
     } else {

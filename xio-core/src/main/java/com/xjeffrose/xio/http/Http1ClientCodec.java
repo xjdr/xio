@@ -2,8 +2,8 @@ package com.xjeffrose.xio.http;
 
 import com.xjeffrose.xio.core.internal.UnstableApi;
 import com.xjeffrose.xio.http.internal.FullHttp1Response;
-import com.xjeffrose.xio.http.internal.Http1Response;
 import com.xjeffrose.xio.http.internal.Http1StreamingData;
+import com.xjeffrose.xio.http.internal.StreamingHttp1Response;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelDuplexHandler;
@@ -49,7 +49,7 @@ public class Http1ClientCodec extends ChannelDuplexHandler {
       setChannelResponse(ctx, response);
       return response;
     } else if (msg instanceof HttpResponse) {
-      Response response = new Http1Response((HttpResponse) msg);
+      Response response = new StreamingHttp1Response((HttpResponse) msg);
       setChannelResponse(ctx, response);
       return response;
     } else if (msg instanceof HttpContent) {
@@ -114,7 +114,7 @@ public class Http1ClientCodec extends ChannelDuplexHandler {
   }
 
   HttpContent buildContent(ChannelHandlerContext ctx, StreamingData data) {
-    if (data.endOfStream()) {
+    if (data.endOfMessage()) {
       LastHttpContent last = new DefaultLastHttpContent(data.content());
       if (data.trailingHeaders() != null) {
         last.trailingHeaders().add(data.trailingHeaders().http1Headers(true, true));

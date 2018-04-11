@@ -15,7 +15,7 @@ class HttpClientResponseTracingHandler extends SimpleChannelInboundHandler<Respo
 
   @Override
   public void channelRead0(ChannelHandlerContext ctx, Response response) throws Exception {
-    if (response.endOfStream()) {
+    if (response.endOfMessage()) {
       state.onResponse(ctx, response);
     }
     ctx.fireChannelRead(response);

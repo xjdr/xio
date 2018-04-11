@@ -11,7 +11,7 @@ import lombok.ToString;
 public abstract class DefaultStreamingData implements StreamingData {
   public abstract ByteBuf content();
 
-  public abstract boolean endOfStream();
+  public abstract boolean endOfMessage();
 
   public abstract Headers trailingHeaders();
 
@@ -19,7 +19,7 @@ public abstract class DefaultStreamingData implements StreamingData {
   public abstract static class Builder {
     public abstract Builder content(ByteBuf content);
 
-    public abstract Builder endOfStream(boolean endOfStream);
+    public abstract Builder endOfMessage(boolean isEnd);
 
     public abstract Builder trailingHeaders(Headers headers);
 

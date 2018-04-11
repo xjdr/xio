@@ -6,13 +6,9 @@ import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
 
+/** Interface representing a HTTP1/2 Request */
 @UnstableApi
-public interface Request extends Traceable {
-
-  boolean startOfStream();
-
-  // TODO(CK): move this here from StreamingData?
-  // boolean endOfStream();
+public interface Request extends Message, Traceable {
 
   HttpMethod method();
 
@@ -34,6 +30,11 @@ public interface Request extends Traceable {
     return result;
   }
 
+  /**
+   * See: <a href=https://tools.ietf.org/html/rfc7540#section-5>rfc</a>
+   *
+   * @return the stream id of the http2 connection stream or -1 if http1
+   */
   int streamId();
 
   default boolean hasBody() {
@@ -45,34 +46,4 @@ public interface Request extends Traceable {
   }
 
   boolean keepAlive();
-
-  /*
-    boolean hasBody()
-    requestPrepare
-    requestProcess
-    requestFinish
-
-    public interface StreamingRequestHandler {
-    void prepare();
-    void process();
-    void finish();
-    }
-
-    public interace FullRequestHandler {
-    void process();
-    }
-
-  public class ResponseBuilder {
-    public ResponseBuilder addHeader(CharSequence key, CharSequence value);
-    public ResponseBuilder headers(Headers headers);
-    public ResponseBuilder status(int status);
-    public ResponseBuilder body(Body);
-    public Response build();
-  }
-
-  full response
-  streaming response
-
-    */
-
 }

@@ -32,7 +32,7 @@ public class Http2StreamingData implements StreamingData {
     return content;
   }
 
-  public boolean endOfStream() {
+  public boolean endOfMessage() {
     return eos;
   }
 

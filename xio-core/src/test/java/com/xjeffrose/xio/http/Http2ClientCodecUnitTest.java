@@ -2,7 +2,6 @@ package com.xjeffrose.xio.http;
 
 import static io.netty.handler.codec.http.HttpMethod.*;
 import static io.netty.handler.codec.http.HttpResponseStatus.*;
-import static io.netty.handler.codec.http.HttpVersion.*;
 
 import com.google.common.util.concurrent.Uninterruptibles;
 import io.netty.buffer.ByteBuf;
@@ -120,12 +119,12 @@ public class Http2ClientCodecUnitTest extends Assert {
         DefaultStreamingRequest.builder().method(POST).host("localhost").path("/").build();
     ByteBuf body1 = ByteBufUtil.writeUtf8(UnpooledByteBufAllocator.DEFAULT, "body1");
     StreamingData content =
-        DefaultStreamingData.builder().content(body1).endOfStream(false).build();
+        DefaultStreamingData.builder().content(body1).endOfMessage(false).build();
     ByteBuf body2 = ByteBufUtil.writeUtf8(UnpooledByteBufAllocator.DEFAULT, "body2");
     StreamingData lastContent =
         DefaultStreamingData.builder()
             .content(body2)
-            .endOfStream(true)
+            .endOfMessage(true)
             .trailingHeaders(new DefaultHeaders())
             .build();
 
@@ -170,12 +169,12 @@ public class Http2ClientCodecUnitTest extends Assert {
         DefaultStreamingRequest.builder().method(POST).host("localhost").path("/").build();
     ByteBuf body1 = ByteBufUtil.writeUtf8(UnpooledByteBufAllocator.DEFAULT, "body1");
     StreamingData content =
-        DefaultStreamingData.builder().content(body1).endOfStream(false).build();
+        DefaultStreamingData.builder().content(body1).endOfMessage(false).build();
     ByteBuf body2 = ByteBufUtil.writeUtf8(UnpooledByteBufAllocator.DEFAULT, "body2");
     StreamingData lastContent =
         DefaultStreamingData.builder()
             .content(body2)
-            .endOfStream(true)
+            .endOfMessage(true)
             .trailingHeaders(new DefaultHeaders().set("foo", "bar"))
             .build();
 
@@ -278,7 +277,7 @@ public class Http2ClientCodecUnitTest extends Assert {
     assertFalse(bodyOut1.body() == null);
     assertFalse(bodyOut1.content() == null);
     assertEquals(body1, bodyOut1.content());
-    assertFalse(bodyOut1.endOfStream());
+    assertFalse(bodyOut1.endOfMessage());
 
     StreamingResponseData bodyOut2 = (StreamingResponseData) responses.remove(0);
 
@@ -289,7 +288,7 @@ public class Http2ClientCodecUnitTest extends Assert {
     assertFalse(bodyOut2.body() == null);
     assertFalse(bodyOut2.content() == null);
     assertEquals(body2, bodyOut2.content());
-    assertTrue(bodyOut2.endOfStream());
+    assertTrue(bodyOut2.endOfMessage());
   }
 
   @Test
@@ -332,7 +331,7 @@ public class Http2ClientCodecUnitTest extends Assert {
     assertFalse(bodyOut1.body() == null);
     assertFalse(bodyOut1.content() == null);
     assertEquals(body1, bodyOut1.content());
-    assertFalse(bodyOut1.endOfStream());
+    assertFalse(bodyOut1.endOfMessage());
 
     StreamingResponseData bodyOut2 = (StreamingResponseData) responses.remove(0);
 
@@ -343,7 +342,7 @@ public class Http2ClientCodecUnitTest extends Assert {
     assertFalse(bodyOut2.body() == null);
     assertFalse(bodyOut2.content() == null);
     assertEquals(body2, bodyOut2.content());
-    assertFalse(bodyOut2.endOfStream());
+    assertFalse(bodyOut2.endOfMessage());
 
     StreamingResponseData trailersOut = (StreamingResponseData) responses.remove(0);
 
@@ -355,6 +354,6 @@ public class Http2ClientCodecUnitTest extends Assert {
     assertEquals(0, trailersOut.body().readableBytes());
     assertEquals(1, trailersOut.trailingHeaders().size());
     assertEquals("bar", trailersOut.trailingHeaders().get("foo"));
-    assertTrue(trailersOut.endOfStream());
+    assertTrue(trailersOut.endOfMessage());
   }
 }

@@ -99,11 +99,11 @@ public class Http2ServerCodec extends ChannelDuplexHandler {
   void writeContent(ChannelHandlerContext ctx, StreamingData data, ChannelPromise promise) {
     Request request = getChannelRequest(ctx);
     int streamId = request.streamId();
-    if (data.endOfStream()) {
+    if (data.endOfMessage()) {
       setChannelRequest(ctx, null);
     }
 
-    boolean dataEos = data.endOfStream() && data.trailingHeaders().size() == 0;
+    boolean dataEos = data.endOfMessage() && data.trailingHeaders().size() == 0;
     Http2Response response =
         Http2Response.build(streamId, new DefaultHttp2DataFrame(data.content(), dataEos), dataEos);
 

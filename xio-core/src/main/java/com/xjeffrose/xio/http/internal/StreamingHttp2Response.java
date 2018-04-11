@@ -34,7 +34,12 @@ public class StreamingHttp2Response implements StreamingResponse {
   // region Response
 
   @Override
-  public boolean endOfStream() {
+  public boolean startOfMessage() {
+    return false;
+  }
+
+  @Override
+  public boolean endOfMessage() {
     return false;
   }
 

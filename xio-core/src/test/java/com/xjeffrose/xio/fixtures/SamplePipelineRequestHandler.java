@@ -76,7 +76,7 @@ public class SamplePipelineRequestHandler implements PipelineRequestHandler {
 
     if (request instanceof StreamingRequestData) {
       StreamingData data = (StreamingData) request;
-      if (data.endOfStream()) {
+      if (data.endOfMessage()) {
         buf.append("END OF CONTENT\r\n");
 
         if (!data.trailingHeaders().isEmpty()) {

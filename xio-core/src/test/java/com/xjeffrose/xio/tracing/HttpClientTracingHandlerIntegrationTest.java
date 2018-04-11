@@ -85,7 +85,7 @@ public class HttpClientTracingHandlerIntegrationTest { // extends ITHttpClient<X
 
     @Override
     public void channelRead0(ChannelHandlerContext ctx, Response object) throws Exception {
-      if (object.endOfStream()) {
+      if (object.endOfMessage()) {
         response = object;
         local.complete(response);
       }

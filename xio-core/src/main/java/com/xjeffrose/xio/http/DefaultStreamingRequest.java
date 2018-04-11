@@ -14,8 +14,13 @@ import lombok.ToString;
 public abstract class DefaultStreamingRequest implements StreamingRequest, Traceable {
 
   @Override
-  public boolean startOfStream() {
+  public boolean startOfMessage() {
     return true;
+  }
+
+  @Override
+  public boolean endOfMessage() {
+    return false;
   }
 
   public abstract HttpMethod method();

@@ -153,7 +153,7 @@ public class Http1ServerCodecUnitTest extends Assert {
     assertFalse(bodyOut1.body() == null);
     assertFalse(((StreamingRequestData) bodyOut1).content() == null);
     assertEquals(body1, ((StreamingRequestData) bodyOut1).content());
-    assertFalse(((StreamingRequestData) bodyOut1).endOfStream());
+    assertFalse(((StreamingRequestData) bodyOut1).endOfMessage());
 
     Request bodyOut2 = requests.remove(0);
 
@@ -166,7 +166,7 @@ public class Http1ServerCodecUnitTest extends Assert {
     assertFalse(bodyOut2.body() == null);
     assertFalse(((StreamingRequestData) bodyOut2).content() == null);
     assertEquals(body2, ((StreamingRequestData) bodyOut2).content());
-    assertTrue(((StreamingRequestData) bodyOut2).endOfStream());
+    assertTrue(((StreamingRequestData) bodyOut2).endOfMessage());
   }
 
   @Test
@@ -205,12 +205,12 @@ public class Http1ServerCodecUnitTest extends Assert {
         DefaultStreamingResponse.builder().status(OK).headers(new DefaultHeaders()).build();
     ByteBuf body1 = ByteBufUtil.writeUtf8(UnpooledByteBufAllocator.DEFAULT, "body1");
     StreamingData content =
-        DefaultStreamingData.builder().content(body1).endOfStream(false).build();
+        DefaultStreamingData.builder().content(body1).endOfMessage(false).build();
     ByteBuf body2 = ByteBufUtil.writeUtf8(UnpooledByteBufAllocator.DEFAULT, "body2");
     StreamingData lastContent =
         DefaultStreamingData.builder()
             .content(body2)
-            .endOfStream(true)
+            .endOfMessage(true)
             .trailingHeaders(new DefaultHeaders())
             .build();
 

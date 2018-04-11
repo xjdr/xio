@@ -26,7 +26,7 @@ public class StreamingRequestData implements Request, StreamingData {
   // region Request
 
   @Override
-  public boolean startOfStream() {
+  public boolean startOfMessage() {
     return false;
   }
 
@@ -89,8 +89,8 @@ public class StreamingRequestData implements Request, StreamingData {
   }
 
   @Override
-  public boolean endOfStream() {
-    return data.endOfStream();
+  public boolean endOfMessage() {
+    return data.endOfMessage();
   }
 
   @Override
