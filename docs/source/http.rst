@@ -9,12 +9,14 @@ Http/1.1 Abstraction
 --------------------
 
 Things to note:
+
 * stream id is always -1
 
 Http2 Abstraction
 -----------------
 
 Things to note:
+
 * stream id
 
 Full Messages vs Segmented Messages
