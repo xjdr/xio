@@ -8,15 +8,11 @@ import io.netty.handler.codec.http.HttpMethod;
 
 /** Interface representing a HTTP1/2 Request */
 @UnstableApi
-public interface Request extends Message, Traceable {
+public interface Request extends Message {
 
   HttpMethod method();
 
   String path();
-
-  String version();
-
-  Headers headers();
 
   default String host() {
     return headers().get(HttpHeaderNames.HOST.toString());
@@ -30,20 +26,15 @@ public interface Request extends Message, Traceable {
     return result;
   }
 
-  /**
-   * See: <a href=https://tools.ietf.org/html/rfc7540#section-5>rfc</a>
-   *
-   * @return the stream id of the http2 connection stream or -1 if http1
-   */
-  int streamId();
+  boolean keepAlive();
 
+  @Override
   default boolean hasBody() {
     return false;
   }
 
+  @Override
   default ByteBuf body() {
     return Unpooled.EMPTY_BUFFER;
   }
-
-  boolean keepAlive();
 }

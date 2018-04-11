@@ -8,9 +8,9 @@ import brave.http.HttpTracing;
 import brave.propagation.CurrentTraceContext;
 import brave.propagation.TraceContext;
 import com.xjeffrose.xio.http.Headers;
+import com.xjeffrose.xio.http.Message;
 import com.xjeffrose.xio.http.Request;
 import com.xjeffrose.xio.http.Response;
-import com.xjeffrose.xio.http.Traceable;
 import io.netty.channel.ChannelHandlerContext;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -67,8 +67,8 @@ public class HttpClientTracingDispatch extends HttpTracingState {
     popSpan(ctx).ifPresent((span -> handler.handleReceive(null, cause, span)));
   }
 
-  public void onError(ChannelHandlerContext ctx, Traceable traceable, Throwable cause) {
+  public void onError(ChannelHandlerContext ctx, Message message, Throwable cause) {
     popSpan(ctx);
-    traceable.httpTraceInfo().getSpan().ifPresent(span -> handler.handleReceive(null, cause, span));
+    message.httpTraceInfo().getSpan().ifPresent(span -> handler.handleReceive(null, cause, span));
   }
 }

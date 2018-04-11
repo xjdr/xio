@@ -62,7 +62,7 @@ public class StreamingHttp1Request implements StreamingRequest {
 
   @Override
   public int streamId() {
-    return STREAM_ID_NONE;
+    return H1_STREAM_ID_NONE;
   }
 
   @Override

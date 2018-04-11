@@ -11,7 +11,7 @@ import lombok.ToString;
 @UnstableApi
 @AutoValue
 @ToString
-public abstract class DefaultStreamingRequest implements StreamingRequest, Traceable {
+public abstract class DefaultStreamingRequest implements StreamingRequest {
 
   @Override
   public boolean startOfMessage() {
