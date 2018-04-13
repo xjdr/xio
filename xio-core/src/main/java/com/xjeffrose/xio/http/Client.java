@@ -8,8 +8,12 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelPromise;
 import io.netty.util.concurrent.PromiseCombiner;
+
+import java.net.InetSocketAddress;
 import java.util.function.Supplier;
 import lombok.extern.slf4j.Slf4j;
+
+import javax.annotation.Nullable;
 
 @Slf4j
 public class Client {
@@ -19,7 +23,6 @@ public class Client {
   private final ChannelFutureListener connectionListener;
   private final ChannelFutureListener writeListener;
   private Channel channel;
-  private ChannelFuture connectionFuture;
 
   public Client(ClientState state, Supplier<ChannelHandler> appHandler, XioTracing tracing) {
     this.state = state;
@@ -51,11 +54,15 @@ public class Client {
    * @return A ChannelFuture that succeeds on connect
    */
   public ChannelFuture connect() {
+    return connect(null);
+  }
+
+  public ChannelFuture connect(@Nullable InetSocketAddress address) {
     Bootstrap b = new Bootstrap();
     b.channel(state.channelConfig.channel());
     b.group(state.channelConfig.workerGroup());
     b.handler(clientChannelInitializer);
-    ChannelFuture connectFuture = b.connect(state.remote);
+    ChannelFuture connectFuture = b.connect(address == null ? state.remote : address);
     channel = connectFuture.channel();
     return connectFuture;
   }
