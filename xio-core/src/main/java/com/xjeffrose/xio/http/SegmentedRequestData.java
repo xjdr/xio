@@ -5,6 +5,8 @@ import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.HttpMethod;
 import lombok.ToString;
 
+import javax.annotation.Nonnull;
+
 @UnstableApi
 @ToString
 public class SegmentedRequestData implements Request, SegmentedData {
@@ -19,7 +21,7 @@ public class SegmentedRequestData implements Request, SegmentedData {
     this.traceInfo = traceInfo == null ? new TraceInfo(request.headers()) : traceInfo;
   }
 
-  public SegmentedRequestData(Request request, SegmentedData data) {
+  public SegmentedRequestData(@Nonnull Request request, SegmentedData data) {
     this(request, data, null);
   }
 

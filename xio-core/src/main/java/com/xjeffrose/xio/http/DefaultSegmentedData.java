@@ -15,6 +15,8 @@ public abstract class DefaultSegmentedData implements SegmentedData {
 
   public abstract Headers trailingHeaders();
 
+  public abstract int streamId();
+
   @AutoValue.Builder
   public abstract static class Builder {
     public abstract Builder content(ByteBuf content);
@@ -22,6 +24,8 @@ public abstract class DefaultSegmentedData implements SegmentedData {
     public abstract Builder endOfMessage(boolean isEnd);
 
     public abstract Builder trailingHeaders(Headers headers);
+
+    public abstract Builder streamId(int id);
 
     public abstract DefaultSegmentedData build();
   }

@@ -25,6 +25,8 @@ import lombok.extern.slf4j.Slf4j;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Protocol;
+import static okhttp3.Protocol.HTTP_1_1;
+import static okhttp3.Protocol.HTTP_2;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
@@ -97,9 +99,9 @@ public class ReverseProxyFunctionalTest extends Assert {
         TlsConfig.fromConfig("xio." + back + "BackendServer.settings.tls", config);
     List<Protocol> protocols;
     if (h2) {
-      protocols = Arrays.asList(Protocol.HTTP_2, Protocol.HTTP_1_1);
+      protocols = Arrays.asList(HTTP_2, HTTP_1_1);
     } else {
-      protocols = Collections.singletonList(Protocol.HTTP_1_1);
+      protocols = Collections.singletonList(HTTP_1_1);
     }
 
     server = OkHttpUnsafe.getSslMockWebServer(getKeyManagers(tlsConfig));
@@ -130,13 +132,13 @@ public class ReverseProxyFunctionalTest extends Assert {
       client =
           OkHttpUnsafe.getUnsafeClient()
               .newBuilder()
-              .protocols(Arrays.asList(Protocol.HTTP_2, Protocol.HTTP_1_1))
+              .protocols(Arrays.asList(HTTP_2, HTTP_1_1))
               .build();
     } else {
       client =
           OkHttpUnsafe.getUnsafeClient()
               .newBuilder()
-              .protocols(Arrays.asList(Protocol.HTTP_1_1))
+              .protocols(Arrays.asList(HTTP_1_1))
               .build();
     }
   }
@@ -168,18 +170,19 @@ public class ReverseProxyFunctionalTest extends Assert {
     return new MockResponse().setBody("hello, world").setSocketPolicy(SocketPolicy.KEEP_OPEN);
   }
 
-  void get(int port, boolean sanity) throws Exception {
+  void get(int port, boolean sanity, Protocol expectedProtocol) throws Exception {
     String url = url(port, sanity);
     Request request = new Request.Builder().url(url).build();
 
     server.enqueue(buildResponse());
     Response response = client.newCall(request).execute();
+    assertEquals(expectedProtocol, response.protocol());
 
     RecordedRequest servedRequest = server.takeRequest();
     assertEquals("/hello/", servedRequest.getRequestUrl().encodedPath());
   }
 
-  void post(int port, boolean sanity) throws Exception {
+  void post(int port, boolean sanity, Protocol expectedProtocol) throws Exception {
     String url = url(port, sanity);
     MediaType mediaType = MediaType.parse("text/plain");
     RequestBody body = RequestBody.create(mediaType, "this is the post body");
@@ -187,6 +190,8 @@ public class ReverseProxyFunctionalTest extends Assert {
 
     server.enqueue(buildResponse());
     Response response = client.newCall(request).execute();
+    assertEquals("unexpected client response protocol",
+      expectedProtocol, response.protocol());
 
     RecordedRequest servedRequest = server.takeRequest();
     assertEquals("/hello/", servedRequest.getRequestUrl().encodedPath());
@@ -198,7 +203,7 @@ public class ReverseProxyFunctionalTest extends Assert {
     setupClient(false);
     setupBack(false);
 
-    get(server.getPort(), true);
+    get(server.getPort(), true, HTTP_1_1);
   }
 
   @Test
@@ -206,7 +211,7 @@ public class ReverseProxyFunctionalTest extends Assert {
     setupClient(false);
     setupBack(false);
 
-    post(server.getPort(), true);
+    post(server.getPort(), true, HTTP_1_1);
   }
 
   @Test
@@ -214,7 +219,7 @@ public class ReverseProxyFunctionalTest extends Assert {
     setupClient(true);
     setupBack(true);
 
-    get(server.getPort(), true);
+    get(server.getPort(), true, HTTP_2);
   }
 
   @Test
@@ -222,7 +227,7 @@ public class ReverseProxyFunctionalTest extends Assert {
     setupClient(true);
     setupBack(true);
 
-    post(server.getPort(), true);
+    post(server.getPort(), true, HTTP_2);
   }
 
   @Test
@@ -230,7 +235,7 @@ public class ReverseProxyFunctionalTest extends Assert {
     setupClient(true);
     setupFrontBack(true, false);
 
-    get(port(), false);
+    get(port(), false, HTTP_2);
   }
 
   @Test
@@ -238,7 +243,7 @@ public class ReverseProxyFunctionalTest extends Assert {
     setupClient(true);
     setupFrontBack(true, false);
 
-    post(port(), false);
+    post(port(), false, HTTP_2);
   }
 
   @Test
@@ -246,7 +251,7 @@ public class ReverseProxyFunctionalTest extends Assert {
     setupClient(false);
     setupFrontBack(false, true);
 
-    get(port(), false);
+    get(port(), false, HTTP_1_1);
   }
 
   @Test
@@ -254,6 +259,6 @@ public class ReverseProxyFunctionalTest extends Assert {
     setupClient(false);
     setupFrontBack(false, true);
 
-    post(port(), false);
+    post(port(), false, HTTP_1_1);
   }
 }

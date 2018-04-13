@@ -1,6 +1,7 @@
 package com.xjeffrose.xio.http.internal;
 
 import com.xjeffrose.xio.http.Headers;
+import com.xjeffrose.xio.http.Message;
 import com.xjeffrose.xio.http.SegmentedData;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.HttpContent;
@@ -32,6 +33,11 @@ public class Http1SegmentedData implements SegmentedData {
     this.content = content;
     eos = content instanceof LastHttpContent;
     trailingHeaders = buildHeaders(content);
+  }
+
+  @Override
+  public int streamId() {
+    return Message.H1_STREAM_ID_NONE;
   }
 
   public ByteBuf content() {
