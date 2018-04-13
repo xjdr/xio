@@ -10,8 +10,8 @@ import javax.net.ssl.KeyManagerFactory;
 public class TlsHelper {
 
   /**
-   * Creates a {@link KeyManager[]} for use in the test utility
-   * {@link OkHttpUnsafe#getSslMockWebServer(KeyManager[])}
+   * Creates a {@link KeyManager[]} for use in the test utility {@link
+   * OkHttpUnsafe#getSslMockWebServer(KeyManager[])}
    */
   public static KeyManager[] getKeyManagers() throws Exception {
     TlsConfig tlsConfig = TlsConfig.fromConfig("xio.tlsConfig", ConfigFactory.load());

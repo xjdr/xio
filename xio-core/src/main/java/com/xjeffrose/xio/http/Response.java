@@ -11,11 +11,6 @@ public interface Response extends Message {
   HttpResponseStatus status();
 
   @Override
-  default int streamId() {
-    return H1_STREAM_ID_NONE;
-  }
-
-  @Override
   default boolean hasBody() {
     return false;
   }

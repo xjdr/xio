@@ -24,6 +24,7 @@ import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.util.AttributeKey;
+import javax.annotation.Nullable;
 import lombok.extern.slf4j.Slf4j;
 
 @UnstableApi
@@ -42,14 +43,26 @@ public class Http1ClientCodec extends ChannelDuplexHandler {
     return ctx.channel().attr(CHANNEL_RESPONSE_KEY).get();
   }
 
+  private static final AttributeKey<Integer> CHANNEL_STREAM_ID_KEY =
+      AttributeKey.newInstance("xio_channel_stream_id");
+
+  private static void setChannelStreamId(ChannelHandlerContext ctx, Integer streamId) {
+    ctx.channel().attr(CHANNEL_STREAM_ID_KEY).set(streamId);
+  }
+
+  @Nullable
+  private static Integer getChannelStreamId(ChannelHandlerContext ctx) {
+    return ctx.channel().attr(CHANNEL_STREAM_ID_KEY).get();
+  }
+
   Response wrapResponse(ChannelHandlerContext ctx, HttpObject msg) {
     log.debug("wrapResponse msg={}", msg);
     if (msg instanceof FullHttpResponse) {
-      Response response = new FullHttp1Response((FullHttpResponse) msg);
+      Response response = new FullHttp1Response((FullHttpResponse) msg, getChannelStreamId(ctx));
       setChannelResponse(ctx, response);
       return response;
     } else if (msg instanceof HttpResponse) {
-      Response response = new SegmentedHttp1Response((HttpResponse) msg);
+      Response response = new SegmentedHttp1Response((HttpResponse) msg, getChannelStreamId(ctx));
       setChannelResponse(ctx, response);
       return response;
     } else if (msg instanceof HttpContent) {
@@ -82,10 +95,8 @@ public class Http1ClientCodec extends ChannelDuplexHandler {
 
     if (request instanceof FullRequest) {
       FullRequest full = (FullRequest) request;
-      ByteBuf content;
-      if (full.body() != null) {
-        content = full.body();
-      } else {
+      ByteBuf content = full.body();
+      if (content == null) {
         content = Unpooled.EMPTY_BUFFER;
       }
       if (!full.headers().contains(HttpHeaderNames.CONTENT_LENGTH)) {
@@ -131,9 +142,14 @@ public class Http1ClientCodec extends ChannelDuplexHandler {
       throws Exception {
     log.debug("write: msg={}", msg);
     if (msg instanceof SegmentedData) {
+      // todo: WBK set stream id
       ctx.write(buildContent(ctx, (SegmentedData) msg), promise);
     } else if (msg instanceof Request) {
-      log.debug("writing request {}", msg);
+      Request request = (Request) msg;
+      log.debug("writing request {}", request);
+      if (request.streamId() != Message.H1_STREAM_ID_NONE) {
+        setChannelStreamId(ctx, request.streamId());
+      }
       ctx.write(buildRequest(ctx, (Request) msg), promise);
     } else {
       ctx.write(msg, promise);

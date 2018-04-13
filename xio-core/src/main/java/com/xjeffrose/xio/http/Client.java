@@ -8,12 +8,10 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelPromise;
 import io.netty.util.concurrent.PromiseCombiner;
-
 import java.net.InetSocketAddress;
 import java.util.function.Supplier;
-import lombok.extern.slf4j.Slf4j;
-
 import javax.annotation.Nullable;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class Client {
