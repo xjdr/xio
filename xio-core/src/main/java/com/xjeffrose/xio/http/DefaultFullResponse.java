@@ -33,6 +33,11 @@ public abstract class DefaultFullResponse implements FullResponse {
 
   public abstract TraceInfo httpTraceInfo();
 
+  @Override
+  public int streamId() {
+    return Message.H1_STREAM_ID_NONE;
+  }
+
   /** Not intended to be called. */
   @Override
   public String version() {

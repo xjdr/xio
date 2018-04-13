@@ -19,6 +19,11 @@ public abstract class DefaultSegmentedResponse implements SegmentedResponse {
   public abstract TraceInfo httpTraceInfo();
 
   @Override
+  public int streamId() {
+    return Message.H1_STREAM_ID_NONE;
+  }
+
+  @Override
   public boolean startOfMessage() {
     return true;
   }
