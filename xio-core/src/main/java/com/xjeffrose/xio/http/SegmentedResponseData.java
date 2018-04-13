@@ -27,6 +27,11 @@ public class SegmentedResponseData implements Response, SegmentedData {
   // region Response
 
   @Override
+  public int streamId() {
+    return response.streamId();
+  }
+
+  @Override
   public HttpResponseStatus status() {
     return response.status();
   }
