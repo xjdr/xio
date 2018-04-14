@@ -85,6 +85,7 @@ public abstract class XioBasePipeline implements XioPipelineFragment {
       throw new RuntimeException("No codec configured");
     }
     addHandler(pipeline, "application codec", getApplicationCodec());
+    // TODO(brian): add metric handler here
     addHandler(pipeline, "distributed tracing", state.tracingHandler(appState));
     addHandler(pipeline, "application router", getApplicationRouter());
     addHandler(pipeline, "authentication handler", getAuthenticationHandler());
