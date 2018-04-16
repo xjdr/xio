@@ -41,7 +41,8 @@ public class MetricsHandler extends ChannelDuplexHandler {
   }
 
   @Override
-  public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
+  public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise)
+      throws Exception {
     super.write(ctx, msg, promise);
 
     if (msg instanceof Response) {

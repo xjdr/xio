@@ -9,7 +9,6 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,24 +25,18 @@ public class MetricsHandlerTest extends Assert {
     MetricsHandler metricsHandler = new MetricsHandler(metricRegistry);
 
     channel = new EmbeddedChannel();
-    channel
-      .pipeline()
-      .addLast(metricsHandler);
-  }
-
-  @After
-  public void tearDown() {
-
+    channel.pipeline().addLast(metricsHandler);
   }
 
   @Test
   public void testRequestsMeter() {
-    DefaultFullRequest request = DefaultFullRequest.builder()
-      .body(Unpooled.EMPTY_BUFFER)
-      .headers(new DefaultHeaders())
-      .method(HttpMethod.GET)
-      .path("/foo")
-      .build();
+    DefaultFullRequest request =
+        DefaultFullRequest.builder()
+            .body(Unpooled.EMPTY_BUFFER)
+            .headers(new DefaultHeaders())
+            .method(HttpMethod.GET)
+            .path("/foo")
+            .build();
 
     channel.writeInbound(request);
     channel.runPendingTasks();
@@ -108,9 +101,9 @@ public class MetricsHandlerTest extends Assert {
 
   private DefaultFullResponse buildResponse(HttpResponseStatus httpResponseStatus) {
     return DefaultFullResponse.builder()
-      .body(Unpooled.EMPTY_BUFFER)
-      .headers(new DefaultHeaders())
-      .status(httpResponseStatus)
-      .build();
+        .body(Unpooled.EMPTY_BUFFER)
+        .headers(new DefaultHeaders())
+        .status(httpResponseStatus)
+        .build();
   }
 }
