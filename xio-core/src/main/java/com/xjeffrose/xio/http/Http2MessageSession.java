@@ -10,7 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * A finite state machine to track the current HTTP/2 message session. This class exists to store
- * the connection specific state of the message session
+ * the connection specific state of the message session per connection stream id.
  */
 @Slf4j
 public class Http2MessageSession {
@@ -18,7 +18,7 @@ public class Http2MessageSession {
   private static final AttributeKey<Http2MessageSession> CHANNEL_MESSAGE_SESSION_KEY =
       AttributeKey.newInstance("xio_channel_h2_message_session");
 
-  static Http2MessageSession contextMessageSession(ChannelHandlerContext ctx) {
+  static Http2MessageSession lazyCreateSession(ChannelHandlerContext ctx) {
     Http2MessageSession session = ctx.channel().attr(CHANNEL_MESSAGE_SESSION_KEY).get();
     if (session == null) {
       session = new Http2MessageSession();
@@ -38,7 +38,9 @@ public class Http2MessageSession {
         streamIdRequests.put(
             request.streamId(), new MessageMetaState(request, request.endOfMessage()));
       } else {
-        log.error("Received an h2 message segment without a startOfMessage - request: {}", request);
+        log.error(
+            "Received an h2 message segment without initial startOfMessage == true - request: {}",
+            request);
       }
     } else {
       initialRequest.requestFinished = request.endOfMessage();
@@ -99,8 +101,8 @@ public class Http2MessageSession {
   }
 
   /**
-   * Check if the message session has completed, if so remove state and prepare for the next
-   * session.
+   * Check if the message session has completed for a given streamId, if so remove the message
+   * state.
    */
   public void flush(int streamId) {
     MessageMetaState initialRequest = streamIdRequests.get(streamId);

@@ -347,13 +347,13 @@ public class Http2ServerCodecUnitTest extends Assert {
     // given an h2 request
     Http2Request requestInitial1 =
         Http2Request.build(streamIdOne, new DefaultHttp2Headers().method("GET").path("/"), false);
-    Http2Request requestSubsequential1 =
+    Http2Request requestSubSequential1 =
         Http2Request.build(streamIdOne, new DefaultHttp2DataFrame(Unpooled.EMPTY_BUFFER), true);
 
     // given another h2 request
     Http2Request requestInitial2 =
         Http2Request.build(streamIdTwo, new DefaultHttp2Headers().method("POST").path("/"), false);
-    Http2Request requestSubsequential2 =
+    Http2Request requestSubSequential2 =
         Http2Request.build(streamIdTwo, new DefaultHttp2DataFrame(Unpooled.EMPTY_BUFFER), true);
 
     // given an h2 response
@@ -379,16 +379,16 @@ public class Http2ServerCodecUnitTest extends Assert {
     // when the 2 requests are interleaved
     channel.writeInbound(requestInitial1);
     channel.writeInbound(requestInitial2);
-    channel.writeInbound(requestSubsequential1);
-    channel.writeInbound(requestSubsequential2);
+    channel.writeInbound(requestSubSequential1);
+    channel.writeInbound(requestSubSequential2);
     channel.runPendingTasks(); // blocks
 
     // and responses are interleaved
-    channel.runPendingTasks(); // blocks
     channel.writeOutbound(responseInitial1);
     channel.writeOutbound(responseInitial2);
     channel.writeOutbound(responseSubSequential1);
     channel.writeOutbound(responseSubSequential2);
+    channel.runPendingTasks(); // blocks
 
     // then the first stream id responses should be correct
     {
