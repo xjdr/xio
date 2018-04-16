@@ -1,6 +1,6 @@
 package com.xjeffrose.xio.http;
 
-import static com.xjeffrose.xio.http.Http2MessageSession.contextMessageSession;
+import static com.xjeffrose.xio.http.Http2MessageSession.lazyCreateSession;
 
 import com.xjeffrose.xio.core.internal.UnstableApi;
 import com.xjeffrose.xio.http.internal.FullHttp2Request;
@@ -28,7 +28,7 @@ public class Http2ServerCodec extends ChannelDuplexHandler {
   }
 
   Request wrapRequest(ChannelHandlerContext ctx, Http2Request msg) {
-    Http2MessageSession messageSession = contextMessageSession(ctx);
+    Http2MessageSession messageSession = lazyCreateSession(ctx);
     if (msg.payload instanceof Http2Headers) {
       Http2Headers headers = (Http2Headers) msg.payload;
       if (msg.eos && headers.method() == null && headers.status() == null) {
@@ -75,7 +75,7 @@ public class Http2ServerCodec extends ChannelDuplexHandler {
       response.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/plain; charset=UTF-8");
     }
 
-    Http2MessageSession messageSession = contextMessageSession(ctx);
+    Http2MessageSession messageSession = lazyCreateSession(ctx);
     int streamId = response.streamId();
     Http2Headers headers = response.headers().http2Headers();
 
@@ -101,7 +101,7 @@ public class Http2ServerCodec extends ChannelDuplexHandler {
   }
 
   void writeContent(ChannelHandlerContext ctx, SegmentedData data, ChannelPromise promise) {
-    Http2MessageSession messageSession = contextMessageSession(ctx);
+    Http2MessageSession messageSession = lazyCreateSession(ctx);
     messageSession.onResponseData(data);
 
     boolean dataEos = data.endOfMessage() && data.trailingHeaders().size() == 0;
