@@ -17,6 +17,7 @@ import io.netty.handler.codec.http2.DefaultHttp2DataFrame;
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.Http2DataFrame;
 import io.netty.handler.codec.http2.Http2Headers;
+import io.netty.util.CharsetUtil;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -333,6 +334,101 @@ public class Http2ServerCodecUnitTest extends Assert {
     assertEquals(body2, ((Http2DataFrame) bodyOut2.payload).content());
     assertTrue(bodyOut2.eos);
     assertEquals(1, bodyOut2.streamId);
+  }
+
+  @Test
+  public void testInterleavedStreamingMessages() throws Exception {
+    outputReceived = new CountDownLatch(4);
+
+    // given two streams
+    int streamIdOne = 1;
+    int streamIdTwo = 2;
+
+    // given an h2 request
+    Http2Request requestInitial1 =
+        Http2Request.build(streamIdOne, new DefaultHttp2Headers().method("GET").path("/"), false);
+    Http2Request requestSubsequential1 =
+        Http2Request.build(streamIdOne, new DefaultHttp2DataFrame(Unpooled.EMPTY_BUFFER), true);
+
+    // given another h2 request
+    Http2Request requestInitial2 =
+        Http2Request.build(streamIdTwo, new DefaultHttp2Headers().method("POST").path("/"), false);
+    Http2Request requestSubsequential2 =
+        Http2Request.build(streamIdTwo, new DefaultHttp2DataFrame(Unpooled.EMPTY_BUFFER), true);
+
+    // given an h2 response
+    Http2Response responseInitial1 =
+        Http2Response.build(streamIdOne, new DefaultHttp2Headers().status(OK.codeAsText()));
+    Http2Response responseSubSequential1 =
+        Http2Response.build(
+            streamIdOne,
+            new DefaultHttp2DataFrame(
+                ByteBufUtil.writeUtf8(UnpooledByteBufAllocator.DEFAULT, "body1"), true),
+            true);
+
+    // given another h2 response
+    Http2Response responseInitial2 =
+        Http2Response.build(streamIdTwo, new DefaultHttp2Headers().status(CREATED.codeAsText()));
+    Http2Response responseSubSequential2 =
+        Http2Response.build(
+            streamIdTwo,
+            new DefaultHttp2DataFrame(
+                ByteBufUtil.writeUtf8(UnpooledByteBufAllocator.DEFAULT, "body2"), true),
+            true);
+
+    // when the 2 requests are interleaved
+    channel.writeInbound(requestInitial1);
+    channel.writeInbound(requestInitial2);
+    channel.writeInbound(requestSubsequential1);
+    channel.writeInbound(requestSubsequential2);
+    channel.runPendingTasks(); // blocks
+
+    // and responses are interleaved
+    channel.runPendingTasks(); // blocks
+    channel.writeOutbound(responseInitial1);
+    channel.writeOutbound(responseInitial2);
+    channel.writeOutbound(responseSubSequential1);
+    channel.writeOutbound(responseSubSequential2);
+
+    // then the first stream id responses should be correct
+    {
+      Http2Response headersOut = responses.get(0);
+      Http2Response bodyOut = responses.get(2);
+
+      assertNotNull(headersOut);
+      assertTrue(headersOut.payload instanceof Http2Headers);
+      assertEquals("200", ((Http2Headers) headersOut.payload).status().toString());
+      assertFalse(headersOut.eos);
+      assertEquals(streamIdOne, headersOut.streamId);
+
+      assertNotNull(bodyOut);
+      assertTrue(bodyOut.payload instanceof Http2DataFrame);
+      assertTrue(bodyOut.eos);
+      assertEquals(
+          "body1", ((Http2DataFrame) bodyOut.payload).content().toString(CharsetUtil.UTF_8));
+      assertEquals(streamIdOne, bodyOut.streamId);
+    }
+
+    // then the second stream id responses should be correct
+    {
+      Http2Response headersOut = responses.get(1);
+      Http2Response bodyOut = responses.get(3);
+
+      assertNotNull(headersOut);
+      assertTrue(headersOut.payload instanceof Http2Headers);
+      assertEquals("201", ((Http2Headers) headersOut.payload).status().toString());
+      assertFalse(headersOut.eos);
+      assertEquals(streamIdTwo, headersOut.streamId);
+
+      assertNotNull(bodyOut);
+      assertTrue(bodyOut.payload instanceof Http2DataFrame);
+      assertTrue(bodyOut.eos);
+      assertEquals(
+          "body2", ((Http2DataFrame) bodyOut.payload).content().toString(CharsetUtil.UTF_8));
+      assertEquals(streamIdTwo, bodyOut.streamId);
+    }
+
+    responses.clear();
   }
 
   @Test
