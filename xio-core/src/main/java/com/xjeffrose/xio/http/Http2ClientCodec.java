@@ -43,20 +43,17 @@ public class Http2ClientCodec extends ChannelDuplexHandler {
     if (msg.payload instanceof Http2Headers) {
       Http2Headers headers = (Http2Headers) msg.payload;
       if (msg.eos && headers.method() == null && headers.status() == null) {
-        Response response =
-            new SegmentedResponseData(getChannelResponse(ctx), new Http2SegmentedData(headers));
-        return response;
+        return new SegmentedResponseData(
+            getChannelResponse(ctx), new Http2SegmentedData(headers, msg.streamId));
       } else {
         Response response = wrapHeaders(headers, msg.streamId, msg.eos);
         setChannelResponse(ctx, response);
         return response;
       }
     } else if (msg.payload instanceof Http2DataFrame) {
-      Response response =
-          new SegmentedResponseData(
-              getChannelResponse(ctx),
-              new Http2SegmentedData(((Http2DataFrame) msg.payload).content(), msg.eos));
-      return response;
+      return new SegmentedResponseData(
+          getChannelResponse(ctx),
+          new Http2SegmentedData(((Http2DataFrame) msg.payload).content(), msg.eos, msg.streamId));
     }
     // TODO(CK): throw an exception?
     return null;

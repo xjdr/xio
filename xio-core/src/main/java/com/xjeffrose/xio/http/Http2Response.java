@@ -21,18 +21,18 @@ public class Http2Response<T> {
 
   public static Http2Response<Http2DataFrame> build(
       int streamId, Http2DataFrame data, boolean eos) {
-    return new Http2Response<Http2DataFrame>(streamId, data, eos);
+    return new Http2Response<>(streamId, data, eos);
   }
 
   public static Http2Response<Http2Headers> build(int streamId, Http2Headers headers) {
-    return new Http2Response<Http2Headers>(streamId, headers, false);
+    return new Http2Response<>(streamId, headers, false);
   }
 
   public static Http2Response<Http2Headers> build(int streamId, Http2Headers headers, boolean eos) {
-    return new Http2Response<Http2Headers>(streamId, headers, eos);
+    return new Http2Response<>(streamId, headers, eos);
   }
 
-  public Http2Response newStreamId(int newId) {
-    return new Http2Response(newId, payload, eos);
+  public Http2Response<T> newStreamId(int newId) {
+    return new Http2Response<>(newId, payload, eos);
   }
 }

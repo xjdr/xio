@@ -3,6 +3,7 @@ package com.xjeffrose.xio.http;
 import com.xjeffrose.xio.core.internal.UnstableApi;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.HttpMethod;
+import javax.annotation.Nonnull;
 import lombok.ToString;
 
 @UnstableApi
@@ -19,7 +20,7 @@ public class SegmentedRequestData implements Request, SegmentedData {
     this.traceInfo = traceInfo == null ? new TraceInfo(request.headers()) : traceInfo;
   }
 
-  public SegmentedRequestData(Request request, SegmentedData data) {
+  public SegmentedRequestData(@Nonnull Request request, SegmentedData data) {
     this(request, data, null);
   }
 
