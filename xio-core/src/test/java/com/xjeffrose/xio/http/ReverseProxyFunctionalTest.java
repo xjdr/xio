@@ -1,6 +1,8 @@
 package com.xjeffrose.xio.http;
 
 import static com.xjeffrose.xio.helpers.TlsHelper.getKeyManagers;
+import static okhttp3.Protocol.HTTP_1_1;
+import static okhttp3.Protocol.HTTP_2;
 
 import com.google.common.collect.ImmutableMap;
 import com.typesafe.config.Config;
@@ -25,8 +27,6 @@ import lombok.extern.slf4j.Slf4j;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Protocol;
-import static okhttp3.Protocol.HTTP_1_1;
-import static okhttp3.Protocol.HTTP_2;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
@@ -136,10 +136,7 @@ public class ReverseProxyFunctionalTest extends Assert {
               .build();
     } else {
       client =
-          OkHttpUnsafe.getUnsafeClient()
-              .newBuilder()
-              .protocols(Arrays.asList(HTTP_1_1))
-              .build();
+          OkHttpUnsafe.getUnsafeClient().newBuilder().protocols(Arrays.asList(HTTP_1_1)).build();
     }
   }
 
@@ -190,8 +187,7 @@ public class ReverseProxyFunctionalTest extends Assert {
 
     server.enqueue(buildResponse());
     Response response = client.newCall(request).execute();
-    assertEquals("unexpected client response protocol",
-      expectedProtocol, response.protocol());
+    assertEquals("unexpected client response protocol", expectedProtocol, response.protocol());
 
     RecordedRequest servedRequest = server.takeRequest();
     assertEquals("/hello/", servedRequest.getRequestUrl().encodedPath());

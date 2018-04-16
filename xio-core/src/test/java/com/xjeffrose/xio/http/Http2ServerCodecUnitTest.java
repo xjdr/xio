@@ -73,13 +73,13 @@ public class Http2ServerCodecUnitTest extends Assert {
 
     Request requestOut = requests.remove(0);
 
-    assertTrue(requestOut != null);
+    assertNotNull(requestOut);
     assertTrue(requestOut instanceof FullRequest);
     assertEquals("h2", requestOut.version());
     assertEquals(HttpMethod.GET, requestOut.method());
     assertEquals("/", requestOut.path());
     assertFalse(requestOut.hasBody());
-    assertFalse(requestOut.body() == null);
+    assertNotNull(requestOut.body());
     assertEquals(0, requestOut.body().readableBytes());
     assertEquals(1, requestOut.streamId());
   }
@@ -105,40 +105,40 @@ public class Http2ServerCodecUnitTest extends Assert {
 
     Request requestOut = requests.remove(0);
 
-    assertTrue(requestOut != null);
+    assertNotNull(requestOut);
     assertTrue(requestOut instanceof SegmentedRequest);
     assertEquals("h2", requestOut.version());
     assertEquals(HttpMethod.POST, requestOut.method());
     assertEquals("/", requestOut.path());
     assertFalse(requestOut.hasBody());
-    assertFalse(requestOut.body() == null);
+    assertNotNull(requestOut.body());
     assertEquals(0, requestOut.body().readableBytes());
 
     Request bodyOut1 = requests.remove(0);
 
-    assertTrue(bodyOut1 != null);
+    assertNotNull(bodyOut1);
     assertTrue(bodyOut1 instanceof SegmentedRequestData);
     assertEquals("h2", bodyOut1.version());
     assertEquals(HttpMethod.POST, bodyOut1.method());
     assertEquals("/", bodyOut1.path());
     assertFalse(bodyOut1.hasBody());
-    assertFalse(bodyOut1.body() == null);
-    assertFalse(((SegmentedRequestData) bodyOut1).content() == null);
+    assertNotNull(bodyOut1.body());
+    assertNotNull(((SegmentedRequestData) bodyOut1).content());
     assertEquals(body1, ((SegmentedRequestData) bodyOut1).content());
-    assertFalse(((SegmentedRequestData) bodyOut1).endOfMessage());
+    assertFalse(bodyOut1.endOfMessage());
 
     Request bodyOut2 = requests.remove(0);
 
-    assertTrue(bodyOut2 != null);
+    assertNotNull(bodyOut2);
     assertTrue(bodyOut2 instanceof SegmentedRequestData);
     assertEquals("h2", bodyOut2.version());
     assertEquals(HttpMethod.POST, bodyOut2.method());
     assertEquals("/", bodyOut2.path());
     assertFalse(bodyOut2.hasBody());
-    assertFalse(bodyOut2.body() == null);
-    assertFalse(((SegmentedRequestData) bodyOut2).content() == null);
+    assertNotNull(bodyOut2.body());
+    assertNotNull(((SegmentedRequestData) bodyOut2).content());
     assertEquals(body2, ((SegmentedRequestData) bodyOut2).content());
-    assertTrue(((SegmentedRequestData) bodyOut2).endOfMessage());
+    assertTrue(bodyOut2.endOfMessage());
   }
 
   @Test
@@ -165,54 +165,54 @@ public class Http2ServerCodecUnitTest extends Assert {
 
     Request requestOut = requests.remove(0);
 
-    assertTrue(requestOut != null);
+    assertNotNull(requestOut);
     assertTrue(requestOut instanceof SegmentedRequest);
     assertEquals("h2", requestOut.version());
     assertEquals(HttpMethod.POST, requestOut.method());
     assertEquals("/", requestOut.path());
     assertFalse(requestOut.hasBody());
-    assertFalse(requestOut.body() == null);
+    assertNotNull(requestOut.body());
     assertEquals(0, requestOut.body().readableBytes());
 
     Request bodyOut1 = requests.remove(0);
 
-    assertTrue(bodyOut1 != null);
+    assertNotNull(bodyOut1);
     assertTrue(bodyOut1 instanceof SegmentedRequestData);
     assertEquals("h2", bodyOut1.version());
     assertEquals(HttpMethod.POST, bodyOut1.method());
     assertEquals("/", bodyOut1.path());
     assertFalse(bodyOut1.hasBody());
-    assertFalse(bodyOut1.body() == null);
-    assertFalse(((SegmentedRequestData) bodyOut1).content() == null);
+    assertNotNull(bodyOut1.body());
+    assertNotNull(((SegmentedRequestData) bodyOut1).content());
     assertEquals(body1, ((SegmentedRequestData) bodyOut1).content());
-    assertFalse(((SegmentedRequestData) bodyOut1).endOfMessage());
+    assertFalse(bodyOut1.endOfMessage());
 
     Request bodyOut2 = requests.remove(0);
 
-    assertTrue(bodyOut2 != null);
+    assertNotNull(bodyOut2);
     assertTrue(bodyOut2 instanceof SegmentedRequestData);
     assertEquals("h2", bodyOut2.version());
     assertEquals(HttpMethod.POST, bodyOut2.method());
     assertEquals("/", bodyOut2.path());
     assertFalse(bodyOut2.hasBody());
-    assertFalse(bodyOut2.body() == null);
-    assertFalse(((SegmentedRequestData) bodyOut2).content() == null);
+    assertNotNull(bodyOut2.body());
+    assertNotNull(((SegmentedRequestData) bodyOut2).content());
     assertEquals(body2, ((SegmentedRequestData) bodyOut2).content());
-    assertFalse(((SegmentedRequestData) bodyOut2).endOfMessage());
+    assertFalse(bodyOut2.endOfMessage());
 
     Request trailersOut = requests.remove(0);
 
-    assertTrue(trailersOut != null);
+    assertNotNull(trailersOut);
     assertTrue(trailersOut instanceof SegmentedRequestData);
     assertEquals("h2", trailersOut.version());
     assertEquals(HttpMethod.POST, trailersOut.method());
     assertEquals("/", trailersOut.path());
     assertFalse(trailersOut.hasBody());
-    assertFalse(trailersOut.body() == null);
+    assertNotNull(trailersOut.body());
     assertEquals(0, trailersOut.body().readableBytes());
     assertEquals(1, ((SegmentedRequestData) trailersOut).trailingHeaders().size());
     assertEquals("bar", ((SegmentedRequestData) trailersOut).trailingHeaders().get("foo"));
-    assertTrue(((SegmentedRequestData) trailersOut).endOfMessage());
+    assertTrue(trailersOut.endOfMessage());
   }
 
   @Test
@@ -220,7 +220,8 @@ public class Http2ServerCodecUnitTest extends Assert {
     outputReceived = new CountDownLatch(2);
     Http2Headers headersIn = new DefaultHttp2Headers().method("GET").path("/");
     Http2Request requestIn = Http2Request.build(1, headersIn, true);
-    FullResponse responseIn = ResponseBuilders.newOk().body(Unpooled.EMPTY_BUFFER).build();
+    FullResponse responseIn =
+        ResponseBuilders.newOk().streamId(1).body(Unpooled.EMPTY_BUFFER).build();
 
     channel.writeInbound(requestIn);
     channel.runPendingTasks(); // blocks
@@ -230,9 +231,9 @@ public class Http2ServerCodecUnitTest extends Assert {
 
     Uninterruptibles.awaitUninterruptibly(outputReceived);
 
-    Http2Response responseOut = (Http2Response) responses.remove(0);
+    Http2Response responseOut = responses.remove(0);
 
-    assertTrue(responseOut != null);
+    assertNotNull(responseOut);
     assertTrue(responseOut.payload instanceof Http2Headers);
     assertEquals("200", ((Http2Headers) responseOut.payload).status().toString());
     assertTrue(responseOut.eos);
@@ -246,7 +247,7 @@ public class Http2ServerCodecUnitTest extends Assert {
 
     Http2Headers headersIn = new DefaultHttp2Headers().method("GET").path("/");
     Http2Request requestIn = Http2Request.build(1, headersIn, true);
-    FullResponse responseIn = ResponseBuilders.newOk().body(body).build();
+    FullResponse responseIn = ResponseBuilders.newOk().streamId(1).body(body).build();
 
     channel.writeInbound(requestIn);
     channel.runPendingTasks(); // blocks
@@ -256,17 +257,17 @@ public class Http2ServerCodecUnitTest extends Assert {
 
     Uninterruptibles.awaitUninterruptibly(outputReceived);
 
-    Http2Response responseOut = (Http2Response) responses.remove(0);
+    Http2Response responseOut = responses.remove(0);
 
-    assertTrue(responseOut != null);
+    assertNotNull(responseOut);
     assertTrue(responseOut.payload instanceof Http2Headers);
     assertEquals("200", ((Http2Headers) responseOut.payload).status().toString());
     assertFalse(responseOut.eos);
     assertEquals(1, responseOut.streamId);
 
-    Http2Response bodyOut1 = (Http2Response) responses.remove(0);
+    Http2Response bodyOut1 = responses.remove(0);
 
-    assertTrue(bodyOut1 != null);
+    assertNotNull(bodyOut1);
     assertTrue(bodyOut1.payload instanceof Http2DataFrame);
     assertEquals(body, ((Http2DataFrame) bodyOut1.payload).content());
     assertTrue(bodyOut1.eos);
@@ -280,14 +281,21 @@ public class Http2ServerCodecUnitTest extends Assert {
     Http2Request requestIn = Http2Request.build(1, headersIn, true);
 
     SegmentedResponse responseIn =
-        DefaultSegmentedResponse.builder().status(OK).headers(new DefaultHeaders()).build();
+        DefaultSegmentedResponse.builder()
+            .streamId(1)
+            .status(OK)
+            .headers(new DefaultHeaders())
+            .build();
+
     ByteBuf body1 = ByteBufUtil.writeUtf8(UnpooledByteBufAllocator.DEFAULT, "body1");
     SegmentedData content =
-        DefaultSegmentedData.builder().content(body1).endOfMessage(false).build();
+        DefaultSegmentedData.builder().streamId(1).content(body1).endOfMessage(false).build();
+
     ByteBuf body2 = ByteBufUtil.writeUtf8(UnpooledByteBufAllocator.DEFAULT, "body2");
     SegmentedData lastContent =
         DefaultSegmentedData.builder()
             .content(body2)
+            .streamId(1)
             .endOfMessage(true)
             .trailingHeaders(new DefaultHeaders())
             .build();
@@ -302,25 +310,25 @@ public class Http2ServerCodecUnitTest extends Assert {
 
     Uninterruptibles.awaitUninterruptibly(outputReceived);
 
-    Http2Response responseOut = (Http2Response) responses.remove(0);
+    Http2Response responseOut = responses.remove(0);
 
-    assertTrue(responseOut != null);
+    assertNotNull(responseOut);
     assertTrue(responseOut.payload instanceof Http2Headers);
     assertEquals("200", ((Http2Headers) responseOut.payload).status().toString());
     assertFalse(responseOut.eos);
     assertEquals(1, responseOut.streamId);
 
-    Http2Response bodyOut1 = (Http2Response) responses.remove(0);
+    Http2Response bodyOut1 = responses.remove(0);
 
-    assertTrue(bodyOut1 != null);
+    assertNotNull(bodyOut1);
     assertTrue(bodyOut1.payload instanceof Http2DataFrame);
     assertEquals(body1, ((Http2DataFrame) bodyOut1.payload).content());
     assertFalse(bodyOut1.eos);
     assertEquals(1, bodyOut1.streamId);
 
-    Http2Response bodyOut2 = (Http2Response) responses.remove(0);
+    Http2Response bodyOut2 = responses.remove(0);
 
-    assertTrue(bodyOut2 != null);
+    assertNotNull(bodyOut2);
     assertTrue(bodyOut2.payload instanceof Http2DataFrame);
     assertEquals(body2, ((Http2DataFrame) bodyOut2.payload).content());
     assertTrue(bodyOut2.eos);
@@ -334,14 +342,19 @@ public class Http2ServerCodecUnitTest extends Assert {
     Http2Request requestIn = Http2Request.build(1, headersIn, true);
 
     SegmentedResponse responseIn =
-        DefaultSegmentedResponse.builder().status(OK).headers(new DefaultHeaders()).build();
+        DefaultSegmentedResponse.builder()
+            .status(OK)
+            .streamId(1)
+            .headers(new DefaultHeaders())
+            .build();
     ByteBuf body1 = ByteBufUtil.writeUtf8(UnpooledByteBufAllocator.DEFAULT, "body1");
     SegmentedData content =
-        DefaultSegmentedData.builder().content(body1).endOfMessage(false).build();
+        DefaultSegmentedData.builder().streamId(1).content(body1).endOfMessage(false).build();
     ByteBuf body2 = ByteBufUtil.writeUtf8(UnpooledByteBufAllocator.DEFAULT, "body2");
     SegmentedData lastContent =
         DefaultSegmentedData.builder()
             .content(body2)
+            .streamId(1)
             .endOfMessage(true)
             .trailingHeaders(new DefaultHeaders().set("foo", "bar"))
             .build();
@@ -356,25 +369,25 @@ public class Http2ServerCodecUnitTest extends Assert {
 
     Uninterruptibles.awaitUninterruptibly(outputReceived);
 
-    Http2Response responseOut = (Http2Response) responses.remove(0);
+    Http2Response responseOut = responses.remove(0);
 
-    assertTrue(responseOut != null);
+    assertNotNull(responseOut);
     assertTrue(responseOut.payload instanceof Http2Headers);
     assertEquals("200", ((Http2Headers) responseOut.payload).status().toString());
     assertFalse(responseOut.eos);
     assertEquals(1, responseOut.streamId);
 
-    Http2Response bodyOut1 = (Http2Response) responses.remove(0);
+    Http2Response bodyOut1 = responses.remove(0);
 
-    assertTrue(bodyOut1 != null);
+    assertNotNull(bodyOut1);
     assertTrue(bodyOut1.payload instanceof Http2DataFrame);
     assertEquals(body1, ((Http2DataFrame) bodyOut1.payload).content());
     assertFalse(bodyOut1.eos);
     assertEquals(1, bodyOut1.streamId);
 
-    Http2Response bodyOut2 = (Http2Response) responses.remove(0);
+    Http2Response bodyOut2 = responses.remove(0);
 
-    assertTrue(bodyOut2 != null);
+    assertNotNull(bodyOut2);
     assertTrue(bodyOut2.payload instanceof Http2DataFrame);
     assertEquals(body2, ((Http2DataFrame) bodyOut2.payload).content());
     assertFalse(bodyOut2.eos);
@@ -382,7 +395,7 @@ public class Http2ServerCodecUnitTest extends Assert {
 
     Http2Response trailersOut = responses.remove(0);
 
-    assertTrue(trailersOut != null);
+    assertNotNull(trailersOut);
     assertTrue(trailersOut.payload instanceof Http2Headers);
     assertEquals("bar", ((Http2Headers) trailersOut.payload).get("foo"));
     assertTrue(trailersOut.eos);

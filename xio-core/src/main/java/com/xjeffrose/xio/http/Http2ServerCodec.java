@@ -1,10 +1,12 @@
 package com.xjeffrose.xio.http;
 
-import com.xjeffrose.xio.core.internal.UnstableApi;
 import static com.xjeffrose.xio.http.Http2MessageSession.contextMessageSession;
+
+import com.xjeffrose.xio.core.internal.UnstableApi;
 import com.xjeffrose.xio.http.internal.FullHttp2Request;
 import com.xjeffrose.xio.http.internal.Http2SegmentedData;
 import com.xjeffrose.xio.http.internal.SegmentedHttp2Request;
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
@@ -30,11 +32,14 @@ public class Http2ServerCodec extends ChannelDuplexHandler {
     if (msg.payload instanceof Http2Headers) {
       Http2Headers headers = (Http2Headers) msg.payload;
       if (msg.eos && headers.method() == null && headers.status() == null) {
-        //todo: WBK deal with null
-        SegmentedRequestData request =  new SegmentedRequestData(messageSession.currentRequest(msg.streamId),
-          new Http2SegmentedData(headers, msg.streamId));
-        messageSession.onRequest(request);
-        return request;
+        Request initialRequest = messageSession.currentRequest(msg.streamId);
+        if (initialRequest != null) {
+          SegmentedRequestData request =
+              new SegmentedRequestData(
+                  initialRequest, new Http2SegmentedData(headers, msg.streamId));
+          messageSession.onRequest(request);
+          return request;
+        }
       } else {
         Request request = wrapHeaders(headers, msg.streamId, msg.eos);
         messageSession.onRequest(request);
@@ -42,11 +47,14 @@ public class Http2ServerCodec extends ChannelDuplexHandler {
       }
     } else if (msg.payload instanceof Http2DataFrame) {
       Http2DataFrame frame = (Http2DataFrame) msg.payload;
-      SegmentedRequestData data =  new SegmentedRequestData(
-        messageSession.currentRequest(msg.streamId),
-        new Http2SegmentedData(frame.content(), msg.eos, msg.streamId));
-      messageSession.onRequestData(data);
-      return data;
+      Request initialRequest = messageSession.currentRequest(msg.streamId);
+      if (initialRequest != null) {
+        SegmentedRequestData data =
+            new SegmentedRequestData(
+                initialRequest, new Http2SegmentedData(frame.content(), msg.eos, msg.streamId));
+        messageSession.onRequestData(data);
+        return data;
+      }
     }
     // TODO(CK): throw an exception?
     return null;
@@ -75,10 +83,11 @@ public class Http2ServerCodec extends ChannelDuplexHandler {
 
     if (response instanceof FullResponse) {
       messageSession.onResponse(response);
-      if (response.body().readableBytes() > 0) {
+      ByteBuf body = response.body();
+      if (body != null && body.readableBytes() > 0) {
         PromiseCombiner combiner = new PromiseCombiner();
         combiner.add(ctx.write(Http2Response.build(streamId, headers, false), ctx.newPromise()));
-        Http2DataFrame data = new DefaultHttp2DataFrame(response.body() , true);
+        Http2DataFrame data = new DefaultHttp2DataFrame(body, true);
         combiner.add(ctx.write(Http2Response.build(streamId, data, true), ctx.newPromise()));
         combiner.finish(promise);
       } else {
@@ -95,14 +104,10 @@ public class Http2ServerCodec extends ChannelDuplexHandler {
     Http2MessageSession messageSession = contextMessageSession(ctx);
     messageSession.onResponseData(data);
 
-//    Request request = messageSession.currentRequest(data.streamId());
-//    if (data.endOfMessage()) { //todo: WBK we probably don't need to do this any longer
-//      setChannelRequest(ctx, null);
-//    }
-
     boolean dataEos = data.endOfMessage() && data.trailingHeaders().size() == 0;
     Http2Response response =
-      Http2Response.build(data.streamId(), new DefaultHttp2DataFrame(data.content(), dataEos), dataEos);
+        Http2Response.build(
+            data.streamId(), new DefaultHttp2DataFrame(data.content(), dataEos), dataEos);
 
     if (data.trailingHeaders().size() != 0) {
       Http2Headers headers = data.trailingHeaders().http2Headers();

@@ -10,7 +10,8 @@ public interface SegmentedData {
   /**
    * See: <a href=https://tools.ietf.org/html/rfc7540#section-5>rfc</a>
    *
-   * @return the stream id of the http2 connection stream or {@link Message#H1_STREAM_ID_NONE} if http1
+   * @return the stream id of the http2 connection stream or {@link Message#H1_STREAM_ID_NONE} if
+   *     http1
    */
   int streamId();
 

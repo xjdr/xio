@@ -3,9 +3,8 @@ package com.xjeffrose.xio.http;
 import com.xjeffrose.xio.core.internal.UnstableApi;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.HttpMethod;
-import lombok.ToString;
-
 import javax.annotation.Nonnull;
+import lombok.ToString;
 
 @UnstableApi
 @ToString

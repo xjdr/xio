@@ -3,21 +3,19 @@ package com.xjeffrose.xio.http;
 import com.google.common.collect.Maps;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.AttributeKey;
+import java.util.Map;
+import javax.annotation.Nullable;
 import lombok.extern.slf4j.Slf4j;
 
-import javax.annotation.Nullable;
-import java.util.Map;
-
-
 /**
- * A finite state machine to track the current HTTP/2 message session. This
- * class exists to store the connection specific state of the message session
+ * A finite state machine to track the current HTTP/2 message session. This class exists to store
+ * the connection specific state of the message session
  */
 @Slf4j
 public class Http2MessageSession {
 
   private static final AttributeKey<Http2MessageSession> CHANNEL_MESSAGE_SESSION_KEY =
-    AttributeKey.newInstance("xio_channel_h2_message_session");
+      AttributeKey.newInstance("xio_channel_h2_message_session");
 
   static Http2MessageSession contextMessageSession(ChannelHandlerContext ctx) {
     Http2MessageSession session = ctx.channel().attr(CHANNEL_MESSAGE_SESSION_KEY).get();
@@ -30,14 +28,14 @@ public class Http2MessageSession {
 
   private Map<Integer, MessageMetaState> streamIdRequests = Maps.newHashMap();
 
-  private Http2MessageSession() {
-  }
+  private Http2MessageSession() {}
 
   public void onRequest(Request request) {
     MessageMetaState initialRequest = streamIdRequests.get(request.streamId());
     if (initialRequest == null) {
       if (request.startOfMessage()) {
-        streamIdRequests.put(request.streamId(), new MessageMetaState(request, request.endOfMessage()));
+        streamIdRequests.put(
+            request.streamId(), new MessageMetaState(request, request.endOfMessage()));
       } else {
         log.error("Received an h2 message segment without a startOfMessage - request: {}", request);
       }
@@ -50,7 +48,9 @@ public class Http2MessageSession {
     MessageMetaState initialRequest = streamIdRequests.get(data.streamId());
 
     if (initialRequest == null) {
-      log.error("Received an h2 message SegmentedData without a current Request, dropping data: {}", data);
+      log.error(
+          "Received an h2 message SegmentedData without a current Request, dropping data: {}",
+          data);
       return;
     }
 
@@ -62,7 +62,7 @@ public class Http2MessageSession {
   public void onResponse(Response response) {
     MessageMetaState initialRequest = streamIdRequests.get(response.streamId());
     if (initialRequest != null && response.endOfMessage()) {
-        initialRequest.responseFinished = true;
+      initialRequest.responseFinished = true;
     }
   }
 

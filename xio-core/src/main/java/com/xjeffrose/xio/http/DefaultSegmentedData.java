@@ -31,6 +31,8 @@ public abstract class DefaultSegmentedData implements SegmentedData {
   }
 
   public static Builder builder() {
-    return new AutoValue_DefaultSegmentedData.Builder().trailingHeaders(new DefaultHeaders());
+    return new AutoValue_DefaultSegmentedData.Builder()
+        .trailingHeaders(new DefaultHeaders())
+        .streamId(Message.H1_STREAM_ID_NONE);
   }
 }
