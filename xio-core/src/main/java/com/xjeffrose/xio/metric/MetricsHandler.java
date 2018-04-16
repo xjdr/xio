@@ -9,7 +9,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 
 public class MetricsHandler extends ChannelDuplexHandler {
-  private final MetricRegistry metricRegistry;
   private final Meter requestsMeter;
   private final Meter statusClassInformationalMeter;
   private final Meter statusClassSuccessMeter;
@@ -19,7 +18,6 @@ public class MetricsHandler extends ChannelDuplexHandler {
   private final Meter statusClassUnknownMeter;
 
   public MetricsHandler(MetricRegistry metricRegistry) {
-    this.metricRegistry = metricRegistry;
     this.requestsMeter = metricRegistry.meter("requests");
     this.statusClassInformationalMeter = metricRegistry.meter("statusClassInformational");
     this.statusClassSuccessMeter = metricRegistry.meter("statusClassSuccess");

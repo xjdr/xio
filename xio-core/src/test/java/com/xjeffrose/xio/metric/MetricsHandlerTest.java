@@ -13,54 +13,15 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
-
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 
 public class MetricsHandlerTest extends Assert {
 
   private EmbeddedChannel channel;
-
-  @Mock
-  MetricRegistry metricRegistry;
-
-  @Mock
-  Meter requestsMeter;
-
-  @Mock
-  Meter statusClassInformationalMeter;
-
-  @Mock
-  Meter statusClassSuccessMeter;
-
-  @Mock
-  Meter statusClassRedirectionMeter;
-
-  @Mock
-  Meter statusClassClientErrorMeter;
-
-  @Mock
-  Meter statusClassServerErrorMeter;
-
-  @Mock
-  Meter statusClassUnknownMeter;
+  private MetricRegistry metricRegistry;
 
   @Before
   public void setUp() {
-    MockitoAnnotations.initMocks(this);
-
-    metricRegistry = mock(MetricRegistry.class);
-
-    Mockito.when(metricRegistry.meter("requests")).thenReturn(requestsMeter);
-    Mockito.when(metricRegistry.meter("statusClassInformational")).thenReturn(statusClassInformationalMeter);
-    Mockito.when(metricRegistry.meter("statusClassSuccess")).thenReturn(statusClassSuccessMeter);
-    Mockito.when(metricRegistry.meter("statusClassRedirection")).thenReturn(statusClassRedirectionMeter);
-    Mockito.when(metricRegistry.meter("statusClassClientError")).thenReturn(statusClassClientErrorMeter);
-    Mockito.when(metricRegistry.meter("statusClassServerError")).thenReturn(statusClassServerErrorMeter);
-    Mockito.when(metricRegistry.meter("statusClassUnknown")).thenReturn(statusClassUnknownMeter);
+    metricRegistry = new MetricRegistry();
 
     MetricsHandler metricsHandler = new MetricsHandler(metricRegistry);
 
@@ -87,7 +48,8 @@ public class MetricsHandlerTest extends Assert {
     channel.writeInbound(request);
     channel.runPendingTasks();
 
-    verify(requestsMeter).mark();
+    Meter meter = metricRegistry.meter("requests");
+    assertEquals(1, meter.getCount());
   }
 
   @Test
@@ -95,7 +57,8 @@ public class MetricsHandlerTest extends Assert {
     channel.writeOutbound(buildResponse(HttpResponseStatus.CONTINUE));
     channel.runPendingTasks();
 
-    verify(statusClassInformationalMeter).mark();
+    Meter meter = metricRegistry.meter("statusClassInformational");
+    assertEquals(1, meter.getCount());
   }
 
   @Test
@@ -103,7 +66,8 @@ public class MetricsHandlerTest extends Assert {
     channel.writeOutbound(buildResponse(HttpResponseStatus.OK));
     channel.runPendingTasks();
 
-    verify(statusClassSuccessMeter).mark();
+    Meter meter = metricRegistry.meter("statusClassSuccess");
+    assertEquals(1, meter.getCount());
   }
 
   @Test
@@ -111,7 +75,8 @@ public class MetricsHandlerTest extends Assert {
     channel.writeOutbound(buildResponse(HttpResponseStatus.MULTIPLE_CHOICES));
     channel.runPendingTasks();
 
-    verify(statusClassRedirectionMeter).mark();
+    Meter meter = metricRegistry.meter("statusClassRedirection");
+    assertEquals(1, meter.getCount());
   }
 
   @Test
@@ -119,7 +84,8 @@ public class MetricsHandlerTest extends Assert {
     channel.writeOutbound(buildResponse(HttpResponseStatus.BAD_REQUEST));
     channel.runPendingTasks();
 
-    verify(statusClassClientErrorMeter).mark();
+    Meter meter = metricRegistry.meter("statusClassClientError");
+    assertEquals(1, meter.getCount());
   }
 
   @Test
@@ -127,7 +93,8 @@ public class MetricsHandlerTest extends Assert {
     channel.writeOutbound(buildResponse(HttpResponseStatus.INTERNAL_SERVER_ERROR));
     channel.runPendingTasks();
 
-    verify(statusClassServerErrorMeter).mark();
+    Meter meter = metricRegistry.meter("statusClassServerError");
+    assertEquals(1, meter.getCount());
   }
 
   @Test
@@ -135,7 +102,8 @@ public class MetricsHandlerTest extends Assert {
     channel.writeOutbound(buildResponse(new HttpResponseStatus(600, "unknown")));
     channel.runPendingTasks();
 
-    verify(statusClassUnknownMeter).mark();
+    Meter meter = metricRegistry.meter("statusClassUnknown");
+    assertEquals(1, meter.getCount());
   }
 
   private DefaultFullResponse buildResponse(HttpResponseStatus httpResponseStatus) {
