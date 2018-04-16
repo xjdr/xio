@@ -1,6 +1,7 @@
 package com.xjeffrose.xio.http;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.xjeffrose.xio.http.internal.MessageMetaState;
 import lombok.extern.slf4j.Slf4j;
 
 // Fun reading!
@@ -44,25 +45,13 @@ public class Http1MessageSession {
   @enduml
     */
 
-  public static class RequestMeta {
-    public final Request request;
-    public boolean requestFinished;
-    public boolean responseFinished;
-
-    RequestMeta(Request request, boolean requestFinished) {
-      this.request = request;
-      this.requestFinished = requestFinished;
-      responseFinished = false;
-    }
-  }
-
   // We can only handle one request at a time, any additional requests will be ignored.
-  private RequestMeta initialRequest;
+  private MessageMetaState initialRequest;
   // The client tried to send another request before the first request was responded to.
   private boolean clientTriedPipeline;
 
   @VisibleForTesting
-  public RequestMeta initialRequest() {
+  public MessageMetaState initialRequest() {
     return initialRequest;
   }
 
@@ -83,7 +72,7 @@ public class Http1MessageSession {
   public void onRequest(Request request) {
     if (initialRequest == null) {
       boolean fullRequest = (request instanceof FullRequest);
-      initialRequest = new RequestMeta(request, fullRequest);
+      initialRequest = new MessageMetaState(request, fullRequest);
     } else {
       // log that the client is attempting to pipeline
       if (clientTriedPipeline == false) {

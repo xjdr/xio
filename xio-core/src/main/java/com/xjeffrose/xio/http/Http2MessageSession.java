@@ -1,6 +1,7 @@
 package com.xjeffrose.xio.http;
 
 import com.google.common.collect.Maps;
+import com.xjeffrose.xio.http.internal.MessageMetaState;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.AttributeKey;
 import java.util.Map;
@@ -107,18 +108,6 @@ public class Http2MessageSession {
         && initialRequest.requestFinished
         && initialRequest.responseFinished) {
       streamIdRequests.remove(streamId);
-    }
-  }
-
-  private static class MessageMetaState {
-    public final Request request;
-    public boolean requestFinished;
-    public boolean responseFinished;
-
-    MessageMetaState(Request request, boolean requestFinished) {
-      this.request = request;
-      this.requestFinished = requestFinished;
-      responseFinished = false;
     }
   }
 }
