@@ -1,9 +1,5 @@
 package com.xjeffrose.xio.http;
 
-import static com.xjeffrose.xio.helpers.TlsHelper.getKeyManagers;
-import static okhttp3.Protocol.HTTP_1_1;
-import static okhttp3.Protocol.HTTP_2;
-
 import com.google.common.collect.ImmutableMap;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
@@ -14,19 +10,18 @@ import com.xjeffrose.xio.bootstrap.ApplicationBootstrap;
 import com.xjeffrose.xio.client.ClientConfig;
 import com.xjeffrose.xio.core.SocketAddressHelper;
 import com.xjeffrose.xio.fixtures.JulBridge;
+import static com.xjeffrose.xio.helpers.TlsHelper.getKeyManagers;
 import com.xjeffrose.xio.pipeline.SmartHttpPipeline;
 import com.xjeffrose.xio.test.OkHttpUnsafe;
 import com.xjeffrose.xio.tracing.XioTracing;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.EventLoopGroup;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Protocol;
+import static okhttp3.Protocol.HTTP_1_1;
+import static okhttp3.Protocol.HTTP_2;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
@@ -42,6 +37,15 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
 @Slf4j
 public class ReverseProxyFunctionalTest extends Assert {
 
@@ -52,7 +56,6 @@ public class ReverseProxyFunctionalTest extends Assert {
 
   OkHttpClient client;
   Config config;
-  EventLoopGroup group;
   ApplicationConfig appConfig;
   Application reverseProxy;
   MockWebServer server;
@@ -111,7 +114,6 @@ public class ReverseProxyFunctionalTest extends Assert {
 
   void setupFrontBack(boolean h2Front, boolean h2Back) throws Exception {
     setupBack(h2Back);
-    int port = server.getPort();
 
     String front = h2Front ? "h2" : "h1";
     appConfig = ApplicationConfig.fromConfig("xio." + front + "ReverseProxy", config);
@@ -136,7 +138,7 @@ public class ReverseProxyFunctionalTest extends Assert {
               .build();
     } else {
       client =
-          OkHttpUnsafe.getUnsafeClient().newBuilder().protocols(Arrays.asList(HTTP_1_1)).build();
+          OkHttpUnsafe.getUnsafeClient().newBuilder().protocols(Collections.singletonList(HTTP_1_1)).build();
     }
   }
 
@@ -232,6 +234,37 @@ public class ReverseProxyFunctionalTest extends Assert {
     setupFrontBack(true, false);
 
     get(port(), false, HTTP_2);
+  }
+
+  @Test
+  public void testHttp2toHttp1ServerGetMany() throws Exception {
+    setupClient(true);
+    setupFrontBack(true, false);
+    final int iterations = 2;
+
+    final Queue<Response> responses = new ConcurrentLinkedDeque<>();
+    final Queue<Throwable> errors = new ConcurrentLinkedDeque<>();
+    final CountDownLatch latch = new CountDownLatch(iterations);
+    String url = url(port(), false);
+    for (int i = 0; i < iterations; i++) {
+      server.enqueue(buildResponse());
+      new Thread(() -> {
+        try {
+          Request request = new Request.Builder().url(url).build();
+          Response response = client.newCall(request).execute();
+          responses.offer(response);
+          server.takeRequest();
+        } catch (IOException | InterruptedException error) {
+          errors.offer(error);
+        } finally {
+          latch.countDown();
+        }
+      }).start();
+    }
+
+    latch.await(1, TimeUnit.SECONDS);
+    assertTrue(errors.isEmpty());
+    assertEquals(iterations, responses.size());
   }
 
   @Test
