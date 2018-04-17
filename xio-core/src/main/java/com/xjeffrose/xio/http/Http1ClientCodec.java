@@ -24,11 +24,24 @@ import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.util.AttributeKey;
+import javax.annotation.Nullable;
 import lombok.extern.slf4j.Slf4j;
 
 @UnstableApi
 @Slf4j
 public class Http1ClientCodec extends ChannelDuplexHandler {
+
+  private static AttributeKey<Integer> CHANNEL_STREAM_ID_KEY =
+      AttributeKey.newInstance("xio_channel_stream_id");
+
+  private void setProxiedH2RequestStreamId(ChannelHandlerContext ctx, int streamId) {
+    ctx.channel().attr(CHANNEL_STREAM_ID_KEY).set(streamId);
+  }
+
+  @Nullable
+  private Integer getProxiedH2RequestStreamId(ChannelHandlerContext ctx) {
+    return ctx.channel().attr(CHANNEL_STREAM_ID_KEY).get();
+  }
 
   private static final AttributeKey<Response> CHANNEL_RESPONSE_KEY =
       AttributeKey.newInstance("xio_channel_response");
@@ -44,22 +57,24 @@ public class Http1ClientCodec extends ChannelDuplexHandler {
 
   Response wrapResponse(ChannelHandlerContext ctx, HttpObject msg) {
     log.debug("wrapResponse msg={}", msg);
+    Response response = null;
     if (msg instanceof FullHttpResponse) {
-      Response response = new FullHttp1Response((FullHttpResponse) msg);
+      response = new FullHttp1Response((FullHttpResponse) msg);
       setChannelResponse(ctx, response);
-      return response;
     } else if (msg instanceof HttpResponse) {
-      Response response = new SegmentedHttp1Response((HttpResponse) msg);
+      response = new SegmentedHttp1Response((HttpResponse) msg);
       setChannelResponse(ctx, response);
-      return response;
     } else if (msg instanceof HttpContent) {
-      Response response =
+      response =
           new SegmentedResponseData(
               getChannelResponse(ctx), new Http1SegmentedData((HttpContent) msg));
-      return response;
     }
-    // TODO(CK): throw an exception?
-    return null;
+    Integer streamId = getProxiedH2RequestStreamId(ctx);
+    if (streamId != null) {
+      response = new ProxyResponse(response, streamId);
+    }
+    // TODO(CK): throw an exception if response is null?
+    return response;
   }
 
   @Override
@@ -72,6 +87,9 @@ public class Http1ClientCodec extends ChannelDuplexHandler {
   }
 
   HttpRequest buildRequest(ChannelHandlerContext ctx, Request request) {
+    if (request.streamId() != Message.H1_STREAM_ID_NONE) {
+      setProxiedH2RequestStreamId(ctx, request.streamId());
+    }
     if (!request.headers().contains(HttpHeaderNames.CONTENT_TYPE)) {
       request.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/plain; charset=UTF-8");
     }
@@ -82,10 +100,8 @@ public class Http1ClientCodec extends ChannelDuplexHandler {
 
     if (request instanceof FullRequest) {
       FullRequest full = (FullRequest) request;
-      ByteBuf content;
-      if (full.body() != null) {
-        content = full.body();
-      } else {
+      ByteBuf content = full.body();
+      if (content == null) {
         content = Unpooled.EMPTY_BUFFER;
       }
       if (!full.headers().contains(HttpHeaderNames.CONTENT_LENGTH)) {
