@@ -289,6 +289,7 @@ public class ReverseProxyFunctionalTest extends Assert {
     requests(iterations, false);
   }
 
+  @Ignore("WBK - TACO-131 spoon feed proxied h2 front to h1 back")
   @Test
   public void testHttp2toHttp1ServerPostMany() throws Exception {
     setupClient(true);
@@ -297,7 +298,6 @@ public class ReverseProxyFunctionalTest extends Assert {
     requests(iterations, true);
   }
 
-  @Ignore("WBK - TACO-131 spoon feed proxied h2 front to h1 back")
   @Test
   public void testHttp2toHttp2ServerPostMany() throws Exception {
     setupClient(true);

@@ -24,23 +24,22 @@ import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.util.AttributeKey;
-import javax.annotation.Nullable;
 import lombok.extern.slf4j.Slf4j;
 
 @UnstableApi
 @Slf4j
 public class Http1ClientCodec extends ChannelDuplexHandler {
 
-  private static AttributeKey<Integer> CHANNEL_STREAM_ID_KEY =
-      AttributeKey.newInstance("xio_channel_stream_id");
+  private static AttributeKey<Http2To1ProxyRequestQueue> CHANNEL_PROXY_REQUEST_QUEUE =
+      AttributeKey.newInstance("xio_channel_proxy_request_queue");
 
-  private void setProxiedH2RequestStreamId(ChannelHandlerContext ctx, int streamId) {
-    ctx.channel().attr(CHANNEL_STREAM_ID_KEY).set(streamId);
-  }
-
-  @Nullable
-  private Integer getProxiedH2RequestStreamId(ChannelHandlerContext ctx) {
-    return ctx.channel().attr(CHANNEL_STREAM_ID_KEY).get();
+  private Http2To1ProxyRequestQueue getProxyRequestQueue(ChannelHandlerContext ctx) {
+    Http2To1ProxyRequestQueue queue = ctx.channel().attr(CHANNEL_PROXY_REQUEST_QUEUE).get();
+    if (queue == null) {
+      queue = new Http2To1ProxyRequestQueue();
+      ctx.channel().attr(CHANNEL_PROXY_REQUEST_QUEUE).set(queue);
+    }
+    return queue;
   }
 
   private static final AttributeKey<Response> CHANNEL_RESPONSE_KEY =
@@ -57,7 +56,7 @@ public class Http1ClientCodec extends ChannelDuplexHandler {
 
   Response wrapResponse(ChannelHandlerContext ctx, HttpObject msg) {
     log.debug("wrapResponse msg={}", msg);
-    Response response = null;
+    final Response response;
     if (msg instanceof FullHttpResponse) {
       response = new FullHttp1Response((FullHttpResponse) msg);
       setChannelResponse(ctx, response);
@@ -68,28 +67,29 @@ public class Http1ClientCodec extends ChannelDuplexHandler {
       response =
           new SegmentedResponseData(
               getChannelResponse(ctx), new Http1SegmentedData((HttpContent) msg));
+    } else {
+      // TODO(CK): throw an exception if response is null?
+      response = null;
     }
-    Integer streamId = getProxiedH2RequestStreamId(ctx);
-    if (streamId != null) {
-      response = new ProxyResponse(response, streamId);
-    }
-    // TODO(CK): throw an exception if response is null?
-    return response;
+
+    return getProxyRequestQueue(ctx)
+        .currentProxiedH2StreamId()
+        .<Response>map(streamId -> new ProxyResponse(response, streamId))
+        .orElse(response);
   }
 
   @Override
   public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
     if (msg instanceof HttpObject) {
-      ctx.fireChannelRead(wrapResponse(ctx, (HttpObject) msg));
+      Response response = wrapResponse(ctx, (HttpObject) msg);
+      ctx.fireChannelRead(response);
+      getProxyRequestQueue(ctx).onResponseDrainNext(ctx, response);
     } else {
       ctx.fireChannelRead(msg);
     }
   }
 
-  HttpRequest buildRequest(ChannelHandlerContext ctx, Request request) {
-    if (request.streamId() != Message.H1_STREAM_ID_NONE) {
-      setProxiedH2RequestStreamId(ctx, request.streamId());
-    }
+  HttpRequest buildRequest(Request request) {
     if (!request.headers().contains(HttpHeaderNames.CONTENT_TYPE)) {
       request.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/plain; charset=UTF-8");
     }
@@ -129,7 +129,7 @@ public class Http1ClientCodec extends ChannelDuplexHandler {
     }
   }
 
-  HttpContent buildContent(ChannelHandlerContext ctx, SegmentedData data) {
+  HttpContent buildContent(SegmentedData data) {
     if (data.endOfMessage()) {
       LastHttpContent last = new DefaultLastHttpContent(data.content());
       if (data.trailingHeaders() != null) {
@@ -147,12 +147,23 @@ public class Http1ClientCodec extends ChannelDuplexHandler {
       throws Exception {
     log.debug("write: msg={}", msg);
     if (msg instanceof SegmentedData) {
-      ctx.write(buildContent(ctx, (SegmentedData) msg), promise);
+      SegmentedData segmentedData = (SegmentedData) msg;
+      HttpContent content = buildContent(segmentedData);
+      getProxyRequestQueue(ctx)
+          .onRequestWriteOrEnqueue(ctx, segmentedData.streamId(), content, promise);
     } else if (msg instanceof Request) {
-      log.debug("writing request {}", msg);
-      ctx.write(buildRequest(ctx, (Request) msg), promise);
+      Request request = (Request) msg;
+      HttpRequest message = buildRequest(request);
+      getProxyRequestQueue(ctx).onRequestWriteOrEnqueue(ctx, request.streamId(), message, promise);
     } else {
       ctx.write(msg, promise);
+    }
+  }
+
+  @Override
+  public void flush(ChannelHandlerContext ctx) throws Exception {
+    if (getProxyRequestQueue(ctx).isEmpty()) {
+      super.flush(ctx);
     }
   }
 }
