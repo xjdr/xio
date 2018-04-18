@@ -278,7 +278,7 @@ public class ReverseProxyFunctionalTest extends Assert {
     setupClient(true);
     setupFrontBack(true, false);
     final int iterations = 2;
-    getMany(iterations);
+    requests(iterations, false);
   }
 
   @Test
@@ -286,10 +286,27 @@ public class ReverseProxyFunctionalTest extends Assert {
     setupClient(true);
     setupFrontBack(true, true);
     final int iterations = 2;
-    getMany(iterations);
+    requests(iterations, false);
   }
 
-  private void getMany(int iterations) throws Exception {
+  @Test
+  public void testHttp2toHttp1ServerPostMany() throws Exception {
+    setupClient(true);
+    setupFrontBack(true, false);
+    final int iterations = 2;
+    requests(iterations, true);
+  }
+
+  @Ignore("WBK - TACO-131 spoon feed proxied h2 front to h1 back")
+  @Test
+  public void testHttp2toHttp2ServerPostMany() throws Exception {
+    setupClient(true);
+    setupFrontBack(true, true);
+    final int iterations = 2;
+    requests(iterations, true);
+  }
+
+  private void requests(int iterations, boolean post) throws Exception {
     final Queue<Response> responses = new ConcurrentLinkedDeque<>();
     final CountDownLatch latch = new CountDownLatch(iterations);
     String url = url(port(), false);
@@ -298,8 +315,15 @@ public class ReverseProxyFunctionalTest extends Assert {
       new Thread(
               () -> {
                 try {
-                  Request request = new Request.Builder().url(url).build();
-                  Response response = client.newCall(request).execute();
+                  Request.Builder request = new Request.Builder().url(url);
+                  if (post) {
+                    MediaType mediaType = MediaType.parse("text/plain");
+                    RequestBody body = RequestBody.create(mediaType, "this is the post body");
+                    request.post(body);
+                  } else {
+                    request.get();
+                  }
+                  Response response = client.newCall(request.build()).execute();
                   responses.offer(response);
                 } catch (IOException ignored) {
                 } finally {
