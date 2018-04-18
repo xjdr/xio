@@ -85,21 +85,22 @@ public class HttpServerMetricHandlerIntegrationTest {
     protected void channelRead0(ChannelHandlerContext ctx, Request msg) {
 
       if (msg instanceof SegmentedRequestData && msg.endOfMessage()) {
-        sendResponse(ctx);
+        sendResponse(ctx, msg);
         return;
       } else if (msg instanceof FullRequest) {
-        sendResponse(ctx);
+        sendResponse(ctx, msg);
       }
 
       ctx.write(msg);
     }
 
-    private void sendResponse(ChannelHandlerContext ctx) {
+    private void sendResponse(ChannelHandlerContext ctx, Request msg) {
       val resp =
           DefaultFullResponse.builder()
               .headers(new DefaultHeaders())
               .status(HttpResponseStatus.OK)
               .body(Unpooled.EMPTY_BUFFER)
+              .streamId(msg.streamId())
               .build();
       ctx.writeAndFlush(resp);
     }
