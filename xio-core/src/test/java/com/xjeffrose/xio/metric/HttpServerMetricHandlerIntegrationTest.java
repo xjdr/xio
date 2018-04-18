@@ -1,5 +1,7 @@
 package com.xjeffrose.xio.metric;
 
+import static org.junit.Assert.assertEquals;
+
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 import com.xjeffrose.xio.application.Application;
@@ -11,15 +13,12 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import java.net.InetSocketAddress;
 import lombok.val;
 import okhttp3.Protocol;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.net.InetSocketAddress;
-
-import static org.junit.Assert.assertEquals;
 
 public class HttpServerMetricHandlerIntegrationTest {
   private Application application = null;
@@ -28,9 +27,10 @@ public class HttpServerMetricHandlerIntegrationTest {
   @Before
   public void before() {
     application =
-      new ApplicationBootstrap("xio.testZipkinApplication")
-        .addServer("exampleServer", (bs) -> bs.addToPipeline(new SmartHttpPipeline(TestHandler::new)))
-        .build();
+        new ApplicationBootstrap("xio.testZipkinApplication")
+            .addServer(
+                "exampleServer", (bs) -> bs.addToPipeline(new SmartHttpPipeline(TestHandler::new)))
+            .build();
 
     metricRegistry = application.getState().getMetricRegistry();
   }
@@ -96,11 +96,11 @@ public class HttpServerMetricHandlerIntegrationTest {
 
     private void sendResponse(ChannelHandlerContext ctx) {
       val resp =
-        DefaultFullResponse.builder()
-          .headers(new DefaultHeaders())
-          .status(HttpResponseStatus.OK)
-          .body(Unpooled.EMPTY_BUFFER)
-          .build();
+          DefaultFullResponse.builder()
+              .headers(new DefaultHeaders())
+              .status(HttpResponseStatus.OK)
+              .body(Unpooled.EMPTY_BUFFER)
+              .build();
       ctx.writeAndFlush(resp);
     }
   }
