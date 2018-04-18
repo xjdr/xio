@@ -25,13 +25,20 @@ public abstract class DefaultFullResponse implements FullResponse {
     return true;
   }
 
+  @Override
   public abstract ByteBuf body();
 
+  @Override
   public abstract HttpResponseStatus status();
 
+  @Override
   public abstract Headers headers();
 
+  @Override
   public abstract TraceInfo httpTraceInfo();
+
+  @Override
+  public abstract int streamId();
 
   /** Not intended to be called. */
   @Override
@@ -49,7 +56,7 @@ public abstract class DefaultFullResponse implements FullResponse {
 
     public abstract Builder httpTraceInfo(TraceInfo span);
 
-    abstract Headers headers();
+    public abstract Builder streamId(int streamId);
 
     public DefaultFullResponse build() {
       if (!httpTraceInfo().isPresent()) {
@@ -58,12 +65,24 @@ public abstract class DefaultFullResponse implements FullResponse {
       return autoBuild();
     }
 
+    abstract Headers headers();
+
     abstract Optional<TraceInfo> httpTraceInfo();
 
     abstract DefaultFullResponse autoBuild();
   }
 
+  public static Builder from(FullResponse other) {
+    return builder()
+        .body(other.body())
+        .headers(other.headers())
+        .httpTraceInfo(other.httpTraceInfo())
+        .streamId(other.streamId())
+        .status(other.status())
+        .body(other.body());
+  }
+
   public static Builder builder() {
-    return new AutoValue_DefaultFullResponse.Builder();
+    return new AutoValue_DefaultFullResponse.Builder().streamId(Message.H1_STREAM_ID_NONE);
   }
 }

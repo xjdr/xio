@@ -12,10 +12,13 @@ import lombok.ToString;
 @ToString
 public abstract class DefaultSegmentedResponse implements SegmentedResponse {
 
+  @Override
   public abstract HttpResponseStatus status();
 
+  @Override
   public abstract Headers headers();
 
+  @Override
   public abstract TraceInfo httpTraceInfo();
 
   @Override
@@ -27,6 +30,9 @@ public abstract class DefaultSegmentedResponse implements SegmentedResponse {
   public boolean endOfMessage() {
     return false;
   }
+
+  @Override
+  public abstract int streamId();
 
   /** Not intended to be called. */
   @Override
@@ -42,6 +48,8 @@ public abstract class DefaultSegmentedResponse implements SegmentedResponse {
 
     public abstract Builder httpTraceInfo(TraceInfo traceInfo);
 
+    public abstract Builder streamId(int streamId);
+
     public DefaultSegmentedResponse build() {
       if (!httpTraceInfo().isPresent()) {
         httpTraceInfo(new TraceInfo(headers()));
@@ -56,7 +64,15 @@ public abstract class DefaultSegmentedResponse implements SegmentedResponse {
     abstract DefaultSegmentedResponse autoBuild();
   }
 
+  public static Builder from(SegmentedResponse other) {
+    return builder()
+        .status(other.status())
+        .headers(other.headers())
+        .httpTraceInfo(other.httpTraceInfo())
+        .streamId(other.streamId());
+  }
+
   public static Builder builder() {
-    return new AutoValue_DefaultSegmentedResponse.Builder();
+    return new AutoValue_DefaultSegmentedResponse.Builder().streamId(Message.H1_STREAM_ID_NONE);
   }
 }

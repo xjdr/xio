@@ -89,21 +89,22 @@ public class HttpServerTracingHandlerIntegrationTest extends Assert {
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Request msg) throws Exception {
 
-      if (msg instanceof SegmentedRequestData && ((SegmentedRequestData) msg).endOfMessage()) {
-        sendResponse(ctx, msg.httpTraceInfo());
+      if (msg instanceof SegmentedRequestData && msg.endOfMessage()) {
+        sendResponse(ctx, msg.httpTraceInfo(), msg.streamId());
         return;
       } else if (msg instanceof FullRequest) {
-        sendResponse(ctx, msg.httpTraceInfo());
+        sendResponse(ctx, msg.httpTraceInfo(), msg.streamId());
       }
 
       ctx.write(msg);
     }
 
-    private void sendResponse(ChannelHandlerContext ctx, TraceInfo traceInfo) {
+    private void sendResponse(ChannelHandlerContext ctx, TraceInfo traceInfo, int streamId) {
       val resp =
           DefaultFullResponse.builder()
               .httpTraceInfo(traceInfo)
               .headers(new DefaultHeaders())
+              .streamId(streamId)
               .status(HttpResponseStatus.OK)
               .body(Unpooled.EMPTY_BUFFER)
               .build();

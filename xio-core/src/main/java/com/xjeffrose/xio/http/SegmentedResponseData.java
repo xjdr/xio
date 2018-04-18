@@ -56,6 +56,11 @@ public class SegmentedResponseData implements Response, SegmentedData {
   // region SegmentedData
 
   @Override
+  public int streamId() {
+    return response.streamId();
+  }
+
+  @Override
   public ByteBuf content() {
     return data.content();
   }

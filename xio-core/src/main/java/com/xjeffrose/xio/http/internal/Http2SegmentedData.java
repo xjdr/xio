@@ -15,17 +15,25 @@ public class Http2SegmentedData implements SegmentedData {
   private final ByteBuf content;
   private final boolean eos;
   private final Headers trailingHeaders;
+  private final int streamId;
 
-  public Http2SegmentedData(ByteBuf content, boolean eos) {
+  public Http2SegmentedData(ByteBuf content, boolean eos, int streamId) {
     this.content = content;
     this.eos = eos;
+    this.streamId = streamId;
     trailingHeaders = EmptyHeaders.INSTANCE;
   }
 
-  public Http2SegmentedData(Http2Headers headers) {
+  public Http2SegmentedData(Http2Headers headers, int streamId) {
+    this.streamId = streamId;
     this.content = Unpooled.EMPTY_BUFFER;
     eos = true;
     trailingHeaders = new Http2HeadersWrapper(headers);
+  }
+
+  @Override
+  public int streamId() {
+    return streamId;
   }
 
   public ByteBuf content() {

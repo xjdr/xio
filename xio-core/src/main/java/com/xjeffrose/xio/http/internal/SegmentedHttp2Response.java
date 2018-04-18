@@ -34,6 +34,11 @@ public class SegmentedHttp2Response implements SegmentedResponse {
   // region Response
 
   @Override
+  public int streamId() {
+    return streamId;
+  }
+
+  @Override
   public boolean startOfMessage() {
     return false;
   }
