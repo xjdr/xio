@@ -8,6 +8,7 @@ import com.xjeffrose.xio.core.XioExceptionLogger;
 import com.xjeffrose.xio.core.XioMessageLogger;
 import com.xjeffrose.xio.filter.Http1Filter;
 import com.xjeffrose.xio.filter.IpFilter;
+import com.xjeffrose.xio.metric.MetricsHandler;
 import com.xjeffrose.xio.server.XioBehavioralRuleEngine;
 import com.xjeffrose.xio.server.XioConnectionLimiter;
 import com.xjeffrose.xio.server.XioResponseClassifier;
@@ -85,7 +86,7 @@ public abstract class XioBasePipeline implements XioPipelineFragment {
       throw new RuntimeException("No codec configured");
     }
     addHandler(pipeline, "application codec", getApplicationCodec());
-    // TODO(brian): add metric handler here
+    addHandler(pipeline, "metric handler", new MetricsHandler(appState.getMetricRegistry()));
     addHandler(pipeline, "distributed tracing", state.tracingHandler(appState));
     addHandler(pipeline, "application router", getApplicationRouter());
     addHandler(pipeline, "authentication handler", getAuthenticationHandler());
