@@ -89,6 +89,7 @@ public class Http2MessageSession {
   /**
    * Returns the Request object for the current session (if any).
    *
+   * @param streamId the h2 stream id of the session
    * @return the current Request or null
    */
   @Nullable
@@ -103,6 +104,8 @@ public class Http2MessageSession {
   /**
    * Check if the message session has completed for a given streamId, if so remove the message
    * state.
+   *
+   * @param streamId the h2 stream id of the session
    */
   public void flush(int streamId) {
     MessageMetaState initialRequest = streamIdRequests.get(streamId);
