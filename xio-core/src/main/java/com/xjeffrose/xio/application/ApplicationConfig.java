@@ -38,7 +38,7 @@ public class ApplicationConfig {
   private final Map<String, List<Double>> clientRateLimitOverride =
       PlatformDependent.newConcurrentHashMap();
 
-  public ApplicationConfig(Config config, XioTracing tracing) {
+  private ApplicationConfig(Config config, XioTracing tracing) {
     this.config = config;
     name = config.getString("name");
     bossThreads = config.getInt("settings.bossThreads");
