@@ -29,6 +29,10 @@ public class XioServerState {
   }
 
   public ChannelHandler tracingHandler(ApplicationState appState) {
-    return appState.tracing().newServerHandler(config.isTlsEnabled());
+    if (appState.tracing() != null) {
+      return appState.tracing().newServerHandler(config.isTlsEnabled());
+    } else {
+      return null;
+    }
   }
 }
