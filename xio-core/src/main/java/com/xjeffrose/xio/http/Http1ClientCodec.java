@@ -42,31 +42,19 @@ public class Http1ClientCodec extends ChannelDuplexHandler {
     return queue;
   }
 
-  private static final AttributeKey<Response> CHANNEL_RESPONSE_KEY =
-      AttributeKey.newInstance("xio_channel_response");
-
-  private static void setChannelResponse(ChannelHandlerContext ctx, Response response) {
-    ctx.channel().attr(CHANNEL_RESPONSE_KEY).set(response);
-  }
-
-  private static Response getChannelResponse(ChannelHandlerContext ctx) {
-    // TODO(CK): Deal with null?
-    return ctx.channel().attr(CHANNEL_RESPONSE_KEY).get();
-  }
-
   Response wrapResponse(ChannelHandlerContext ctx, HttpObject msg) {
     log.debug("wrapResponse msg={}", msg);
     final Response response;
     if (msg instanceof FullHttpResponse) {
       response = new FullHttp1Response((FullHttpResponse) msg);
-      setChannelResponse(ctx, response);
     } else if (msg instanceof HttpResponse) {
       response = new SegmentedHttp1Response((HttpResponse) msg);
-      setChannelResponse(ctx, response);
     } else if (msg instanceof HttpContent) {
       response =
-          new SegmentedResponseData(
-              getChannelResponse(ctx), new Http1SegmentedData((HttpContent) msg));
+          getProxyRequestQueue(ctx)
+              .currentResponse()
+              .map(r -> new SegmentedResponseData(r, new Http1SegmentedData((HttpContent) msg)))
+              .orElse(null);
     } else {
       // TODO(CK): throw an exception if response is null?
       response = null;
@@ -157,13 +145,6 @@ public class Http1ClientCodec extends ChannelDuplexHandler {
       getProxyRequestQueue(ctx).onRequestWriteOrEnqueue(ctx, request.streamId(), message, promise);
     } else {
       ctx.write(msg, promise);
-    }
-  }
-
-  @Override
-  public void flush(ChannelHandlerContext ctx) throws Exception {
-    if (getProxyRequestQueue(ctx).isEmpty()) {
-      super.flush(ctx);
     }
   }
 }

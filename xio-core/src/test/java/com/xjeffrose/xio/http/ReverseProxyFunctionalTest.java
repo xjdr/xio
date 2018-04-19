@@ -325,7 +325,8 @@ public class ReverseProxyFunctionalTest extends Assert {
                   }
                   Response response = client.newCall(request.build()).execute();
                   responses.offer(response);
-                } catch (IOException ignored) {
+                } catch (IOException error) {
+                  error.printStackTrace();
                 } finally {
                   latch.countDown();
                 }

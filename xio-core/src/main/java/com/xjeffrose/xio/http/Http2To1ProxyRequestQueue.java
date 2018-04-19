@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 public class Http2To1ProxyRequestQueue {
 
   private LinkedHashMap<Integer, Queue<PendingRequest>> streamQueue = Maps.newLinkedHashMap();
+  private Response currentResponse = null;
 
   // region public functions
 
@@ -20,22 +21,29 @@ public class Http2To1ProxyRequestQueue {
     return streamQueue.keySet().stream().findFirst();
   }
 
+  public Optional<Response> currentResponse() {
+    return Optional.ofNullable(currentResponse);
+  }
+
   public void onResponseDrainNext(ChannelHandlerContext ctx, Response response) {
+    if (response.startOfMessage()) {
+      currentResponse = response;
+    }
     if (response.endOfMessage()) {
       streamQueue.remove(response.streamId());
-    }
-    nextStreamsQueue()
-        .ifPresent(
-            queue -> {
-              while (!queue.isEmpty()) {
-                PendingRequest pending = queue.remove();
-                if (isEmpty()) {
-                  ctx.writeAndFlush(pending.request, pending.promise);
-                } else {
-                  ctx.write(pending.request, pending.promise);
+      nextStreamsQueue()
+          .ifPresent(
+              queue -> {
+                while (!queue.isEmpty()) {
+                  PendingRequest pending = queue.remove();
+                  if (isEmpty()) {
+                    ctx.writeAndFlush(pending.request, pending.promise);
+                  } else {
+                    ctx.write(pending.request, pending.promise);
+                  }
                 }
-              }
-            });
+              });
+    }
   }
 
   public void onRequestWriteOrEnqueue(
