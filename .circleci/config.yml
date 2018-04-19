@@ -14,7 +14,7 @@ common_steps: &common_steps
         command: ./mvnw --batch-mode -DskipTests=true -Dmaven.javadoc.skip=true clean test-compile dependency:resolve-plugins dependency:go-offline
     - run:
         name: run tests
-        command: ./mvnw --batch-mode clean verify -DDEBUG=1
+        command: ./mvnw --batch-mode clean verify -DCOVERAGE=1
     - run:
         name: build package
         command: ./mvnw --batch-mode package javadoc:jar
