@@ -76,8 +76,8 @@ public class ApplicationBootstrap {
     this(application, ConfigFactory.load());
   }
 
-  public ApplicationBootstrap(String application, Function<Config, XioTracing> supplier) {
-    this(new ApplicationConfig(ConfigFactory.load().getConfig(application), supplier));
+  public ApplicationBootstrap(String application, Function<Config, XioTracing> tracingSupplier) {
+    this(new ApplicationConfig(ConfigFactory.load().getConfig(application), tracingSupplier));
   }
 
   public ApplicationBootstrap addServer(

@@ -1,5 +1,7 @@
 package com.xjeffrose.xio.application;
 
+import com.codahale.metrics.MetricRegistry;
+import com.google.common.annotations.VisibleForTesting;
 import com.xjeffrose.xio.bootstrap.ChannelConfiguration;
 import com.xjeffrose.xio.bootstrap.ClientChannelConfiguration;
 import com.xjeffrose.xio.bootstrap.ServerChannelConfiguration;
@@ -32,6 +34,13 @@ public class ApplicationState {
   @Getter
   private final XioTracing tracing;
 
+  @Getter private MetricRegistry metricRegistry;
+
+  @VisibleForTesting
+  public void setMetricRegistry(MetricRegistry metricRegistry) {
+    this.metricRegistry = metricRegistry;
+  }
+
   private final AtomicReference<IpFilterConfig> ipFilterConfig;
 
   private final AtomicReference<Http1FilterConfig> http1FilterConfig;
@@ -41,6 +50,7 @@ public class ApplicationState {
   public ApplicationState(ApplicationConfig config) {
     this.config = config;
     this.tracing = config.getTracing();
+    this.metricRegistry = new MetricRegistry();
 
     zkClient = config.zookeeperClient();
     channelConfiguration = config.serverChannelConfig();
