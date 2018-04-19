@@ -56,12 +56,13 @@ public class Http2To1ProxyRequestQueue {
       boolean shouldWrite =
           currentProxiedH2StreamId().map(id -> id.equals(streamId)).orElse(Boolean.TRUE);
 
+      Queue<PendingRequest> queue =
+          streamQueue.computeIfAbsent(streamId, k -> Queues.newArrayDeque());
+
       if (shouldWrite) {
         log.debug("writing h2-h1 proxy request {}", request);
         ctx.write(request, promise);
       } else {
-        Queue<PendingRequest> queue =
-            streamQueue.computeIfAbsent(streamId, k -> Queues.newArrayDeque());
         log.debug("enqueuing h2-h1 proxy request {}", request);
         queue.offer(new PendingRequest(request, promise));
       }
