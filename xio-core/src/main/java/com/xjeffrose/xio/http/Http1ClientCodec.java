@@ -62,7 +62,14 @@ public class Http1ClientCodec extends ChannelDuplexHandler {
 
     return getProxyRequestQueue(ctx)
         .currentProxiedH2StreamId()
-        .<Response>map(streamId -> new ProxyResponse(response, streamId))
+        .<Response>map(
+            streamId -> {
+              if (response instanceof SegmentedResponseData) {
+                return new ProxySegmentedResponseData((SegmentedResponseData) response, streamId);
+              } else {
+                return new ProxyResponse(response, streamId);
+              }
+            })
         .orElse(response);
   }
 

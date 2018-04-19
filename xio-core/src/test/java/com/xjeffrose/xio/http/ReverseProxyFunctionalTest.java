@@ -42,7 +42,6 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
@@ -272,7 +271,6 @@ public class ReverseProxyFunctionalTest extends Assert {
     post(port(), false, HTTP_1_1);
   }
 
-  @Ignore("WBK - TACO-131 spoon feed proxied h2 front to h1 back")
   @Test
   public void testHttp2toHttp1ServerGetMany() throws Exception {
     setupClient(true);
@@ -289,7 +287,6 @@ public class ReverseProxyFunctionalTest extends Assert {
     requests(iterations, false);
   }
 
-  @Ignore("WBK - TACO-131 spoon feed proxied h2 front to h1 back")
   @Test
   public void testHttp2toHttp1ServerPostMany() throws Exception {
     setupClient(true);
