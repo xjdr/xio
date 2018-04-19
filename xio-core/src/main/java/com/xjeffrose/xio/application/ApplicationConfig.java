@@ -1,5 +1,6 @@
 package com.xjeffrose.xio.application;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigException;
 import com.typesafe.config.ConfigFactory;
@@ -56,6 +57,7 @@ public class ApplicationConfig {
     this.tracing = tracing;
   }
 
+  @VisibleForTesting
   public ApplicationConfig(Config config, Function<Config, XioTracing> tracingSupplier) {
     this(config, tracingSupplier.apply(config));
   }
