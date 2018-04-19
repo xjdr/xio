@@ -36,6 +36,7 @@ public class Http2To1ProxyRequestQueue {
               queue -> {
                 while (!queue.isEmpty()) {
                   PendingRequest pending = queue.remove();
+                  log.debug("writing enqueued h2-h1 proxy request {}", pending.request);
                   if (isEmpty()) {
                     ctx.writeAndFlush(pending.request, pending.promise);
                   } else {
@@ -55,14 +56,14 @@ public class Http2To1ProxyRequestQueue {
       boolean shouldWrite =
           currentProxiedH2StreamId().map(id -> id.equals(streamId)).orElse(Boolean.TRUE);
 
-      Queue<PendingRequest> queue =
-          streamQueue.computeIfAbsent(streamId, k -> Queues.newArrayDeque());
-      if (!shouldWrite) {
-        log.debug("enqueuing request {}", request);
-        queue.offer(new PendingRequest(request, promise));
-      } else {
-        log.debug("writing request {}", request);
+      if (shouldWrite) {
+        log.debug("writing h2-h1 proxy request {}", request);
         ctx.write(request, promise);
+      } else {
+        Queue<PendingRequest> queue =
+            streamQueue.computeIfAbsent(streamId, k -> Queues.newArrayDeque());
+        log.debug("enqueuing h2-h1 proxy request {}", request);
+        queue.offer(new PendingRequest(request, promise));
       }
     }
   }
