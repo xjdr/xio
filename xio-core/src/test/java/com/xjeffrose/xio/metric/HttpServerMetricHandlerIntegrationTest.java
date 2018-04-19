@@ -1,6 +1,6 @@
 package com.xjeffrose.xio.metric;
 
-import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.*;
 
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
@@ -22,7 +22,8 @@ import org.junit.Test;
 
 public class HttpServerMetricHandlerIntegrationTest {
   private Application application = null;
-  private MetricRegistry metricRegistry = null;
+  private Meter requestsMeter = null;
+  private Meter successMeter = null;
 
   @Before
   public void before() {
@@ -32,52 +33,39 @@ public class HttpServerMetricHandlerIntegrationTest {
                 "exampleServer", (bs) -> bs.addToPipeline(new SmartHttpPipeline(TestHandler::new)))
             .build();
 
-    metricRegistry = application.getState().getMetricRegistry();
+    MetricRegistry metricRegistry = mock(MetricRegistry.class);
+
+    requestsMeter = mock(Meter.class);
+    when(metricRegistry.meter("requests")).thenReturn(requestsMeter);
+    successMeter = mock(Meter.class);
+    when(metricRegistry.meter("statusClassSuccess")).thenReturn(successMeter);
+
+    application.getState().setMetricRegistry(metricRegistry);
   }
 
   @After
-  public void stop() {
+  public void tearDown() {
     application.close();
   }
 
   @Test
-  public void testRequestMetricH1() throws Exception {
+  public void testMetricsH1() throws Exception {
     InetSocketAddress address = application.instrumentation("exampleServer").boundAddress();
     ClientHelper.https(address, Protocol.HTTP_1_1);
     ClientHelper.https(address, Protocol.HTTP_1_1);
 
-    Meter meter = metricRegistry.meter("requests");
-    assertEquals(2, meter.getCount());
+    verify(requestsMeter, times(2)).mark();
+    verify(successMeter, times(2)).mark();
   }
 
   @Test
-  public void testRequestMetricH2() throws Exception {
+  public void testMetricsH2() throws Exception {
     InetSocketAddress address = application.instrumentation("exampleServer").boundAddress();
     ClientHelper.https(address, Protocol.HTTP_2, Protocol.HTTP_1_1);
     ClientHelper.https(address, Protocol.HTTP_2, Protocol.HTTP_1_1);
 
-    Meter meter = metricRegistry.meter("requests");
-    assertEquals(2, meter.getCount());
-  }
-
-  @Test
-  public void teststatusClassMetricH1() throws Exception {
-    InetSocketAddress address = application.instrumentation("exampleServer").boundAddress();
-    ClientHelper.https(address, Protocol.HTTP_1_1);
-    ClientHelper.https(address, Protocol.HTTP_1_1);
-
-    Meter meter = metricRegistry.meter("statusClassSuccess");
-    assertEquals(2, meter.getCount());
-  }
-
-  @Test
-  public void teststatusClassMetricH2() throws Exception {
-    InetSocketAddress address = application.instrumentation("exampleServer").boundAddress();
-    ClientHelper.https(address, Protocol.HTTP_2, Protocol.HTTP_1_1);
-    ClientHelper.https(address, Protocol.HTTP_2, Protocol.HTTP_1_1);
-
-    Meter meter = metricRegistry.meter("statusClassSuccess");
-    assertEquals(2, meter.getCount());
+    verify(requestsMeter, times(2)).mark();
+    verify(successMeter, times(2)).mark();
   }
 
   private class TestHandler extends SimpleChannelInboundHandler<Request> {

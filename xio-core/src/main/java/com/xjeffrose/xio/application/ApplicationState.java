@@ -1,6 +1,7 @@
 package com.xjeffrose.xio.application;
 
 import com.codahale.metrics.MetricRegistry;
+import com.google.common.annotations.VisibleForTesting;
 import com.xjeffrose.xio.bootstrap.ChannelConfiguration;
 import com.xjeffrose.xio.bootstrap.ClientChannelConfiguration;
 import com.xjeffrose.xio.bootstrap.ServerChannelConfiguration;
@@ -33,7 +34,12 @@ public class ApplicationState {
   @Getter
   private final XioTracing tracing;
 
-  @Getter private final MetricRegistry metricRegistry;
+  @Getter private MetricRegistry metricRegistry;
+
+  @VisibleForTesting
+  public void setMetricRegistry(MetricRegistry metricRegistry) {
+    this.metricRegistry = metricRegistry;
+  }
 
   private final AtomicReference<IpFilterConfig> ipFilterConfig;
 
