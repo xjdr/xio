@@ -10,7 +10,7 @@ import lombok.val;
 
 @Slf4j
 public class ProxyHandler implements PipelineRequestHandler {
-  protected static final AsciiString X_FORWARDED_FOR = AsciiString.cached("x-forwarded-for");
+  private static final AsciiString X_FORWARDED_FOR = AsciiString.cached("x-forwarded-for");
 
   protected final ClientFactory factory;
   protected final ProxyRouteConfig config;
