@@ -1,0 +1,14 @@
+plugins {
+  id 'java'
+  id 'application'
+}
+
+description = 'trailhead'
+group = project_group
+version = project_version
+
+mainClassName = 'com.xjeffrose.xio.server.trailhead.Main'
+
+dependencies {
+  compile project(':xio')
+}

@@ -331,7 +331,7 @@ public class ReverseProxyFunctionalTest extends Assert {
           .start();
     }
 
-    latch.await(3, TimeUnit.SECONDS);
+    latch.await(5, TimeUnit.SECONDS);
     assertEquals(iterations, responses.size());
   }
 }

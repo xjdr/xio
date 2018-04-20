@@ -1,0 +1,15 @@
+plugins {
+  id 'java'
+  id 'application'
+}
+
+description = 'trailhead'
+group = project_group
+version = project_version
+
+mainClassName = 'com.xjeffrose.xio.server.Main'
+
+dependencies {
+  compile project(':xio')
+  compile group: 'org.apache.curator', name: 'curator-test', version: curator_version
+}
