@@ -42,6 +42,9 @@ public class PersistentProxyHandler extends ProxyHandler {
   @Override
   public ClientConfig getClientConfig(Request request) {
     String remoteAddress = request.headers().get(X_FORWARDED_FOR).toString();
+    if (remoteAddress == null) {
+      remoteAddress = request.host();
+    }
     val hasherPoolId = persistentProxyHasher.getOne(remoteAddress.getBytes(Constants.DEFAULT_CHARSET));
     return clientConfigMap.get(hasherPoolId);
   }
