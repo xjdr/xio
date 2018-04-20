@@ -23,7 +23,7 @@ public class ProxyHandler implements PipelineRequestHandler {
     this.addressHelper = addressHelper;
   }
 
-  public ClientConfig getClientConfig(Request request) {
+  public ClientConfig getClientConfig(ChannelHandlerContext ctx, Request request) {
     return config.clientConfigs().get(0);
   }
 
@@ -90,6 +90,21 @@ public class ProxyHandler implements PipelineRequestHandler {
     return result;
   }
 
+  protected String getOriginatingAddress(ChannelHandlerContext ctx, Request request) {
+    String rawXFF = request.headers().get(X_FORWARDED_FOR).toString();
+    if (rawXFF == null || rawXFF.trim().isEmpty()) {
+      return addressHelper.extractRemoteAddress(ctx.channel());
+    } else {
+      if (rawXFF.contains(",")) {
+        // extract originating address from list of addresses
+        return rawXFF.substring(0, rawXFF.indexOf(","));
+      } else {
+        // XFF only has one address
+        return rawXFF;
+      }
+    }
+  }
+
   private void appendXForwardedFor(ChannelHandlerContext ctx, Request request) {
     val remoteAddress = addressHelper.extractRemoteAddress(ctx.channel());
     if (remoteAddress != null) {
@@ -119,7 +134,7 @@ public class ProxyHandler implements PipelineRequestHandler {
     // 2) set the outgoing request host
     // 3) set the tracing span (if there is one)
 
-    ClientConfig clientConfig = getClientConfig(request);
+    ClientConfig clientConfig = getClientConfig(ctx, request);
     Client client = factory.getClient(ctx, clientConfig);
 
     if (!request.startOfMessage()) {
