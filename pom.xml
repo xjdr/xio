@@ -9,7 +9,7 @@
 
   <groupId>com.xjeffrose</groupId>
   <artifactId>xio-parent</artifactId>
-  <version>0.13.4-SNAPSHOT</version>
+  <version>0.13.5-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>xio-parent</name>
   <description>High performance Multithreaded Async I/O for Java 8</description>

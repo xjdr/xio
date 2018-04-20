@@ -5,12 +5,12 @@
   <parent>
     <groupId>com.xjeffrose</groupId>
     <artifactId>xio-parent</artifactId>
-    <version>0.13.4-SNAPSHOT</version>
+    <version>0.13.5-SNAPSHOT</version>
   </parent>
 
   <groupId>com.xjeffrose</groupId>
   <artifactId>xio-test</artifactId>
-  <version>0.13.4-SNAPSHOT</version>
+  <version>0.13.5-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>xio-test</name>
   <description>Testing package for xio</description>

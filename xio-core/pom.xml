@@ -5,12 +5,12 @@
   <parent>
     <groupId>com.xjeffrose</groupId>
     <artifactId>xio-parent</artifactId>
-    <version>0.13.4-SNAPSHOT</version>
+    <version>0.13.5-SNAPSHOT</version>
   </parent>
 
   <groupId>com.xjeffrose</groupId>
   <artifactId>xio</artifactId>
-  <version>0.13.4-SNAPSHOT</version>
+  <version>0.13.5-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>xio</name>
   <description>High performance Multithreaded Async I/O for Java 8</description>
@@ -20,10 +20,11 @@
     <!-- Constants -->
     <java.version>1.8</java.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <metrics.version>4.0.0</metrics.version>
 
     <!-- Dependencies -->
     <jmh.version>1.4.1</jmh.version>
-    <jdk8Alpn></jdk8Alpn>
+    <jdk8Alpn />
     <argLine>${jdk8Alpn} -Xms512m -Xmx512m</argLine>
     <bintray.package>xio</bintray.package>
   </properties>
@@ -68,11 +69,18 @@
       <scope>test</scope>
     </dependency>
 
-    <!-- https://mvnrepository.com/artifact/com.codahale.metrics/metrics-core -->
+    <!-- https://mvnrepository.com/artifact/io.dropwizard.metrics/metrics-core -->
     <dependency>
-      <groupId>com.codahale.metrics</groupId>
+      <groupId>io.dropwizard.metrics</groupId>
       <artifactId>metrics-core</artifactId>
-      <version>3.0.2</version>
+      <version>${metrics.version}</version>
+    </dependency>
+
+    <!-- https://mvnrepository.com/artifact/io.dropwizard.metrics/metrics-jmx -->
+    <dependency>
+      <groupId>io.dropwizard.metrics</groupId>
+      <artifactId>metrics-jmx</artifactId>
+      <version>${metrics.version}</version>
     </dependency>
 
     <dependency>
@@ -251,7 +259,7 @@
     <dependency>
       <groupId>com.xjeffrose</groupId>
       <artifactId>xio-test</artifactId>
-      <version>0.13.4-SNAPSHOT</version>
+      <version>0.13.5-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
 

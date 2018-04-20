@@ -1,6 +1,7 @@
 package com.xjeffrose.xio.application;
 
 import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.jmx.JmxReporter;
 import com.google.common.annotations.VisibleForTesting;
 import com.xjeffrose.xio.bootstrap.ChannelConfiguration;
 import com.xjeffrose.xio.bootstrap.ClientChannelConfiguration;
@@ -51,6 +52,8 @@ public class ApplicationState {
     this.config = config;
     this.tracing = config.getTracing();
     this.metricRegistry = new MetricRegistry();
+    JmxReporter jmxReporter = JmxReporter.forRegistry(metricRegistry).build();
+    jmxReporter.start();
 
     zkClient = config.zookeeperClient();
     channelConfiguration = config.serverChannelConfig();
