@@ -5,12 +5,12 @@
   <parent>
     <groupId>com.xjeffrose</groupId>
     <artifactId>xio-parent</artifactId>
-    <version>0.13.4-SNAPSHOT</version>
+    <version>0.13.4</version>
   </parent>
 
   <groupId>com.xjeffrose</groupId>
   <artifactId>xio</artifactId>
-  <version>0.13.4-SNAPSHOT</version>
+  <version>0.13.4</version>
   <packaging>jar</packaging>
   <name>xio</name>
   <description>High performance Multithreaded Async I/O for Java 8</description>
@@ -24,7 +24,7 @@
 
     <!-- Dependencies -->
     <jmh.version>1.4.1</jmh.version>
-    <jdk8Alpn></jdk8Alpn>
+    <jdk8Alpn />
     <argLine>${jdk8Alpn} -Xms512m -Xmx512m</argLine>
     <bintray.package>xio</bintray.package>
   </properties>
@@ -33,7 +33,7 @@
     <url>https://github.com/xjdr/xio/</url>
     <connection>scm:git:https://github.com/xjdr/xio.git</connection>
     <developerConnection>scm:git:git@github.com:xjdr/xio.git</developerConnection>
-    <tag>HEAD</tag>
+    <tag>v0.13.4</tag>
   </scm>
 
   <issueManagement>
@@ -259,7 +259,7 @@
     <dependency>
       <groupId>com.xjeffrose</groupId>
       <artifactId>xio-test</artifactId>
-      <version>0.13.4-SNAPSHOT</version>
+      <version>0.13.4</version>
       <scope>test</scope>
     </dependency>
 
