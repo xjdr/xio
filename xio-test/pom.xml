@@ -5,12 +5,12 @@
   <parent>
     <groupId>com.xjeffrose</groupId>
     <artifactId>xio-parent</artifactId>
-    <version>0.13.4</version>
+    <version>0.13.5-SNAPSHOT</version>
   </parent>
 
   <groupId>com.xjeffrose</groupId>
   <artifactId>xio-test</artifactId>
-  <version>0.13.4</version>
+  <version>0.13.5-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>xio-test</name>
   <description>Testing package for xio</description>
@@ -31,7 +31,7 @@
     <url>https://github.com/xjdr/xio/</url>
     <connection>scm:git:https://github.com/xjdr/xio.git</connection>
     <developerConnection>scm:git:git@github.com:xjdr/xio.git</developerConnection>
-    <tag>v0.13.4</tag>
+    <tag>v0.13.0</tag>
   </scm>
 
   <issueManagement>
