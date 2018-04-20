@@ -2,6 +2,7 @@ package com.xjeffrose.xio.http;
 
 import com.xjeffrose.xio.client.ClientConfig;
 import com.xjeffrose.xio.core.SocketAddressHelper;
+import io.netty.channel.ChannelHandlerContext;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.val;
 
@@ -14,7 +15,7 @@ public class RoundRobinProxyHandler extends ProxyHandler {
   }
 
   @Override
-  public ClientConfig getClientConfig(Request request) {
+  public ClientConfig getClientConfig(ChannelHandlerContext ctx, Request request) {
     int idx = next.getAndIncrement();
     val clientConfigs = config.clientConfigs();
     return clientConfigs.get(idx % clientConfigs.size());
