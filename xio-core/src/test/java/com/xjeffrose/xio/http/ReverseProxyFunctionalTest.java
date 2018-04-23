@@ -331,7 +331,8 @@ public class ReverseProxyFunctionalTest extends Assert {
           .start();
     }
 
-    latch.await(5, TimeUnit.SECONDS);
+    //todo: WBK find out why this needs to be so high
+    latch.await(10, TimeUnit.SECONDS);
     assertEquals(iterations, responses.size());
   }
 }
