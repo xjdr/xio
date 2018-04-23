@@ -4,9 +4,25 @@ plugins {
   id 'com.github.kt3k.coveralls' version '2.8.2'
   id 'jacoco'
   id 'com.github.sherter.google-java-format' version '0.6'
+  id "com.jfrog.bintray" version "1.7.3"
 }
 
-print("buld - dir: ${buildDir}")
+bintray {
+  user = System.getenv('BINTRAY_USER')
+  key = System.getenv('BINTRAY_KEY')
+  // dryRun = true //[Default: false] Whether to run this as dry-run, without deploying
+  // publish = false //[Default: false] Whether version should be auto published after an upload
+  // override = false //[Default: false] Whether to override version artifacts already published
+  pkg {
+    repo = 'generic'
+    name = 'xio'
+    userOrg = 'nordstromoss'
+    licenses = ['Apache-2.0']
+    websiteUrl = 'https://github.com/xjdr/xio'
+    issueTrackerUrl = 'https://github.com/xjdr/xio/issues'
+    vcsUrl = 'https://github.com/xjdr/xio.git'
+  }
+}
 
 googleJavaFormat {
   // todo: example should be moved into a separate module
