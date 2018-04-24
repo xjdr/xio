@@ -708,14 +708,14 @@
         <maven.compiler.source>1.10</maven.compiler.source>
         <maven.compiler.target>1.10</maven.compiler.target>
       </properties>
-      <build>
+      <dependencies>
         <dependency>
           <groupId>org.projectlombok</groupId>
           <artifactId>lombok</artifactId>
           <version>1.16.21-edge</version>
           <scope>provided</scope>
         </dependency>
-      </build>
+      </dependencies>
       <activation>
         <jdk>10</jdk>
       </activation>
