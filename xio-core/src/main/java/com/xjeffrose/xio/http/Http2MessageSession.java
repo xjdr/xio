@@ -82,7 +82,7 @@ public class Http2MessageSession {
     }
   }
 
-  void onOutboundRequestData(SegmentedData data) {
+  void onInboundRequestData(SegmentedData data) {
     MessageMetaState initialRequest = streamIdRequests.get(data.streamId());
 
     if (initialRequest == null) {

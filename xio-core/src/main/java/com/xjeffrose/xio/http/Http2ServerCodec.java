@@ -52,7 +52,7 @@ public class Http2ServerCodec extends ChannelDuplexHandler {
         SegmentedRequestData data =
             new SegmentedRequestData(
                 initialRequest, new Http2SegmentedData(frame.content(), msg.eos, msg.streamId));
-        messageSession.onOutboundRequestData(data);
+        messageSession.onInboundRequestData(data);
         return data;
       }
     }
