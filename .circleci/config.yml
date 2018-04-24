@@ -13,6 +13,9 @@ common_steps: &common_steps
         name: install maven dependencies
         command: ./mvnw --batch-mode -DskipTests=true -Dmaven.javadoc.skip=true clean test-compile dependency:resolve-plugins dependency:go-offline
     - run:
+        name: install lombok-edge
+        command: ./mvnw org.apache.maven.plugins:maven-install-plugin:2.3.1:install-file -Dfile=lib/lombok-edge.jar -DgroupId=org.projectlombok -DartifactId=lombok -Dversion=1.16.21-edge -Dpackaging=jar
+    - run:
         name: run tests
         command: ./mvnw --batch-mode clean verify -DCOVERAGE=1
     - run:
@@ -47,4 +50,4 @@ workflows:
     jobs:
       - build-jdk8
       - build-jdk9
-#     - build-jdk10
+      - build-jdk10
