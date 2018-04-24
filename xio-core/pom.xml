@@ -433,15 +433,6 @@
         <artifactId>maven-javadoc-plugin</artifactId>
         <version>3.0.0</version>
         <configuration>
-          <additionalOptions>
-            <additionalOption>-html5</additionalOption>
-            <additionalOption>--add-exports java.base/sun.security.x509=ALL-UNNAMED</additionalOption>
-            <additionalOption>--add-opens=java.base/java.nio=ALL-UNNAMED</additionalOption>
-            <additionalOption>--add-exports java.base/sun.security.util=ALL-UNNAMED</additionalOption>
-            <additionalOption>--add-exports java.base/com.sun.tools.javac.code=ALL-UNNAMED</additionalOption>
-            <additionalOption>--add-exports java.base/sun.security.validator=ALL-UNNAMED</additionalOption>
-            <additionalOption>--add-exports java.base/sun.security.provider.certpath=ALL-UNNAMED</additionalOption>
-          </additionalOptions>
           <doclint>all</doclint>
           <failOnError>true</failOnError>
           <quiet>true</quiet>
@@ -621,12 +612,6 @@
               <arg>-Xlint:-unchecked</arg>
               <arg>-Xlint:-rawtypes</arg>
               <arg>-Xlint:-serial</arg>
-              <arg>--add-exports</arg><arg>java.base/sun.security.x509=ALL-UNNAMED</arg>
-              <arg>--add-exports</arg><arg>java.base/java.nio=ALL-UNNAMED</arg>
-              <arg>--add-exports</arg><arg>java.base/sun.security.util=ALL-UNNAMED</arg>
-              <arg>--add-exports</arg><arg>java.base/com.sun.tools.javac.code=ALL-UNNAMED</arg>
-              <arg>--add-exports</arg><arg>java.base/sun.security.validator=ALL-UNNAMED</arg>
-              <arg>--add-exports</arg><arg>java.base/sun.security.provider.certpath=ALL-UNNAMED</arg>
             </compilerArgs>
           </configuration>
         </plugin>
@@ -699,6 +684,59 @@
     </profile>
     <profile>
       <id>java10</id>
+      <activation>
+        <jdk>10</jdk>
+      </activation>
+      <build>
+       <plugins>
+         <plugin>
+           <groupId>org.apache.maven.plugins</groupId>
+           <artifactId>maven-compiler-plugin</artifactId>
+           <version>3.7.0</version>
+           <configuration>
+             <fork>true</fork>
+             <source>${maven.compiler.source}</source>
+             <target>${maven.compiler.target}</target>
+             <compilerArgs>
+               <arg>-XDignore.symbol.file</arg>
+               <arg>-Xlint:all</arg>
+               <arg>-Xlint:-deprecation</arg>
+               <arg>-Xlint:-unchecked</arg>
+               <arg>-Xlint:-rawtypes</arg>
+               <arg>-Xlint:-serial</arg>
+               <arg>--add-exports</arg><arg>java.base/sun.security.x509=ALL-UNNAMED</arg>
+               <arg>--add-exports</arg><arg>java.base/java.nio=ALL-UNNAMED</arg>
+               <arg>--add-exports</arg><arg>java.base/sun.security.util=ALL-UNNAMED</arg>
+               <arg>--add-exports</arg><arg>java.base/com.sun.tools.javac.code=ALL-UNNAMED</arg>
+               <arg>--add-exports</arg><arg>java.base/sun.security.validator=ALL-UNNAMED</arg>
+               <arg>--add-exports</arg><arg>java.base/sun.security.provider.certpath=ALL-UNNAMED</arg>
+             </compilerArgs>
+           </configuration>
+         </plugin>
+         <plugin>
+           <groupId>org.apache.maven.plugins</groupId>
+           <artifactId>maven-javadoc-plugin</artifactId>
+           <version>3.0.0</version>
+           <configuration>
+             <doclint>all</doclint>
+             <failOnError>true</failOnError>
+             <quiet>true</quiet>
+             <source>${maven.compiler.source}</source>
+             <encoding>${project.build.sourceEncoding}</encoding>
+             <excludePackageNames>*thrift*</excludePackageNames>
+           </configuration>
+           <executions>
+             <execution>
+               <id>attach-javadocs</id>
+               <phase>verify</phase>
+               <goals>
+                 <goal>jar</goal>
+               </goals>
+             </execution>
+           </executions>
+         </plugin>
+       </plugins>
+      </build>
       <properties>
         <argLine.java9.extras />
         <!-- Export some stuff which is used during our tests -->
@@ -716,12 +754,71 @@
           <scope>provided</scope>
         </dependency>
       </dependencies>
-      <activation>
-        <jdk>10</jdk>
-      </activation>
     </profile>
     <profile>
       <id>java9</id>
+      <activation>
+        <jdk>9</jdk>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <version>3.7.0</version>
+            <configuration>
+              <fork>true</fork>
+              <source>${maven.compiler.source}</source>
+              <target>${maven.compiler.target}</target>
+              <compilerArgs>
+                <arg>-XDignore.symbol.file</arg>
+                <arg>-Xlint:all</arg>
+                <arg>-Xlint:-deprecation</arg>
+                <arg>-Xlint:-unchecked</arg>
+                <arg>-Xlint:-rawtypes</arg>
+                <arg>-Xlint:-serial</arg>
+                <arg>--add-exports</arg><arg>java.base/sun.security.x509=ALL-UNNAMED</arg>
+                <arg>--add-exports</arg><arg>java.base/java.nio=ALL-UNNAMED</arg>
+                <arg>--add-exports</arg><arg>java.base/sun.security.util=ALL-UNNAMED</arg>
+                <arg>--add-exports</arg><arg>java.base/com.sun.tools.javac.code=ALL-UNNAMED</arg>
+                <arg>--add-exports</arg><arg>java.base/sun.security.validator=ALL-UNNAMED</arg>
+                <arg>--add-exports</arg><arg>java.base/sun.security.provider.certpath=ALL-UNNAMED</arg>
+              </compilerArgs>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>3.0.0</version>
+            <configuration>
+              <additionalOptions>
+                <additionalOption>-html5</additionalOption>
+                <additionalOption>--add-exports java.base/sun.security.x509=ALL-UNNAMED</additionalOption>
+                <additionalOption>--add-opens=java.base/java.nio=ALL-UNNAMED</additionalOption>
+                <additionalOption>--add-exports java.base/sun.security.util=ALL-UNNAMED</additionalOption>
+                <additionalOption>--add-exports java.base/com.sun.tools.javac.code=ALL-UNNAMED</additionalOption>
+                <additionalOption>--add-exports java.base/sun.security.validator=ALL-UNNAMED</additionalOption>
+                <additionalOption>--add-exports java.base/sun.security.provider.certpath=ALL-UNNAMED</additionalOption>
+              </additionalOptions>
+              <doclint>all</doclint>
+              <failOnError>true</failOnError>
+              <quiet>true</quiet>
+              <source>${maven.compiler.source}</source>
+              <encoding>${project.build.sourceEncoding}</encoding>
+              <excludePackageNames>*thrift*</excludePackageNames>
+            </configuration>
+            <executions>
+              <execution>
+                <id>attach-javadocs</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
       <properties>
         <argLine.java9.extras />
         <!-- Export some stuff which is used during our tests -->
@@ -731,9 +828,6 @@
         <maven.compiler.source>1.9</maven.compiler.source>
         <maven.compiler.target>1.9</maven.compiler.target>
       </properties>
-      <activation>
-        <jdk>9</jdk>
-      </activation>
     </profile>
     <profile>
       <id>alpn-when-jdk8</id>
