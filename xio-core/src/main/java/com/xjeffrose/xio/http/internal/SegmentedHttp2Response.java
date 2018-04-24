@@ -40,7 +40,7 @@ public class SegmentedHttp2Response implements SegmentedResponse {
 
   @Override
   public boolean startOfMessage() {
-    return false;
+    return true;
   }
 
   @Override
