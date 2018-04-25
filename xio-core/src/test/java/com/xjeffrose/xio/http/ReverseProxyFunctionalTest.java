@@ -25,9 +25,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.IntStream;
 import lombok.extern.slf4j.Slf4j;
+import net.jodah.concurrentunit.Waiter;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Protocol;
@@ -305,33 +306,35 @@ public class ReverseProxyFunctionalTest extends Assert {
 
   private void requests(int iterations, boolean post) throws Exception {
     final Queue<Response> responses = new ConcurrentLinkedDeque<>();
-    final CountDownLatch latch = new CountDownLatch(iterations);
+    final Waiter waiter = new Waiter();
     String url = url(port(), false);
-    for (int i = 0; i < iterations; i++) {
-      server.enqueue(buildResponse());
-      new Thread(
-              () -> {
-                try {
-                  Request.Builder request = new Request.Builder().url(url);
-                  if (post) {
-                    MediaType mediaType = MediaType.parse("text/plain");
-                    RequestBody body = RequestBody.create(mediaType, "this is the post body");
-                    request.post(body);
-                  } else {
-                    request.get();
-                  }
-                  Response response = client.newCall(request.build()).execute();
-                  responses.offer(response);
-                } catch (IOException error) {
-                  error.printStackTrace();
-                } finally {
-                  latch.countDown();
-                }
-              })
-          .start();
-    }
+    IntStream.range(0, iterations)
+        .forEach(
+            index -> {
+              server.enqueue(buildResponse());
+              new Thread(
+                      () -> {
+                        try {
+                          Request.Builder request = new Request.Builder().url(url);
+                          if (post) {
+                            MediaType mediaType = MediaType.parse("text/plain");
+                            RequestBody body =
+                                RequestBody.create(mediaType, "this is the post body");
+                            request.post(body);
+                          } else {
+                            request.get();
+                          }
+                          Response response = client.newCall(request.build()).execute();
+                          responses.offer(response);
+                          waiter.resume();
+                        } catch (IOException error) {
+                          waiter.fail(error);
+                        }
+                      })
+                  .start();
+            });
 
-    latch.await(3, TimeUnit.SECONDS);
+    waiter.await(10, TimeUnit.SECONDS, iterations);
     assertEquals(iterations, responses.size());
   }
 }
