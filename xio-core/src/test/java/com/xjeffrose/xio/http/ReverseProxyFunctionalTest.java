@@ -25,6 +25,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 import lombok.extern.slf4j.Slf4j;
@@ -268,11 +270,10 @@ public class ReverseProxyFunctionalTest extends Assert {
   }
 
   @Test
-  @Ignore("todo: WBK")
   public void testHttp2toHttp1ServerGetMany() throws Exception {
     setupClient(true);
     setupFrontBack(true, false);
-    final int iterations = 5;
+    final int iterations = 8;
     requests(iterations, false);
   }
 
@@ -280,25 +281,23 @@ public class ReverseProxyFunctionalTest extends Assert {
   public void testHttp2toHttp2ServerGetMany() throws Exception {
     setupClient(true);
     setupFrontBack(true, true);
-    final int iterations = 5;
+    final int iterations = 8;
     requests(iterations, false);
   }
 
   @Test
-  @Ignore("todo: WBK")
   public void testHttp2toHttp1ServerPostMany() throws Exception {
     setupClient(true);
     setupFrontBack(true, false);
-    final int iterations = 5;
+    final int iterations = 8;
     requests(iterations, true);
   }
 
   @Test
-  @Ignore("todo: WBK")
   public void testHttp2toHttp2ServerPostMany() throws Exception {
     setupClient(true);
     setupFrontBack(true, true);
-    final int iterations = 5;
+    final int iterations = 8;
     requests(iterations, true);
   }
 
@@ -306,33 +305,35 @@ public class ReverseProxyFunctionalTest extends Assert {
     final Queue<Response> responses = new ConcurrentLinkedDeque<>();
     final Waiter waiter = new Waiter();
     String url = url(port(), false);
+    ExecutorService executorService = Executors.newFixedThreadPool(4);
     IntStream.range(0, iterations)
         .forEach(
             index -> {
               server.enqueue(buildResponse());
-              new Thread(
-                      () -> {
-                        try {
-                          Request.Builder request = new Request.Builder().url(url);
-                          if (post) {
-                            MediaType mediaType = MediaType.parse("text/plain");
-                            RequestBody body =
-                                RequestBody.create(mediaType, "this is the post body");
-                            request.post(body);
-                          } else {
-                            request.get();
-                          }
-                          Response response = client.newCall(request.build()).execute();
-                          responses.offer(response);
-                          waiter.resume();
-                        } catch (IOException error) {
-                          waiter.fail(error);
-                        }
-                      })
-                  .start();
+              executorService.submit(
+                  () -> {
+                    try {
+                      Request.Builder request = new Request.Builder().url(url);
+                      if (post) {
+                        MediaType mediaType = MediaType.parse("text/plain");
+                        RequestBody body = RequestBody.create(mediaType, "this is the post body");
+                        request.post(body);
+                      } else {
+                        request.get();
+                      }
+                      Response response = client.newCall(request.build()).execute();
+                      responses.offer(response);
+                      waiter.resume();
+                    } catch (IOException error) {
+                      waiter.fail(error);
+                    }
+                  });
             });
 
-    waiter.await(1, TimeUnit.SECONDS, iterations);
+    int seconds = 10;
+    waiter.await(seconds, TimeUnit.SECONDS, iterations);
     assertEquals(iterations, responses.size());
+    executorService.shutdown();
+    executorService.awaitTermination(seconds, TimeUnit.SECONDS);
   }
 }
