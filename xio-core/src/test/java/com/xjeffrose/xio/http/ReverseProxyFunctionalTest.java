@@ -39,12 +39,7 @@ import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
 import okhttp3.mockwebserver.SocketPolicy;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.rules.TestName;
 
 @Slf4j
@@ -273,10 +268,11 @@ public class ReverseProxyFunctionalTest extends Assert {
   }
 
   @Test
+  @Ignore("todo: WBK")
   public void testHttp2toHttp1ServerGetMany() throws Exception {
     setupClient(true);
     setupFrontBack(true, false);
-    final int iterations = 2;
+    final int iterations = 5;
     requests(iterations, false);
   }
 
@@ -284,23 +280,25 @@ public class ReverseProxyFunctionalTest extends Assert {
   public void testHttp2toHttp2ServerGetMany() throws Exception {
     setupClient(true);
     setupFrontBack(true, true);
-    final int iterations = 2;
+    final int iterations = 5;
     requests(iterations, false);
   }
 
   @Test
+  @Ignore("todo: WBK")
   public void testHttp2toHttp1ServerPostMany() throws Exception {
     setupClient(true);
     setupFrontBack(true, false);
-    final int iterations = 2;
+    final int iterations = 5;
     requests(iterations, true);
   }
 
   @Test
+  @Ignore("todo: WBK")
   public void testHttp2toHttp2ServerPostMany() throws Exception {
     setupClient(true);
     setupFrontBack(true, true);
-    final int iterations = 2;
+    final int iterations = 5;
     requests(iterations, true);
   }
 
@@ -334,7 +332,7 @@ public class ReverseProxyFunctionalTest extends Assert {
                   .start();
             });
 
-    waiter.await(10, TimeUnit.SECONDS, iterations);
+    waiter.await(1, TimeUnit.SECONDS, iterations);
     assertEquals(iterations, responses.size());
   }
 }
