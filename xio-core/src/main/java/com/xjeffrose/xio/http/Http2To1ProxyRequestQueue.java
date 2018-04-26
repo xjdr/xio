@@ -26,7 +26,7 @@ public class Http2To1ProxyRequestQueue {
   }
 
   public void onResponseDrainNext(ChannelHandlerContext ctx, Response response) {
-    if (response.startOfMessage()) {
+    if (response.startOfMessage() || !response.endOfMessage()) {
       currentResponse = response;
     }
     if (response.endOfMessage()) {

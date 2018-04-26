@@ -109,8 +109,9 @@ public class Http2ServerCodec extends ChannelDuplexHandler {
         Http2Response.build(
             data.streamId(), new DefaultHttp2DataFrame(data.content(), dataEos), dataEos);
 
-    if (data.trailingHeaders().size() != 0) {
-      Http2Headers headers = data.trailingHeaders().http2Headers();
+    Headers trailingHeaders = data.trailingHeaders();
+    if (trailingHeaders != null && trailingHeaders.size() != 0) {
+      Http2Headers headers = trailingHeaders.http2Headers();
       Http2Response last = Http2Response.build(data.streamId(), headers, true);
       PromiseCombiner combiner = new PromiseCombiner();
       combiner.add(ctx.write(response, ctx.newPromise()));

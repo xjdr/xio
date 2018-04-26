@@ -127,7 +127,7 @@ public class Http2To1ProxyRequestQueueTest extends Assert {
             new Http1SegmentedData(new DefaultHttpContent(Unpooled.EMPTY_BUFFER)));
 
     subject.onResponseDrainNext(mockCtx, stream3Response1);
-    assertSame(stream3Response0, subject.currentResponse().orElse(null));
+    assertSame(stream3Response1, subject.currentResponse().orElse(null));
     verifyNoMoreInteractions(mockCtx); // should not write anything queued
 
     // when the first stream id responses complete
@@ -137,7 +137,7 @@ public class Http2To1ProxyRequestQueueTest extends Assert {
             new Http1SegmentedData(new DefaultLastHttpContent(Unpooled.EMPTY_BUFFER)));
 
     subject.onResponseDrainNext(mockCtx, stream3Response2);
-    assertSame(stream3Response0, subject.currentResponse().orElse(null));
+    assertSame(stream3Response1, subject.currentResponse().orElse(null));
 
     // then the second stream's enqueued requests should spool out
     verify(mockCtx).write(eq("request 2a"), any()); // should write stream 5 requests
@@ -162,7 +162,7 @@ public class Http2To1ProxyRequestQueueTest extends Assert {
             new Http1SegmentedData(new DefaultHttpContent(Unpooled.EMPTY_BUFFER)));
 
     subject.onResponseDrainNext(mockCtx, stream5Response1);
-    assertSame(stream5Response0, subject.currentResponse().orElse(null));
+    assertSame(stream5Response1, subject.currentResponse().orElse(null));
 
     Response stream5Response2 =
         new SegmentedResponseData(
@@ -170,7 +170,7 @@ public class Http2To1ProxyRequestQueueTest extends Assert {
             new Http1SegmentedData(new DefaultLastHttpContent(Unpooled.EMPTY_BUFFER)));
 
     subject.onResponseDrainNext(mockCtx, stream5Response2);
-    assertSame(stream5Response0, subject.currentResponse().orElse(null));
+    assertSame(stream5Response1, subject.currentResponse().orElse(null));
 
     // and the the queue should be empty
     assertTrue(subject.isEmpty());

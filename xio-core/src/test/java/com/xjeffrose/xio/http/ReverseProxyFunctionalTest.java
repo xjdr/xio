@@ -19,7 +19,6 @@ import com.xjeffrose.xio.test.OkHttpUnsafe;
 import com.xjeffrose.xio.tracing.XioTracing;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -31,11 +30,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 import lombok.extern.slf4j.Slf4j;
 import net.jodah.concurrentunit.Waiter;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Protocol;
+import okhttp3.*;
 import okhttp3.Request;
-import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -270,10 +266,27 @@ public class ReverseProxyFunctionalTest extends Assert {
   }
 
   @Test
+  public void testHttp1toHttp1ServerGetMany() throws Exception {
+    setupClient(true);
+    setupFrontBack(false, false);
+    final int iterations = 32;
+    requests(iterations, false);
+  }
+
+  @Test
+  public void testHttp1toHttp1ServerPostMany() throws Exception {
+    setupClient(true);
+    setupFrontBack(false, false);
+    final int iterations = 32;
+    requests(iterations, true);
+  }
+
+  @Test
+  @Ignore
   public void testHttp2toHttp1ServerGetMany() throws Exception {
     setupClient(true);
     setupFrontBack(true, false);
-    final int iterations = 8;
+    final int iterations = 64;
     requests(iterations, false);
   }
 
@@ -281,23 +294,25 @@ public class ReverseProxyFunctionalTest extends Assert {
   public void testHttp2toHttp2ServerGetMany() throws Exception {
     setupClient(true);
     setupFrontBack(true, true);
-    final int iterations = 8;
+    final int iterations = 64;
     requests(iterations, false);
   }
 
   @Test
+  @Ignore
   public void testHttp2toHttp1ServerPostMany() throws Exception {
     setupClient(true);
     setupFrontBack(true, false);
-    final int iterations = 8;
+    final int iterations = 32;
     requests(iterations, true);
   }
 
   @Test
+  @Ignore
   public void testHttp2toHttp2ServerPostMany() throws Exception {
     setupClient(true);
     setupFrontBack(true, true);
-    final int iterations = 8;
+    final int iterations = 64;
     requests(iterations, true);
   }
 
@@ -324,7 +339,7 @@ public class ReverseProxyFunctionalTest extends Assert {
                       Response response = client.newCall(request.build()).execute();
                       responses.offer(response);
                       waiter.resume();
-                    } catch (IOException error) {
+                    } catch (Exception error) {
                       waiter.fail(error);
                     }
                   });
