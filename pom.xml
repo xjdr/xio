@@ -1,0 +1,116 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.sonatype.oss</groupId>
+    <artifactId>oss-parent</artifactId>
+    <version>9</version>
+  </parent>
+
+  <groupId>com.xjeffrose</groupId>
+  <artifactId>xio-parent</artifactId>
+  <version>0.13.5-SNAPSHOT</version>
+  <packaging>pom</packaging>
+  <name>xio-parent</name>
+  <description>High performance Multithreaded Async I/O for Java 8</description>
+  <url>https://github.com/xjdr/xio.git</url>
+  <scm>
+    <url>https://github.com/xjdr/xio/</url>
+    <connection>scm:git:https://github.com/xjdr/xio.git</connection>
+    <developerConnection>scm:git:git@github.com:xjdr/xio.git</developerConnection>
+    <tag>HEAD</tag>
+  </scm>
+
+  <issueManagement>
+    <system>GitHub Issues</system>
+    <url>https://github.com/xjdr/xio/issues</url>
+  </issueManagement>
+
+  <licenses>
+    <license>
+      <name>Apache 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+    </license>
+  </licenses>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <bintray.package>xio-parent</bintray.package>
+    <bintray.repo>oss_maven</bintray.repo>
+    <bintray.subject>nordstromoss</bintray.subject>
+  </properties>
+
+  <distributionManagement>
+    <repository>
+      <id>bintray-xio-deploy</id>
+      <url>https://api.bintray.com/maven/${bintray.subject}/${bintray.repo}/${bintray.package}/;publish=1</url>
+    </repository>
+  </distributionManagement>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>com.coveo</groupId>
+        <artifactId>fmt-maven-plugin</artifactId>
+        <version>2.1.0</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>      
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-deploy-plugin</artifactId>
+        <version>2.8.2</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-release-plugin</artifactId>
+        <version>2.5.3</version>
+        <configuration>
+          <tagNameFormat>v@{project.version}</tagNameFormat>
+          <autoVersionSubmodules>true</autoVersionSubmodules>
+          <goals>deploy</goals>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-gpg-plugin</artifactId>
+        <version>1.1</version>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
+      </plugin>
+    </plugins>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.5.1</version>
+          <configuration>
+            <fork>true</fork>
+            <source>1.8</source>
+            <target>1.8</target>
+            <compilerArgs>
+              <arg>-XDignore.symbol.file</arg>
+              <arg>-Xlint:all</arg>
+              <arg>-Xlint:-deprecation</arg>
+              <arg>-Xlint:-unchecked</arg>
+              <arg>-Xlint:-rawtypes</arg>
+              <arg>-Xlint:-serial</arg>
+            </compilerArgs>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+
+  <modules>
+    <module>xio-core</module>
+    <module>xio-test</module>
+  </modules>
+</project>
