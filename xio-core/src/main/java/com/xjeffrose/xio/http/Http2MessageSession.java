@@ -5,6 +5,7 @@ import com.xjeffrose.xio.http.internal.MessageMetaState;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.AttributeKey;
 import java.util.Map;
+import java.util.Optional;
 import javax.annotation.Nullable;
 import lombok.extern.slf4j.Slf4j;
 
@@ -31,7 +32,41 @@ public class Http2MessageSession {
 
   private Http2MessageSession() {}
 
-  public void onRequest(Request request) {
+  // region Client
+
+  Response onInboundResponse(Response response) {
+    MessageMetaState initialRequest = streamIdRequests.get(response.streamId());
+    if (initialRequest == null) {
+      if (response.startOfMessage()) {
+        streamIdRequests.put(
+            response.streamId(), new MessageMetaState(response, response.endOfMessage()));
+      } else {
+        log.error(
+            "Received an h2 message segment without initial startOfMessage == true - response: {}",
+            response);
+      }
+    } else {
+      initialRequest.responseFinished = response.endOfMessage();
+    }
+    return response;
+  }
+
+  /**
+   * Returns the optional Response object for the current session (if any)
+   *
+   * @param streamId the h2 stream id of the session
+   * @return an optional response.
+   */
+  Optional<Response> currentResponse(int streamId) {
+    return Optional.ofNullable(streamIdRequests.get(streamId))
+        .flatMap(metaState -> Optional.ofNullable(metaState.response));
+  }
+
+  // endregion
+
+  // region Server
+
+  void onInboundRequest(Request request) {
     MessageMetaState initialRequest = streamIdRequests.get(request.streamId());
     if (initialRequest == null) {
       if (request.startOfMessage()) {
@@ -47,7 +82,7 @@ public class Http2MessageSession {
     }
   }
 
-  public void onRequestData(SegmentedData data) {
+  void onInboundRequestData(SegmentedData data) {
     MessageMetaState initialRequest = streamIdRequests.get(data.streamId());
 
     if (initialRequest == null) {
@@ -62,7 +97,7 @@ public class Http2MessageSession {
     }
   }
 
-  public void onResponse(Response response) {
+  void onOutboundResponse(Response response) {
     MessageMetaState initialRequest = streamIdRequests.get(response.streamId());
     if (initialRequest != null && response.endOfMessage()) {
       initialRequest.responseFinished = true;
@@ -74,7 +109,7 @@ public class Http2MessageSession {
    *
    * @param data The SegmentedData object the server is about to send
    */
-  public void onResponseData(SegmentedData data) {
+  void onOutboundResponseData(SegmentedData data) {
     MessageMetaState initialRequest = streamIdRequests.get(data.streamId());
     if (initialRequest != null) {
       if (data.endOfMessage()) {
@@ -100,6 +135,8 @@ public class Http2MessageSession {
     }
     return null;
   }
+
+  // endregion
 
   /**
    * Check if the message session has completed for a given streamId, if so remove the message

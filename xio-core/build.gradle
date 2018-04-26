@@ -89,7 +89,8 @@ dependencies {
 
   //region tests
   testCompile project(':xio-test')
-  testCompile(group: 'junit', name: 'junit', version: junit_version)
+  testCompile group: 'junit', name: 'junit', version: junit_version
+  testCompile group: 'net.jodah', name: 'concurrentunit', version: concurrentunit_version
   testCompile group: 'org.hamcrest', name: 'hamcrest-all', version: hamcrest_version
   testCompile group: 'org.slf4j', name: 'jul-to-slf4j', version: slf4j_version
   testCompile group: 'ch.qos.logback', name: 'logback-classic', version: logback_version
