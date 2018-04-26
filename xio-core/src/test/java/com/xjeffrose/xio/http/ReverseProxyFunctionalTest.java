@@ -19,20 +19,15 @@ import com.xjeffrose.xio.test.OkHttpUnsafe;
 import com.xjeffrose.xio.tracing.XioTracing;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
+import java.util.concurrent.*;
 import java.util.stream.IntStream;
 import lombok.extern.slf4j.Slf4j;
 import net.jodah.concurrentunit.Waiter;
 import okhttp3.*;
 import okhttp3.Request;
 import okhttp3.Response;
+import okhttp3.mockwebserver.Dispatcher;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
@@ -105,6 +100,17 @@ public class ReverseProxyFunctionalTest extends Assert {
 
     server = OkHttpUnsafe.getSslMockWebServer(getKeyManagers(tlsConfig));
     server.setProtocols(protocols);
+    server.setDispatcher(
+        new Dispatcher() {
+          @Override
+          public MockResponse dispatch(RecordedRequest request) throws InterruptedException {
+            String index = Optional.ofNullable(request.getHeader("x_index")).orElse("unknown");
+            return new MockResponse()
+                .addHeader("x_index", index)
+                .setBody("hello, world")
+                .setSocketPolicy(SocketPolicy.KEEP_OPEN);
+          }
+        });
     server.start();
   }
 
@@ -164,15 +170,10 @@ public class ReverseProxyFunctionalTest extends Assert {
     return path.toString();
   }
 
-  MockResponse buildResponse() {
-    return new MockResponse().setBody("hello, world").setSocketPolicy(SocketPolicy.KEEP_OPEN);
-  }
-
   void get(int port, boolean sanity, Protocol expectedProtocol) throws Exception {
     String url = url(port, sanity);
     Request request = new Request.Builder().url(url).build();
 
-    server.enqueue(buildResponse());
     Response response = client.newCall(request).execute();
     assertEquals(expectedProtocol, response.protocol());
 
@@ -186,7 +187,6 @@ public class ReverseProxyFunctionalTest extends Assert {
     RequestBody body = RequestBody.create(mediaType, "this is the post body");
     Request request = new Request.Builder().url(url).post(body).build();
 
-    server.enqueue(buildResponse());
     Response response = client.newCall(request).execute();
     assertEquals("unexpected client response protocol", expectedProtocol, response.protocol());
 
@@ -313,37 +313,42 @@ public class ReverseProxyFunctionalTest extends Assert {
   }
 
   private void requests(boolean post) throws Exception {
-    final Queue<Response> responses = new ConcurrentLinkedDeque<>();
+    final Map<Integer, Response> responses = new ConcurrentHashMap<>();
     final Waiter waiter = new Waiter();
     String url = url(port(), false);
     ExecutorService executorService = Executors.newFixedThreadPool(4);
     IntStream.range(0, NUM_REQUESTS)
         .forEach(
-            index -> {
-              server.enqueue(buildResponse());
-              executorService.submit(
-                  () -> {
-                    try {
-                      Request.Builder request = new Request.Builder().url(url);
-                      if (post) {
-                        MediaType mediaType = MediaType.parse("text/plain");
-                        RequestBody body = RequestBody.create(mediaType, "this is the post body");
-                        request.post(body);
-                      } else {
-                        request.get();
+            index ->
+                executorService.submit(
+                    () -> {
+                      try {
+                        Request.Builder request =
+                            new Request.Builder().header("x_index", String.valueOf(index)).url(url);
+                        if (post) {
+                          MediaType mediaType = MediaType.parse("text/plain");
+                          RequestBody body = RequestBody.create(mediaType, "this is the post body");
+                          request.post(body);
+                        } else {
+                          request.get();
+                        }
+                        Response response = client.newCall(request.build()).execute();
+                        responses.put(index, response);
+                        waiter.resume();
+                      } catch (Exception error) {
+                        waiter.fail(error);
                       }
-                      Response response = client.newCall(request.build()).execute();
-                      responses.offer(response);
-                      waiter.resume();
-                    } catch (Exception error) {
-                      waiter.fail(error);
-                    }
-                  });
-            });
+                    }));
 
     int seconds = 10;
     waiter.await(seconds, TimeUnit.SECONDS, NUM_REQUESTS);
-    assertEquals(NUM_REQUESTS, responses.size());
+    responses.forEach(
+        (key, response) -> {
+          String index = response.header("x_index");
+          assertNotNull(index);
+          assertEquals(key.toString(), index);
+        });
+    assertEquals("expected a response for all of the requests", NUM_REQUESTS, responses.size());
     executorService.shutdown();
     executorService.awaitTermination(seconds, TimeUnit.SECONDS);
   }
