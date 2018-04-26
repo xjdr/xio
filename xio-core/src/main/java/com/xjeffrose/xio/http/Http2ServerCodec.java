@@ -27,7 +27,7 @@ public class Http2ServerCodec extends ChannelDuplexHandler {
     }
   }
 
-  Request wrapRequest(ChannelHandlerContext ctx, Http2Request msg) {
+  private Request wrapRequest(ChannelHandlerContext ctx, Http2Request msg) {
     Http2MessageSession messageSession = lazyCreateSession(ctx);
     if (msg.payload instanceof Http2Headers) {
       Http2Headers headers = (Http2Headers) msg.payload;
@@ -37,12 +37,12 @@ public class Http2ServerCodec extends ChannelDuplexHandler {
           SegmentedRequestData request =
               new SegmentedRequestData(
                   initialRequest, new Http2SegmentedData(headers, msg.streamId));
-          messageSession.onRequest(request);
+          messageSession.onInboundRequest(request);
           return request;
         }
       } else {
         Request request = wrapHeaders(headers, msg.streamId, msg.eos);
-        messageSession.onRequest(request);
+        messageSession.onInboundRequest(request);
         return request;
       }
     } else if (msg.payload instanceof Http2DataFrame) {
@@ -52,7 +52,7 @@ public class Http2ServerCodec extends ChannelDuplexHandler {
         SegmentedRequestData data =
             new SegmentedRequestData(
                 initialRequest, new Http2SegmentedData(frame.content(), msg.eos, msg.streamId));
-        messageSession.onRequestData(data);
+        messageSession.onInboundRequestData(data);
         return data;
       }
     }
@@ -70,7 +70,7 @@ public class Http2ServerCodec extends ChannelDuplexHandler {
     }
   }
 
-  void writeResponse(ChannelHandlerContext ctx, Response response, ChannelPromise promise) {
+  private void writeResponse(ChannelHandlerContext ctx, Response response, ChannelPromise promise) {
     if (!response.headers().contains(HttpHeaderNames.CONTENT_TYPE)) {
       response.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/plain; charset=UTF-8");
     }
@@ -82,7 +82,7 @@ public class Http2ServerCodec extends ChannelDuplexHandler {
     headers.status(response.status().codeAsText());
 
     if (response instanceof FullResponse) {
-      messageSession.onResponse(response);
+      messageSession.onOutboundResponse(response);
       ByteBuf body = response.body();
       if (body != null && body.readableBytes() > 0) {
         PromiseCombiner combiner = new PromiseCombiner();
@@ -102,15 +102,16 @@ public class Http2ServerCodec extends ChannelDuplexHandler {
 
   void writeContent(ChannelHandlerContext ctx, SegmentedData data, ChannelPromise promise) {
     Http2MessageSession messageSession = lazyCreateSession(ctx);
-    messageSession.onResponseData(data);
+    messageSession.onOutboundResponseData(data);
 
     boolean dataEos = data.endOfMessage() && data.trailingHeaders().size() == 0;
     Http2Response response =
         Http2Response.build(
             data.streamId(), new DefaultHttp2DataFrame(data.content(), dataEos), dataEos);
 
-    if (data.trailingHeaders().size() != 0) {
-      Http2Headers headers = data.trailingHeaders().http2Headers();
+    Headers trailingHeaders = data.trailingHeaders();
+    if (trailingHeaders != null && trailingHeaders.size() != 0) {
+      Http2Headers headers = trailingHeaders.http2Headers();
       Http2Response last = Http2Response.build(data.streamId(), headers, true);
       PromiseCombiner combiner = new PromiseCombiner();
       combiner.add(ctx.write(response, ctx.newPromise()));
