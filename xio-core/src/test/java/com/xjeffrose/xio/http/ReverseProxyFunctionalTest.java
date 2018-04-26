@@ -341,7 +341,12 @@ public class ReverseProxyFunctionalTest extends Assert {
                     }));
 
     int seconds = 10;
-    waiter.await(seconds, TimeUnit.SECONDS, NUM_REQUESTS);
+    Exception timeout = null;
+    try {
+      waiter.await(seconds, TimeUnit.SECONDS, NUM_REQUESTS);
+    } catch (Exception e) {
+      timeout = e;
+    }
     responses.forEach(
         (key, response) -> {
           String index = response.header("x_index");
@@ -351,5 +356,9 @@ public class ReverseProxyFunctionalTest extends Assert {
     assertEquals("expected a response for all of the requests", NUM_REQUESTS, responses.size());
     executorService.shutdown();
     executorService.awaitTermination(seconds, TimeUnit.SECONDS);
+    if (timeout != null) {
+      log.error("timeout", timeout);
+      fail("test timed out");
+    }
   }
 }
