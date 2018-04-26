@@ -48,6 +48,8 @@ public class ReverseProxyFunctionalTest extends Assert {
     JulBridge.initialize();
   }
 
+  private static final int NUM_REQUESTS = 10;
+
   OkHttpClient client;
   Config config;
   ApplicationConfig appConfig;
@@ -269,59 +271,53 @@ public class ReverseProxyFunctionalTest extends Assert {
   public void testHttp1toHttp1ServerGetMany() throws Exception {
     setupClient(true);
     setupFrontBack(false, false);
-    final int iterations = 32;
-    requests(iterations, false);
+    requests(false);
   }
 
   @Test
   public void testHttp1toHttp1ServerPostMany() throws Exception {
     setupClient(true);
     setupFrontBack(false, false);
-    final int iterations = 32;
-    requests(iterations, true);
+    requests(true);
   }
 
   @Test
-  @Ignore
+  @Ignore("todo: WBK - land of the misfit toys")
   public void testHttp2toHttp1ServerGetMany() throws Exception {
     setupClient(true);
     setupFrontBack(true, false);
-    final int iterations = 64;
-    requests(iterations, false);
+    requests(false);
   }
 
   @Test
   public void testHttp2toHttp2ServerGetMany() throws Exception {
     setupClient(true);
     setupFrontBack(true, true);
-    final int iterations = 64;
-    requests(iterations, false);
+    requests(false);
   }
 
   @Test
-  @Ignore
+  @Ignore("todo: WBK - land of the misfit toys")
   public void testHttp2toHttp1ServerPostMany() throws Exception {
     setupClient(true);
     setupFrontBack(true, false);
-    final int iterations = 32;
-    requests(iterations, true);
+    requests(true);
   }
 
   @Test
-  @Ignore
+  @Ignore("todo: WBK - land of the misfit toys")
   public void testHttp2toHttp2ServerPostMany() throws Exception {
     setupClient(true);
     setupFrontBack(true, true);
-    final int iterations = 64;
-    requests(iterations, true);
+    requests(true);
   }
 
-  private void requests(int iterations, boolean post) throws Exception {
+  private void requests(boolean post) throws Exception {
     final Queue<Response> responses = new ConcurrentLinkedDeque<>();
     final Waiter waiter = new Waiter();
     String url = url(port(), false);
     ExecutorService executorService = Executors.newFixedThreadPool(4);
-    IntStream.range(0, iterations)
+    IntStream.range(0, NUM_REQUESTS)
         .forEach(
             index -> {
               server.enqueue(buildResponse());
@@ -346,8 +342,8 @@ public class ReverseProxyFunctionalTest extends Assert {
             });
 
     int seconds = 10;
-    waiter.await(seconds, TimeUnit.SECONDS, iterations);
-    assertEquals(iterations, responses.size());
+    waiter.await(seconds, TimeUnit.SECONDS, NUM_REQUESTS);
+    assertEquals(NUM_REQUESTS, responses.size());
     executorService.shutdown();
     executorService.awaitTermination(seconds, TimeUnit.SECONDS);
   }
