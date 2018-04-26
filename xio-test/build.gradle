@@ -1,0 +1,14 @@
+plugins {
+  id 'java-library'
+  id 'com.github.sherter.google-java-format' version '0.6'
+}
+
+description = 'xio-test'
+group = project_group
+version = project_version
+
+dependencies {
+  implementation group: 'com.squareup.okhttp3', name: 'okhttp', version: okhttp_version
+  implementation group: 'com.squareup.okhttp3', name: 'mockwebserver', version: okhttp_version
+  implementation group: 'com.typesafe', name: 'config', version: typesafe_config_version
+}

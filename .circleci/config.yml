@@ -8,23 +8,22 @@ common_steps: &common_steps
         command: apt-get install -y openssl libssl-dev ca-certificates-java
     - checkout
     - restore_cache:
-        key: v1-cache-xio-{{ arch }}-{{ checksum "pom.xml" }}
+        keys:
+        - v1-dependencies-{{ checksum "build.gradle" }}
+        - v1-dependencies-
     - run:
-        name: install maven dependencies
-        command: ./mvnw --batch-mode -DskipTests=true -Dmaven.javadoc.skip=true clean test-compile dependency:resolve-plugins dependency:go-offline
+        name: install dependencies
+        command: ./gradlew :xio:dependencies
     - run:
-        name: run tests
-        command: ./mvnw --batch-mode clean verify -DCOVERAGE=1
-    - run:
-        name: build package
-        command: ./mvnw --batch-mode package javadoc:jar
+        name: run build test verify
+        command: ./gradlew :xio:build
     - run:
         name: build reports
-        command: ./mvnw --batch-mode -pl xio-core coveralls:report -Dmaven.javadoc.skip=true -DrepoToken=${COVERALLS_REPO_TOKEN}
+        command: ./gradlew :xio:jacocoTestReport :xio:coveralls :xio:javadoc
     - save_cache:
-        key: v1-cache-xio-{{ arch }}-{{ checksum "pom.xml" }}
         paths:
-          - ~/.m2
+          - ~/.gradle
+        key: v1-dependencies-{{ checksum "build.gradle" }}
 
 version: 2
 jobs:
@@ -46,5 +45,5 @@ workflows:
   build:
     jobs:
       - build-jdk8
-      - build-jdk9
-#     - build-jdk10
+#      - build-jdk9
+#      - build-jdk10
