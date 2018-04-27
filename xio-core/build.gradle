@@ -121,6 +121,9 @@ def alpn_boot_jar = project.configurations.testCompile.find { it.name.startsWith
 test {
   // https://github.com/square/okhttp/wiki/Building#desktop-testing-with-maven
   jvmArgs = ["-Xbootclasspath/p:$alpn_boot_jar"]
+  testLogging {
+    showStandardStreams = true
+  }
 }
 
 task("showAlpnBootJar") {
