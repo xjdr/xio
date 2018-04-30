@@ -12,24 +12,11 @@ import io.netty.handler.codec.http2.Http2Settings;
 import io.netty.util.AttributeKey;
 import lombok.extern.slf4j.Slf4j;
 
-// TODO(CK): break this out into client/server classes
-// TODO(CK): Rename this to Http2ServerHandler
 @Slf4j
-public class Http2Handler extends Http2ConnectionHandler {
+public class Http2ServerHandler extends Http2ConnectionHandler {
 
   private static final AttributeKey<Integer> STREAM_ID_KEY =
-      AttributeKey.newInstance("xio_h2_stream_id");
-
-  public static int defaultValue(Integer i) {
-    if (i == null) {
-      return 0;
-    }
-    return i;
-  }
-
-  public static int getCurrentStreamId(ChannelHandlerContext ctx) {
-    return defaultValue(ctx.channel().attr(STREAM_ID_KEY).get());
-  }
+      AttributeKey.newInstance("xio_h2_server_stream_id");
 
   public static void setCurrentStreamId(ChannelHandlerContext ctx, int streamId) {
     ctx.channel().attr(STREAM_ID_KEY).set(streamId);
@@ -37,7 +24,7 @@ public class Http2Handler extends Http2ConnectionHandler {
 
   private int currentStreamId;
 
-  public Http2Handler(
+  public Http2ServerHandler(
       Http2ConnectionDecoder decoder,
       Http2ConnectionEncoder encoder,
       Http2Settings initialSettings) {
@@ -91,40 +78,6 @@ public class Http2Handler extends Http2ConnectionHandler {
         writeData(ctx, (Http2DataFrame) response.payload, promise);
         return;
       }
-    }
-
-    // TODO(CK): This should be broken out into Http2ClientHandler
-
-    if (msg instanceof Http2Request) {
-      Http2Request request = (Http2Request) msg;
-
-      if (request.payload instanceof Http2Headers) {
-        Http2Headers headers = (Http2Headers) request.payload;
-        currentStreamId = connection().local().incrementAndGetNextStreamId();
-        setCurrentStreamId(ctx, currentStreamId);
-        writeHeaders(ctx, headers, request.eos, promise);
-        return;
-      }
-
-      if (request.payload instanceof Http2DataFrame) {
-        Http2DataFrame data = (Http2DataFrame) request.payload;
-        writeData(ctx, data, promise);
-        return;
-      }
-    }
-
-    if (msg instanceof Http2Headers) {
-      Http2Headers headers = (Http2Headers) msg;
-      currentStreamId = connection().local().incrementAndGetNextStreamId();
-      setCurrentStreamId(ctx, currentStreamId);
-      writeHeaders(ctx, headers, false, promise);
-      return;
-    }
-
-    if (msg instanceof Http2DataFrame) {
-      Http2DataFrame data = (Http2DataFrame) msg;
-      writeData(ctx, data, promise);
-      return;
     }
   }
 }
