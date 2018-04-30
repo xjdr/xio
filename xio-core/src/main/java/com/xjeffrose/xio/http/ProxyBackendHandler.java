@@ -16,15 +16,6 @@ public class ProxyBackendHandler extends ChannelInboundHandlerAdapter {
   }
 
   @Override
-  public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
-    if (ctx.pipeline().get(Http2Handler.class) != null) {
-      log.debug("handlerAdded: adding Http2StreamMapper");
-      // we are an http2 pipeline
-      ctx.pipeline().addBefore("application codec", "stream mapper", new Http2StreamMapper());
-    }
-  }
-
-  @Override
   public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
     log.debug("RawBackendHandler[{}] channelRead: {}", this, msg);
     frontend
