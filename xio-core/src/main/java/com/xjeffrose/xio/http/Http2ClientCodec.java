@@ -104,14 +104,16 @@ public class Http2ClientCodec extends ChannelDuplexHandler {
   }
 
   private void writeContent(ChannelHandlerContext ctx, SegmentedData data, ChannelPromise promise) {
-    int streamId = 0; // TODO(CK): need a no stream constant somewhere
-    boolean dataEos = data.endOfMessage() && data.trailingHeaders().size() == 0;
+    Headers trailingHeaders = data.trailingHeaders();
+    boolean hasTrailing = trailingHeaders != null && trailingHeaders.size() > 0;
+    boolean dataEos = data.endOfMessage() && !hasTrailing;
     Http2Request request =
-        Http2Request.build(streamId, new DefaultHttp2DataFrame(data.content(), dataEos), dataEos);
+        Http2Request.build(
+            data.streamId(), new DefaultHttp2DataFrame(data.content(), dataEos), dataEos);
 
-    if (data.trailingHeaders().size() != 0) {
-      Http2Headers headers = data.trailingHeaders().http2Headers();
-      Http2Request last = Http2Request.build(streamId, headers, true);
+    if (hasTrailing) {
+      Http2Headers headers = trailingHeaders.http2Headers();
+      Http2Request last = Http2Request.build(data.streamId(), headers, true);
       PromiseCombiner combiner = new PromiseCombiner();
       combiner.add(ctx.write(request, ctx.newPromise()));
       combiner.add(ctx.write(last, ctx.newPromise()));
