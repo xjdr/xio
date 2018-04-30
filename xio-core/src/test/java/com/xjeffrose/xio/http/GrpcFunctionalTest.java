@@ -352,7 +352,6 @@ public class GrpcFunctionalTest extends Assert {
                             new Http2HandlerBuilder(Http2FrameForwarder::create)
                                 .server(false)
                                 .build())
-                        .addLast("stream mapper", new Http2StreamMapper())
                         .addLast("proxy", new RawBackendHandler(ctx));
                   }
                 })
