@@ -9,18 +9,10 @@ import io.netty.handler.codec.http2.Http2ConnectionHandler;
 import io.netty.handler.codec.http2.Http2DataFrame;
 import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.handler.codec.http2.Http2Settings;
-import io.netty.util.AttributeKey;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class Http2ServerHandler extends Http2ConnectionHandler {
-
-  private static final AttributeKey<Integer> STREAM_ID_KEY =
-      AttributeKey.newInstance("xio_h2_server_stream_id");
-
-  public static void setCurrentStreamId(ChannelHandlerContext ctx, int streamId) {
-    ctx.channel().attr(STREAM_ID_KEY).set(streamId);
-  }
 
   private int currentStreamId;
 
@@ -68,7 +60,6 @@ public class Http2ServerHandler extends Http2ConnectionHandler {
       Http2Response response = (Http2Response) msg;
 
       currentStreamId = response.streamId;
-      setCurrentStreamId(ctx, currentStreamId);
       if (response.payload instanceof Http2Headers) {
         writeHeaders(ctx, (Http2Headers) response.payload, response.eos, promise);
         return;

@@ -3,20 +3,12 @@ package com.xjeffrose.xio.http;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http2.*;
-import io.netty.util.AttributeKey;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class Http2ClientHandler extends Http2ConnectionHandler {
 
-  private static final AttributeKey<Integer> STREAM_ID_KEY =
-      AttributeKey.newInstance("xio_h2_client_stream_id");
-
-  public static void setCurrentStreamId(ChannelHandlerContext ctx, int streamId) {
-    ctx.channel().attr(STREAM_ID_KEY).set(streamId);
-  }
-
-  private int currentStreamId;
+  private int currentStreamId = 0;
 
   public Http2ClientHandler(
       Http2ConnectionDecoder decoder,
@@ -26,7 +18,11 @@ public class Http2ClientHandler extends Http2ConnectionHandler {
   }
 
   private void writeHeaders(
-      ChannelHandlerContext ctx, Http2Headers headers, boolean eos, ChannelPromise promise)
+      ChannelHandlerContext ctx,
+      Http2Headers headers,
+      boolean eos,
+      ChannelPromise promise,
+      int currentStreamId)
       throws Exception {
     encoder()
         .writeHeaders(
@@ -41,7 +37,8 @@ public class Http2ClientHandler extends Http2ConnectionHandler {
             promise);
   }
 
-  private void writeData(ChannelHandlerContext ctx, Http2DataFrame data, ChannelPromise promise)
+  private void writeData(
+      ChannelHandlerContext ctx, Http2DataFrame data, ChannelPromise promise, int currentStreamId)
       throws Exception {
     encoder().writeData(ctx, currentStreamId, data.content(), 0, data.isEndStream(), promise);
   }
@@ -60,34 +57,45 @@ public class Http2ClientHandler extends Http2ConnectionHandler {
 
     if (msg instanceof Http2Request) {
       Http2Request request = (Http2Request) msg;
-
+      int streamId = streamId(request);
       if (request.payload instanceof Http2Headers) {
         Http2Headers headers = (Http2Headers) request.payload;
-        currentStreamId = connection().local().incrementAndGetNextStreamId();
-        setCurrentStreamId(ctx, currentStreamId);
-        writeHeaders(ctx, headers, request.eos, promise);
+        writeHeaders(ctx, headers, request.eos, promise, streamId);
         return;
       }
 
       if (request.payload instanceof Http2DataFrame) {
         Http2DataFrame data = (Http2DataFrame) request.payload;
-        writeData(ctx, data, promise);
+        writeData(ctx, data, promise, streamId);
         return;
       }
     }
 
     if (msg instanceof Http2Headers) {
       Http2Headers headers = (Http2Headers) msg;
-      currentStreamId = connection().local().incrementAndGetNextStreamId();
-      setCurrentStreamId(ctx, currentStreamId);
-      writeHeaders(ctx, headers, false, promise);
+      writeHeaders(ctx, headers, false, promise, streamId());
       return;
     }
 
     if (msg instanceof Http2DataFrame) {
       Http2DataFrame data = (Http2DataFrame) msg;
-      writeData(ctx, data, promise);
+      writeData(ctx, data, promise, streamId());
       return;
+    }
+  }
+
+  private int streamId() {
+    if (currentStreamId == 0) {
+      currentStreamId = connection().local().incrementAndGetNextStreamId();
+    }
+    return currentStreamId;
+  }
+
+  private int streamId(Http2Request request) {
+    if (request.streamId == Message.H1_STREAM_ID_NONE) {
+      return streamId();
+    } else {
+      return request.streamId;
     }
   }
 }
