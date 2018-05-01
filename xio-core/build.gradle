@@ -25,8 +25,6 @@ bintray {
 }
 
 googleJavaFormat {
-  // todo: example should be moved into a separate module
-  exclude "src/example/**/*"
   exclude "out/**/*"
 }
 
@@ -116,18 +114,15 @@ dependencies {
   testCompile group: 'org.mortbay.jetty.alpn', name: 'alpn-boot', version: alpn_boot_version
 }
 
-def alpn_boot_jar = project.configurations.testCompile.find { it.name.startsWith("alpn-boot-") }
-
 test {
+  def alpn_boot_jar = project.configurations.testCompile.find { it.name.startsWith("alpn-boot-") }
+  def xbcp = "-Xbootclasspath/p:$alpn_boot_jar"
+  println xbcp
   // https://github.com/square/okhttp/wiki/Building#desktop-testing-with-maven
-  jvmArgs = ["-Xbootclasspath/p:$alpn_boot_jar"]
+  jvmArgs = [xbcp]
   testLogging {
     showStandardStreams = true
   }
-}
-
-task("showAlpnBootJar") {
-  println "-Xbootclasspath/p$alpn_boot_jar"
 }
 
 protobuf {
