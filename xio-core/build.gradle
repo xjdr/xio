@@ -61,7 +61,7 @@ dependencies {
   api group: 'com.typesafe', name: 'config', version: typesafe_config_version
   api group: 'io.netty', name: 'netty-all', version: netty_version
   implementation group: 'io.netty', name: 'netty-tcnative-boringssl-static', version: netty_tcnative_version, classifier: nativeClassifier
-  implementation group: 'org.slf4j', name: 'slf4j-api', version: slf4j_version
+  api group: 'org.slf4j', name: 'slf4j-api', version: slf4j_version
   implementation(group: 'org.apache.curator', name: 'curator-framework', version: curator_version) {
     exclude(module: 'zookeeper')
   }
@@ -72,7 +72,7 @@ dependencies {
     exclude(module: 'slf4j-log4j12')
     exclude(module: 'log4j')
   }
-  implementation group: 'org.slf4j', name: 'log4j-over-slf4j', version: slf4j_version
+  api group: 'org.slf4j', name: 'log4j-over-slf4j', version: slf4j_version
   implementation group: 'org.apache.thrift', name: 'libthrift', version: libthrift_version
   implementation group: 'io.zipkin.brave', name: 'brave-instrumentation-http', version: zipkin_brave_brave_instrumentation_http_version
   implementation group: 'io.zipkin.brave', name: 'brave-context-slf4j', version: zipkin_brave_brave_context_slf4j_version
