@@ -2,9 +2,11 @@ rootProject.name = 'xio-parent'
 include ':xio'
 include ':xio-test'
 include ':configuration-server'
+include 'chicago-example'
 //include ':trailhead'
 
 project(':xio').projectDir = "$rootDir/xio-core" as File
 project(':xio-test').projectDir = "$rootDir/xio-test" as File
 project(':configuration-server').projectDir = "$rootDir/configuration-server" as File
+project(':chicago-example').projectDir = "$rootDir/chicago-example" as File
 //project(':trailhead').projectDir = "$rootDir/example-trailhead" as File
