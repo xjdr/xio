@@ -91,16 +91,17 @@ public class ProxyHandler implements PipelineRequestHandler {
   }
 
   protected String getOriginatingAddress(ChannelHandlerContext ctx, Request request) {
-    String rawXFF = request.headers().get(X_FORWARDED_FOR).toString();
-    if (rawXFF == null || rawXFF.trim().isEmpty()) {
+    val rawXFF = request.headers().get(X_FORWARDED_FOR);
+    if (rawXFF == null || rawXFF.toString().trim().isEmpty()) {
       return addressHelper.extractRemoteAddress(ctx.channel());
     } else {
-      if (rawXFF.contains(",")) {
+      String stringXFF = rawXFF.toString();
+      if (stringXFF.contains(",")) {
         // extract originating address from list of addresses
-        return rawXFF.substring(0, rawXFF.indexOf(","));
+        return stringXFF.substring(0, stringXFF.indexOf(","));
       } else {
         // XFF only has one address
-        return rawXFF;
+        return stringXFF;
       }
     }
   }
