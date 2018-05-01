@@ -16,8 +16,8 @@ $ ./gradlew  verifyBintrayConfig
 -Xbootclasspath/p/Users/bvjp/.gradle/caches/modules-2/files-2.1/org.mortbay.jetty.alpn/alpn-boot/8.1.12.v20180117/2e64c9c4f641ea8da95276313844c53a4519fc18/alpn-boot-8.1.12.v20180117.jar
 
 > Task :verifyBintrayConfig
-bintray_user: pdex
-bintray_apikey: 5a129669353ee8651e4eaee2edab2cec4815c5cf
+bintray_user: BINTRAY_USER_NAME
+bintray_apikey: BINTRAY_API_KEY
 bintray_dryrun: false
 
 BUILD SUCCESSFUL in 0s
