@@ -1,9 +1,5 @@
 package com.xjeffrose.xio.http;
 
-import static com.xjeffrose.xio.helpers.TlsHelper.getKeyManagers;
-import static okhttp3.Protocol.HTTP_1_1;
-import static okhttp3.Protocol.HTTP_2;
-
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Streams;
 import com.typesafe.config.Config;
@@ -11,13 +7,12 @@ import com.typesafe.config.ConfigFactory;
 import com.xjeffrose.xio.SSL.TlsConfig;
 import com.xjeffrose.xio.application.Application;
 import com.xjeffrose.xio.application.ApplicationConfig;
+import com.xjeffrose.xio.application.ApplicationState;
 import com.xjeffrose.xio.bootstrap.ApplicationBootstrap;
-import com.xjeffrose.xio.client.ClientConfig;
 import com.xjeffrose.xio.core.SocketAddressHelper;
 import com.xjeffrose.xio.fixtures.JulBridge;
 import com.xjeffrose.xio.pipeline.SmartHttpPipeline;
 import com.xjeffrose.xio.test.OkHttpUnsafe;
-import com.xjeffrose.xio.tracing.XioTracing;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.reactivex.Observable;
@@ -30,12 +25,20 @@ import okhttp3.*;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.mockwebserver.Dispatcher;
-import okhttp3.mockwebserver.MockResponse;
-import okhttp3.mockwebserver.MockWebServer;
-import okhttp3.mockwebserver.RecordedRequest;
-import okhttp3.mockwebserver.SocketPolicy;
+import okhttp3.mockwebserver.*;
 import org.junit.*;
 import org.junit.rules.TestName;
+
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.IntStream;
+
+import static com.xjeffrose.xio.helpers.TlsHelper.getKeyManagers;
+import static okhttp3.Protocol.HTTP_1_1;
+import static okhttp3.Protocol.HTTP_2;
 
 @Slf4j
 public class ReverseProxyFunctionalTest extends Assert {
@@ -49,22 +52,13 @@ public class ReverseProxyFunctionalTest extends Assert {
 
   OkHttpClient client;
   Config config;
-  ApplicationConfig appConfig;
+  ApplicationState applicationState;
   Application reverseProxy;
   MockWebServer server;
 
-  static Application setupReverseProxy(
-      ApplicationConfig appConfig, ProxyRouteConfig proxyConfig, XioTracing tracing) {
-    ClientFactory factory =
-        new ClientFactory(tracing) {
-          @Override
-          public Client createClient(ChannelHandlerContext ctx, ClientConfig config) {
-            ClientState clientState = new ClientState(channelConfig(ctx), config);
-            return new Client(clientState, () -> new ProxyBackendHandler(ctx), getTracing());
-          }
-        };
-
-    return new ApplicationBootstrap(appConfig)
+  static Application setupReverseProxy(ApplicationState state, ProxyRouteConfig proxyConfig) {
+    ClientFactory factory = new ProxyClientFactory(state);
+    return new ApplicationBootstrap(state.config())
         .addServer(
             "main",
             (bs) ->
@@ -120,7 +114,7 @@ public class ReverseProxyFunctionalTest extends Assert {
     setupBack(h2Back);
 
     String front = h2Front ? "h2" : "h1";
-    appConfig = ApplicationConfig.fromConfig("xio." + front + "ReverseProxy", config);
+    applicationState = new ApplicationState(ApplicationConfig.fromConfig("xio." + front + "ReverseProxy", config));
     // TODO(CK): this creates global state across tests we should do something smarter
     System.setProperty("xio.baseClient.remotePort", Integer.toString(server.getPort()));
     System.setProperty("xio.testProxyRoute.proxyPath", "/hello/");
@@ -130,7 +124,7 @@ public class ReverseProxyFunctionalTest extends Assert {
 
     reverseProxy =
         setupReverseProxy(
-            appConfig, proxyConfig, new XioTracing(root.getConfig("xio.testProxyRoute")));
+            applicationState, proxyConfig);
   }
 
   void setupClient(boolean h2) throws Exception {

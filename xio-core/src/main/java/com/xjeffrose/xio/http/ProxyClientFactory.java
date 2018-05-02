@@ -21,8 +21,8 @@ public class ProxyClientFactory extends ClientFactory {
   */
   private final ApplicationState state;
 
-  public ProxyClientFactory(XioTracing tracing, ApplicationState state) {
-    super(tracing);
+  public ProxyClientFactory(ApplicationState state) {
+    super(state.tracing());
     this.state = state;
   }
 
