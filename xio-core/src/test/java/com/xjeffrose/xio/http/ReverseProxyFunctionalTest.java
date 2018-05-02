@@ -297,7 +297,6 @@ public class ReverseProxyFunctionalTest extends Assert {
   }
 
   @Test
-  @Ignore("todo: WBK - land of the misfit toys")
   public void testHttp2toHttp1ServerGetMany() throws Exception {
     setupClient(true);
     setupFrontBack(true, false);
@@ -312,7 +311,6 @@ public class ReverseProxyFunctionalTest extends Assert {
   }
 
   @Test
-  @Ignore("todo: WBK - land of the misfit toys")
   public void testHttp2toHttp1ServerPostMany() throws Exception {
     setupClient(true);
     setupFrontBack(true, false);

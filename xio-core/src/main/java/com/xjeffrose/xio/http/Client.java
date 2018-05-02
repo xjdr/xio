@@ -19,7 +19,6 @@ public class Client {
   private final ChannelFutureListener connectionListener;
   private final ChannelFutureListener writeListener;
   private Channel channel;
-  private ChannelFuture connectionFuture;
 
   public Client(ClientState state, Supplier<ChannelHandler> appHandler, XioTracing tracing) {
     this.state = state;

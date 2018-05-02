@@ -35,7 +35,7 @@ public class Http2To1ProxyRequestQueue {
                 while (!queue.isEmpty()) {
                   PendingRequest pending = queue.remove();
                   log.debug("writing enqueued h2-h1 proxy request {}", pending.request);
-                  if (isEmpty()) {
+                  if (queue.isEmpty()) {
                     ctx.writeAndFlush(pending.request, pending.promise);
                   } else {
                     ctx.write(pending.request, pending.promise);
