@@ -5,7 +5,6 @@ plugins {
 
 description = 'chicago-example'
 group = project_group
-version = project_version
 
 mainClassName = 'com.xjeffrose.xio.client.chicago.XioChicagoClient'
 
