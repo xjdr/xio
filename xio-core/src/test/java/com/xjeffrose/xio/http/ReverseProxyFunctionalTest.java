@@ -24,9 +24,7 @@ import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
 import java.util.*;
-import java.util.concurrent.*;
 import java.util.stream.IntStream;
-import javafx.util.Pair;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 import okhttp3.Request;
@@ -335,22 +333,22 @@ public class ReverseProxyFunctionalTest extends Assert {
     verify(requests(true).blockingIterable());
   }
 
-  private void verify(Iterable<Pair<Integer, Response>> responses) {
+  private void verify(Iterable<Pair> responses) {
     assertEquals(NUM_REQUESTS, Streams.stream(responses).count());
     responses.forEach(
         pair -> {
-          String index = pair.getValue().header("x_index");
+          String index = pair.response.header("x_index");
           assertNotNull(index);
-          assertEquals(pair.getKey().toString(), index);
+          assertEquals(pair.index.toString(), index);
         });
   }
 
-  private Observable<Pair<Integer, Response>> requests(boolean post) throws Exception {
+  private Observable<Pair> requests(boolean post) throws Exception {
     String url = url(port(), false);
     return Observable.fromIterable(() -> IntStream.range(0, NUM_REQUESTS).iterator())
         .flatMapSingle(
             index ->
-                Single.<Pair<Integer, Response>>create(
+                Single.<Pair>create(
                         emitter -> {
                           Request.Builder request =
                               new Request.Builder()
@@ -366,8 +364,18 @@ public class ReverseProxyFunctionalTest extends Assert {
                           }
                           Response response = client.newCall(request.build()).execute();
                           log.debug("response {}", response);
-                          emitter.onSuccess(new Pair<>(index, response));
+                          emitter.onSuccess(new Pair(index, response));
                         })
                     .subscribeOn(Schedulers.io()));
+  }
+
+  static class Pair {
+    private final Integer index;
+    private final Response response;
+
+    Pair(Integer first, Response response) {
+      this.index = first;
+      this.response = response;
+    }
   }
 }
