@@ -4,24 +4,7 @@ plugins {
   id 'com.github.kt3k.coveralls' version '2.8.2'
   id 'jacoco'
   id 'com.github.sherter.google-java-format' version '0.6'
-  id "com.jfrog.bintray" version "1.7.3"
-}
-
-bintray {
-  user = System.getenv('BINTRAY_USER')
-  key = System.getenv('BINTRAY_KEY')
-  // dryRun = true //[Default: false] Whether to run this as dry-run, without deploying
-  // publish = false //[Default: false] Whether version should be auto published after an upload
-  // override = false //[Default: false] Whether to override version artifacts already published
-  pkg {
-    repo = 'generic'
-    name = 'xio'
-    userOrg = 'nordstromoss'
-    licenses = ['Apache-2.0']
-    websiteUrl = 'https://github.com/xjdr/xio'
-    issueTrackerUrl = 'https://github.com/xjdr/xio/issues'
-    vcsUrl = 'https://github.com/xjdr/xio.git'
-  }
+  id 'com.jfrog.bintray'
 }
 
 googleJavaFormat {
@@ -38,7 +21,6 @@ jacocoTestReport {
 
 description = 'xio'
 group = project_group
-version = project_version
 
 def nativeClassifier
 def osName = System.getProperty('os.name').toLowerCase()
@@ -151,5 +133,37 @@ sourceSets {
       // In addition to the default 'src/test/proto'
       srcDir 'src/test/proto'
     }
+  }
+}
+
+bintray_package = 'xio'
+publishing {
+  publications {
+    maven(MavenPublication) {
+      groupId project_group
+      artifactId bintray_package
+      version version
+      from components.java
+    }
+  }
+}
+
+bintray {
+  user = bintray_user //this usually comes from gradle.properties file in ~/.gradle
+  key = bintray_apikey //this usually comes from gradle.properties file in ~/.gradle
+  publications = ['maven'] //this refers to publishing.publications.maven up above ^^^
+  dryRun = bintray_dryrun.toBoolean() //Whether to run this as dry-run, without deploying
+  publish = true //If version should be auto published after an upload
+  pkg {
+    userOrg = bintray_subject
+    repo = bintray_repo
+    name = bintray_package
+    version {
+      name = project.version //Bintray logical version name
+    }
+    licenses = ['Apache-2.0']
+    websiteUrl = 'https://github.com/xjdr/xio'
+    issueTrackerUrl = 'https://github.com/xjdr/xio/issues'
+    vcsUrl = 'https://github.com/xjdr/xio.git'
   }
 }
