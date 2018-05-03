@@ -128,8 +128,7 @@ public class EdgeProxyFunctionalTest extends Assert {
 
     public EdgeProxyState(EdgeProxyConfig config) {
       super(config);
-      clientFactory =
-          new ProxyClientFactory(this);
+      clientFactory = new ProxyClientFactory(this);
       routeStates =
           new RouteStates<ProxyRouteState>(
               // create an ImmutableMap from ...
