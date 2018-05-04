@@ -8,8 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class Http2ClientHandler extends Http2ConnectionHandler {
 
-  private int currentStreamId = 0;
-
   public Http2ClientHandler(
       Http2ConnectionDecoder decoder,
       Http2ConnectionEncoder encoder,
@@ -57,8 +55,10 @@ public class Http2ClientHandler extends Http2ConnectionHandler {
 
     if (msg instanceof Http2Request) {
       Http2Request request = (Http2Request) msg;
-      int streamId = streamId(request);
       if (request.payload instanceof Http2Headers) {
+        int streamId =
+            Http2ClientStreamMapper.http2ClientStreamMapper(ctx)
+                .outboundStreamId(connection(), request.streamId);
         Http2Headers headers = (Http2Headers) request.payload;
         writeHeaders(ctx, headers, request.eos, promise, streamId);
         return;
@@ -66,6 +66,9 @@ public class Http2ClientHandler extends Http2ConnectionHandler {
 
       if (request.payload instanceof Http2DataFrame) {
         Http2DataFrame data = (Http2DataFrame) request.payload;
+        int streamId =
+            Http2ClientStreamMapper.http2ClientStreamMapper(ctx)
+                .outboundStreamId(connection(), request.streamId);
         writeData(ctx, data, promise, streamId);
         return;
       }
@@ -73,33 +76,16 @@ public class Http2ClientHandler extends Http2ConnectionHandler {
 
     if (msg instanceof Http2Headers) {
       Http2Headers headers = (Http2Headers) msg;
-      writeHeaders(ctx, headers, false, promise, streamId());
+      int streamId = Http2ClientStreamMapper.http2ClientStreamMapper(ctx).outboundStreamId(connection(), 0);
+      writeHeaders(ctx, headers, false, promise, streamId);
       return;
     }
 
     if (msg instanceof Http2DataFrame) {
+      int streamId = Http2ClientStreamMapper.http2ClientStreamMapper(ctx).outboundStreamId(connection(), 0);
       Http2DataFrame data = (Http2DataFrame) msg;
-      writeData(ctx, data, promise, streamId());
+      writeData(ctx, data, promise, streamId);
       return;
-    }
-  }
-
-  private int streamId() {
-    if (currentStreamId == 0) {
-      currentStreamId = connection().local().incrementAndGetNextStreamId();
-    }
-    return currentStreamId;
-  }
-
-  private int streamId(Http2Request request) {
-    if (request.streamId == Message.H1_STREAM_ID_NONE) {
-      int id = streamId();
-      if (request.eos) {
-        currentStreamId = 0;
-      }
-      return id;
-    } else {
-      return request.streamId;
     }
   }
 }
