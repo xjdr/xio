@@ -274,7 +274,7 @@ public class ReverseProxyFunctionalTest extends Assert {
     setupClient(false);
     setupFrontBack(false, true);
 
-    verify(requests(true).blockingIterable());
+    verify(multipleAsyncRequests(true).blockingIterable());
   }
 
   @Test
@@ -282,7 +282,7 @@ public class ReverseProxyFunctionalTest extends Assert {
     setupClient(true);
     setupFrontBack(false, false);
 
-    verify(requests(false).blockingIterable());
+    verify(multipleAsyncRequests(false).blockingIterable());
   }
 
   @Test
@@ -290,7 +290,7 @@ public class ReverseProxyFunctionalTest extends Assert {
     setupClient(false);
     setupFrontBack(false, true);
 
-    verify(requests(false).blockingIterable());
+    verify(multipleAsyncRequests(false).blockingIterable());
   }
 
   @Test
@@ -298,7 +298,7 @@ public class ReverseProxyFunctionalTest extends Assert {
     setupClient(true);
     setupFrontBack(false, false);
 
-    verify(requests(true).blockingIterable());
+    verify(multipleAsyncRequests(true).blockingIterable());
   }
 
   @Test
@@ -306,7 +306,7 @@ public class ReverseProxyFunctionalTest extends Assert {
     setupClient(true);
     setupFrontBack(true, false);
 
-    verify(requests(false).blockingIterable());
+    verify(multipleAsyncRequests(false).blockingIterable());
   }
 
   @Test
@@ -314,7 +314,7 @@ public class ReverseProxyFunctionalTest extends Assert {
     setupClient(true);
     setupFrontBack(true, true);
 
-    verify(requests(false).blockingIterable());
+    verify(multipleAsyncRequests(false).blockingIterable());
   }
 
   @Test
@@ -322,7 +322,7 @@ public class ReverseProxyFunctionalTest extends Assert {
     setupClient(true);
     setupFrontBack(true, false);
 
-    verify(requests(true).blockingIterable());
+    verify(multipleAsyncRequests(true).blockingIterable());
   }
 
   @Test
@@ -330,51 +330,53 @@ public class ReverseProxyFunctionalTest extends Assert {
     setupClient(true);
     setupFrontBack(true, true);
 
-    verify(requests(true).blockingIterable());
+    verify(multipleAsyncRequests(true).blockingIterable());
   }
 
-  private void verify(Iterable<Pair> responses) {
+  private void verify(Iterable<IndexResponse> responses) {
+    // verifies that the correct number of responses occurred and that each response corresponds wit the request by
+    // checking the "x_index" header value
     assertEquals(NUM_REQUESTS, Streams.stream(responses).count());
     responses.forEach(
         pair -> {
           String index = pair.response.header("x_index");
           assertNotNull(index);
-          assertEquals(pair.index.toString(), index);
+          assertEquals(pair.xIndex.toString(), index);
         });
   }
 
-  private Observable<Pair> requests(boolean post) throws Exception {
-    String url = url(port(), false);
-    return Observable.fromIterable(() -> IntStream.range(0, NUM_REQUESTS).iterator())
-        .flatMapSingle(
-            index ->
-                Single.<Pair>create(
-                        emitter -> {
-                          Request.Builder request =
-                              new Request.Builder()
-                                  .header("x_index", String.valueOf(index))
-                                  .url(url);
-                          if (post) {
-                            MediaType mediaType = MediaType.parse("text/plain");
-                            RequestBody body =
-                                RequestBody.create(mediaType, "this is the post body");
-                            request.post(body);
-                          } else {
-                            request.get();
-                          }
-                          Response response = client.newCall(request.build()).execute();
-                          log.debug("response {}", response);
-                          emitter.onSuccess(new Pair(index, response));
-                        })
-                    .subscribeOn(Schedulers.io()));
+  private Observable<IndexResponse> multipleAsyncRequests(boolean post) {
+    return Observable.merge(
+        Observable.fromIterable(() -> IntStream.range(0, NUM_REQUESTS).iterator())
+            .map(index -> requestAsync(post, index).toObservable()));
   }
 
-  static class Pair {
-    private final Integer index;
+  private Single<IndexResponse> requestAsync(boolean post, int xIndex) {
+    String url = url(port(), false);
+    return Single.<IndexResponse>create(
+            emitter -> {
+              Request.Builder request =
+                  new Request.Builder().header("x_index", String.valueOf(xIndex)).url(url);
+              if (post) {
+                MediaType mediaType = MediaType.parse("text/plain");
+                RequestBody body = RequestBody.create(mediaType, "this is the post body");
+                request.post(body);
+              } else {
+                request.get();
+              }
+              Response response = client.newCall(request.build()).execute();
+              log.debug("response {}", response);
+              emitter.onSuccess(new IndexResponse(xIndex, response));
+            })
+        .subscribeOn(Schedulers.io());
+  }
+
+  static class IndexResponse {
+    private final Integer xIndex;
     private final Response response;
 
-    Pair(Integer first, Response response) {
-      this.index = first;
+    IndexResponse(Integer first, Response response) {
+      this.xIndex = first;
       this.response = response;
     }
   }
