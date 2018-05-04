@@ -8,9 +8,10 @@ description = 'xio-test'
 group = project_group
 
 dependencies {
-  implementation group: 'com.squareup.okhttp3', name: 'okhttp', version: okhttp_version
-  implementation group: 'com.squareup.okhttp3', name: 'mockwebserver', version: okhttp_version
-  implementation group: 'com.typesafe', name: 'config', version: typesafe_config_version
+  api group: 'com.squareup.okhttp3', name: 'okhttp', version: okhttp_version
+  api group: 'com.squareup.okhttp3', name: 'mockwebserver', version: okhttp_version
+  api group: 'com.typesafe', name: 'config', version: typesafe_config_version
+  api group: 'io.reactivex.rxjava2', name: 'rxjava', version: rx_java_version
 }
 
 bintray_package = 'xio-test'
