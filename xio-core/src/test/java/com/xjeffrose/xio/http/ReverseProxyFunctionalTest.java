@@ -150,7 +150,7 @@ public class ReverseProxyFunctionalTest extends Assert {
                 .timeout(15, TimeUnit.SECONDS)
                 .blockingLast()
             * 100;
-    log.warn("polled client for {}ms", pollMs);
+    log.warn("polled client shutdown for {}ms", pollMs);
   }
 
   @After

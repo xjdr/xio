@@ -93,7 +93,11 @@ public class Http2ClientHandler extends Http2ConnectionHandler {
 
   private int streamId(Http2Request request) {
     if (request.streamId == Message.H1_STREAM_ID_NONE) {
-      return streamId();
+      int id = streamId();
+      if (request.eos) {
+        currentStreamId = 0;
+      }
+      return id;
     } else {
       return request.streamId;
     }
