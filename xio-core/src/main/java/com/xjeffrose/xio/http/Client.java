@@ -85,4 +85,16 @@ public class Client {
       return channel.writeAndFlush(request).addListener(writeListener);
     }
   }
+
+  public void recycle() {
+    if (channel != null) {
+      Http2ClientStreamMapper.http2ClientStreamMapper(channel.pipeline().firstContext()).clear();
+      //todo: WBK - should i do this?
+      //channel.pipeline().fireUserEventTriggered(RecycleEvent.INSTANCE);
+    }
+  }
+
+  //  public enum RecycleEvent {
+  //    INSTANCE
+  //  }
 }

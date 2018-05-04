@@ -76,13 +76,15 @@ public class Http2ClientHandler extends Http2ConnectionHandler {
 
     if (msg instanceof Http2Headers) {
       Http2Headers headers = (Http2Headers) msg;
-      int streamId = Http2ClientStreamMapper.http2ClientStreamMapper(ctx).outboundStreamId(connection(), 0);
+      int streamId =
+          Http2ClientStreamMapper.http2ClientStreamMapper(ctx).outboundStreamId(connection(), 0);
       writeHeaders(ctx, headers, false, promise, streamId);
       return;
     }
 
     if (msg instanceof Http2DataFrame) {
-      int streamId = Http2ClientStreamMapper.http2ClientStreamMapper(ctx).outboundStreamId(connection(), 0);
+      int streamId =
+          Http2ClientStreamMapper.http2ClientStreamMapper(ctx).outboundStreamId(connection(), 0);
       Http2DataFrame data = (Http2DataFrame) msg;
       writeData(ctx, data, promise, streamId);
       return;

@@ -22,7 +22,11 @@ public class Http2ServerHandler extends Http2ConnectionHandler {
   }
 
   private void writeHeaders(
-      ChannelHandlerContext ctx, Http2Headers headers, boolean eos, ChannelPromise promise, int currentStreamId)
+      ChannelHandlerContext ctx,
+      Http2Headers headers,
+      boolean eos,
+      ChannelPromise promise,
+      int currentStreamId)
       throws Exception {
     encoder()
         .writeHeaders(
@@ -37,7 +41,8 @@ public class Http2ServerHandler extends Http2ConnectionHandler {
             promise);
   }
 
-  private void writeData(ChannelHandlerContext ctx, Http2DataFrame data, ChannelPromise promise, int currentStreamId)
+  private void writeData(
+      ChannelHandlerContext ctx, Http2DataFrame data, ChannelPromise promise, int currentStreamId)
       throws Exception {
     encoder().writeData(ctx, currentStreamId, data.content(), 0, data.isEndStream(), promise);
   }
@@ -58,7 +63,8 @@ public class Http2ServerHandler extends Http2ConnectionHandler {
       Http2Response response = (Http2Response) msg;
 
       if (response.payload instanceof Http2Headers) {
-        writeHeaders(ctx, (Http2Headers) response.payload, response.eos, promise, response.streamId);
+        writeHeaders(
+            ctx, (Http2Headers) response.payload, response.eos, promise, response.streamId);
         return;
       }
 

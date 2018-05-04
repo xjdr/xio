@@ -29,7 +29,8 @@ public class Http2ClientCodec extends ChannelDuplexHandler {
     log.debug("wrapResponse msg={}", msg);
     final Response response;
     Http2MessageSession session = Http2MessageSession.lazyCreateSession(ctx);
-    int streamId = Http2ClientStreamMapper.http2ClientStreamMapper(ctx).inboundStreamId(msg.streamId, msg.eos);
+    int streamId =
+        Http2ClientStreamMapper.http2ClientStreamMapper(ctx).inboundStreamId(msg.streamId, msg.eos);
     if (msg.payload instanceof Http2Headers) {
       Http2Headers headers = (Http2Headers) msg.payload;
       if (msg.eos && headers.method() == null && headers.status() == null) {
