@@ -1,28 +1,58 @@
 package com.xjeffrose.xio.config;
 
-import static io.netty.handler.codec.http.HttpMethod.*;
-import static io.netty.handler.codec.http.HttpResponseStatus.*;
-import static io.netty.handler.codec.http.HttpVersion.*;
-
 import com.typesafe.config.Config;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.PrintStream;
+
+import java.io.*;
+import java.lang.reflect.Method;
+import java.net.URI;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
+
+import org.junit.*;
 import org.junit.rules.TemporaryFolder;
 
 public class ConfigReloaderUnitTest extends Assert {
 
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
-  String createConfig(String value) throws IOException, FileNotFoundException {
-    File output = new File(temporaryFolder.getRoot(), "application.conf");
+  private final static String applicationConf = "testApplication.conf";
+  private final static String includeConf = "includeFile.conf";
+
+  private static void addPath(String s) throws Exception {
+    File f = new File(s);
+    URI u = f.toURI();
+    URLClassLoader urlClassLoader = (URLClassLoader) ClassLoader.getSystemClassLoader();
+    Class<URLClassLoader> urlClass = URLClassLoader.class;
+    Method method = urlClass.getDeclaredMethod("addURL", new Class[]{URL.class});
+    method.setAccessible(true);
+    method.invoke(urlClassLoader, new Object[]{u.toURL()});
+  }
+
+  private String createApplicationConf() throws FileNotFoundException {
+    String value = "trivial { include \"" + includeConf + "\" }";
+    return rawCreateConf(value, applicationConf);
+  }
+
+  private String modifyIncludeConf(String param) throws FileNotFoundException {
+    String value = "{ limit = " + param + " }";
+    return rawCreateConf(value, includeConf);
+  }
+
+  private String rawCreateConf(String value, String filename) throws FileNotFoundException {
+    File output = new File(temporaryFolder.getRoot(), filename);
+    PrintStream out = new PrintStream(output);
+    out.append(value).println();
+    out.flush();
+    out.close();
+    return output.getAbsolutePath();
+  }
+
+  private String createConfig(String value) throws FileNotFoundException {
+    File output = new File(temporaryFolder.getRoot(), applicationConf);
 
     PrintStream out = new PrintStream(output);
     out.append("limit=").append(value).println();
@@ -35,7 +65,7 @@ public class ConfigReloaderUnitTest extends Assert {
     final int limit;
 
     TrivialConfig(Config config) {
-      limit = config.getInt("limit");
+      limit = config.getInt("trivial.limit");
     }
   }
 
@@ -48,67 +78,147 @@ public class ConfigReloaderUnitTest extends Assert {
 
     public void update(TrivialConfig oldValue, TrivialConfig newValue) {
       this.config = newValue;
+      fireUpdated();
     }
 
     public void fireUpdated() {}
   }
 
-  @Test
-  public void testWiring() throws Exception {
-    ScheduledExecutorService executor = new ScheduledThreadPoolExecutor(1);
-    ConfigReloader<TrivialConfig> reloader = new ConfigReloader<>(executor, TrivialConfig::new);
-    TrivialConfig config = reloader.init(createConfig("10"));
-    TrivialState state =
-        new TrivialState(config) {
-          @Override
-          public void fireUpdated() {
-            assertEquals(20, this.config.limit);
-            executor.shutdown();
-          }
-        };
-    assertEquals(10, config.limit);
-    reloader.start(state::update);
-
-    Thread.sleep(2000);
-
-    createConfig("20");
+  @Before
+  public void before() throws Exception {
+    addPath(temporaryFolder.getRoot().toString());
   }
 
   @Test
   public void testInitHappyPath() throws Exception {
+    String initialLimit = "9000";
+    String applicationConf = createApplicationConf();
+    modifyIncludeConf(initialLimit);
     ScheduledExecutorService executor = new ScheduledThreadPoolExecutor(1);
     ConfigReloader<TrivialConfig> reloader = new ConfigReloader<>(executor, TrivialConfig::new);
-    TrivialConfig config = reloader.init(createConfig("10"));
-    assertEquals(10, config.limit);
+    TrivialConfig config = reloader.init(applicationConf);
+    assertEquals(Integer.parseInt(initialLimit), config.limit);
   }
 
   @Test(expected = IllegalStateException.class)
   public void testInitBadValue() throws Exception {
+    String initialLimit = "badvalue";
+    String applicationConf = createApplicationConf();
+    modifyIncludeConf(initialLimit);
     ScheduledExecutorService executor = new ScheduledThreadPoolExecutor(1);
     ConfigReloader<TrivialConfig> reloader = new ConfigReloader<>(executor, TrivialConfig::new);
-    TrivialConfig config = reloader.init(createConfig("str"));
+    TrivialConfig config = reloader.init(applicationConf);
   }
 
   @Test
-  public void testReloadHappyPath() throws Exception {
+  public void testReload_WhenWatchedFilesDoNotChange() throws Exception {
+    AtomicBoolean fireUpdatedCalled = new AtomicBoolean(false);
+    // set initial conditions for applicationConf and includeFileConf
+    String initialLimit = "9000";
+    String applicationConf = createApplicationConf();
+    String includeFilePath = modifyIncludeConf(initialLimit);
+
     ScheduledExecutorService executor = new ScheduledThreadPoolExecutor(1);
-    BiConsumer<TrivialConfig, TrivialConfig> updater =
-        (oldValue, newValue) -> {
-          assertEquals(10, oldValue.limit);
-          assertEquals(20, newValue.limit);
-        };
+
     ConfigReloader<TrivialConfig> reloader = new ConfigReloader<>(executor, TrivialConfig::new);
-    reloader.setUpdater(updater);
-    TrivialConfig config = reloader.init(createConfig("10"));
-    assertEquals(10, config.limit);
 
-    Thread.sleep(2000);
+    TrivialConfig config = reloader.init(applicationConf);
+    TrivialState state =
+        new TrivialState(config) {
+          @Override
+          public void fireUpdated() {
+            fireUpdatedCalled.set(true);
+            executor.shutdown();
+          }
+        };
 
-    createConfig("20");
-
-    reloader.checkForUpdates();
+    // check that we successfully read the init'd subject
+    assertEquals(Integer.parseInt(initialLimit), config.limit);
+    // start watching the include file
+    reloader.addWatchFile(includeFilePath);
+    // kick off the subject
+    reloader.start(state::update);
+    Thread.sleep(5000);
+    // check that we did not change the contents of the state since we didn't change the file
+    assertEquals(Integer.parseInt(initialLimit), state.config.limit);
+    // check to see that we did not call fireUpdated
+    assertFalse(fireUpdatedCalled.get());
   }
 
+  @Test
+  public void testReload_WhenWatchedFilesChange_HappyPath() throws Exception {
+    // set initial conditions for applicationConf and includeFileConf
+    String initialLimit = "9000";
+    String updatedLimit = "9001";
+    String applicationConf = createApplicationConf();
+    String includeFilePath = modifyIncludeConf(initialLimit);
+
+    ScheduledExecutorService executor = new ScheduledThreadPoolExecutor(1);
+
+    ConfigReloader<TrivialConfig> reloader = new ConfigReloader<>(executor, TrivialConfig::new);
+
+    TrivialConfig config = reloader.init(applicationConf);
+    TrivialState state =
+        new TrivialState(config) {
+          @Override
+          public void fireUpdated() {
+            executor.shutdown();
+          }
+        };
+
+    // check that we successfully read the init'd subject
+    assertEquals(Integer.parseInt(initialLimit), config.limit);
+    // start watching the include file
+    reloader.addWatchFile(includeFilePath);
+    // kick off the subject
+    reloader.start(state::update);
+    // modify the watched file
+
+    Thread.sleep(5000);
+    modifyIncludeConf(updatedLimit);
+
+    Thread.sleep(5000);
+    // check to see that we successfully updated to the latest content of the include file
+    assertEquals(Integer.parseInt(updatedLimit), state.config.limit);
+  }
+
+  @Test
+  public void testReload_WhenWatchedFilesChange_BadUpdate() throws Exception {
+    // set initial conditions for applicationConf and includeFileConf
+    String initialLimit = "9000";
+    String updatedLimit = "badvalue";
+    String applicationConf = createApplicationConf();
+    String includeFilePath = modifyIncludeConf(initialLimit);
+
+    ScheduledExecutorService executor = new ScheduledThreadPoolExecutor(1);
+
+    ConfigReloader<TrivialConfig> reloader = new ConfigReloader<>(executor, TrivialConfig::new);
+
+    TrivialConfig config = reloader.init(applicationConf);
+    TrivialState state =
+        new TrivialState(config) {
+          @Override
+          public void fireUpdated() {
+            executor.shutdown();
+          }
+        };
+
+    // check that we successfully read the init'd subject
+    assertEquals(Integer.parseInt(initialLimit), config.limit);
+    // start watching the include file
+    reloader.addWatchFile(includeFilePath);
+    // kick off the subject
+    reloader.start(state::update);
+    Thread.sleep(5000);
+    // modify the watched file
+    modifyIncludeConf(updatedLimit);
+    Thread.sleep(5000);
+    // if something goes wrong with the update we should not change the config (up for debate, the illegal
+    // state exceptions are thrown in a different thread, do we want to just trap if we get a invalid config?
+    assertEquals(Integer.parseInt(initialLimit), config.limit);
+  }
+
+  /*
   @Test
   public void testReloadHappyPathStaleTimestamp() throws Exception {
     ScheduledExecutorService executor = new ScheduledThreadPoolExecutor(1);
@@ -146,25 +256,7 @@ public class ConfigReloaderUnitTest extends Assert {
 
     reloader.checkForUpdates();
   }
-
-  @Test
-  public void testReloadBadValue() throws Exception {
-    ScheduledExecutorService executor = new ScheduledThreadPoolExecutor(1);
-    BiConsumer<TrivialConfig, TrivialConfig> updater =
-        (oldValue, newValue) -> {
-          assertTrue(false);
-        };
-    ConfigReloader<TrivialConfig> reloader = new ConfigReloader<>(executor, TrivialConfig::new);
-    reloader.setUpdater(updater);
-    TrivialConfig config = reloader.init(createConfig("10"));
-    assertEquals(10, config.limit);
-
-    Thread.sleep(2000);
-
-    createConfig("str");
-
-    reloader.checkForUpdates();
-  }
+  */
 
   @Test(expected = NullPointerException.class)
   public void testStartWithoutInit() throws Exception {
@@ -177,6 +269,7 @@ public class ConfigReloaderUnitTest extends Assert {
     reloader.start(updater);
   }
 
+  @Ignore
   @Test
   public void testStartHappyPath() throws Exception {
     final ScheduledExecutorService executor = new ScheduledThreadPoolExecutor(1);

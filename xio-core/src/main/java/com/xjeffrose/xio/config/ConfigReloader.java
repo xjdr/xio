@@ -13,6 +13,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
+import java.util.*;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
@@ -40,6 +41,7 @@ public class ConfigReloader<T> {
   private final Function<Config, T> factory;
   private BiConsumer<T, T> updater;
   private Meta<T> metadata;
+  private Map<String, Long> watchFiles = new HashMap<String, Long>();
 
   public ConfigReloader(ScheduledExecutorService executor, Function<Config, T> factory) {
     this.executor = executor;
@@ -76,20 +78,50 @@ public class ConfigReloader<T> {
     return !MessageDigest.isEqual(oldValue.digest, newValue.digest);
   }
 
+  private boolean haveWatchFilesChanged() {
+    System.out.println("watching");
+    Boolean filesHaveChanged = false;
+    try {
+      Set<String> keys = new HashSet<String>(watchFiles.keySet());
+      for (String filePath : keys) {
+        File path = new File(filePath);
+        System.out.println("path = " + path.getAbsoluteFile());
+        System.out.println("filePath = " + filePath);
+        Scanner input = new Scanner(path);
+        while (input.hasNextLine())
+        {
+          System.out.println(input.nextLine());
+        }
+
+
+        long previousModifiedDate = watchFiles.get(filePath);
+        long currentModifiedDate = path.lastModified();
+        if (currentModifiedDate > previousModifiedDate) {
+          // update the watchFile
+          filesHaveChanged = true;
+          watchFiles.put(filePath, currentModifiedDate);
+        }
+      }
+    }
+    catch(Exception e) {
+      log.error("Caught exception while checking for if watch files have changed", e);
+    }
+    return filesHaveChanged;
+  }
+
   @VisibleForTesting
   void checkForUpdates() {
     try {
-      File path = new File(metadata.path);
-      if (path.lastModified() > metadata.lastModified) {
+      // check to see if any of the specific watch files have changed
+      if (haveWatchFilesChanged()) {
+        File path = new File(metadata.path);
+        // suck up the original file which includes all the sub files
+        ConfigFactory.invalidateCaches();
         Meta<T> update = load(path);
-        if (performUpdate(metadata, update)) {
-          updater.accept(metadata.value, update.value);
-          metadata = update;
-        } else {
-          log.debug("No update: {} has the same hash digest as the last update", metadata.path);
-        }
+        updater.accept(metadata.value, update.value);
+        metadata = update;
       } else {
-        log.debug("No update: {} has the same timestamp as the last update", metadata.path);
+        log.debug("No update: None of the watch files have changed", metadata.path);
       }
     } catch (Exception e) {
       log.error("Caught exception while checking for updates", e);
@@ -104,6 +136,15 @@ public class ConfigReloader<T> {
   @VisibleForTesting
   void setUpdater(BiConsumer<T, T> updater) {
     this.updater = updater;
+  }
+
+  public void addWatchFile(String filePath) {
+    if (!watchFiles.containsKey(filePath)) {
+      File file = new File(filePath);
+      watchFiles.put(filePath, file.lastModified());
+    } else {
+      log.error("Attempted to add duplicate watch file: " + filePath);
+    }
   }
 
   public void start(BiConsumer<T, T> updater) {
