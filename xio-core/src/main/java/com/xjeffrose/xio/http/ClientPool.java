@@ -1,5 +1,6 @@
 package com.xjeffrose.xio.http;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.xjeffrose.xio.client.ClientConfig;
 import java.net.InetSocketAddress;
 import java.util.*;
@@ -7,6 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
+import java.util.stream.IntStream;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -27,17 +29,29 @@ public class ClientPool {
   public void release(Client client) {
     Map<Client, Meta> pool = getPool(client.remoteAddresss());
     if (pool.size() < maxSize && !pool.containsKey(client)) {
-      log.warn("releasing client to pool {}", client);
+      log.debug("releasing client to pool {}", client);
       pool.put(client, new Meta(client));
     } else {
       Meta meta = pool.get(client);
       if (meta != null) {
-        log.warn("setting client available in pool {}", client);
+        log.debug("setting client available in pool {}", client);
         meta.available.set(true);
       }
     }
-    log.warn("recycling client {}", client);
+    log.debug("recycling client {}", client);
     client.recycle();
+  }
+
+  @VisibleForTesting
+  int countAvailable() {
+    return clientPool
+        .values()
+        .stream()
+        .filter(map -> !map.isEmpty())
+        .flatMap(map -> map.values().stream())
+        .filter(meta -> meta.available.get())
+        .flatMapToInt(meta -> IntStream.of(1))
+        .reduce(0, (i, n) -> i + n);
   }
 
   public Client acquire(ClientConfig config, Supplier<Client> clientSupplier) {
@@ -49,7 +63,7 @@ public class ClientPool {
               boolean available = meta.available.getAndSet(false);
               if (available) {
                 int count = meta.usageCount.incrementAndGet();
-                log.warn("reusing client in pool with usage count {}", count);
+                log.debug("reusing client in pool with usage count {}", count);
               }
               return available;
             })
