@@ -1,7 +1,6 @@
 package com.xjeffrose.xio.config;
 
 import com.typesafe.config.Config;
-
 import java.io.*;
 import java.lang.reflect.Method;
 import java.net.URI;
@@ -11,7 +10,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
-
 import org.junit.*;
 import org.junit.rules.TemporaryFolder;
 
@@ -19,8 +17,8 @@ public class ConfigReloaderUnitTest extends Assert {
 
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
-  private final static String applicationConf = "testApplication.conf";
-  private final static String includeConf = "includeFile.conf";
+  private static final String applicationConf = "testApplication.conf";
+  private static final String includeConf = "includeFile.conf";
 
   private String createApplicationConf() throws FileNotFoundException {
     String value = "trivial { include \"" + includeConf + "\" }";
@@ -78,9 +76,9 @@ public class ConfigReloaderUnitTest extends Assert {
     URI u = f.toURI();
     URLClassLoader urlClassLoader = (URLClassLoader) ClassLoader.getSystemClassLoader();
     Class<URLClassLoader> urlClass = URLClassLoader.class;
-    Method method = urlClass.getDeclaredMethod("addURL", new Class[]{URL.class});
+    Method method = urlClass.getDeclaredMethod("addURL", new Class[] {URL.class});
     method.setAccessible(true);
-    method.invoke(urlClassLoader, new Object[]{u.toURL()});
+    method.invoke(urlClassLoader, new Object[] {u.toURL()});
   }
 
   @Before
@@ -146,7 +144,8 @@ public class ConfigReloaderUnitTest extends Assert {
   }
 
   @Test
-  public void testReload_WhenWatchedFilesChange_Date_Was_Modified_and_Digest_Was_NOT_Changed() throws Exception {
+  public void testReload_WhenWatchedFilesChange_Date_Was_Modified_and_Digest_Was_NOT_Changed()
+      throws Exception {
     AtomicBoolean fireUpdatedCalled = new AtomicBoolean(false);
     // set initial conditions for applicationConf and includeFileConf
     String initialLimit = "9000";
@@ -185,7 +184,8 @@ public class ConfigReloaderUnitTest extends Assert {
   }
 
   @Test
-  public void testReload_WhenWatchedFilesChange_Date_Was_Modified_and_Digest_Was_Changed() throws Exception {
+  public void testReload_WhenWatchedFilesChange_Date_Was_Modified_and_Digest_Was_Changed()
+      throws Exception {
     // set initial conditions for applicationConf and includeFileConf
     String initialLimit = "9000";
     String updatedLimit = "9001";
@@ -273,9 +273,7 @@ public class ConfigReloaderUnitTest extends Assert {
   @Test
   public void testStartHappyPath() throws Exception {
     final ScheduledExecutorService executor = new ScheduledThreadPoolExecutor(1);
-    BiConsumer<TrivialConfig, TrivialConfig> updater =
-        (oldValue, newValue) -> {
-        };
+    BiConsumer<TrivialConfig, TrivialConfig> updater = (oldValue, newValue) -> {};
     ConfigReloader<TrivialConfig> reloader =
         new ConfigReloader<TrivialConfig>(executor, TrivialConfig::new) {
           @Override

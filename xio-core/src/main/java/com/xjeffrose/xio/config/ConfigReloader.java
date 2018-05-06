@@ -88,8 +88,8 @@ public class ConfigReloader<T> {
   }
 
   private boolean performUpdate(ConfigFileMetadata current, ConfigFileMetadata previous) {
-    return (current.lastModified > previous.lastModified &&
-            !MessageDigest.isEqual(current.digest, previous.digest));
+    return (current.lastModified > previous.lastModified
+        && !MessageDigest.isEqual(current.digest, previous.digest));
   }
 
   private ConfigFileMetadata loadMetaData(File configFile) throws IllegalStateException {
@@ -97,13 +97,14 @@ public class ConfigReloader<T> {
       MessageDigest digest = MessageDigest.getInstance("SHA-256");
       DigestInputStream digester = new DigestInputStream(new FileInputStream(configFile), digest);
       ConfigFactory.parseReader(new InputStreamReader(digester));
-      return new ConfigFileMetadata(configFile.getAbsolutePath(), configFile.lastModified(), digest.digest());
+      return new ConfigFileMetadata(
+          configFile.getAbsolutePath(), configFile.lastModified(), digest.digest());
     } catch (FileNotFoundException e) {
       throw new IllegalStateException(
-        "Couldn't load config from file '" + configFile.getAbsolutePath() + "'", e);
+          "Couldn't load config from file '" + configFile.getAbsolutePath() + "'", e);
     } catch (NoSuchAlgorithmException e) {
       throw new IllegalStateException(
-        "Illegal digest algorithm used on file '" + configFile.getAbsolutePath() + "'", e);
+          "Illegal digest algorithm used on file '" + configFile.getAbsolutePath() + "'", e);
     }
   }
 
@@ -121,8 +122,7 @@ public class ConfigReloader<T> {
           watchFiles.put(filePath, currentFileMetadata);
         }
       }
-    }
-    catch(Exception e) {
+    } catch (Exception e) {
       log.error("Caught exception while checking for if watch files have changed", e);
     }
     return filesHaveChanged;
