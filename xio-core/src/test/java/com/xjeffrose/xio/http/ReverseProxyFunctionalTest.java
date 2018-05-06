@@ -5,6 +5,7 @@ import static okhttp3.Protocol.HTTP_1_1;
 import static okhttp3.Protocol.HTTP_2;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Streams;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.xjeffrose.xio.SSL.TlsConfig;
@@ -19,11 +20,12 @@ import com.xjeffrose.xio.test.OkHttpUnsafe;
 import com.xjeffrose.xio.tracing.XioTracing;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
+import io.reactivex.Observable;
+import io.reactivex.Single;
+import io.reactivex.schedulers.Schedulers;
 import java.util.*;
-import java.util.concurrent.*;
 import java.util.stream.IntStream;
 import lombok.extern.slf4j.Slf4j;
-import net.jodah.concurrentunit.Waiter;
 import okhttp3.*;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -272,105 +274,110 @@ public class ReverseProxyFunctionalTest extends Assert {
     setupClient(false);
     setupFrontBack(false, true);
 
-    requests(true);
+    verify(multipleAsyncRequests(true).blockingIterable());
   }
 
   @Test
   public void testHttp1toHttp1ServerGetMany() throws Exception {
     setupClient(true);
     setupFrontBack(false, false);
-    requests(false);
+
+    verify(multipleAsyncRequests(false).blockingIterable());
   }
 
   @Test
   public void testHttp1toHttp2ServerGetMany() throws Exception {
     setupClient(false);
     setupFrontBack(false, true);
-    requests(false);
+
+    verify(multipleAsyncRequests(false).blockingIterable());
   }
 
   @Test
   public void testHttp1toHttp1ServerPostMany() throws Exception {
     setupClient(true);
     setupFrontBack(false, false);
-    requests(true);
+
+    verify(multipleAsyncRequests(true).blockingIterable());
   }
 
   @Test
   public void testHttp2toHttp1ServerGetMany() throws Exception {
     setupClient(true);
     setupFrontBack(true, false);
-    requests(false);
+
+    verify(multipleAsyncRequests(false).blockingIterable());
   }
 
   @Test
   public void testHttp2toHttp2ServerGetMany() throws Exception {
     setupClient(true);
     setupFrontBack(true, true);
-    requests(false);
+
+    verify(multipleAsyncRequests(false).blockingIterable());
   }
 
   @Test
   public void testHttp2toHttp1ServerPostMany() throws Exception {
     setupClient(true);
     setupFrontBack(true, false);
-    requests(true);
+
+    verify(multipleAsyncRequests(true).blockingIterable());
   }
 
   @Test
   public void testHttp2toHttp2ServerPostMany() throws Exception {
     setupClient(true);
     setupFrontBack(true, true);
-    requests(true);
+
+    verify(multipleAsyncRequests(true).blockingIterable());
   }
 
-  private void requests(boolean post) throws Exception {
-    final Map<Integer, Response> responses = new ConcurrentHashMap<>();
-    final Waiter waiter = new Waiter();
-    String url = url(port(), false);
-    ExecutorService executorService = Executors.newFixedThreadPool(4);
-    IntStream.range(0, NUM_REQUESTS)
-        .forEach(
-            index ->
-                executorService.submit(
-                    () -> {
-                      try {
-                        Request.Builder request =
-                            new Request.Builder().header("x_index", String.valueOf(index)).url(url);
-                        if (post) {
-                          MediaType mediaType = MediaType.parse("text/plain");
-                          RequestBody body = RequestBody.create(mediaType, "this is the post body");
-                          request.post(body);
-                        } else {
-                          request.get();
-                        }
-                        Response response = client.newCall(request.build()).execute();
-                        responses.put(index, response);
-                        waiter.resume();
-                      } catch (Exception error) {
-                        waiter.fail(error);
-                      }
-                    }));
-
-    int seconds = 10;
-    Exception timeout = null;
-    try {
-      waiter.await(seconds, TimeUnit.SECONDS, NUM_REQUESTS);
-    } catch (Exception e) {
-      timeout = e;
-    }
+  private void verify(Iterable<IndexResponse> responses) {
+    // verifies that the correct number of responses occurred and that each response corresponds wit the request by
+    // checking the "x_index" header value
+    assertEquals(NUM_REQUESTS, Streams.stream(responses).count());
     responses.forEach(
-        (key, response) -> {
-          String index = response.header("x_index");
+        pair -> {
+          String index = pair.response.header("x_index");
           assertNotNull(index);
-          assertEquals(key.toString(), index);
+          assertEquals(pair.xIndex.toString(), index);
         });
-    assertEquals("expected a response for all of the requests", NUM_REQUESTS, responses.size());
-    executorService.shutdown();
-    executorService.awaitTermination(seconds, TimeUnit.SECONDS);
-    if (timeout != null) {
-      log.error("timeout", timeout);
-      fail("test timed out");
+  }
+
+  private Observable<IndexResponse> multipleAsyncRequests(boolean post) {
+    return Observable.merge(
+        Observable.fromIterable(() -> IntStream.range(0, NUM_REQUESTS).iterator())
+            .map(index -> requestAsync(post, index).toObservable()));
+  }
+
+  private Single<IndexResponse> requestAsync(boolean post, int xIndex) {
+    String url = url(port(), false);
+    return Single.<IndexResponse>create(
+            emitter -> {
+              Request.Builder request =
+                  new Request.Builder().header("x_index", String.valueOf(xIndex)).url(url);
+              if (post) {
+                MediaType mediaType = MediaType.parse("text/plain");
+                RequestBody body = RequestBody.create(mediaType, "this is the post body");
+                request.post(body);
+              } else {
+                request.get();
+              }
+              Response response = client.newCall(request.build()).execute();
+              log.debug("response {}", response);
+              emitter.onSuccess(new IndexResponse(xIndex, response));
+            })
+        .subscribeOn(Schedulers.io());
+  }
+
+  static class IndexResponse {
+    private final Integer xIndex;
+    private final Response response;
+
+    IndexResponse(Integer first, Response response) {
+      this.xIndex = first;
+      this.response = response;
     }
   }
 }
