@@ -13,6 +13,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -37,11 +38,23 @@ public class ConfigReloader<T> {
     }
   }
 
+  private static class ConfigFileMetadata {
+    final String path;
+    final long lastModified;
+    final byte[] digest;
+
+    ConfigFileMetadata(String path, long lastModified, byte[] digest) {
+      this.path = path;
+      this.lastModified = lastModified;
+      this.digest = digest;
+    }
+  }
+
   private final ScheduledExecutorService executor;
   private final Function<Config, T> factory;
   private BiConsumer<T, T> updater;
   private Meta<T> metadata;
-  private Map<String, Long> watchFiles = new HashMap<String, Long>();
+  private Map<String, ConfigFileMetadata> watchFiles = new HashMap<String, ConfigFileMetadata>();
 
   public ConfigReloader(ScheduledExecutorService executor, Function<Config, T> factory) {
     this.executor = executor;
@@ -74,32 +87,38 @@ public class ConfigReloader<T> {
     return load(new File(file));
   }
 
-  private boolean performUpdate(Meta<T> oldValue, Meta<T> newValue) {
-    return !MessageDigest.isEqual(oldValue.digest, newValue.digest);
+  private boolean performUpdate(ConfigFileMetadata current, ConfigFileMetadata previous) {
+    return (current.lastModified > previous.lastModified &&
+            !MessageDigest.isEqual(current.digest, previous.digest));
+  }
+
+  private ConfigFileMetadata loadMetaData(File configFile) throws IllegalStateException {
+    try {
+      MessageDigest digest = MessageDigest.getInstance("SHA-256");
+      DigestInputStream digester = new DigestInputStream(new FileInputStream(configFile), digest);
+      ConfigFactory.parseReader(new InputStreamReader(digester));
+      return new ConfigFileMetadata(configFile.getAbsolutePath(), configFile.lastModified(), digest.digest());
+    } catch (FileNotFoundException e) {
+      throw new IllegalStateException(
+        "Couldn't load config from file '" + configFile.getAbsolutePath() + "'", e);
+    } catch (NoSuchAlgorithmException e) {
+      throw new IllegalStateException(
+        "Illegal digest algorithm used on file '" + configFile.getAbsolutePath() + "'", e);
+    }
   }
 
   private boolean haveWatchFilesChanged() {
-    System.out.println("watching");
     Boolean filesHaveChanged = false;
     try {
       Set<String> keys = new HashSet<String>(watchFiles.keySet());
       for (String filePath : keys) {
-        File path = new File(filePath);
-        System.out.println("path = " + path.getAbsoluteFile());
-        System.out.println("filePath = " + filePath);
-        Scanner input = new Scanner(path);
-        while (input.hasNextLine())
-        {
-          System.out.println(input.nextLine());
-        }
-
-
-        long previousModifiedDate = watchFiles.get(filePath);
-        long currentModifiedDate = path.lastModified();
-        if (currentModifiedDate > previousModifiedDate) {
+        File file = new File(filePath);
+        ConfigFileMetadata currentFileMetadata = loadMetaData(file);
+        ConfigFileMetadata previousConfigMetadata = watchFiles.get(filePath);
+        if (performUpdate(currentFileMetadata, previousConfigMetadata)) {
           // update the watchFile
           filesHaveChanged = true;
-          watchFiles.put(filePath, currentModifiedDate);
+          watchFiles.put(filePath, currentFileMetadata);
         }
       }
     }
@@ -138,12 +157,12 @@ public class ConfigReloader<T> {
     this.updater = updater;
   }
 
-  public void addWatchFile(String filePath) {
-    if (!watchFiles.containsKey(filePath)) {
-      File file = new File(filePath);
-      watchFiles.put(filePath, file.lastModified());
+  public void addWatchFile(File file) throws IllegalStateException {
+    if (!watchFiles.containsKey(file.getAbsolutePath())) {
+      ConfigFileMetadata configMetaData = loadMetaData(file);
+      watchFiles.put(file.getAbsolutePath(), configMetaData);
     } else {
-      log.error("Attempted to add duplicate watch file: " + filePath);
+      log.error("Attempted to add duplicate watch file: " + file.getAbsolutePath());
     }
   }
 
