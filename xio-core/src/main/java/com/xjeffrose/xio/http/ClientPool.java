@@ -2,9 +2,10 @@ package com.xjeffrose.xio.http;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.xjeffrose.xio.client.ClientConfig;
+import io.netty.util.internal.PlatformDependent;
 import java.net.InetSocketAddress;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
@@ -15,15 +16,15 @@ import lombok.extern.slf4j.Slf4j;
 public class ClientPool {
 
   private final int maxSize;
-  private final Map<InetSocketAddress, Map<Client, Meta>> clientPool;
+  private final ConcurrentMap<InetSocketAddress, ConcurrentMap<Client, Meta>> clientPool;
 
   public ClientPool(int size) {
     maxSize = size;
-    clientPool = new ConcurrentHashMap<>();
+    clientPool = PlatformDependent.newConcurrentHashMap();
   }
 
   private Map<Client, Meta> getPool(InetSocketAddress address) {
-    return clientPool.computeIfAbsent(address, k -> new ConcurrentHashMap<>());
+    return clientPool.computeIfAbsent(address, k -> PlatformDependent.newConcurrentHashMap());
   }
 
   public void release(Client client) {
