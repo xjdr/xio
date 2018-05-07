@@ -4,7 +4,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.xjeffrose.xio.client.ClientConfig;
 import io.netty.util.internal.PlatformDependent;
 import java.net.InetSocketAddress;
-import java.util.*;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -15,21 +14,21 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ClientPool {
 
-  private final int maxSize;
+  private final int maxSizePerAddress;
   private final ConcurrentMap<InetSocketAddress, ConcurrentMap<Client, Meta>> clientPool;
 
-  public ClientPool(int size) {
-    maxSize = size;
-    clientPool = PlatformDependent.newConcurrentHashMap();
+  public ClientPool(int maxSizePerAddress) {
+    this.maxSizePerAddress = maxSizePerAddress;
+    this.clientPool = PlatformDependent.newConcurrentHashMap();
   }
 
-  private Map<Client, Meta> getPool(InetSocketAddress address) {
+  private ConcurrentMap<Client, Meta> getPool(InetSocketAddress address) {
     return clientPool.computeIfAbsent(address, k -> PlatformDependent.newConcurrentHashMap());
   }
 
   public void release(Client client) {
-    Map<Client, Meta> pool = getPool(client.remoteAddresss());
-    if (pool.size() < maxSize && !pool.containsKey(client)) {
+    ConcurrentMap<Client, Meta> pool = getPool(client.remoteAddresss());
+    if (pool.size() < maxSizePerAddress && !pool.containsKey(client)) {
       log.debug("releasing client to pool {}", client);
       pool.put(client, new Meta(client));
     } else {
