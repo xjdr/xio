@@ -11,29 +11,25 @@ import com.typesafe.config.ConfigFactory;
 import com.xjeffrose.xio.SSL.TlsConfig;
 import com.xjeffrose.xio.application.Application;
 import com.xjeffrose.xio.application.ApplicationConfig;
+import com.xjeffrose.xio.application.ApplicationState;
 import com.xjeffrose.xio.bootstrap.ApplicationBootstrap;
-import com.xjeffrose.xio.client.ClientConfig;
 import com.xjeffrose.xio.core.SocketAddressHelper;
 import com.xjeffrose.xio.fixtures.JulBridge;
 import com.xjeffrose.xio.pipeline.SmartHttpPipeline;
 import com.xjeffrose.xio.test.OkHttpUnsafe;
-import com.xjeffrose.xio.tracing.XioTracing;
 import io.netty.channel.ChannelHandler;
-import io.netty.channel.ChannelHandlerContext;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 import okhttp3.Request;
 import okhttp3.Response;
+import okhttp3.mockwebserver.*;
 import okhttp3.mockwebserver.Dispatcher;
-import okhttp3.mockwebserver.MockResponse;
-import okhttp3.mockwebserver.MockWebServer;
-import okhttp3.mockwebserver.RecordedRequest;
-import okhttp3.mockwebserver.SocketPolicy;
 import org.junit.*;
 import org.junit.rules.TestName;
 
@@ -49,22 +45,13 @@ public class ReverseProxyFunctionalTest extends Assert {
 
   OkHttpClient client;
   Config config;
-  ApplicationConfig appConfig;
+  ApplicationState applicationState;
   Application reverseProxy;
   MockWebServer server;
 
-  static Application setupReverseProxy(
-      ApplicationConfig appConfig, ProxyRouteConfig proxyConfig, XioTracing tracing) {
-    ClientFactory factory =
-        new ClientFactory(tracing) {
-          @Override
-          public Client createClient(ChannelHandlerContext ctx, ClientConfig config) {
-            ClientState clientState = new ClientState(channelConfig(ctx), config);
-            return new Client(clientState, () -> new ProxyBackendHandler(ctx), getTracing());
-          }
-        };
-
-    return new ApplicationBootstrap(appConfig)
+  static Application setupReverseProxy(ApplicationState state, ProxyRouteConfig proxyConfig) {
+    ClientFactory factory = new ProxyClientFactory(state);
+    return new ApplicationBootstrap(state.config())
         .addServer(
             "main",
             (bs) ->
@@ -120,7 +107,8 @@ public class ReverseProxyFunctionalTest extends Assert {
     setupBack(h2Back);
 
     String front = h2Front ? "h2" : "h1";
-    appConfig = ApplicationConfig.fromConfig("xio." + front + "ReverseProxy", config);
+    applicationState =
+        new ApplicationState(ApplicationConfig.fromConfig("xio." + front + "ReverseProxy", config));
     // TODO(CK): this creates global state across tests we should do something smarter
     System.setProperty("xio.baseClient.remotePort", Integer.toString(server.getPort()));
     System.setProperty("xio.testProxyRoute.proxyPath", "/hello/");
@@ -128,12 +116,10 @@ public class ReverseProxyFunctionalTest extends Assert {
     Config root = ConfigFactory.load();
     ProxyRouteConfig proxyConfig = new ProxyRouteConfig(root.getConfig("xio.testProxyRoute"));
 
-    reverseProxy =
-        setupReverseProxy(
-            appConfig, proxyConfig, new XioTracing(root.getConfig("xio.testProxyRoute")));
+    reverseProxy = setupReverseProxy(applicationState, proxyConfig);
   }
 
-  void setupClient(boolean h2) throws Exception {
+  private void setupClient(boolean h2) throws Exception {
     if (h2) {
       client =
           OkHttpUnsafe.getUnsafeClient()
@@ -149,9 +135,27 @@ public class ReverseProxyFunctionalTest extends Assert {
     }
   }
 
+  private void aggressivelyCloseClient() throws Exception {
+    client.dispatcher().executorService().shutdown();
+    long pollMs =
+        Observable.interval(100, TimeUnit.MILLISECONDS)
+                .takeUntil(
+                    i -> {
+                      boolean canEvict =
+                          client.connectionPool().idleConnectionCount()
+                              == client.connectionPool().connectionCount();
+                      client.connectionPool().evictAll();
+                      return canEvict;
+                    })
+                .timeout(15, TimeUnit.SECONDS)
+                .blockingLast()
+            * 100;
+    log.warn("polled client shutdown for {}ms", pollMs);
+  }
+
   @After
   public void tearDown() throws Exception {
-    client.connectionPool().evictAll();
+    aggressivelyCloseClient();
     if (reverseProxy != null) {
       reverseProxy.close();
     }
@@ -177,6 +181,7 @@ public class ReverseProxyFunctionalTest extends Assert {
     Request request = new Request.Builder().url(url).build();
 
     Response response = client.newCall(request).execute();
+    response.close();
     assertEquals(expectedProtocol, response.protocol());
 
     RecordedRequest servedRequest = server.takeRequest();
@@ -190,6 +195,7 @@ public class ReverseProxyFunctionalTest extends Assert {
     Request request = new Request.Builder().url(url).post(body).build();
 
     Response response = client.newCall(request).execute();
+    response.close();
     assertEquals("unexpected client response protocol", expectedProtocol, response.protocol());
 
     RecordedRequest servedRequest = server.takeRequest();
@@ -366,6 +372,7 @@ public class ReverseProxyFunctionalTest extends Assert {
               }
               Response response = client.newCall(request.build()).execute();
               log.debug("response {}", response);
+              response.close();
               emitter.onSuccess(new IndexResponse(xIndex, response));
             })
         .subscribeOn(Schedulers.io());

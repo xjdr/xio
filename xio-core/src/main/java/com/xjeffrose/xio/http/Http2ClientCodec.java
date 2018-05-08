@@ -29,6 +29,8 @@ public class Http2ClientCodec extends ChannelDuplexHandler {
     log.debug("wrapResponse msg={}", msg);
     final Response response;
     Http2MessageSession session = Http2MessageSession.lazyCreateSession(ctx);
+    int streamId =
+        Http2ClientStreamMapper.http2ClientStreamMapper(ctx).inboundStreamId(msg.streamId, msg.eos);
     if (msg.payload instanceof Http2Headers) {
       Http2Headers headers = (Http2Headers) msg.payload;
       if (msg.eos && headers.method() == null && headers.status() == null) {
@@ -39,23 +41,22 @@ public class Http2ClientCodec extends ChannelDuplexHandler {
                     resp ->
                         session.onInboundResponse(
                             new SegmentedResponseData(
-                                resp, new Http2SegmentedData(headers, msg.streamId))))
+                                resp, new Http2SegmentedData(headers, streamId))))
                 .orElse(null);
       } else {
-        response = wrapHeaders(headers, msg.streamId, msg.eos);
+        response = wrapHeaders(headers, streamId, msg.eos);
         session.onInboundResponse(response);
       }
     } else if (msg.payload instanceof Http2DataFrame) {
       Http2DataFrame frame = (Http2DataFrame) msg.payload;
       response =
           session
-              .currentResponse(msg.streamId)
+              .currentResponse(streamId)
               .map(
                   resp ->
                       session.onInboundResponse(
                           new SegmentedResponseData(
-                              resp,
-                              new Http2SegmentedData(frame.content(), msg.eos, msg.streamId))))
+                              resp, new Http2SegmentedData(frame.content(), msg.eos, streamId))))
               .orElse(null);
     } else {
       // TODO(CK): throw an exception?
@@ -107,13 +108,15 @@ public class Http2ClientCodec extends ChannelDuplexHandler {
     Headers trailingHeaders = data.trailingHeaders();
     boolean hasTrailing = trailingHeaders != null && trailingHeaders.size() > 0;
     boolean dataEos = data.endOfMessage() && !hasTrailing;
+
+    int streamId = data.streamId();
+
     Http2Request request =
-        Http2Request.build(
-            data.streamId(), new DefaultHttp2DataFrame(data.content(), dataEos), dataEos);
+        Http2Request.build(streamId, new DefaultHttp2DataFrame(data.content(), dataEos), dataEos);
 
     if (hasTrailing) {
       Http2Headers headers = trailingHeaders.http2Headers();
-      Http2Request last = Http2Request.build(data.streamId(), headers, true);
+      Http2Request last = Http2Request.build(streamId, headers, true);
       PromiseCombiner combiner = new PromiseCombiner();
       combiner.add(ctx.write(request, ctx.newPromise()));
       combiner.add(ctx.write(last, ctx.newPromise()));

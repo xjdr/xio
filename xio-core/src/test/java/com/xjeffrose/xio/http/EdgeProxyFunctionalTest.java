@@ -112,6 +112,7 @@ public class EdgeProxyFunctionalTest extends Assert {
 
     private final RouteStates<ProxyRouteState> routeStates;
     private final ProxyClientFactory clientFactory;
+    private XioTracing tracing = null;
 
     public <T, K, U> Collector<T, ?, Map<K, U>> toLinkedMap(
         Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper) {
@@ -127,9 +128,7 @@ public class EdgeProxyFunctionalTest extends Assert {
 
     public EdgeProxyState(EdgeProxyConfig config) {
       super(config);
-      clientFactory =
-          new ProxyClientFactory(
-              new XioTracing(ConfigFactory.load().getConfig("xio.edgeProxyApplication")), this);
+      clientFactory = new ProxyClientFactory(this);
       routeStates =
           new RouteStates<ProxyRouteState>(
               // create an ImmutableMap from ...
@@ -151,6 +150,14 @@ public class EdgeProxyFunctionalTest extends Assert {
                       // route path is the key and
                       // ProxyRouteState is the value
                       .collect(toLinkedMap(state -> state.path(), state -> state))));
+    }
+
+    @Override
+    public XioTracing tracing() {
+      if (tracing == null) {
+        tracing = new XioTracing(ConfigFactory.load().getConfig("xio.edgeProxyApplication"));
+      }
+      return tracing;
     }
 
     public ImmutableMap<String, RouteState> routes() {

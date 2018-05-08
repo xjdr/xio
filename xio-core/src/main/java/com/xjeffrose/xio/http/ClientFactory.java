@@ -6,6 +6,7 @@ import com.xjeffrose.xio.client.ClientConfig;
 import com.xjeffrose.xio.tracing.XioTracing;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.AttributeKey;
+import java.util.Optional;
 import lombok.Getter;
 
 // TODO(CK): only use case is currently for proxy clients, establish more use cases.
@@ -27,12 +28,17 @@ public abstract class ClientFactory {
 
   public abstract Client createClient(ChannelHandlerContext ctx, ClientConfig config);
 
+  protected Optional<Client> getHandlerClient(ChannelHandlerContext ctx) {
+    return Optional.ofNullable(ctx.channel().attr(CLIENT_KEY).get());
+  }
+
   public Client getClient(ChannelHandlerContext ctx, ClientConfig config) {
-    Client client = ctx.channel().attr(CLIENT_KEY).get();
-    if (client == null) {
-      client = createClient(ctx, config);
-      ctx.channel().attr(CLIENT_KEY).set(client);
-    }
-    return client;
+    return getHandlerClient(ctx)
+        .orElseGet(
+            () -> {
+              Client client = createClient(ctx, config);
+              ctx.channel().attr(CLIENT_KEY).set(client);
+              return client;
+            });
   }
 }

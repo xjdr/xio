@@ -2,12 +2,9 @@ package com.xjeffrose.xio.http;
 
 import com.xjeffrose.xio.tracing.XioTracing;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelHandler;
-import io.netty.channel.ChannelPromise;
+import io.netty.channel.*;
 import io.netty.util.concurrent.PromiseCombiner;
+import java.net.InetSocketAddress;
 import java.util.function.Supplier;
 import lombok.extern.slf4j.Slf4j;
 
@@ -18,6 +15,7 @@ public class Client {
   private final ClientChannelInitializer clientChannelInitializer;
   private final ChannelFutureListener connectionListener;
   private final ChannelFutureListener writeListener;
+  private final ChannelFutureListener releaseListener;
   private Channel channel;
 
   public Client(ClientState state, Supplier<ChannelHandler> appHandler, XioTracing tracing) {
@@ -38,9 +36,16 @@ public class Client {
             log.debug("Write succeeded");
           } else {
             log.debug("Write failed", f.cause());
-            log.debug("pipeline: {}", channel.pipeline());
+            if (channel != null) {
+              log.debug("pipeline: {}", channel.pipeline());
+            }
           }
         };
+    releaseListener = f -> channel = null;
+  }
+
+  public InetSocketAddress remoteAddress() {
+    return state.remote;
   }
 
   /**
@@ -56,6 +61,7 @@ public class Client {
     b.handler(clientChannelInitializer);
     ChannelFuture connectFuture = b.connect(state.remote);
     channel = connectFuture.channel();
+    channel.closeFuture().addListener(releaseListener);
     return connectFuture;
   }
 
@@ -77,6 +83,12 @@ public class Client {
       return promise;
     } else {
       return channel.writeAndFlush(request).addListener(writeListener);
+    }
+  }
+
+  public void recycle() {
+    if (channel != null) {
+      Http2ClientStreamMapper.http2ClientStreamMapper(channel.pipeline().firstContext()).clear();
     }
   }
 }
