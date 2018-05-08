@@ -58,23 +58,25 @@ public class ConfigReloader<T> {
     this.updater = null;
   }
 
-  private Reader buildDigestReader(File file, MessageDigest digest) throws FileNotFoundException {
-    DigestInputStream digester = new DigestInputStream(new FileInputStream(file), digest);
-    return new InputStreamReader(digester);
-  }
-
   private Config parse(Reader reader) {
     Config config = ConfigFactory.parseReader(reader);
     return ConfigFactory.load(config);
   }
 
   private Meta<T> load(File file) {
+    final MessageDigest digest;
     try {
-      MessageDigest digest = MessageDigest.getInstance("SHA-256");
-      Reader reader = buildDigestReader(file, digest);
+      digest = MessageDigest.getInstance("SHA-256");
+    } catch (Exception e) {
+      throw new IllegalStateException(
+          "Couldn't load config from file '" + file.getAbsolutePath() + "'", e);
+    }
+
+    try (FileInputStream fileInputStream = new FileInputStream(file);
+        DigestInputStream digestInputStream = new DigestInputStream(fileInputStream, digest);
+        InputStreamReader reader = new InputStreamReader(digestInputStream)) {
       T value = factory.apply(parse(reader));
-      reader.close();
-      return new Meta<T>(value, file.getAbsolutePath(), file.lastModified(), digest.digest());
+      return new Meta<>(value, file.getAbsolutePath(), file.lastModified(), digest.digest());
     } catch (Exception e) {
       throw new IllegalStateException(
           "Couldn't load config from file '" + file.getAbsolutePath() + "'", e);
@@ -91,11 +93,18 @@ public class ConfigReloader<T> {
   }
 
   private ConfigFileMetadata loadMetaData(File configFile) throws IllegalStateException {
+    final MessageDigest digest;
     try {
-      MessageDigest digest = MessageDigest.getInstance("SHA-256");
-      Reader reader = buildDigestReader(configFile, digest);
+      digest = MessageDigest.getInstance("SHA-256");
+    } catch (Exception e) {
+      throw new IllegalStateException(
+          "Couldn't load config from file '" + configFile.getAbsolutePath() + "'", e);
+    }
+
+    try (FileInputStream fileInputStream = new FileInputStream(configFile);
+        DigestInputStream digestInputStream = new DigestInputStream(fileInputStream, digest);
+        InputStreamReader reader = new InputStreamReader(digestInputStream)) {
       ConfigFactory.parseReader(reader);
-      reader.close();
       return new ConfigFileMetadata(
           configFile.getAbsolutePath(), configFile.lastModified(), digest.digest());
     } catch (Exception e) {
