@@ -6,19 +6,15 @@ import static com.google.common.base.Preconditions.checkState;
 import com.google.common.annotations.VisibleForTesting;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStreamReader;
-import java.io.Reader;
+import java.io.*;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -75,7 +71,9 @@ public class ConfigReloader<T> {
   private Meta<T> load(File file) {
     try {
       MessageDigest digest = MessageDigest.getInstance("SHA-256");
-      T value = factory.apply(parse(buildDigestReader(file, digest)));
+      Reader reader = buildDigestReader(file, digest);
+      T value = factory.apply(parse(reader));
+      reader.close();
       return new Meta<T>(value, file.getAbsolutePath(), file.lastModified(), digest.digest());
     } catch (Exception e) {
       throw new IllegalStateException(
@@ -87,7 +85,7 @@ public class ConfigReloader<T> {
     return load(new File(file));
   }
 
-  private boolean performUpdate(ConfigFileMetadata current, ConfigFileMetadata previous) {
+  private boolean shouldPerformUpdate(ConfigFileMetadata current, ConfigFileMetadata previous) {
     return (current.lastModified > previous.lastModified
         && !MessageDigest.isEqual(current.digest, previous.digest));
   }
@@ -95,37 +93,34 @@ public class ConfigReloader<T> {
   private ConfigFileMetadata loadMetaData(File configFile) throws IllegalStateException {
     try {
       MessageDigest digest = MessageDigest.getInstance("SHA-256");
-      DigestInputStream digester = new DigestInputStream(new FileInputStream(configFile), digest);
-      ConfigFactory.parseReader(new InputStreamReader(digester));
+      Reader reader = buildDigestReader(configFile, digest);
+      ConfigFactory.parseReader(reader);
+      reader.close();
       return new ConfigFileMetadata(
           configFile.getAbsolutePath(), configFile.lastModified(), digest.digest());
-    } catch (FileNotFoundException e) {
+    } catch (Exception e) {
       throw new IllegalStateException(
           "Couldn't load config from file '" + configFile.getAbsolutePath() + "'", e);
-    } catch (NoSuchAlgorithmException e) {
-      throw new IllegalStateException(
-          "Illegal digest algorithm used on file '" + configFile.getAbsolutePath() + "'", e);
     }
   }
 
   private boolean haveWatchFilesChanged() {
-    Boolean filesHaveChanged = false;
     try {
       Set<String> keys = new HashSet<String>(watchFiles.keySet());
-      for (String filePath : keys) {
-        File file = new File(filePath);
-        ConfigFileMetadata currentFileMetadata = loadMetaData(file);
-        ConfigFileMetadata previousConfigMetadata = watchFiles.get(filePath);
-        if (performUpdate(currentFileMetadata, previousConfigMetadata)) {
-          // update the watchFile
-          filesHaveChanged = true;
-          watchFiles.put(filePath, currentFileMetadata);
-        }
-      }
+      List<ConfigFileMetadata> toUpdateList =
+          keys.stream()
+              .map(filePath -> loadMetaData(new File(filePath)))
+              .filter(
+                  currentMetaData ->
+                      shouldPerformUpdate(currentMetaData, watchFiles.get(currentMetaData.path)))
+              .collect(Collectors.toList());
+
+      toUpdateList.forEach(update -> watchFiles.put(update.path, update));
+      return !toUpdateList.isEmpty();
     } catch (Exception e) {
       log.error("Caught exception while checking for if watch files have changed", e);
     }
-    return filesHaveChanged;
+    return false;
   }
 
   @VisibleForTesting
@@ -158,6 +153,7 @@ public class ConfigReloader<T> {
   }
 
   public void addWatchFile(File file) throws IllegalStateException {
+    checkState(this.updater == null, "addWatchFile cannot be called after start");
     if (!watchFiles.containsKey(file.getAbsolutePath())) {
       ConfigFileMetadata configMetaData = loadMetaData(file);
       watchFiles.put(file.getAbsolutePath(), configMetaData);
