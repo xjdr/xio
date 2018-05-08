@@ -104,7 +104,7 @@ public class ClientPoolTest extends Assert {
 
   private Client mockClient(String host) {
     Client client = mock(Client.class);
-    when(client.remoteAddresss()).thenReturn(new InetSocketAddress(host, 80));
+    when(client.remoteAddress()).thenReturn(new InetSocketAddress(host, 80));
     return client;
   }
 

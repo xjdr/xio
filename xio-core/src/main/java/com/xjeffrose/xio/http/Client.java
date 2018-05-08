@@ -44,7 +44,7 @@ public class Client {
     releaseListener = f -> channel = null;
   }
 
-  public InetSocketAddress remoteAddresss() {
+  public InetSocketAddress remoteAddress() {
     return state.remote;
   }
 

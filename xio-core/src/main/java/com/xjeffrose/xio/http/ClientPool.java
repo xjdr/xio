@@ -27,7 +27,7 @@ public class ClientPool {
   }
 
   public void release(Client client) {
-    ConcurrentMap<Client, Meta> pool = getPool(client.remoteAddresss());
+    ConcurrentMap<Client, Meta> pool = getPool(client.remoteAddress());
     if (pool.size() < maxSizePerAddress && !pool.containsKey(client)) {
       log.debug("releasing client to pool {}", client);
       pool.put(client, new Meta(client));

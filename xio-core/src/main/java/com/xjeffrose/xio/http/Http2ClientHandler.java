@@ -53,6 +53,8 @@ public class Http2ClientHandler extends Http2ConnectionHandler {
       return;
     }
 
+    // TODO(CK): investigate removing this class or the code below
+    // TODO(CK): fix grpc test
     if (msg instanceof Http2Request) {
       Http2Request request = (Http2Request) msg;
       if (request.payload instanceof Http2Headers) {
