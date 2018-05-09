@@ -9,5 +9,5 @@ group = project_group
 mainClassName = 'com.xjeffrose.xio.client.chicago.XioChicagoClient'
 
 dependencies {
-  compile project(':xio')
+  implementation project(':xio')
 }

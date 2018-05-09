@@ -1,5 +1,5 @@
 plugins {
-  id 'java-library'
+  id 'java'
   id 'com.google.protobuf' version '0.8.5'
   id 'com.github.kt3k.coveralls' version '2.8.2'
   id 'jacoco'
@@ -37,11 +37,7 @@ if (osName.contains('win')) {
 
 dependencies {
   implementation group: 'com.google.code.findbugs', name: 'jsr305', version: findbugs_jsr305_version
-  api group: 'com.google.guava', name: 'guava', version: guava_version
-  api group: 'com.typesafe', name: 'config', version: typesafe_config_version
-  api group: 'io.netty', name: 'netty-all', version: netty_version
   implementation group: 'io.netty', name: 'netty-tcnative-boringssl-static', version: netty_tcnative_version, classifier: nativeClassifier
-  api group: 'org.slf4j', name: 'slf4j-api', version: slf4j_version
   implementation(group: 'org.apache.curator', name: 'curator-framework', version: curator_version) {
     exclude(module: 'zookeeper')
   }
@@ -52,48 +48,41 @@ dependencies {
     exclude(module: 'slf4j-log4j12')
     exclude(module: 'log4j')
   }
-  api group: 'org.slf4j', name: 'log4j-over-slf4j', version: slf4j_version
   implementation group: 'org.apache.thrift', name: 'libthrift', version: libthrift_version
   implementation group: 'io.zipkin.brave', name: 'brave-instrumentation-http', version: zipkin_brave_brave_instrumentation_http_version
   implementation group: 'io.zipkin.brave', name: 'brave-context-slf4j', version: zipkin_brave_brave_context_slf4j_version
   implementation group: 'io.zipkin.reporter', name: 'zipkin-sender-okhttp3', version: zipkin_reporter_zipkin_sender_okhttp3_version
 
-  api group: 'com.google.auto.value', name: 'auto-value', version: auto_value_version
-  annotationProcessor group: 'com.google.auto.value', name: 'auto-value', version: auto_value_version
-
-  api group: 'org.projectlombok', name: 'lombok', version: lombok_version
-  annotationProcessor "org.projectlombok:lombok:$lombok_version"
-
   implementation group: 'io.dropwizard.metrics', name: 'metrics-core', version: metrics_version
   implementation group: 'io.dropwizard.metrics', name: 'metrics-jmx', version: metrics_version
 
   //region tests
-  testCompile project(':xio-test')
-  testCompile group: 'junit', name: 'junit', version: junit_version
-  testCompile group: 'net.jodah', name: 'concurrentunit', version: concurrentunit_version
-  testCompile group: 'org.hamcrest', name: 'hamcrest-all', version: hamcrest_version
-  testCompile group: 'org.slf4j', name: 'jul-to-slf4j', version: slf4j_version
-  testCompile group: 'ch.qos.logback', name: 'logback-classic', version: logback_version
-  testCompile group: 'ch.qos.logback', name: 'logback-core', version: logback_version
-  testCompile group: 'org.codehaus.groovy', name: 'groovy-all', version: groovy_version
-  testCompile(group: 'org.apache.curator', name: 'curator-test', version: curator_test_version) {
+  testImplementation project(':xio-test')
+  testImplementation group: 'junit', name: 'junit', version: junit_version
+  testImplementation group: 'net.jodah', name: 'concurrentunit', version: concurrentunit_version
+  testImplementation group: 'org.hamcrest', name: 'hamcrest-all', version: hamcrest_version
+  testImplementation group: 'org.slf4j', name: 'jul-to-slf4j', version: slf4j_version
+  testImplementation group: 'ch.qos.logback', name: 'logback-classic', version: logback_version
+  testImplementation group: 'ch.qos.logback', name: 'logback-core', version: logback_version
+  testImplementation group: 'org.codehaus.groovy', name: 'groovy-all', version: groovy_version
+  testImplementation(group: 'org.apache.curator', name: 'curator-test', version: curator_test_version) {
     exclude(module: 'zookeeper')
   }
-  testCompile group: 'io.zipkin.brave', name: 'brave-instrumentation-http-tests', version: zipkin_brave_brave_instrumentation_http_version
-  testCompile group: 'org.eclipse.jetty', name: 'jetty-server', version: eclipse_jetty_server_version
-  testCompile(group: 'org.mockito', name: 'mockito-core', version: mockito_version)
-  testCompile(group: 'org.powermock', name: 'powermock-core', version: powermock_version)
-  testCompile(group: 'org.powermock', name: 'powermock-module-junit4', version: powermock_version)
-  testCompile(group: 'org.powermock', name: 'powermock-api-mockito2', version: powermock_version)
-  testCompile group: 'org.eclipse.jdt.core.compiler', name: 'ecj', version: eclipse_jdt_core_compiler_ecj_version
-  testCompile group: 'io.grpc', name: 'grpc-core', version: grpc_version
-  testCompile(group: 'io.grpc', name: 'grpc-netty', version: grpc_version) {
+  testImplementation group: 'io.zipkin.brave', name: 'brave-instrumentation-http-tests', version: zipkin_brave_brave_instrumentation_http_version
+  testImplementation group: 'org.eclipse.jetty', name: 'jetty-server', version: eclipse_jetty_server_version
+  testImplementation(group: 'org.mockito', name: 'mockito-core', version: mockito_version)
+  testImplementation(group: 'org.powermock', name: 'powermock-core', version: powermock_version)
+  testImplementation(group: 'org.powermock', name: 'powermock-module-junit4', version: powermock_version)
+  testImplementation(group: 'org.powermock', name: 'powermock-api-mockito2', version: powermock_version)
+  testImplementation group: 'org.eclipse.jdt.core.compiler', name: 'ecj', version: eclipse_jdt_core_compiler_ecj_version
+  testImplementation group: 'io.grpc', name: 'grpc-core', version: grpc_version
+  testImplementation(group: 'io.grpc', name: 'grpc-netty', version: grpc_version) {
     exclude(module: 'grpc-core')
     exclude(module: 'netty-codec-http2')
   }
-  testCompile group: 'io.grpc', name: 'grpc-protobuf', version: grpc_version
-  testCompile group: 'io.grpc', name: 'grpc-stub', version: grpc_version
-  testCompile group: 'org.mortbay.jetty.alpn', name: 'alpn-boot', version: alpn_boot_version
+  testImplementation group: 'io.grpc', name: 'grpc-protobuf', version: grpc_version
+  testImplementation group: 'io.grpc', name: 'grpc-stub', version: grpc_version
+  testImplementation group: 'org.mortbay.jetty.alpn', name: 'alpn-boot', version: alpn_boot_version
 }
 
 test {
