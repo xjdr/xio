@@ -45,7 +45,11 @@ public class Http2ClientStreamMapper {
       mappedId = streamMap.inverse().get(id);
       log.debug("h2 client inbound stream id {} : {}", id, mappedId);
     }
-    return mappedId == null ? id : mappedId;
+    if (mappedId == null) {
+      log.error("h2 client inbound stream id {} : XXX", id);
+      mappedId = id;
+    }
+    return mappedId;
   }
 
   public void clear() {

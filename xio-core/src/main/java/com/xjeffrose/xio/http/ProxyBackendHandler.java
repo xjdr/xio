@@ -11,6 +11,14 @@ public class ProxyBackendHandler extends ChannelInboundHandlerAdapter {
   private final ChannelHandlerContext frontend;
   private boolean needFlush = false;
 
+  private ChannelFutureListener errorListenter =
+      (f) -> {
+        if (f.cause() != null) {
+          // TODO(CK): move this into a logger class
+          log.error("Write Error!", f.cause());
+        }
+      };
+
   public ProxyBackendHandler(ChannelHandlerContext frontend) {
     this.frontend = frontend;
   }
@@ -18,17 +26,17 @@ public class ProxyBackendHandler extends ChannelInboundHandlerAdapter {
   @Override
   public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
     log.debug("RawBackendHandler[{}] channelRead: {}", this, msg);
-    frontend
-        .write(msg)
-        .addListener(
-            (ChannelFutureListener)
-                f -> {
-                  if (f.cause() != null) {
-                    // TODO(CK): move this into a logger class
-                    log.error("Write Error!", f.cause());
-                  }
-                });
-    needFlush = true;
+    if (msg instanceof Response) {
+      Response response = (Response) msg;
+      if (response.endOfMessage()) {
+        frontend.writeAndFlush(msg).addListener(errorListenter);
+      } else {
+        frontend.write(msg).addListener(errorListenter);
+      }
+    } else {
+      frontend.write(msg).addListener(errorListenter);
+      needFlush = true;
+    }
   }
 
   @Override
