@@ -23,6 +23,7 @@ import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
@@ -34,7 +35,6 @@ import org.junit.*;
 import org.junit.rules.TestName;
 
 @Slf4j
-@Ignore("todo: fix after gradle maven publish")
 public class ReverseProxyFunctionalTest extends Assert {
 
   @BeforeClass
@@ -44,7 +44,7 @@ public class ReverseProxyFunctionalTest extends Assert {
 
   private static final int NUM_REQUESTS = 10;
 
-  OkHttpClient client;
+  List<OkHttpClient> clients;
   Config config;
   ApplicationState applicationState;
   Application reverseProxy;
@@ -120,43 +120,51 @@ public class ReverseProxyFunctionalTest extends Assert {
     reverseProxy = setupReverseProxy(applicationState, proxyConfig);
   }
 
-  private void setupClient(boolean h2) throws Exception {
-    if (h2) {
-      client =
-          OkHttpUnsafe.getUnsafeClient()
-              .newBuilder()
-              .protocols(Arrays.asList(HTTP_2, HTTP_1_1))
-              .build();
-    } else {
-      client =
-          OkHttpUnsafe.getUnsafeClient()
-              .newBuilder()
-              .protocols(Collections.singletonList(HTTP_1_1))
-              .build();
-    }
+  private void setupClient(int count, boolean h2) throws Exception {
+    clients =
+        IntStream.range(0, count)
+            .mapToObj(
+                index -> {
+                  try {
+                    if (h2) {
+                      return OkHttpUnsafe.getUnsafeClient()
+                          .newBuilder()
+                          .protocols(Arrays.asList(HTTP_2, HTTP_1_1))
+                          .build();
+                    } else {
+                      return OkHttpUnsafe.getUnsafeClient()
+                          .newBuilder()
+                          .protocols(Collections.singletonList(HTTP_1_1))
+                          .build();
+                    }
+                  } catch (Exception e) {
+                    return null;
+                  }
+                })
+            .collect(Collectors.toList());
   }
 
-  private void aggressivelyCloseClient() throws Exception {
-    client.dispatcher().executorService().shutdown();
-    long pollMs =
-        Observable.interval(100, TimeUnit.MILLISECONDS)
-                .takeUntil(
-                    i -> {
-                      boolean canEvict =
-                          client.connectionPool().idleConnectionCount()
-                              == client.connectionPool().connectionCount();
-                      client.connectionPool().evictAll();
-                      return canEvict;
-                    })
-                .timeout(15, TimeUnit.SECONDS)
-                .blockingLast()
-            * 100;
-    log.warn("polled client shutdown for {}ms", pollMs);
+  private void aggressivelyCloseClients() throws Exception {
+    clients.forEach(
+        client -> {
+          client.dispatcher().executorService().shutdown();
+          Observable.interval(100, TimeUnit.MILLISECONDS)
+              .takeUntil(
+                  i -> {
+                    boolean canEvict =
+                        client.connectionPool().idleConnectionCount()
+                            == client.connectionPool().connectionCount();
+                    client.connectionPool().evictAll();
+                    return canEvict;
+                  })
+              .timeout(15, TimeUnit.SECONDS)
+              .blockingSubscribe();
+        });
   }
 
   @After
   public void tearDown() throws Exception {
-    aggressivelyCloseClient();
+    aggressivelyCloseClients();
     if (reverseProxy != null) {
       reverseProxy.close();
     }
@@ -181,7 +189,7 @@ public class ReverseProxyFunctionalTest extends Assert {
     String url = url(port, sanity);
     Request request = new Request.Builder().url(url).build();
 
-    Response response = client.newCall(request).execute();
+    Response response = clients.get(0).newCall(request).execute();
     response.close();
     assertEquals(expectedProtocol, response.protocol());
 
@@ -195,7 +203,7 @@ public class ReverseProxyFunctionalTest extends Assert {
     RequestBody body = RequestBody.create(mediaType, "this is the post body");
     Request request = new Request.Builder().url(url).post(body).build();
 
-    Response response = client.newCall(request).execute();
+    Response response = clients.get(0).newCall(request).execute();
     response.close();
     assertEquals("unexpected client response protocol", expectedProtocol, response.protocol());
 
@@ -206,7 +214,7 @@ public class ReverseProxyFunctionalTest extends Assert {
 
   @Test
   public void sanityCheckHttp1Get() throws Exception {
-    setupClient(false);
+    setupClient(1, false);
     setupBack(false);
 
     get(server.getPort(), true, HTTP_1_1);
@@ -214,7 +222,7 @@ public class ReverseProxyFunctionalTest extends Assert {
 
   @Test
   public void sanityCheckHttp1Post() throws Exception {
-    setupClient(false);
+    setupClient(1, false);
     setupBack(false);
 
     post(server.getPort(), true, HTTP_1_1);
@@ -222,7 +230,7 @@ public class ReverseProxyFunctionalTest extends Assert {
 
   @Test
   public void sanityCheckHttp2Get() throws Exception {
-    setupClient(true);
+    setupClient(1, true);
     setupBack(true);
 
     get(server.getPort(), true, HTTP_2);
@@ -230,7 +238,7 @@ public class ReverseProxyFunctionalTest extends Assert {
 
   @Test
   public void sanityCheckHttp2Post() throws Exception {
-    setupClient(true);
+    setupClient(1, true);
     setupBack(true);
 
     post(server.getPort(), true, HTTP_2);
@@ -238,7 +246,7 @@ public class ReverseProxyFunctionalTest extends Assert {
 
   @Test
   public void testHttp2toHttp1ServerGet() throws Exception {
-    setupClient(true);
+    setupClient(1, true);
     setupFrontBack(true, false);
 
     get(port(), false, HTTP_2);
@@ -246,7 +254,7 @@ public class ReverseProxyFunctionalTest extends Assert {
 
   @Test
   public void testHttp2toHttp1ServerPost() throws Exception {
-    setupClient(true);
+    setupClient(1, true);
     setupFrontBack(true, false);
 
     post(port(), false, HTTP_2);
@@ -254,7 +262,7 @@ public class ReverseProxyFunctionalTest extends Assert {
 
   @Test
   public void testHttp2toHttp2ServerGet() throws Exception {
-    setupClient(true);
+    setupClient(1, true);
     setupFrontBack(true, true);
 
     get(port(), false, HTTP_2);
@@ -262,7 +270,7 @@ public class ReverseProxyFunctionalTest extends Assert {
 
   @Test
   public void testHttp1toHttp2ServerGet() throws Exception {
-    setupClient(false);
+    setupClient(1, false);
     setupFrontBack(false, true);
 
     get(port(), false, HTTP_1_1);
@@ -270,7 +278,7 @@ public class ReverseProxyFunctionalTest extends Assert {
 
   @Test
   public void testHttp1toHttp2ServerPost() throws Exception {
-    setupClient(false);
+    setupClient(1, false);
     setupFrontBack(false, true);
 
     post(port(), false, HTTP_1_1);
@@ -278,7 +286,7 @@ public class ReverseProxyFunctionalTest extends Assert {
 
   @Test
   public void testHttp1toHttp2ServerPostMany() throws Exception {
-    setupClient(false);
+    setupClient(NUM_REQUESTS, false);
     setupFrontBack(false, true);
 
     verify(multipleAsyncRequests(true).blockingIterable());
@@ -286,7 +294,7 @@ public class ReverseProxyFunctionalTest extends Assert {
 
   @Test
   public void testHttp1toHttp1ServerGetMany() throws Exception {
-    setupClient(true);
+    setupClient(NUM_REQUESTS, true);
     setupFrontBack(false, false);
 
     verify(multipleAsyncRequests(false).blockingIterable());
@@ -294,7 +302,7 @@ public class ReverseProxyFunctionalTest extends Assert {
 
   @Test
   public void testHttp1toHttp2ServerGetMany() throws Exception {
-    setupClient(false);
+    setupClient(NUM_REQUESTS, false);
     setupFrontBack(false, true);
 
     verify(multipleAsyncRequests(false).blockingIterable());
@@ -302,7 +310,7 @@ public class ReverseProxyFunctionalTest extends Assert {
 
   @Test
   public void testHttp1toHttp1ServerPostMany() throws Exception {
-    setupClient(true);
+    setupClient(NUM_REQUESTS, true);
     setupFrontBack(false, false);
 
     verify(multipleAsyncRequests(true).blockingIterable());
@@ -310,7 +318,7 @@ public class ReverseProxyFunctionalTest extends Assert {
 
   @Test
   public void testHttp2toHttp1ServerGetMany() throws Exception {
-    setupClient(true);
+    setupClient(NUM_REQUESTS, true);
     setupFrontBack(true, false);
 
     verify(multipleAsyncRequests(false).blockingIterable());
@@ -318,7 +326,7 @@ public class ReverseProxyFunctionalTest extends Assert {
 
   @Test
   public void testHttp2toHttp2ServerGetMany() throws Exception {
-    setupClient(true);
+    setupClient(NUM_REQUESTS, true);
     setupFrontBack(true, true);
 
     verify(multipleAsyncRequests(false).blockingIterable());
@@ -326,7 +334,7 @@ public class ReverseProxyFunctionalTest extends Assert {
 
   @Test
   public void testHttp2toHttp1ServerPostMany() throws Exception {
-    setupClient(true);
+    setupClient(NUM_REQUESTS, true);
     setupFrontBack(true, false);
 
     verify(multipleAsyncRequests(true).blockingIterable());
@@ -334,7 +342,7 @@ public class ReverseProxyFunctionalTest extends Assert {
 
   @Test
   public void testHttp2toHttp2ServerPostMany() throws Exception {
-    setupClient(true);
+    setupClient(NUM_REQUESTS, true);
     setupFrontBack(true, true);
 
     verify(multipleAsyncRequests(true).blockingIterable());
@@ -353,15 +361,18 @@ public class ReverseProxyFunctionalTest extends Assert {
   }
 
   private Observable<IndexResponse> multipleAsyncRequests(boolean post) {
+    String url = url(port(), false);
     return Observable.merge(
-        Observable.fromIterable(() -> IntStream.range(0, NUM_REQUESTS).iterator())
-            .map(index -> requestAsync(post, index).toObservable()));
+        Observable.fromIterable(() -> clients.iterator())
+            .map(
+                client -> requestAsync(client, url, post, clients.indexOf(client)).toObservable()));
   }
 
-  private Single<IndexResponse> requestAsync(boolean post, int xIndex) {
-    String url = url(port(), false);
+  private Single<IndexResponse> requestAsync(
+      OkHttpClient client, String url, boolean post, int xIndex) {
     return Single.<IndexResponse>create(
             emitter -> {
+              log.debug("making request index {}", xIndex);
               Request.Builder request =
                   new Request.Builder().header("x_index", String.valueOf(xIndex)).url(url);
               if (post) {
@@ -372,7 +383,7 @@ public class ReverseProxyFunctionalTest extends Assert {
                 request.get();
               }
               Response response = client.newCall(request.build()).execute();
-              log.debug("response {}", response);
+              log.debug("response {} index {}", response, xIndex);
               response.close();
               emitter.onSuccess(new IndexResponse(xIndex, response));
             })
