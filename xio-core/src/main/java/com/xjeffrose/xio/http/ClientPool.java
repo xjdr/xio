@@ -27,6 +27,8 @@ public class ClientPool {
   }
 
   public void release(Client client) {
+    log.debug("recycling client {}", client);
+    client.recycle();
     ConcurrentMap<Client, Meta> pool = getPool(client.remoteAddress());
     if (pool.size() < maxSizePerAddress && !pool.containsKey(client)) {
       log.debug("releasing client to pool {}", client);
@@ -38,8 +40,6 @@ public class ClientPool {
         meta.available.set(true);
       }
     }
-    log.debug("recycling client {}", client);
-    client.recycle();
   }
 
   @VisibleForTesting

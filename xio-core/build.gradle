@@ -82,7 +82,7 @@ dependencies {
   }
   testImplementation group: 'io.grpc', name: 'grpc-protobuf', version: grpc_version
   testImplementation group: 'io.grpc', name: 'grpc-stub', version: grpc_version
-  testImplementation group: 'org.mortbay.jetty.alpn', name: 'alpn-boot', version: alpn_boot_version
+  testCompile group: 'org.mortbay.jetty.alpn', name: 'alpn-boot', version: alpn_boot_version
 }
 
 test {
