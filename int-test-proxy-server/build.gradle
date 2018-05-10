@@ -1,0 +1,14 @@
+plugins {
+  id 'java'
+  id 'application'
+}
+
+description = 'int-test-proxy-server'
+group = project_group
+
+mainClassName = 'com.xjeffrose.xio.proxy.Main'
+
+dependencies {
+  implementation project(':xio')
+  testCompile group: 'junit', name: 'junit', version: '4.12'
+}
