@@ -60,7 +60,6 @@ dependencies {
 
   //region tests
   testImplementation group: 'net.jodah', name: 'concurrentunit', version: concurrentunit_version
-  testImplementation group: 'org.slf4j', name: 'jul-to-slf4j', version: slf4j_version
   testImplementation group: 'ch.qos.logback', name: 'logback-classic', version: logback_version
   testImplementation group: 'ch.qos.logback', name: 'logback-core', version: logback_version
   testImplementation group: 'org.codehaus.groovy', name: 'groovy-all', version: groovy_version

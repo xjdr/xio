@@ -15,6 +15,5 @@ dependencies {
   implementation project(':xio')
   implementation group: 'ch.qos.logback', name: 'logback-classic', version: logback_version
   implementation group: 'ch.qos.logback', name: 'logback-core', version: logback_version
-
-  testImplementation group: 'org.slf4j', name: 'jul-to-slf4j', version: slf4j_version
+  implementation group: 'org.codehaus.groovy', name: 'groovy-all', version: groovy_version
 }
