@@ -14,8 +14,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class Http2ServerHandler extends Http2ConnectionHandler {
 
-  private int currentStreamId;
-
   public Http2ServerHandler(
       Http2ConnectionDecoder decoder,
       Http2ConnectionEncoder encoder,
@@ -24,7 +22,11 @@ public class Http2ServerHandler extends Http2ConnectionHandler {
   }
 
   private void writeHeaders(
-      ChannelHandlerContext ctx, Http2Headers headers, boolean eos, ChannelPromise promise)
+      ChannelHandlerContext ctx,
+      Http2Headers headers,
+      boolean eos,
+      ChannelPromise promise,
+      int currentStreamId)
       throws Exception {
     encoder()
         .writeHeaders(
@@ -39,7 +41,8 @@ public class Http2ServerHandler extends Http2ConnectionHandler {
             promise);
   }
 
-  private void writeData(ChannelHandlerContext ctx, Http2DataFrame data, ChannelPromise promise)
+  private void writeData(
+      ChannelHandlerContext ctx, Http2DataFrame data, ChannelPromise promise, int currentStreamId)
       throws Exception {
     encoder().writeData(ctx, currentStreamId, data.content(), 0, data.isEndStream(), promise);
   }
@@ -59,14 +62,14 @@ public class Http2ServerHandler extends Http2ConnectionHandler {
     if (msg instanceof Http2Response) {
       Http2Response response = (Http2Response) msg;
 
-      currentStreamId = response.streamId;
       if (response.payload instanceof Http2Headers) {
-        writeHeaders(ctx, (Http2Headers) response.payload, response.eos, promise);
+        writeHeaders(
+            ctx, (Http2Headers) response.payload, response.eos, promise, response.streamId);
         return;
       }
 
       if (response.payload instanceof Http2DataFrame) {
-        writeData(ctx, (Http2DataFrame) response.payload, promise);
+        writeData(ctx, (Http2DataFrame) response.payload, promise, response.streamId);
         return;
       }
     }

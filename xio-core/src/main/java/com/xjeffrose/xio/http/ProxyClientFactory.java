@@ -2,34 +2,34 @@ package com.xjeffrose.xio.http;
 
 import com.xjeffrose.xio.application.ApplicationState;
 import com.xjeffrose.xio.client.ClientConfig;
-import com.xjeffrose.xio.tracing.XioTracing;
 import io.netty.channel.ChannelHandlerContext;
+import lombok.extern.slf4j.Slf4j;
 
 /** Generates an http proxy Client objects */
+@Slf4j
 public class ProxyClientFactory extends ClientFactory {
 
-  // TODO(CK): Client pool
-  // http://google.github.io/guava/releases/snapshot/api/docs/com/google/common/collect/ArrayListMultimap.html
-  // ListMultiMap<String, Client> pool
-
-  /*
-  private final Supplier<ChannelHandler> appHandler;
-
-  public ClientFactory(ClientState state, Supplier<ChannelHandler> appHandler) {
-    this.appHandler = appHandler;
-  }
-  */
   private final ApplicationState state;
+  private final ClientPool clientPool;
 
-  public ProxyClientFactory(XioTracing tracing, ApplicationState state) {
-    super(tracing);
+  public ProxyClientFactory(ApplicationState state) {
+    super(state.tracing());
     this.state = state;
+    this.clientPool = new ClientPool(state.config().getClientPoolSize());
   }
 
   @Override
   public Client createClient(ChannelHandlerContext ctx, ClientConfig config) {
     ClientState clientState = state.createClientState(channelConfig(ctx), config);
-    // TODO(CK): this handler should be notifying a connection pool on release
-    return new Client(clientState, () -> new ProxyBackendHandler(ctx), getTracing());
+    Client client = new Client(clientState, () -> new ProxyBackendHandler(ctx), getTracing());
+    ctx.channel().closeFuture().addListener(f -> clientPool.release(client));
+    log.debug("creating client");
+    return client;
+  }
+
+  @Override
+  public Client getClient(ChannelHandlerContext ctx, ClientConfig config) {
+    return getHandlerClient(ctx)
+        .orElse(clientPool.acquire(config, () -> super.getClient(ctx, config)));
   }
 }

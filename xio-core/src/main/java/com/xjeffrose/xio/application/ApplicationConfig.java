@@ -33,6 +33,7 @@ public class ApplicationConfig {
   @Getter private final double softReqPerSec;
   @Getter private final double hardReqPerSec;
   @Getter private final int rateLimiterPoolSize;
+  @Getter private final int clientPoolSize;
   @Getter private final XioTracing tracing;
 
   @Getter
@@ -54,6 +55,7 @@ public class ApplicationConfig {
     softReqPerSec = config.getDouble("settings.soft_req_per_sec");
     hardReqPerSec = config.getDouble("settings.hard_req_per_sec");
     rateLimiterPoolSize = config.getInt("settings.rate_limiter_pool_size");
+    clientPoolSize = config.getInt("clientLimits.clientPoolSize");
     this.tracing = tracing;
   }
 

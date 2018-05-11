@@ -5,6 +5,7 @@ plugins {
 }
 
 allprojects {
+  apply plugin: 'java'
   apply plugin: 'maven-publish'
   apply plugin: 'com.jfrog.bintray'
 
@@ -18,6 +19,23 @@ allprojects {
 
   sourceCompatibility = 1.8
   targetCompatibility = 1.8
+
+  dependencies {
+    // todo: (WK) - make these java-library plugin "api" dependencies when we get the release plugin to play nice
+    implementation group: 'com.google.guava', name: 'guava', version: guava_version
+    implementation group: 'com.typesafe', name: 'config', version: typesafe_config_version
+    implementation group: 'io.netty', name: 'netty-all', version: netty_version
+    implementation group: 'org.slf4j', name: 'slf4j-api', version: slf4j_version
+    implementation group: 'org.slf4j', name: 'log4j-over-slf4j', version: slf4j_version
+    annotationProcessor group: 'com.google.auto.value', name: 'auto-value', version: auto_value_version
+    implementation group: 'com.google.auto.value', name: 'auto-value', version: auto_value_version
+    annotationProcessor "org.projectlombok:lombok:$lombok_version"
+    implementation group: 'org.projectlombok', name: 'lombok', version: lombok_version
+
+    testImplementation project(':xio-test')
+    testImplementation group: 'junit', name: 'junit', version: junit_version
+    testImplementation group: 'org.hamcrest', name: 'hamcrest-all', version: hamcrest_version
+  }
 }
 
 task wrapper(type: Wrapper) {
