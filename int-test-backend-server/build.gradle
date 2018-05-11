@@ -17,3 +17,7 @@ dependencies {
   implementation group: 'ch.qos.logback', name: 'logback-core', version: logback_version
   implementation group: 'org.codehaus.groovy', name: 'groovy-all', version: groovy_version
 }
+
+run {
+  jvmArgs = [xbcp]
+}
