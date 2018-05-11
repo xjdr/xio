@@ -2,9 +2,9 @@ rootProject.name = 'xio-parent'
 include ':xio'
 include ':xio-test'
 include ':configuration-server'
-include 'chicago-example'
-include 'int-test-backend-server'
-include 'int-test-proxy-server'
+include ':chicago-example'
+include ':int-test-backend-server'
+include ':int-test-proxy-server'
 
 project(':xio').projectDir = "$rootDir/xio-core" as File
 project(':xio-test').projectDir = "$rootDir/xio-test" as File

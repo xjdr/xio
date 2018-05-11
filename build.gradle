@@ -38,8 +38,11 @@ allprojects {
   }
 }
 
-task wrapper(type: Wrapper) {
-  gradleVersion = '4.7'
+task('print-alpn') {
+  apply from: 'alpn-boot.gradle'
+  doLast {
+    println xbcp
+  }
 }
 
 task verifyBintrayConfig {
@@ -55,3 +58,7 @@ task imWithStupid(type:Exec) {
 }
 
 afterReleaseBuild.dependsOn imWithStupid
+
+task wrapper(type: Wrapper) {
+  gradleVersion = '4.7'
+}
