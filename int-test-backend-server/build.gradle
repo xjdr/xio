@@ -1,0 +1,34 @@
+apply plugin: 'java'
+apply plugin: 'application'
+
+mainClassName = 'com.xjeffrose.xio.backend.server.Main'
+
+repositories {
+  jcenter()
+}
+
+version = 0.1
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+task wrapper(type: Wrapper) {
+  gradleVersion = '4.7'
+}
+
+task fatJar(type: Jar) {
+  manifest {
+    attributes 'Implementation-Title': 'stuntwebserver',
+      'Implementation-Version': version,
+      'Main-Class': mainClassName
+  }
+  baseName = project.name + '-all'
+  from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+  with jar
+}
+
+dependencies {
+  implementation project(":xio")
+  implementation project(":xio-test")
+  implementation group: 'com.squareup.okhttp3', name: 'mockwebserver', version: okhttp_version
+  implementation group: 'com.typesafe', name: 'config', version: typesafe_config_version
+}
