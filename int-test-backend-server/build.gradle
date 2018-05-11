@@ -1,0 +1,11 @@
+apply plugin: 'java'
+apply plugin: 'application'
+
+mainClassName = 'com.xjeffrose.xio.backend.server.Main'
+
+dependencies {
+  implementation project(":xio")
+  implementation project(":xio-test")
+  implementation group: 'com.squareup.okhttp3', name: 'mockwebserver', version: okhttp_version
+  implementation group: 'com.typesafe', name: 'config', version: typesafe_config_version
+}

@@ -4,9 +4,11 @@ include ':xio-test'
 include ':configuration-server'
 include 'chicago-example'
 include 'int-test-proxy-server'
+include 'int-test-backend-server'
 
 project(':xio').projectDir = "$rootDir/xio-core" as File
 project(':xio-test').projectDir = "$rootDir/xio-test" as File
 project(':configuration-server').projectDir = "$rootDir/configuration-server" as File
 project(':chicago-example').projectDir = "$rootDir/chicago-example" as File
 project(':int-test-proxy-server').projectDir = "$rootDir/int-test-proxy-server" as File
+project(':int-test-backend-server').projectDir = "$rootDir/int-test-backend-server" as File
