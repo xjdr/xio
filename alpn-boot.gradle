@@ -1,0 +1,16 @@
+// This adds alpn-boot to the boot classpath for for testing h2 using okhttp
+// https://github.com/square/okhttp/wiki/Building#desktop-testing-with-maven
+
+dependencies {
+  testCompile group: 'org.mortbay.jetty.alpn', name: 'alpn-boot', version: alpn_boot_version
+}
+
+test {
+  def alpn_boot_jar = project.configurations.testCompile.find { it.name.startsWith("alpn-boot-") }
+  def xbcp = "-Xbootclasspath/p:$alpn_boot_jar"
+  println xbcp
+  jvmArgs = [xbcp]
+  testLogging {
+    showStandardStreams = true
+  }
+}

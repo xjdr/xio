@@ -35,6 +35,8 @@ if (osName.contains('win')) {
   throw new InvalidUserDataException("Unsupoprted os family $osName")
 }
 
+apply from: '../alpn-boot.gradle'
+
 dependencies {
   implementation group: 'com.google.code.findbugs', name: 'jsr305', version: findbugs_jsr305_version
   implementation group: 'io.netty', name: 'netty-tcnative-boringssl-static', version: netty_tcnative_version, classifier: nativeClassifier
@@ -57,10 +59,7 @@ dependencies {
   implementation group: 'io.dropwizard.metrics', name: 'metrics-jmx', version: metrics_version
 
   //region tests
-  testImplementation project(':xio-test')
-  testImplementation group: 'junit', name: 'junit', version: junit_version
   testImplementation group: 'net.jodah', name: 'concurrentunit', version: concurrentunit_version
-  testImplementation group: 'org.hamcrest', name: 'hamcrest-all', version: hamcrest_version
   testImplementation group: 'org.slf4j', name: 'jul-to-slf4j', version: slf4j_version
   testImplementation group: 'ch.qos.logback', name: 'logback-classic', version: logback_version
   testImplementation group: 'ch.qos.logback', name: 'logback-core', version: logback_version
@@ -82,18 +81,6 @@ dependencies {
   }
   testImplementation group: 'io.grpc', name: 'grpc-protobuf', version: grpc_version
   testImplementation group: 'io.grpc', name: 'grpc-stub', version: grpc_version
-  testCompile group: 'org.mortbay.jetty.alpn', name: 'alpn-boot', version: alpn_boot_version
-}
-
-test {
-  def alpn_boot_jar = project.configurations.testCompile.find { it.name.startsWith("alpn-boot-") }
-  def xbcp = "-Xbootclasspath/p:$alpn_boot_jar"
-  println xbcp
-  // https://github.com/square/okhttp/wiki/Building#desktop-testing-with-maven
-  jvmArgs = [xbcp]
-  testLogging {
-    showStandardStreams = true
-  }
 }
 
 protobuf {

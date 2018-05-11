@@ -1,6 +1,6 @@
-package com.xjeffrose.xio.http;
+package com.xjeffrose.xio.proxy;
 
-import static com.xjeffrose.xio.helpers.TlsHelper.getKeyManagers;
+import static com.xjeffrose.xio.test.OkHttpUnsafe.getKeyManagers;
 import static okhttp3.Protocol.HTTP_1_1;
 import static okhttp3.Protocol.HTTP_2;
 
@@ -14,14 +14,17 @@ import com.xjeffrose.xio.application.ApplicationConfig;
 import com.xjeffrose.xio.application.ApplicationState;
 import com.xjeffrose.xio.bootstrap.ApplicationBootstrap;
 import com.xjeffrose.xio.core.SocketAddressHelper;
-import com.xjeffrose.xio.fixtures.JulBridge;
+import com.xjeffrose.xio.http.*;
 import com.xjeffrose.xio.pipeline.SmartHttpPipeline;
 import com.xjeffrose.xio.test.OkHttpUnsafe;
 import io.netty.channel.ChannelHandler;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -36,11 +39,6 @@ import org.junit.rules.TestName;
 
 @Slf4j
 public class ReverseProxyFunctionalTest extends Assert {
-
-  @BeforeClass
-  public static void setupJul() {
-    JulBridge.initialize();
-  }
 
   private static final int NUM_REQUESTS = 10;
 
@@ -88,7 +86,9 @@ public class ReverseProxyFunctionalTest extends Assert {
       protocols = Collections.singletonList(HTTP_1_1);
     }
 
-    server = OkHttpUnsafe.getSslMockWebServer(getKeyManagers(tlsConfig));
+    server =
+        OkHttpUnsafe.getSslMockWebServer(
+            getKeyManagers(tlsConfig.getPrivateKey(), tlsConfig.getCertificateAndChain()));
     server.setProtocols(protocols);
     server.setDispatcher(
         new Dispatcher() {
