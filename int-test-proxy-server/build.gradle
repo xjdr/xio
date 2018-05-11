@@ -1,0 +1,19 @@
+plugins {
+  id 'java'
+  id 'application'
+  id 'com.github.sherter.google-java-format' version '0.6'
+}
+
+description = 'int-test-proxy-server'
+group = project_group
+
+mainClassName = 'com.xjeffrose.xio.proxy.Main'
+
+apply from: '../alpn-boot.gradle'
+
+dependencies {
+  implementation project(':xio')
+  implementation group: 'ch.qos.logback', name: 'logback-classic', version: logback_version
+  implementation group: 'ch.qos.logback', name: 'logback-core', version: logback_version
+  implementation group: 'org.codehaus.groovy', name: 'groovy-all', version: groovy_version
+}

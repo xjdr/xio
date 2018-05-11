@@ -1,4 +1,4 @@
-package com.xjeffrose.xio.fixtures;
+package com.xjeffrose.xio.test;
 
 import org.slf4j.bridge.SLF4JBridgeHandler;
 

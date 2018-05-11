@@ -12,6 +12,7 @@ dependencies {
   api group: 'com.squareup.okhttp3', name: 'mockwebserver', version: okhttp_version
   api group: 'com.typesafe', name: 'config', version: typesafe_config_version
   api group: 'io.reactivex.rxjava2', name: 'rxjava', version: rx_java_version
+  api group: 'org.slf4j', name: 'jul-to-slf4j', version: slf4j_version
 }
 
 bintray_package = 'xio-test'
