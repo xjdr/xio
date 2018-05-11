@@ -5,10 +5,13 @@ dependencies {
   testCompile group: 'org.mortbay.jetty.alpn', name: 'alpn-boot', version: alpn_boot_version
 }
 
-test {
+ext {
   def alpn_boot_jar = project.configurations.testCompile.find { it.name.startsWith("alpn-boot-") }
-  def xbcp = "-Xbootclasspath/p:$alpn_boot_jar"
-  println xbcp
+  xbcp = "-Xbootclasspath/p:$alpn_boot_jar"
+}
+
+test {
+  //println xbcp
   jvmArgs = [xbcp]
   testLogging {
     showStandardStreams = true

@@ -1,37 +1,23 @@
 apply plugin: 'java'
 apply plugin: 'application'
 
+description = 'int-test-backend-server'
+group = project_group
+
 mainClassName = 'com.xjeffrose.xio.backend.server.Main'
 
-repositories {
-  jcenter()
-}
-
-version = 0.1
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
-
-task wrapper(type: Wrapper) {
-  gradleVersion = '4.7'
-}
-
-
-//create a single Jar with all dependencies
-task fatJar(type: Jar) {
-	manifest {
-        attributes 'Implementation-Title': 'Gradle Jar File Example',  
-        	'Implementation-Version': version,
-        	'Main-Class': mainClassName 
-    }
-    baseName = project.name + '-all'
-    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
-    with jar
-}
-
+apply from: '../alpn-boot.gradle'
 
 dependencies {
   implementation project(":xio")
   implementation project(":xio-test")
   implementation group: 'com.squareup.okhttp3', name: 'mockwebserver', version: okhttp_version
   implementation group: 'com.typesafe', name: 'config', version: typesafe_config_version
+  implementation group: 'ch.qos.logback', name: 'logback-classic', version: logback_version
+  implementation group: 'ch.qos.logback', name: 'logback-core', version: logback_version
+  implementation group: 'org.codehaus.groovy', name: 'groovy-all', version: groovy_version
+}
+
+run {
+  jvmArgs = [xbcp]
 }
