@@ -11,7 +11,7 @@ _int_test_proxy_server_module_dir = os.path.abspath(os.path.join(_root_dir, 'int
 def cmd_for_task(*tasks):
   template = ':int-test-backend-server:{}'
   t = functools.reduce(lambda a, b: ("", template.format(a) + " " + template.format(b)), tasks)[1]
-  return "{}/gradlew {}".format(_root_dir, t)
+  return "{}/gradlew -p {} {}".format(_root_dir, _root_dir, t)
 
 
 def assemble_dist_script():
@@ -40,27 +40,23 @@ class Server:
   def run(self):
     if self.process is None:
       print("running server {}".format(self.name))
-      self.process = subprocess.Popen("exec " + self.cmd, stdout=subprocess.PIPE, shell=True)
+      self.process = subprocess.Popen("exec " + self.cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+      while True:
+          line = str(self.process.stderr.readline())
+          self.process.stderr.flush()
+          print(line)
+          if 'starting to accept connections' in line:
+            break
     return self
 
   def kill(self):
     if self.process is not None:
       self.process.kill()
 
-  def wait(self):
-    status = None
-    while self.process is not None and status is None:
-      s = self.process.poll()
-      if s is not None:
-        print("server {} process completed with status {}".format(self.name, s))
-        self.process = None
-
-
 if __name__ == '__main__':
   script = assemble_dist_script()
   if script is not None:
-    servers = [Server("s1", script, 8443).run(),
-               Server("s2", script, 8444).run()]
+    servers = [Server("s1", script, 8443).run()]
     for each in servers:
       each.kill()
       each.wait()
