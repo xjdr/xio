@@ -1,0 +1,23 @@
+apply plugin: 'java'
+apply plugin: 'application'
+
+description = 'int-test-backend-server'
+group = project_group
+
+mainClassName = 'com.xjeffrose.xio.backend.server.Main'
+
+apply from: '../alpn-boot.gradle'
+
+dependencies {
+  implementation project(":xio")
+  implementation project(":xio-test")
+  implementation group: 'com.squareup.okhttp3', name: 'mockwebserver', version: okhttp_version
+  implementation group: 'com.typesafe', name: 'config', version: typesafe_config_version
+  implementation group: 'ch.qos.logback', name: 'logback-classic', version: logback_version
+  implementation group: 'ch.qos.logback', name: 'logback-core', version: logback_version
+  implementation group: 'org.codehaus.groovy', name: 'groovy-all', version: groovy_version
+}
+
+run {
+  jvmArgs = [xbcp]
+}
