@@ -25,7 +25,7 @@ public class Main {
 
   public static void main(String args[]) throws Exception {
     if (args.length < 3) {
-      throw new RuntimeException("please specify server 'name' and 'port' arguments");
+      throw new RuntimeException("please specify server 'host' and 'port' and 'header-tag' arguments");
     }
     val headerPropKey = "header-tag";
     val host = args[0];
