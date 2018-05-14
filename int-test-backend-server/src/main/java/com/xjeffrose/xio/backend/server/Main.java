@@ -1,14 +1,13 @@
 package com.xjeffrose.xio.backend.server;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import com.xjeffrose.xio.SSL.TlsConfig;
 import com.xjeffrose.xio.test.OkHttpUnsafe;
 import lombok.val;
 import okhttp3.mockwebserver.*;
 
+import java.net.InetAddress;
 import java.security.KeyStore;
 import java.util.Arrays;
-import java.util.Optional;
 
 import static okhttp3.Protocol.HTTP_1_1;
 import static okhttp3.Protocol.HTTP_2;
@@ -21,13 +20,14 @@ import javax.net.ssl.KeyManagerFactory;
 public class Main {
 
   public static void main(String args[]) throws Exception {
+    if (args.length < 3) {
+      throw new RuntimeException("please specify server 'name' and 'port' arguments");
+    }
     val headerPropKey = "header-tag";
-    val portPropKey = "port";
-    val taggedHeaderValue = System.getProperty(headerPropKey);
-    val port = System.getProperty(portPropKey);
 
-    checkNotNull(taggedHeaderValue, headerPropKey);
-    checkNotNull(port, portPropKey);
+    val host = args[0];
+    val port = args[1];
+    val taggedHeaderValue = args[2];
 
     val keyManagers = createKeyManager();
     val server = OkHttpUnsafe.getSslMockWebServer(keyManagers);
@@ -37,7 +37,6 @@ public class Main {
         new Dispatcher() {
           @Override
           public MockResponse dispatch(RecordedRequest request) {
-            String index = Optional.ofNullable(request.getHeader("x_index")).orElse("unknown");
             return new MockResponse()
                 .addHeader(headerPropKey, taggedHeaderValue)
                 .setBody("Release the Kraken")
@@ -45,7 +44,7 @@ public class Main {
           }
         });
 
-    server.start(Integer.parseInt(port));
+    server.start(InetAddress.getByName(host), Integer.parseInt(port));
   }
 
   private static KeyManager[] createKeyManager() throws Exception {
