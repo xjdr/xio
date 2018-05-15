@@ -22,10 +22,13 @@ import static okhttp3.Protocol.HTTP_2;
 public class Main {
 
   public static void main(String args[]) throws Exception {
+    if (args.length < 2) {
+      throw new RuntimeException("please specify server 'name' and 'port' arguments");
+    }
     val headerPropKey = "header-tag";
     val portPropKey = "port";
-    val taggedHeaderValue = "todo"; //System.getProperty(headerPropKey);
-    val port = "8080"; //System.getProperty(portPropKey);
+    val taggedHeaderValue = args[0];
+    val port = args[1];
 
     checkNotNull(taggedHeaderValue, headerPropKey);
     checkNotNull(port, portPropKey);
