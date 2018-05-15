@@ -11,9 +11,9 @@ import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.RecordedRequest;
 import okhttp3.mockwebserver.SocketPolicy;
 
+import java.net.InetAddress;
 import java.util.Arrays;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.xjeffrose.xio.test.OkHttpUnsafe.getKeyManagers;
 import static okhttp3.Protocol.HTTP_1_1;
 import static okhttp3.Protocol.HTTP_2;
@@ -22,16 +22,13 @@ import static okhttp3.Protocol.HTTP_2;
 public class Main {
 
   public static void main(String args[]) throws Exception {
-    if (args.length < 2) {
-      throw new RuntimeException("please specify server 'name' and 'port' arguments");
+    if (args.length < 3) {
+      throw new RuntimeException("please specify server 'host' and 'port' and 'header-tag' arguments");
     }
     val headerPropKey = "header-tag";
-    val portPropKey = "port";
-    val taggedHeaderValue = args[0];
+    val host = args[0];
     val port = args[1];
-
-    checkNotNull(taggedHeaderValue, headerPropKey);
-    checkNotNull(port, portPropKey);
+    val taggedHeaderValue = args[2];
 
     Config config = ConfigFactory.load();
     TlsConfig tlsConfig = new TlsConfig(config);
@@ -51,6 +48,6 @@ public class Main {
           }
         });
 
-    server.start(Integer.parseInt(port));
+    server.start(InetAddress.getByName(host), Integer.parseInt(port));
   }
 }
