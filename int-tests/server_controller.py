@@ -1,35 +1,35 @@
 import subprocess
-import os.path
-import os
 import sys
 import functools
+import os.path as path
 from threading import Thread
 from queue import Queue, Empty
 
-_module_dir = os.path.abspath(os.path.join(os.path.dirname(__file__)))
-_root_dir = os.path.abspath(os.path.join(_module_dir, '..'))
+module_dir = path.abspath(path.join(path.dirname(__file__)))
+_root_dir = path.abspath(path.join(module_dir, '..'))
 
 
 class StdOutReader:
-  def __init__(self, stream):
+  def __init__(self, stream, verbose=False):
     self._stream = stream
     self._queue = Queue()
+    self._verbose = verbose
 
     def _reader(s, queue):
       while True:
         line = s.readline()
+        s.flush()
         if line:
           queue.put(line)
 
-    self._thread = Thread(target=_reader,
-                          args=(self._stream, self._queue))
+    self._thread = Thread(target=_reader, args=(self._stream, self._queue))
     self._thread.daemon = True
     self._thread.start()
 
   def readline(self):
     try:
       line = str(self._queue.get(block=False, timeout=0.1))
-      if line:
+      if line and self._verbose:
         print(line)
       return line
     except Empty:
@@ -40,10 +40,10 @@ class Initializer:
   def __init__(self, project):
     cmd = self._cmd_for_task(project, 'assembleDist', 'installDist')
     print("gradle cmd: {}".format(cmd))
-    project_module_dir = os.path.abspath(os.path.join(_root_dir, project))
-    self._init_script = os.path.join(project_module_dir,
-                                     'build/install/{}/bin/{}'.format(project, project))
-    if subprocess.call(cmd, shell=True) == 0 and os.path.exists(self._init_script):
+    project_module_dir = path.abspath(path.join(_root_dir, project))
+    self._init_script = path.join(project_module_dir,
+                                  'build/install/{}/bin/{}'.format(project, project))
+    if subprocess.call(cmd, shell=True) == 0 and path.exists(self._init_script):
       print('assembleDist installDist success')
     else:
       print('assembleDist installDist failed')
@@ -64,6 +64,7 @@ class Server:
     self._port = kwargs.get('port', '8443')
     host = kwargs.get('host', '')
     self._name = kwargs.get('name', 'unnamed')
+    self._verbose = kwargs.get('verbose', False)
     if len(args) > 1:
       argv = functools.reduce(lambda a, b: ("", str(a).strip() + " " + str(b).strip()), args)[1]
     elif len(args) is 1:
@@ -86,8 +87,8 @@ class Server:
     if self.process is None:
       print("server start cmd: {}".format(self.cmd))
       self.process = subprocess.Popen("exec " + self.cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-      nb_err = StdOutReader(self.process.stderr)
-      nb_out = StdOutReader(self.process.stdout)
+      nb_err = StdOutReader(self.process.stderr, verbose=self._verbose)
+      nb_out = StdOutReader(self.process.stdout, verbose=self._verbose)
       while True:
         if self.ready_str in nb_err.readline() or self.ready_str in nb_out.readline():
           break
@@ -96,14 +97,3 @@ class Server:
   def kill(self):
     if self.process is not None:
       self.process.kill()
-
-
-if __name__ == '__main__':
-  initializer = Initializer('int-test-backend-server')
-  servers = [Server(initializer.init_script, "starting to accept connections", "localhost", 8443, "backend1").run()]
-  for each in servers:
-    each.kill()
-    sys.exit(0)
-  else:
-    print('WOOPS - something is awry')
-    sys.exit(1)
