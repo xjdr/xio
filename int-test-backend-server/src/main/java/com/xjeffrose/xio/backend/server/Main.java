@@ -12,10 +12,8 @@ import okhttp3.mockwebserver.RecordedRequest;
 import okhttp3.mockwebserver.SocketPolicy;
 
 import java.net.InetAddress;
-import java.security.KeyStore;
 import java.util.Arrays;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.xjeffrose.xio.test.OkHttpUnsafe.getKeyManagers;
 import static okhttp3.Protocol.HTTP_1_1;
 import static okhttp3.Protocol.HTTP_2;
