@@ -17,18 +17,21 @@ class TestReverseProxyServer(unittest.TestCase):
     back_init = Initializer('int-test-backend-server')
     back_ready_str = "starting to accept connections"
     host = "127.0.0.1"
-    self.back_ends += [Server(back_init.init_script, back_ready_str, name="backend1", host=host, port=8443).run(),
-                       Server(back_init.init_script, back_ready_str, name="backend2", host=host, port=8444).run()]
+    self.back_ends += [Server(back_init.init_script, back_ready_str, name="backend1", host=host, port=8444).run()]
 
-  def setup_front(self):
+  def setup_front(self, h2: bool):
     front_init = Initializer('int-test-proxy-server')
     front_ready_str = "XioServerBootstrap - Building"
     conf = path.abspath(path.join(module_dir, "proxy.conf"))
-    self.front_end = Server(front_init.init_script, front_ready_str, conf, port=8445, verbose=True).run()
+    self.assertTrue(path.exists(conf))
+    if h2:
+      proxy_config = 'xio.h2ReverseProxy'
+    else:
+      proxy_config = 'xio.h1ReverseProxy'
+    self.front_end = Server(front_init.init_script, front_ready_str, conf, proxy_config, name="proxy", verbose=False).run()
 
   # region tests
 
-  @unittest.skip("temp")
   def test_backend_server(self):
     self.setup_back()
     for each in self.back_ends:
@@ -36,7 +39,10 @@ class TestReverseProxyServer(unittest.TestCase):
       self.assertEqual(200, r.status_code)
 
   def test_proxy_server(self):
-    self.setup_front()
+    self.setup_front(True)
+    self.setup_back()
+    r = requests.get("https://localhost:{}/".format(8443), verify=False)
+    self.assertEqual(200, r.status_code)
 
   # endregion
 

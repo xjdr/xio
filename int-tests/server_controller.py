@@ -61,7 +61,7 @@ class Initializer:
 
 class Server:
   def __init__(self, script, ready_str, *args, **kwargs):
-    self._port = kwargs.get('port', '8443')
+    self._port = kwargs.get('port', '')
     host = kwargs.get('host', '')
     self._name = kwargs.get('name', 'unnamed')
     self._verbose = kwargs.get('verbose', False)
