@@ -1,16 +1,17 @@
 import unittest
 import requests
-from server_controller import Server, assemble_dist_script
-
-script = assemble_dist_script()
+from server_controller import Server, Initializer
 
 
 class TestReverseProxyServer(unittest.TestCase):
   def setUp(self):
-    self.servers = [Server("backend", script, 8443),
-                    Server("backend", script, 8444)]
+    back_init = Initializer('int-test-backend-server')
+    terminal_condition = "starting to accept connections"
+    host = "127.0.0.1"
+    self.servers = [Server(back_init.init_script, terminal_condition, "backend1", host=host, port=8443),
+                    Server(back_init.init_script, terminal_condition, "backend2", host=host, port=8444),
+                    ]
     for each in self.servers:
-      # todo: WBK - this needs to block until the server is up
       each.run()
 
   def tearDown(self):
