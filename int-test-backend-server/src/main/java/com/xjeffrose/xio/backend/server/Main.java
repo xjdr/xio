@@ -25,6 +25,9 @@ public class Main {
     if (args.length < 3) {
       throw new RuntimeException("please specify server 'host' and 'port' and 'header-tag' arguments");
     }
+    
+    // header-tag might be the ip address of this host or any other information you
+    // would like to use to identify the traffic served up by this host
     val headerPropKey = "header-tag";
     val host = args[0];
     val port = args[1];
