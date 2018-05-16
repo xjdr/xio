@@ -2,7 +2,6 @@ package com.xjeffrose.xio.proxy;
 
 import com.google.common.collect.ImmutableMap;
 import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
 import com.xjeffrose.xio.application.Application;
 import com.xjeffrose.xio.application.ApplicationConfig;
 import com.xjeffrose.xio.application.ApplicationState;
@@ -14,25 +13,16 @@ import io.netty.channel.ChannelHandler;
 import java.util.Optional;
 
 public class ReverseProxyServer {
-  private final boolean useH2;
+  private final String proxyConfig;
   private Application application;
 
-  public ReverseProxyServer(boolean useH2) {
-    this.useH2 = useH2;
+  public ReverseProxyServer(String proxyConfig) {
+    this.proxyConfig = proxyConfig;
   }
 
-  private String proxyConfig() {
-    if (useH2) {
-      return "xio.h2ReverseProxy";
-    } else {
-      return "xio.h1ReverseProxy";
-    }
-  }
-
-  public void start() {
-    Config config = ConfigFactory.load();
+  public void start(Config config) {
     ApplicationState appState =
-        new ApplicationState(ApplicationConfig.fromConfig(proxyConfig(), config));
+        new ApplicationState(ApplicationConfig.fromConfig(proxyConfig, config));
 
     ProxyRouteConfig proxyRouteConfig =
         new ProxyRouteConfig(config.getConfig("xio.testProxyRoute"));

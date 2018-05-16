@@ -79,18 +79,19 @@ public class ReverseProxyFunctionalTest extends Assert {
                 .setSocketPolicy(SocketPolicy.KEEP_OPEN);
           }
         });
-    server.start();
+    server.start(8443);
   }
 
   void setupFrontBack(boolean h2Front, boolean h2Back) throws Exception {
     setupBack(h2Back);
-    // TODO(CK): this creates global state across tests we should do something smarter
-    System.setProperty("xio.baseClient.remotePort", Integer.toString(server.getPort()));
-    System.setProperty("xio.testProxyRoute.proxyPath", "/hello/");
-    ConfigFactory.invalidateCaches();
-
-    reverseProxy = new ReverseProxyServer(h2Front);
-    reverseProxy.start();
+    final String proxyConfig;
+    if (h2Front) {
+      proxyConfig = "xio.h2ReverseProxy";
+    } else {
+      proxyConfig = "xio.h1ReverseProxy";
+    }
+    reverseProxy = new ReverseProxyServer(proxyConfig);
+    reverseProxy.start(config);
   }
 
   private void setupClient(int count, boolean h2) throws Exception {
