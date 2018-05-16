@@ -14,10 +14,8 @@ appender("CONSOLE", ConsoleAppender) {
 
 logger("com.xjeffrose.xio.core.NullZkClient", OFF)
 
-if (System.getProperty("DEBUG") != null) {
-  root(DEBUG, ["CONSOLE"])
-} else if (System.getProperty("COVERAGE") != null) {
+if (System.getProperty("COVERAGE") != null) {
   root(DEBUG, ["DEVNULL"])
 } else {
-  root(WARN, ["CONSOLE"])
+  root(DEBUG, ["CONSOLE"])
 }
