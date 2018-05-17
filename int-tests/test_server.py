@@ -6,6 +6,14 @@ from unittest import TestCase, skip
 
 
 class TestReverseProxyServer(TestCase):
+
+  @classmethod
+  def setUpClass(cls):
+    global back_init
+    back_init = Initializer('int-test-backend-server')
+    global front_init
+    front_init = Initializer('int-test-proxy-server')
+
   def setUp(self):
     self.front_end = None
     self.back_ends = []
@@ -17,8 +25,6 @@ class TestReverseProxyServer(TestCase):
   def setup_back(self, h2: bool):
     if h2:
       raise Exception('int-test-backend-server is not configurable for h2 yet')  # todo: (WK)
-
-    back_init = Initializer('int-test-backend-server')
     back_ready_str = "starting to accept connections"
     host = "127.0.0.1"
     self.back_ends += [Server(back_init.init_script, back_ready_str, name="backend1",
@@ -26,7 +32,6 @@ class TestReverseProxyServer(TestCase):
                        ]
 
   def setup_front(self, h2: bool):
-    front_init = Initializer('int-test-proxy-server')
     front_ready_str = "XioServerBootstrap - Building"
     conf = path.abspath(path.join(module_dir, "proxy.conf"))
     self.assertTrue(path.exists(conf))
@@ -54,6 +59,18 @@ class TestReverseProxyServer(TestCase):
     self.setup_back(h2=False)
     responses = (http_get(url='https://localhost:8443/', h2=True),
                  # http_get(url='https://localhost:8443/', h2=True),  # todo: (WK) fails Http2To1ProxyRequestQueue
+                 )
+    for response in responses:
+      self.assertEqual('backend1', response.headers['header-tag'])
+      self.assertEqual('Release the Kraken', response.body)
+      self.assertEqual(200, response.status)
+
+  # @skip
+  def test_proxy_get_h1_h1(self):
+    self.setup_front(h2=False)
+    self.setup_back(h2=False)
+    responses = (http_get(url='https://localhost:8443/'),
+                 # http_get(url='https://localhost:8443/'),  # todo: (WK) fails Http2To1ProxyRequestQueue
                  )
     for response in responses:
       self.assertEqual('backend1', response.headers['header-tag'])
