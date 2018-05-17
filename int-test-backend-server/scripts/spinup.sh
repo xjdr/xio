@@ -14,7 +14,7 @@ SUBNET=$6
 # $PROFILE example is nordstrom-federated
 aws autoscaling create-launch-configuration --launch-configuration-name $NAME \
   --image-id $AMI --key-name $KEY --security-groups $SG --instance-type t2.micro \
-  --region us-west-2 --profile $PROFILE
+  --region us-west-2 --profile $PROFILE --user-data file://./launchOnEC2.sh
 
 # Spin up the ASG
 aws autoscaling create-auto-scaling-group --auto-scaling-group-name $NAME \
