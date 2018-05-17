@@ -46,7 +46,7 @@ version: 2
 jobs:
   build-jdk8:
     docker:
-      - image: openjdk:8u162-jdk-stretch
+      - image: openjdk:8u171-jdk-stretch
     <<: *common_steps
   build-jdk9:
     docker:
@@ -58,7 +58,7 @@ jobs:
     <<: *common_steps
   int-test:
     docker:
-      - image: openjdk:8u162-jdk-stretch
+      - image: openjdk:8u171-jdk-stretch
     <<: *pyunit_steps
 
 workflows:
