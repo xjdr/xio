@@ -12,7 +12,12 @@ appender("CONSOLE", ConsoleAppender) {
   }
 }
 
+logger("com.xjeffrose.xio.SSL.XioTrustManagerFactory", OFF)
 logger("com.xjeffrose.xio.core.NullZkClient", OFF)
+logger("io.netty.util.internal.NativeLibraryLoader", ERROR)
+logger("io.netty.util.internal.PlatformDependent0", OFF)
+logger("io.netty.handler.ssl.CipherSuiteConverter", OFF)
+
 
 if (System.getProperty("COVERAGE") != null) {
   root(DEBUG, ["DEVNULL"])
