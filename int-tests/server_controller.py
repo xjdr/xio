@@ -13,25 +13,23 @@ class StdOutReader:
   def __init__(self, stream, verbose=False):
     self._stream = stream
     self._queue = Queue()
-    self._verbose = verbose
 
-    def _reader(s, queue):
+    def _reader(s, queue, verbose):
       while True:
         line = s.readline()
         s.flush()
         if line:
+          if verbose:
+            print(line)
           queue.put(line)
 
-    self._thread = Thread(target=_reader, args=(self._stream, self._queue))
+    self._thread = Thread(target=_reader, args=(self._stream, self._queue, verbose))
     self._thread.daemon = True
     self._thread.start()
 
   def readline(self):
     try:
-      line = str(self._queue.get(block=False, timeout=0.1))
-      if line and self._verbose:
-        print(line)
-      return line
+      return str(self._queue.get(block=False, timeout=0.1))
     except Empty:
       return ''
 
