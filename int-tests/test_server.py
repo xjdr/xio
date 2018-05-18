@@ -75,7 +75,7 @@ class TestReverseProxyServer(TestCase):
     self.setup_front(h2=True)
     self.setup_back(h2=False)
     responses = (http_get(url='https://localhost:8443/', headers={"x-echo": "echo"}),
-                 # http_get(url='https://localhost:8443/', headers={"x-echo": "echo"}),  # todo: (WK) fails Http2To1ProxyRequestQueue
+                 http_get(url='https://localhost:8443/', headers={"x-echo": "echo"}),
                  )
     for response in responses:
       self.assertEqual('backend1', response.headers['x-tag'])
@@ -89,7 +89,7 @@ class TestReverseProxyServer(TestCase):
     self.setup_front(h2=True)
     self.setup_back(h2=False)
     responses = (http_post(url='https://localhost:8443/', data={"key": "value"}, headers={"x-echo": "echo"}),
-                 # http_post(url='https://localhost:8443/', data={"key": "value"}, headers={"x-echo": "echo"}),  # todo: (WK) fails Http2To1ProxyRequestQueue
+                 http_post(url='https://localhost:8443/', data={"key": "value"}, headers={"x-echo": "echo"}),
                  )
     for response in responses:
       self.assertEqual('backend1', response.headers['x-tag'])
@@ -103,7 +103,7 @@ class TestReverseProxyServer(TestCase):
     self.setup_front(h2=False)
     self.setup_back(h2=False)
     responses = (http_get(url='https://localhost:8443/', headers={"x-echo": "echo"}),
-                 # http_get(url='https://localhost:8443/', headers={"x-echo": "echo"}),  # todo: (WK) fails Http2To1ProxyRequestQueue
+                 http_get(url='https://localhost:8443/', headers={"x-echo": "echo"}),
                  )
     for response in responses:
       self.assertEqual('backend1', response.headers['x-tag'])
@@ -117,7 +117,7 @@ class TestReverseProxyServer(TestCase):
     self.setup_front(h2=False)
     self.setup_back(h2=False)
     responses = (http_post(url='https://localhost:8443/', data={"key": "value"}, headers={"x-echo": "echo"}),
-                 # http_post(url='https://localhost:8443/', data={"key": "value"}, headers={"x-echo": "echo"}),  # todo: (WK) fails Http2To1ProxyRequestQueue
+                 http_post(url='https://localhost:8443/', data={"key": "value"}, headers={"x-echo": "echo"}),
                  )
     for response in responses:
       self.assertEqual('backend1', response.headers['x-tag'])
