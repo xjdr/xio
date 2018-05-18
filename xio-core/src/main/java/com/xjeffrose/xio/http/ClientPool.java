@@ -27,19 +27,20 @@ public class ClientPool {
   }
 
   public void release(Client client) {
-    log.debug("recycling client {}", client);
-    client.recycle();
-    ConcurrentMap<Client, Meta> pool = getPool(client.remoteAddress());
-    if (pool.size() < maxSizePerAddress && !pool.containsKey(client)) {
-      log.debug("releasing client to pool {}", client);
-      pool.put(client, new Meta(client));
-    } else {
-      Meta meta = pool.get(client);
-      if (meta != null) {
-        log.debug("setting client available in pool {}", client);
-        meta.available.set(true);
-      }
-    }
+    //    todo: (WK) client pool is broken - test_server.py
+    //    log.debug("recycling client {}", client);
+    //    client.recycle();
+    //    ConcurrentMap<Client, Meta> pool = getPool(client.remoteAddress());
+    //    if (pool.size() < maxSizePerAddress && !pool.containsKey(client)) {
+    //      log.debug("releasing client to pool {}", client);
+    //      pool.put(client, new Meta(client));
+    //    } else {
+    //      Meta meta = pool.get(client);
+    //      if (meta != null) {
+    //        log.debug("setting client available in pool {}", client);
+    //        meta.available.set(true);
+    //      }
+    //    }
   }
 
   @VisibleForTesting
