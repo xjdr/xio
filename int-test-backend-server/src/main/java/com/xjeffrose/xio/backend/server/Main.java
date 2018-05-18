@@ -28,7 +28,6 @@ public class Main {
     
     // header-tag might be the ip address of this host or any other information you
     // would like to use to identify the traffic served up by this host
-    val headerPropKey = "header-tag";
     val host = args[0];
     val port = args[1];
     val taggedHeaderValue = args[2];
@@ -44,8 +43,11 @@ public class Main {
           @Override
           public MockResponse dispatch(RecordedRequest request) {
             log.debug("dispatching response for request: {}", request);
+            val echoHeader = request.getHeader("x-echo");
             return new MockResponse()
-                .addHeader(headerPropKey, taggedHeaderValue)
+                .addHeader("x-tag", taggedHeaderValue)
+                .addHeader("x-method", request.getMethod().toUpperCase())
+                .addHeader("x-echo", String.valueOf(echoHeader))
                 .setBody("Release the Kraken")
                 .setSocketPolicy(SocketPolicy.KEEP_OPEN);
           }
