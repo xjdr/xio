@@ -19,8 +19,10 @@ logger("io.netty.util.internal.PlatformDependent0", OFF)
 logger("io.netty.handler.ssl.CipherSuiteConverter", OFF)
 
 
-if (System.getProperty("COVERAGE") != null) {
+if (System.getProperty("DEBUG") != null) {
+  root(DEBUG, ["CONSOLE"])
+} else if (System.getProperty("COVERAGE") != null) {
   root(DEBUG, ["DEVNULL"])
 } else {
-  root(DEBUG, ["CONSOLE"])
+  root(WARN, ["CONSOLE"])
 }

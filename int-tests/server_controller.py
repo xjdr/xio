@@ -1,6 +1,7 @@
 import subprocess
 import sys
 import functools
+import os
 import os.path as path
 from threading import Thread
 from queue import Queue, Empty
@@ -84,7 +85,8 @@ class Server:
   def run(self):
     if self.process is None:
       print("server start cmd: {}".format(self.cmd))
-      self.process = subprocess.Popen("exec " + self.cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+      env = {**os.environ, 'JAVA_OPTS': '-DDEBUG=1'}
+      self.process = subprocess.Popen("exec " + self.cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, env=env)
       nb_err = StdOutReader(self.process.stderr, verbose=self._verbose)
       nb_out = StdOutReader(self.process.stdout, verbose=self._verbose)
       while True:
