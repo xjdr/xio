@@ -9,12 +9,13 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.handler.codec.http.HttpServerCodec;
 import java.util.function.Supplier;
+import lombok.Setter;
 import lombok.val;
 
 public class ClientChannelInitializer extends ChannelInitializer {
 
   private final ClientState state;
-  private final Supplier<ChannelHandler> appHandler;
+  @Setter private Supplier<ChannelHandler> appHandler;
   private final XioTracing tracing;
 
   public ClientChannelInitializer(

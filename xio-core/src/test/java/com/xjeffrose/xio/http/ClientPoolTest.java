@@ -4,6 +4,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.xjeffrose.xio.client.ClientConfig;
+import io.netty.channel.ChannelHandlerContext;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.ObservableSource;
@@ -17,11 +18,9 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 @Slf4j
-@Ignore // todo: (WK)
 public class ClientPoolTest extends Assert {
 
   @Test
@@ -38,12 +37,18 @@ public class ClientPoolTest extends Assert {
     assertEquals(4, pool.countAvailable());
 
     IntStream.range(0, 2)
-        .forEach(i -> pool.acquire(mockConfig("localhost"), () -> mockClient("localhost")));
+        .forEach(
+            i ->
+                pool.acquire(
+                    mockFrontContext(), mockConfig("localhost"), () -> mockClient("localhost")));
 
     assertEquals(2, pool.countAvailable());
 
     IntStream.range(0, 2)
-        .forEach(i -> pool.acquire(mockConfig("google"), () -> mockClient("localhost")));
+        .forEach(
+            i ->
+                pool.acquire(
+                    mockFrontContext(), mockConfig("google"), () -> mockClient("localhost")));
 
     assertEquals(0, pool.countAvailable());
   }
@@ -85,7 +90,9 @@ public class ClientPoolTest extends Assert {
   private Observable<Client> acquireAsync(ClientPool pool) {
     return Observable.<Client>create(
             emitter -> {
-              Client client = pool.acquire(mockConfig("localhost"), () -> mockClient("localhost"));
+              Client client =
+                  pool.acquire(
+                      mockFrontContext(), mockConfig("localhost"), () -> mockClient("localhost"));
               log.debug("acquiring client");
               emitter.onNext(client);
               emitter.onComplete();
@@ -102,6 +109,10 @@ public class ClientPoolTest extends Assert {
               emitter.onComplete();
             })
         .subscribeOn(Schedulers.io());
+  }
+
+  private ChannelHandlerContext mockFrontContext() {
+    return mock(ChannelHandlerContext.class);
   }
 
   private Client mockClient(String host) {
