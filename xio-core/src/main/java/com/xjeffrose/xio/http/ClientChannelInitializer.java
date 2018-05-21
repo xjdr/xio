@@ -14,6 +14,8 @@ import lombok.val;
 
 public class ClientChannelInitializer extends ChannelInitializer {
 
+  public static final String APP_HANDLER = "app handler";
+
   private final ClientState state;
   @Setter private Supplier<ChannelHandler> appHandler;
   private final XioTracing tracing;
@@ -65,6 +67,6 @@ public class ClientChannelInitializer extends ChannelInitializer {
         .addLast("idle handler", new XioIdleDisconnectHandler(60, 60, 60))
         .addLast("message logging", new XioMessageLogger(Client.class, "objects"))
         .addLast("request buffer", new RequestBuffer())
-        .addLast("app handler", appHandler.get());
+        .addLast(APP_HANDLER, appHandler.get());
   }
 }

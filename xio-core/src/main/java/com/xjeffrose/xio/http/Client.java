@@ -101,12 +101,13 @@ public class Client {
   public void prepareForReuse(Supplier<ChannelHandler> handlerSupplier) {
     clientChannelInitializer.setAppHandler(handlerSupplier);
     if (channel != null) {
-      channel.pipeline().replace("app handler", "app handler", handlerSupplier.get());
+      channel.pipeline().addLast(ClientChannelInitializer.APP_HANDLER, handlerSupplier.get());
     }
   }
 
   public void recycle() {
     if (channel != null) {
+      channel.pipeline().remove(ClientChannelInitializer.APP_HANDLER);
       Http2ClientStreamMapper.http2ClientStreamMapper(channel.pipeline().firstContext()).clear();
     }
   }
