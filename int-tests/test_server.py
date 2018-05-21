@@ -34,7 +34,7 @@ class TestReverseProxyServer(TestCase):
                        ]
 
   def setup_front(self, h2: bool):
-    front_ready_str = "XioServerBootstrap - Building"
+    front_ready_str = "proxy accepting connections"
     conf = path.abspath(path.join(module_dir, "proxy.conf"))
     self.assertTrue(path.exists(conf))
     if h2:

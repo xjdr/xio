@@ -17,5 +17,6 @@ public class Main {
     String proxyConfig = args[2];
     Config config = ConfigFactory.load(ConfigFactory.parseFile(new File(configPath)));
     new ReverseProxyServer(proxyConfig).start(config);
+    log.debug("proxy accepting connections");
   }
 }
