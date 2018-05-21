@@ -41,7 +41,11 @@ public class Client {
             }
           }
         };
-    releaseListener = f -> channel = null;
+    releaseListener =
+        f -> {
+          log.debug("Channel closed");
+          channel = null;
+        };
   }
 
   public InetSocketAddress remoteAddress() {
@@ -78,16 +82,32 @@ public class Client {
       ChannelPromise promise = channel.newPromise();
       PromiseCombiner combiner = new PromiseCombiner();
       combiner.add(future.addListener(connectionListener));
-      combiner.add(channel.writeAndFlush(request).addListener(writeListener));
+      if (request.endOfMessage()) {
+        combiner.add(channel.writeAndFlush(request).addListener(writeListener));
+      } else {
+        combiner.add(channel.write(request).addListener(writeListener));
+      }
       combiner.finish(promise);
       return promise;
     } else {
-      return channel.writeAndFlush(request).addListener(writeListener);
+      if (request.endOfMessage()) {
+        return channel.writeAndFlush(request).addListener(writeListener);
+      } else {
+        return channel.write(request).addListener(writeListener);
+      }
+    }
+  }
+
+  public void prepareForReuse(Supplier<ChannelHandler> handlerSupplier) {
+    clientChannelInitializer.setAppHandler(handlerSupplier);
+    if (channel != null) {
+      channel.pipeline().addLast(ClientChannelInitializer.APP_HANDLER, handlerSupplier.get());
     }
   }
 
   public void recycle() {
     if (channel != null) {
+      channel.pipeline().remove(ClientChannelInitializer.APP_HANDLER);
       Http2ClientStreamMapper.http2ClientStreamMapper(channel.pipeline().firstContext()).clear();
     }
   }

@@ -2,6 +2,7 @@ package com.xjeffrose.xio.http;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.xjeffrose.xio.client.ClientConfig;
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.internal.PlatformDependent;
 import java.net.InetSocketAddress;
 import java.util.concurrent.ConcurrentMap;
@@ -27,20 +28,19 @@ public class ClientPool {
   }
 
   public void release(Client client) {
-    //    todo: (WK) client pool is broken - test_server.py
-    //    log.debug("recycling client {}", client);
-    //    client.recycle();
-    //    ConcurrentMap<Client, Meta> pool = getPool(client.remoteAddress());
-    //    if (pool.size() < maxSizePerAddress && !pool.containsKey(client)) {
-    //      log.debug("releasing client to pool {}", client);
-    //      pool.put(client, new Meta(client));
-    //    } else {
-    //      Meta meta = pool.get(client);
-    //      if (meta != null) {
-    //        log.debug("setting client available in pool {}", client);
-    //        meta.available.set(true);
-    //      }
-    //    }
+    log.debug("recycling client {}", client);
+    client.recycle();
+    ConcurrentMap<Client, Meta> pool = getPool(client.remoteAddress());
+    if (pool.size() < maxSizePerAddress && !pool.containsKey(client)) {
+      log.debug("releasing client to pool {}", client);
+      pool.put(client, new Meta(client));
+    } else {
+      Meta meta = pool.get(client);
+      if (meta != null) {
+        log.debug("setting client available in pool {}", client);
+        meta.available.set(true);
+      }
+    }
   }
 
   @VisibleForTesting
@@ -55,7 +55,8 @@ public class ClientPool {
         .reduce(0, (i, n) -> i + n);
   }
 
-  public Client acquire(ClientConfig config, Supplier<Client> clientSupplier) {
+  public Client acquire(
+      ChannelHandlerContext ctx, ClientConfig config, Supplier<Client> clientSupplier) {
     return getPool(config.remote())
         .values()
         .stream()
@@ -65,6 +66,7 @@ public class ClientPool {
               if (available) {
                 int count = meta.usageCount.incrementAndGet();
                 log.debug("reusing client in pool with usage count {}", count);
+                meta.client.prepareForReuse(() -> new ProxyBackendHandler(ctx));
               }
               return available;
             })

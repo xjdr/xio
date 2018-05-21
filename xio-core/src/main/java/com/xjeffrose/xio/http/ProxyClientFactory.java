@@ -29,7 +29,10 @@ public class ProxyClientFactory extends ClientFactory {
 
   @Override
   public Client getClient(ChannelHandlerContext ctx, ClientConfig config) {
-    return getHandlerClient(ctx)
-        .orElse(clientPool.acquire(config, () -> super.getClient(ctx, config)));
+    Client client =
+        getHandlerClient(ctx)
+            .orElse(clientPool.acquire(ctx, config, () -> createClient(ctx, config)));
+    updateChannelAttr(ctx, client);
+    return client;
   }
 }

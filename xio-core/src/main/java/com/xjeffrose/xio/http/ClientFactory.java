@@ -37,8 +37,12 @@ public abstract class ClientFactory {
         .orElseGet(
             () -> {
               Client client = createClient(ctx, config);
-              ctx.channel().attr(CLIENT_KEY).set(client);
+              updateChannelAttr(ctx, client);
               return client;
             });
+  }
+
+  public void updateChannelAttr(ChannelHandlerContext ctx, Client client) {
+    ctx.channel().attr(CLIENT_KEY).set(client);
   }
 }
