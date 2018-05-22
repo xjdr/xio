@@ -1,5 +1,8 @@
 package com.xjeffrose.xio.backend.server;
 
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
+import com.xjeffrose.xio.SSL.TlsConfig;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.EventLoopGroup;
@@ -11,7 +14,6 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.http2.Http2SecurityUtil;
 import io.netty.handler.ssl.*;
-import io.netty.handler.ssl.util.SelfSignedCertificate;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.net.ssl.SSLException;
@@ -32,16 +34,20 @@ class RestServer {
   }
 
   private SslContext sslContext() throws CertificateException, SSLException {
+
+
     if (useTls) {
       SslProvider provider = OpenSsl.isAlpnSupported() ? SslProvider.OPENSSL : SslProvider.JDK;
-      SelfSignedCertificate ssc = new SelfSignedCertificate();
+      Config config = ConfigFactory.load();
+      TlsConfig tlsConfig = new TlsConfig(config);
+
       final String[] protocolNames;
       if (h2Capable) {
         protocolNames = new String[]{ApplicationProtocolNames.HTTP_2, ApplicationProtocolNames.HTTP_1_1};
       } else {
         protocolNames = new String[]{ApplicationProtocolNames.HTTP_1_1};
       }
-      return SslContextBuilder.forServer(ssc.certificate(), ssc.privateKey())
+      return SslContextBuilder.forServer(tlsConfig.getPrivateKey(), tlsConfig.getCertificateAndChain())
         .sslProvider(provider)
         /* NOTE: the cipher filter may not include all ciphers required by the HTTP/2 specification.
          * Please refer to the HTTP/2 specification for cipher requirements. */
@@ -67,8 +73,7 @@ class RestServer {
         .channel(config.channelClass)
         .localAddress(new InetSocketAddress(port))
         .childHandler(new RestChannelInitializer(sslContext(), h2Capable));
-      ChannelFuture channelFuture = bootstrap.bind().sync();
-      log.warn("starting to accept connections");
+      ChannelFuture channelFuture = bootstrap.bind().addListener(f -> log.warn("starting to accept connections")).sync();
       channelFuture.channel().closeFuture().sync();
     } finally {
       config.eventLoopGroup.shutdownGracefully().sync();

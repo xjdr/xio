@@ -40,7 +40,7 @@ class TestReverseProxyServer(TestCase):
     else:
       proxy_config = 'xio.h1ReverseProxy'
     self.front_end = Server(front_init.init_script, front_ready_str, conf, proxy_config,
-                            name="proxy", verbose=True).run()
+                            name="proxy", verbose=False).run()
 
   # endregion
 
@@ -68,7 +68,7 @@ class TestReverseProxyServer(TestCase):
       self.assertEqual({'title': 'Release', 'description': 'the Kraken'}, response.json_body)
       self.assertEqual(200, response.status)
 
-  @skip
+  # @skip
   def test_proxy_get_h2_h1(self):
     self.setup_front(h2=True)
     self.setup_back(h2=False)
@@ -82,7 +82,7 @@ class TestReverseProxyServer(TestCase):
       self.assertEqual({'title': 'Release', 'description': 'the Kraken'}, response.json_body)
       self.assertEqual(200, response.status)
 
-  @skip
+  # @skip
   def test_proxy_post_h2_h1(self):
     self.setup_front(h2=True)
     self.setup_back(h2=False)
@@ -96,7 +96,7 @@ class TestReverseProxyServer(TestCase):
       self.assertEqual({'title': 'Release', 'description': 'the Kraken'}, response.json_body)
       self.assertEqual(200, response.status)
 
-  @skip
+  # @skip
   def test_proxy_get_h1_h1(self):
     self.setup_front(h2=False)
     self.setup_back(h2=False)
@@ -110,7 +110,7 @@ class TestReverseProxyServer(TestCase):
       self.assertEqual({'title': 'Release', 'description': 'the Kraken'}, response.json_body)
       self.assertEqual(200, response.status)
 
-  @skip
+  # @skip
   def test_proxy_post_h1_h1(self):
     self.setup_front(h2=False)
     self.setup_back(h2=False)

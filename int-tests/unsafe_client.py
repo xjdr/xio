@@ -42,7 +42,7 @@ def _prep_request(url: str, headers: dict):
   curl.setopt(pycurl.SSL_VERIFYPEER, 0)
   curl.setopt(pycurl.SSL_VERIFYHOST, 0)
   curl.setopt(pycurl.HEADERFUNCTION, _header_function)
-  curl.setopt(pycurl.TIMEOUT, 1)
+  curl.setopt(pycurl.TIMEOUT, 2)
   return curl, response, buffer
 
 

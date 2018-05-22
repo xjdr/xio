@@ -9,6 +9,9 @@ mainClassName = 'com.xjeffrose.xio.backend.server.Main'
 def jackson_version = '2.9.4'
 
 dependencies {
+
+  implementation project(":xio") // we just use the tls config
+
   implementation group: 'ch.qos.logback', name: 'logback-classic', version: logback_version
   implementation group: 'ch.qos.logback', name: 'logback-core', version: logback_version
   implementation group: 'org.codehaus.groovy', name: 'groovy-all', version: groovy_version
