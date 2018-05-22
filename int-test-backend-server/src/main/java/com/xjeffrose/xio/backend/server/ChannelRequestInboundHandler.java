@@ -27,7 +27,13 @@ public class ChannelRequestInboundHandler extends ChannelInboundHandlerAdapter {
       RequestHandler handler = handlers.get(path);
       if (handler != null) {
         ResponseBuilder responseBuilder = new ResponseBuilder(ctx.alloc());
-        FullHttpResponse response = handler.request(responseBuilder).buildH1();
+        CharSequence echo = request.headers().get("x-echo", "none");
+        CharSequence method = request.method().asciiName();
+        responseBuilder = handler.request(responseBuilder).addEcho(echo);
+        FullHttpResponse response = handler.request(responseBuilder)
+          .addEcho(echo)
+          .addMethodEcho(method)
+          .buildH1();
         ctx.writeAndFlush(response);
         return;
       } else {

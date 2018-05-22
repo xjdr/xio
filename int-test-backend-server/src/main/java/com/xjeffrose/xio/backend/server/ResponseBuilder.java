@@ -13,6 +13,7 @@ import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.util.AsciiString;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
@@ -26,6 +27,8 @@ public class ResponseBuilder {
 
   private static final ObjectMapper MAPPER;
   private static final AsciiString USER_AGENT_VALUE = AsciiString.of("integration test backend server");
+  private static final AsciiString X_ECHO = AsciiString.of("x-echo");
+  private static final AsciiString X_METHOD = AsciiString.of("x-method");
 
   static {
     MAPPER = new ObjectMapper()
@@ -68,8 +71,13 @@ public class ResponseBuilder {
     return this;
   }
 
-  public ResponseBuilder addHeader(String key, String value) {
-    return addHeader(AsciiString.of(key), AsciiString.of(value));
+  public ResponseBuilder addEcho(CharSequence value) {
+    return addHeader(X_ECHO, AsciiString.of(value));
+  }
+
+
+  public ResponseBuilder addMethodEcho(CharSequence value) {
+    return addHeader(X_METHOD, AsciiString.of(value));
   }
 
   public ResponseBuilder addHeader(AsciiString key, AsciiString value) {

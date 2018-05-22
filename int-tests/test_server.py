@@ -3,6 +3,7 @@ from unsafe_client import http_get, http_post
 import os.path as path
 from server_controller import Server, Initializer, module_dir
 from unittest import TestCase, skip
+import json
 
 
 class TestReverseProxyServer(TestCase):
@@ -25,12 +26,9 @@ class TestReverseProxyServer(TestCase):
       each.kill()
 
   def setup_back(self, h2: bool):
-    if h2:
-      raise Exception('int-test-backend-server is not configurable for h2 yet')  # todo: (WK)
     back_ready_str = "starting to accept connections"
-    host = "127.0.0.1"
-    self.back_ends += [Server(back_init.init_script, back_ready_str, name="backend1",
-                              host=host, port=8444, verbose=False).run()
+    self.back_ends += [Server(back_init.init_script, back_ready_str, h2,
+                              name="backend1", port=8444, verbose=False).run()
                        ]
 
   def setup_front(self, h2: bool):
@@ -42,7 +40,7 @@ class TestReverseProxyServer(TestCase):
     else:
       proxy_config = 'xio.h1ReverseProxy'
     self.front_end = Server(front_init.init_script, front_ready_str, conf, proxy_config,
-                            name="proxy", verbose=False).run()
+                            name="proxy", verbose=True).run()
 
   # endregion
 
@@ -56,7 +54,7 @@ class TestReverseProxyServer(TestCase):
       self.assertEqual('backend1', response.headers['x-tag'])
       self.assertEqual('GET', response.headers['x-method'])
       self.assertEqual('echo', response.headers['x-echo'])
-      self.assertEqual('Release the Kraken', response.body)
+      self.assertEqual({'title': 'Release', 'description': 'the Kraken'}, response.json_body)
       self.assertEqual(200, response.status)
 
   # @skip
@@ -67,10 +65,10 @@ class TestReverseProxyServer(TestCase):
       self.assertEqual('backend1', response.headers['x-tag'])
       self.assertEqual('POST', response.headers['x-method'])
       self.assertEqual('echo', response.headers['x-echo'])
-      self.assertEqual('Release the Kraken', response.body)
+      self.assertEqual({'title': 'Release', 'description': 'the Kraken'}, response.json_body)
       self.assertEqual(200, response.status)
 
-  # @skip
+  @skip
   def test_proxy_get_h2_h1(self):
     self.setup_front(h2=True)
     self.setup_back(h2=False)
@@ -81,10 +79,10 @@ class TestReverseProxyServer(TestCase):
       self.assertEqual('backend1', response.headers['x-tag'])
       self.assertEqual('GET', response.headers['x-method'])
       self.assertEqual('echo', response.headers['x-echo'])
-      self.assertEqual('Release the Kraken', response.body)
+      self.assertEqual({'title': 'Release', 'description': 'the Kraken'}, response.json_body)
       self.assertEqual(200, response.status)
 
-  # @skip
+  @skip
   def test_proxy_post_h2_h1(self):
     self.setup_front(h2=True)
     self.setup_back(h2=False)
@@ -95,10 +93,10 @@ class TestReverseProxyServer(TestCase):
       self.assertEqual('backend1', response.headers['x-tag'])
       self.assertEqual('POST', response.headers['x-method'])
       self.assertEqual('echo', response.headers['x-echo'])
-      self.assertEqual('Release the Kraken', response.body)
+      self.assertEqual({'title': 'Release', 'description': 'the Kraken'}, response.json_body)
       self.assertEqual(200, response.status)
 
-  # @skip("fix me first")
+  @skip
   def test_proxy_get_h1_h1(self):
     self.setup_front(h2=False)
     self.setup_back(h2=False)
@@ -109,10 +107,10 @@ class TestReverseProxyServer(TestCase):
       self.assertEqual('backend1', response.headers['x-tag'])
       self.assertEqual('GET', response.headers['x-method'])
       self.assertEqual('echo', response.headers['x-echo'])
-      self.assertEqual('Release the Kraken', response.body)
+      self.assertEqual({'title': 'Release', 'description': 'the Kraken'}, response.json_body)
       self.assertEqual(200, response.status)
 
-  # @skip("fix me first too")
+  @skip
   def test_proxy_post_h1_h1(self):
     self.setup_front(h2=False)
     self.setup_back(h2=False)
@@ -123,7 +121,7 @@ class TestReverseProxyServer(TestCase):
       self.assertEqual('backend1', response.headers['x-tag'])
       self.assertEqual('POST', response.headers['x-method'])
       self.assertEqual('echo', response.headers['x-echo'])
-      self.assertEqual('Release the Kraken', response.body)
+      self.assertEqual({'title': 'Release', 'description': 'the Kraken'}, response.json_body)
       self.assertEqual(200, response.status)
 
   # todo: (WK) :

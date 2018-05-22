@@ -1,12 +1,18 @@
 from io import BytesIO
 import pycurl
 from urllib.parse import urlencode
+import json
 
 class Response(object):
   def __init__(self):
     self.headers = {}
     self.body = ''
     self.status = 0
+
+  @property
+  def json_body(self):
+    return json.loads(self.body)
+
 
 _CHAR_ENCODING = 'iso-8859-1'
 

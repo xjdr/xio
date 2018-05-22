@@ -83,9 +83,12 @@ public final class RestHttp2Handler extends Http2ConnectionHandler implements Ht
 
       try {
         if (handler != null) {
-          responseBuilder = handler.request(responseBuilder);
+          CharSequence echo = headers.get("x-echo", "none");
+          responseBuilder = handler.request(responseBuilder)
+            .addMethodEcho(headers.method())
+            .addEcho(echo);
         } else {
-          responseBuilder = new ResponseBuilder(ctx.alloc())
+          responseBuilder
             .setStatus(HttpResponseStatus.NOT_FOUND)
             .addHeader(CONTENT_TYPE, APPLICATION_JSON)
             .setBody(new PojoResponse("ruh roh", "not found!"));

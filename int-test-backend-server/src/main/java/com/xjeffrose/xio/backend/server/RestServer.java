@@ -23,16 +23,24 @@ class RestServer {
   private final int port;
   private final boolean useTls;
   private static final int NUM_THREADS = 10;
+  private final boolean h2Capable;
 
-  RestServer(int port, boolean useTls) {
+  RestServer(int port, boolean useTls, boolean h2Capable) {
     this.port = port;
     this.useTls = useTls;
+    this.h2Capable = h2Capable;
   }
 
   private SslContext sslContext() throws CertificateException, SSLException {
     if (useTls) {
       SslProvider provider = OpenSsl.isAlpnSupported() ? SslProvider.OPENSSL : SslProvider.JDK;
       SelfSignedCertificate ssc = new SelfSignedCertificate();
+      final String[] protocolNames;
+      if (h2Capable) {
+        protocolNames = new String[]{ApplicationProtocolNames.HTTP_2, ApplicationProtocolNames.HTTP_1_1};
+      } else {
+        protocolNames = new String[]{ApplicationProtocolNames.HTTP_1_1};
+      }
       return SslContextBuilder.forServer(ssc.certificate(), ssc.privateKey())
         .sslProvider(provider)
         /* NOTE: the cipher filter may not include all ciphers required by the HTTP/2 specification.
@@ -44,8 +52,7 @@ class RestServer {
           ApplicationProtocolConfig.SelectorFailureBehavior.NO_ADVERTISE,
           // ACCEPT is currently the only mode supported by both OpenSsl and JDK providers.
           ApplicationProtocolConfig.SelectedListenerFailureBehavior.ACCEPT,
-          ApplicationProtocolNames.HTTP_2,
-          ApplicationProtocolNames.HTTP_1_1))
+          protocolNames))
         .build();
     } else {
       return null;
@@ -59,9 +66,9 @@ class RestServer {
       bootstrap.group(config.eventLoopGroup)
         .channel(config.channelClass)
         .localAddress(new InetSocketAddress(port))
-        .childHandler(new RestChannelInitializer(sslContext()));
+        .childHandler(new RestChannelInitializer(sslContext(), h2Capable));
       ChannelFuture channelFuture = bootstrap.bind().sync();
-      log.warn("serving content");
+      log.warn("starting to accept connections");
       channelFuture.channel().closeFuture().sync();
     } finally {
       config.eventLoopGroup.shutdownGracefully().sync();

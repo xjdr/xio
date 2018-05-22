@@ -11,16 +11,22 @@ public class RestChannelInitializer extends ChannelInitializer<SocketChannel> {
 
   private final SslContext sslContext;
   private final RestHandlers appHandlers = new RestHandlers();
+  private final boolean h2Capable;
 
-  public RestChannelInitializer(SslContext sslContext) {
+  public RestChannelInitializer(SslContext sslContext, boolean h2Capable) {
     this.sslContext = sslContext;
+    this.h2Capable = h2Capable;
   }
 
   @Override
   public void initChannel(SocketChannel ch) {
-    if (sslContext != null) {
+    if (sslContext != null && h2Capable) {
       configureTlsH2(ch);
     } else {
+      ChannelPipeline pipeline = ch.pipeline();
+      if (sslContext != null) {
+        pipeline.addLast(sslContext.newHandler(ch.alloc()));
+      }
       configureH1(ch.pipeline());
     }
   }
