@@ -22,24 +22,10 @@ jacocoTestReport {
 description = 'xio'
 group = project_group
 
-def nativeClassifier
-def osName = System.getProperty('os.name').toLowerCase()
-
-if (osName.contains('win')) {
-  nativeClassifier = 'windows-x86_64'
-} else if (osName.contains('linux')) {
-  nativeClassifier = 'linux-x86_64'
-} else if (osName.contains('mac')) {
-  nativeClassifier = 'osx-x86_64'
-} else {
-  throw new InvalidUserDataException("Unsupoprted os family $osName")
-}
-
 apply from: '../alpn-boot.gradle'
 
 dependencies {
   implementation group: 'com.google.code.findbugs', name: 'jsr305', version: findbugs_jsr305_version
-  implementation group: 'io.netty', name: 'netty-tcnative-boringssl-static', version: netty_tcnative_version, classifier: nativeClassifier
   implementation(group: 'org.apache.curator', name: 'curator-framework', version: curator_version) {
     exclude(module: 'zookeeper')
   }
