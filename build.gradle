@@ -7,7 +7,7 @@ plugins {
 def nativeClassifier
 def osName = System.getProperty('os.name').toLowerCase()
 
-if (osName.contains('win')) {
+f (osName.contains('win')) {
   nativeClassifier = 'windows-x86_64'
 } else if (osName.contains('linux')) {
   nativeClassifier = 'linux-x86_64'
@@ -17,8 +17,7 @@ if (osName.contains('win')) {
   throw new InvalidUserDataException("Unsupoprted os family $osName")
 }
 
-
- {
+allprojects {
   apply plugin: 'java'
   apply plugin: 'maven-publish'
   apply plugin: 'com.jfrog.bintray'
