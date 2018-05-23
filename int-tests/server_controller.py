@@ -14,9 +14,10 @@ class StdOutReader:
   def __init__(self, stream, verbose=False):
     self._stream = stream
     self._queue = Queue()
+    self._read = True
 
     def _reader(s, queue, verbose):
-      while True:
+      while self._read:
         line = s.readline()
         s.flush()
         if line:
@@ -33,6 +34,10 @@ class StdOutReader:
       return str(self._queue.get(block=False, timeout=0.1))
     except Empty:
       return ''
+
+  def stop(self):
+    self._read = False
+    self._thread.join()
 
 
 class Initializer:
@@ -86,14 +91,21 @@ class Server:
       print("server {} run cmd: {}".format(self.name, self.cmd))
       env = {**os.environ, 'JAVA_OPTS': '-DDEBUG=1'}
       self.process = subprocess.Popen("exec " + self.cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, env=env)
-      nb_err = StdOutReader(self.process.stderr, verbose=self._verbose)
-      nb_out = StdOutReader(self.process.stdout, verbose=self._verbose)
+      self.nb_err = StdOutReader(self.process.stderr, verbose=self._verbose)
+      self.nb_out = StdOutReader(self.process.stdout, verbose=self._verbose)
       while True:
-        if self.ready_str in nb_err.readline() or self.ready_str in nb_out.readline():
+        if self.ready_str in self.nb_err.readline() or self.ready_str in self.nb_out.readline():
           break
     return self
 
   def kill(self):
-    print("server {} killed".format(self.name))
     if self.process is not None:
+      print("killing: {} : {}".format(self.name, self.process.pid))
       self.process.kill()
+      self.nb_err.stop()
+      self.nb_out.stop()
+
+      outs, errs = self.process.communicate()
+      if outs or errs:
+        print("kill outs:{}".format(outs))
+        print("kill errs:{}".format(errs))
