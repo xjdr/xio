@@ -17,5 +17,5 @@ if (System.getProperty("DEBUG") != null) {
 } else if (System.getProperty("COVERAGE") != null) {
   root(DEBUG, ["DEVNULL"])
 } else {
-  root(DEBUG, ["CONSOLE"])
+  root(WARN, ["CONSOLE"])
 }

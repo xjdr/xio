@@ -61,7 +61,6 @@ class Initializer:
 class Server:
   def __init__(self, script, ready_str, *args, **kwargs):
     self._port = kwargs.get('port', '')
-    host = kwargs.get('host', '')
     self._name = kwargs.get('name', 'unnamed')
     self._verbose = kwargs.get('verbose', False)
     if len(args) > 1:
@@ -70,7 +69,7 @@ class Server:
       argv = str(args[0]).strip()
     else:
       argv = ''
-    self.cmd = ' '.join("{} {} {} {} {}".format(script, host, self.port, self.name, argv).split())
+    self.cmd = ' '.join("{} {} {} {}".format(script, self.port, self.name, argv).split())
     self.process = None
     self.ready_str = ready_str
 

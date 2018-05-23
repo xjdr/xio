@@ -6,18 +6,18 @@ group = project_group
 
 mainClassName = 'com.xjeffrose.xio.backend.server.Main'
 
-apply from: '../alpn-boot.gradle'
+def jackson_version = '2.9.4'
 
 dependencies {
-  implementation project(":xio")
-  implementation project(":xio-test")
-  implementation group: 'com.squareup.okhttp3', name: 'mockwebserver', version: okhttp_version
-  implementation group: 'com.typesafe', name: 'config', version: typesafe_config_version
+
+  implementation project(":xio") // we just use the tls config
+
   implementation group: 'ch.qos.logback', name: 'logback-classic', version: logback_version
   implementation group: 'ch.qos.logback', name: 'logback-core', version: logback_version
   implementation group: 'org.codehaus.groovy', name: 'groovy-all', version: groovy_version
-}
 
-run {
-  jvmArgs = [xbcp]
+  implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: jackson_version
+  implementation group: 'com.fasterxml.jackson.module', name: 'jackson-module-parameter-names', version: jackson_version
+  implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jdk8', version: jackson_version
+  implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: jackson_version
 }
