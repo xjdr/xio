@@ -4,19 +4,6 @@ plugins {
   id 'com.jfrog.bintray' version '1.8.0'
 }
 
-def nativeClassifier
-def osName = System.getProperty('os.name').toLowerCase()
-
-if (osName.contains('win')) {
-  nativeClassifier = 'windows-x86_64'
-} else if (osName.contains('linux')) {
-  nativeClassifier = 'linux-x86_64'
-} else if (osName.contains('mac')) {
-  nativeClassifier = 'osx-x86_64'
-} else {
-  throw new InvalidUserDataException("Unsupoprted os family $osName")
-}
-
 allprojects {
   apply plugin: 'java'
   apply plugin: 'maven-publish'
@@ -38,7 +25,7 @@ allprojects {
     implementation group: 'com.google.guava', name: 'guava', version: guava_version
     implementation group: 'com.typesafe', name: 'config', version: typesafe_config_version
     implementation group: 'io.netty', name: 'netty-all', version: netty_version
-    implementation group: 'io.netty', name: 'netty-tcnative-boringssl-static', version: netty_tcnative_version, classifier: nativeClassifier
+    implementation group: 'io.netty', name: 'netty-tcnative-boringssl-static', version: netty_tcnative_version
     implementation group: 'org.slf4j', name: 'slf4j-api', version: slf4j_version
     implementation group: 'org.slf4j', name: 'log4j-over-slf4j', version: slf4j_version
     annotationProcessor group: 'com.google.auto.value', name: 'auto-value', version: auto_value_version
