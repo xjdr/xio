@@ -4,19 +4,6 @@ plugins {
   id 'com.jfrog.bintray' version '1.8.0'
 }
 
-def nativeClassifier
-def osName = System.getProperty('os.name').toLowerCase()
-
-if (osName.contains('win')) {
-  nativeClassifier = 'windows-x86_64'
-} else if (osName.contains('linux')) {
-  nativeClassifier = 'linux-x86_64'
-} else if (osName.contains('mac')) {
-  nativeClassifier = 'osx-x86_64'
-} else {
-  throw new InvalidUserDataException("Unsupoprted os family $osName")
-}
-
 allprojects {
   apply plugin: 'java'
   apply plugin: 'maven-publish'
