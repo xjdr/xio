@@ -7,7 +7,7 @@ plugins {
 def nativeClassifier
 def osName = System.getProperty('os.name').toLowerCase()
 
-f (osName.contains('win')) {
+if (osName.contains('win')) {
   nativeClassifier = 'windows-x86_64'
 } else if (osName.contains('linux')) {
   nativeClassifier = 'linux-x86_64'
