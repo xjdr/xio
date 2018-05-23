@@ -7,7 +7,7 @@ import static io.netty.handler.logging.LogLevel.INFO;
 
 public final class RestHttp2HandlerBuilder extends AbstractHttp2ConnectionHandlerBuilder<RestHttp2Handler, RestHttp2HandlerBuilder> {
 
-  private static final Http2FrameLogger logger = new Http2FrameLogger(INFO, RestHttp2Handler.class);
+  private static final Http2FrameLogger logger = new Http2FrameLogger(INFO);
   private final ImmutableMap<String, RequestHandler> handlers;
 
   RestHttp2HandlerBuilder(ImmutableMap<String, RequestHandler> handlers) {

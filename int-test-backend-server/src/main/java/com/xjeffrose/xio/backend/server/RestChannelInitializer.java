@@ -6,7 +6,9 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.ssl.SslContext;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class RestChannelInitializer extends ChannelInitializer<SocketChannel> {
 
   private final SslContext sslContext;
@@ -20,6 +22,7 @@ public class RestChannelInitializer extends ChannelInitializer<SocketChannel> {
 
   @Override
   public void initChannel(SocketChannel ch) {
+    log.debug("initialize tls:{} h2:{}", sslContext != null, h2Capable);
     if (sslContext != null && h2Capable) {
       configureTlsH2(ch);
     } else {

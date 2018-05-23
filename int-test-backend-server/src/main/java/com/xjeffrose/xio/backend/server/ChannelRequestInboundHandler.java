@@ -6,11 +6,13 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.*;
+import lombok.extern.slf4j.Slf4j;
 
 import static io.netty.buffer.Unpooled.copiedBuffer;
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
 import static io.netty.handler.codec.http.HttpHeaderValues.APPLICATION_JSON;
 
+@Slf4j
 public class ChannelRequestInboundHandler extends ChannelInboundHandlerAdapter {
 
   private final ImmutableMap<String, RequestHandler> handlers;
@@ -21,6 +23,7 @@ public class ChannelRequestInboundHandler extends ChannelInboundHandlerAdapter {
 
   @Override
   public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+    log.debug("read {}", msg);
     if (msg instanceof FullHttpRequest) {
       FullHttpRequest request = (FullHttpRequest) msg;
       String path = request.uri();
@@ -34,22 +37,27 @@ public class ChannelRequestInboundHandler extends ChannelInboundHandlerAdapter {
           .addEcho(echo)
           .addMethodEcho(method)
           .buildH1();
+        log.debug("write flushing response {}", response);
         ctx.writeAndFlush(response);
         return;
       } else {
-        ctx.writeAndFlush(new ResponseBuilder(ctx.alloc())
+        FullHttpResponse ruhRoh = new ResponseBuilder(ctx.alloc())
           .setStatus(HttpResponseStatus.NOT_FOUND)
           .addHeader(CONTENT_TYPE, APPLICATION_JSON)
           .setBody(new PojoResponse("ruh roh", "not found!"))
-          .buildH1());
+          .buildH1();
+        log.debug("write flushing {}", ruhRoh);
+        ctx.writeAndFlush(ruhRoh);
         return;
       }
     }
+    log.error("not sending response!");
     ctx.fireChannelRead(msg);
   }
 
   @Override
   public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+    log.error("error: {}", cause);
     String message = cause.getMessage();
     final ByteBuf data;
     if (message == null) {

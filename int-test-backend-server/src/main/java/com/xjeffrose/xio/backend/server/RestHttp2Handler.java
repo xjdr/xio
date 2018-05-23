@@ -6,12 +6,39 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.*;
 import io.netty.handler.codec.http2.*;
+import io.netty.util.AttributeKey;
+import lombok.extern.slf4j.Slf4j;
 
-import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
-import static io.netty.handler.codec.http.HttpHeaderValues.APPLICATION_JSON;
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
+@Slf4j
 public final class RestHttp2Handler extends Http2ConnectionHandler implements Http2FrameListener {
+
+  private static final AttributeKey<Map<Integer, Http2Headers>> HEADER_KEY = AttributeKey.newInstance("header_key");
+
+  public static Map<Integer, Http2Headers> headersMap(ChannelHandlerContext ctx) {
+    Map<Integer, Http2Headers> map = ctx.channel().attr(HEADER_KEY).get();
+    if (map == null) {
+      map = new HashMap<>();
+      ctx.channel().attr(HEADER_KEY).set(map);
+    }
+    return map;
+  }
+
+  public static void setHeaders(ChannelHandlerContext ctx, Integer streamId, Http2Headers headers) {
+    Http2Headers saveHeaders = getHeaders(ctx, streamId)
+      .map(prevHeaders -> prevHeaders.add(headers))
+      .orElse(headers);
+
+    headersMap(ctx).put(streamId, saveHeaders);
+  }
+
+  public static Optional<Http2Headers> getHeaders(ChannelHandlerContext ctx, Integer streamId) {
+    Map<Integer, Http2Headers> map = headersMap(ctx);
+    return Optional.ofNullable(map.get(streamId));
+  }
 
   private final ImmutableMap<String, RequestHandler> handlers;
 
@@ -50,15 +77,53 @@ public final class RestHttp2Handler extends Http2ConnectionHandler implements Ht
   @Override
   public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
     super.exceptionCaught(ctx, cause);
-    cause.printStackTrace();
+    log.error("exception {}", cause);
     ctx.close();
   }
 
-  private void sendResponse(ChannelHandlerContext ctx, int streamId, ResponseBuilder responseBuilder) {
+  @Override
+  public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
+    log.debug("channelReadComplete");
+    super.channelReadComplete(ctx);
+  }
+
+  private ResponseBuilder errorResponseBuilder(ChannelHandlerContext ctx) {
+    return new ResponseBuilder(ctx.alloc())
+      .setBodyData(Unpooled.EMPTY_BUFFER)
+      .setStatus(HttpResponseStatus.INTERNAL_SERVER_ERROR);
+  }
+
+  private Optional<RequestHandler> handler(Http2Headers headers) {
+    return Optional.ofNullable(headers.path())
+      .map(path -> {
+        log.debug("path: {}", path);
+        return handlers.get(path.toString());
+      });
+  }
+
+  private void sendResponse(ChannelHandlerContext ctx, int streamId) {
+
+    ResponseBuilder responseBuilder = getHeaders(ctx, streamId)
+      .flatMap(headers -> handler(headers)
+        .map(handler -> {
+          log.debug("found handler");
+          ResponseBuilder builder = new ResponseBuilder(ctx.alloc())
+            .addEcho(headers.get("x-echo", "none"))
+            .addMethodEcho(headers.method());
+          try {
+            return handler
+              .request(builder);
+          } catch (Exception e) {
+            log.error("error", e);
+            return errorResponseBuilder(ctx);
+          }
+        })).orElseGet(() -> errorResponseBuilder(ctx));
+
     // Send a frame for the response status
     Http2Headers headers = responseBuilder.buildH2Headers();
+    log.debug("sendResponse headers: {}", headers);
     encoder().writeHeaders(ctx, streamId, headers, 0, false, ctx.newPromise());
-    encoder().writeData(ctx, streamId, responseBuilder.buildH2BodyData(), 0, true, ctx.newPromise());
+    encoder().writeData(ctx, streamId, responseBuilder.buildBodyData(), 0, true, ctx.newPromise());
 
     // no need to call flush as channelReadComplete(...) will take care of it.
   }
@@ -66,10 +131,9 @@ public final class RestHttp2Handler extends Http2ConnectionHandler implements Ht
   @Override
   public int onDataRead(ChannelHandlerContext ctx, int streamId, ByteBuf data, int padding, boolean endOfStream) {
     int processed = data.readableBytes() + padding;
+    log.debug("onDataRead eos:{} data:{}", endOfStream, data);
     if (endOfStream) {
-      ResponseBuilder responseBuilder = new ResponseBuilder(ctx.alloc());
-      responseBuilder.setBodyData(data.retain()).setStatus(OK);
-      sendResponse(ctx, streamId, responseBuilder);
+      sendResponse(ctx, streamId);
     }
     return processed;
   }
@@ -77,28 +141,10 @@ public final class RestHttp2Handler extends Http2ConnectionHandler implements Ht
   @Override
   public void onHeadersRead(ChannelHandlerContext ctx, int streamId,
                             Http2Headers headers, int padding, boolean endOfStream) {
+    log.debug("onHeadersRead eos:{} headers:{}", endOfStream, headers);
+    setHeaders(ctx, streamId, headers);
     if (endOfStream) {
-      RequestHandler handler = handlers.get(headers.path().toString());
-      ResponseBuilder responseBuilder = new ResponseBuilder(ctx.alloc());
-
-      try {
-        if (handler != null) {
-          CharSequence echo = headers.get("x-echo", "none");
-          responseBuilder = handler.request(responseBuilder)
-            .addMethodEcho(headers.method())
-            .addEcho(echo);
-        } else {
-          responseBuilder
-            .setStatus(HttpResponseStatus.NOT_FOUND)
-            .addHeader(CONTENT_TYPE, APPLICATION_JSON)
-            .setBody(new PojoResponse("ruh roh", "not found!"));
-        }
-      } catch (Exception e) {
-        responseBuilder.setStatus(HttpResponseStatus.INTERNAL_SERVER_ERROR)
-          .setBodyData(Unpooled.EMPTY_BUFFER);
-      }
-
-      sendResponse(ctx, streamId, responseBuilder);
+      sendResponse(ctx, streamId);
     }
   }
 

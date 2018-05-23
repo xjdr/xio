@@ -13,7 +13,6 @@ import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.util.AsciiString;
 
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
@@ -90,16 +89,16 @@ public class ResponseBuilder {
 
   public FullHttpResponse buildH1() {
     checkNotNull(status, "HttpResponseStatus not set");
-    DefaultFullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, status, buildH2BodyData());
+    DefaultFullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, status, buildBodyData());
     response.headers().set(USER_AGENT, USER_AGENT_VALUE);
     if (headers != null) {
       headers.forEach((key, value) -> response.headers().set(key, value));
     }
-    response.headers().set(HttpHeaderNames.CONTENT_LENGTH, buildH2BodyData().readableBytes());
+    response.headers().set(HttpHeaderNames.CONTENT_LENGTH, buildBodyData().readableBytes());
     return response;
   }
 
-  public ByteBuf buildH2BodyData() {
+  public ByteBuf buildBodyData() {
     if (body == null) {
       body = Unpooled.EMPTY_BUFFER;
     }
@@ -108,6 +107,12 @@ public class ResponseBuilder {
 
   public Http2Headers buildH2Headers() {
     checkNotNull(status, "HttpResponseStatus not set");
-    return new DefaultHttp2Headers().status(status.codeAsText());
+    DefaultHttp2Headers http2Headers = new DefaultHttp2Headers();
+    http2Headers.status(status.codeAsText());
+    if (headers != null) {
+      headers.forEach(http2Headers::set);
+    }
+    http2Headers.setInt(HttpHeaderNames.CONTENT_LENGTH, buildBodyData().readableBytes());
+    return http2Headers;
   }
 }
