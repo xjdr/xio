@@ -31,7 +31,7 @@ public class ProxyClientFactory extends ClientFactory {
   public Client getClient(ChannelHandlerContext ctx, ClientConfig config) {
     Client client =
         getHandlerClient(ctx)
-            .orElse(clientPool.acquire(ctx, config, () -> createClient(ctx, config)));
+            .orElseGet(() -> clientPool.acquire(ctx, config, () -> createClient(ctx, config)));
     updateChannelAttr(ctx, client);
     return client;
   }
