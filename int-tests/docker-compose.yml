@@ -1,0 +1,32 @@
+version: "2"
+
+services:
+  client:
+    container_name: int-test-client
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["/bin/bash"]
+    stdin_open: true
+    tty: true
+    links:
+      - front
+      - back
+
+  back:
+    build:
+      context: ../int-test-backend-server
+    environment:
+      - JAVA_OPTS # just un-setting -DDEBUG
+    ports:
+      - "8444:443"
+
+  front:
+    build:
+      context: ../int-test-proxy-server
+    environment:
+      - JAVA_OPTS # just un-setting -DDEBUG
+    links:
+      - back
+    ports:
+      - "8443:443"
