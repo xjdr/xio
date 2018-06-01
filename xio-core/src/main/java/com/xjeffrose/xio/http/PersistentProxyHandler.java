@@ -7,10 +7,7 @@ import com.xjeffrose.xio.core.SocketAddressHelper;
 import com.xjeffrose.xio.server.RendezvousHash;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.internal.PlatformDependent;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import lombok.val;
 
 public class PersistentProxyHandler extends ProxyHandler {
@@ -41,10 +38,13 @@ public class PersistentProxyHandler extends ProxyHandler {
   }
 
   @Override
-  public ClientConfig getClientConfig(ChannelHandlerContext ctx, Request request) {
+  public Optional<ClientConfig> getClientConfig(ChannelHandlerContext ctx, Request request) {
     String originatingAddress = getOriginatingAddress(ctx, request);
     val hasherPoolId =
         persistentProxyHasher.getOne(originatingAddress.getBytes(Constants.DEFAULT_CHARSET));
-    return clientConfigMap.get(hasherPoolId);
+    if (clientConfigMap.size() > 0) {
+      return Optional.of(clientConfigMap.get(hasherPoolId));
+    }
+    return Optional.empty();
   }
 }
