@@ -4,6 +4,7 @@ import com.xjeffrose.xio.client.ClientConfig;
 import com.xjeffrose.xio.core.SocketAddressHelper;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.AsciiString;
+import java.util.List;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -23,8 +24,12 @@ public class ProxyHandler implements PipelineRequestHandler {
     this.addressHelper = addressHelper;
   }
 
-  public ClientConfig getClientConfig(ChannelHandlerContext ctx, Request request) {
-    return config.clientConfigs().get(0);
+  public Optional<ClientConfig> getClientConfig(ChannelHandlerContext ctx, Request request) {
+    List<ClientConfig> clientConfigs = config.clientConfigs();
+    if (clientConfigs.size() > 0) {
+      return Optional.of(clientConfigs.get(0));
+    }
+    return Optional.empty();
   }
 
   public String buildProxyHost(Request request, ClientConfig clientConfig) {
@@ -135,21 +140,26 @@ public class ProxyHandler implements PipelineRequestHandler {
     // 2) set the outgoing request host
     // 3) set the tracing span (if there is one)
 
-    ClientConfig clientConfig = getClientConfig(ctx, request);
-    Client client = factory.getClient(ctx, clientConfig);
+    val clientConfig = getClientConfig(ctx, request);
+    if (clientConfig.isPresent()) {
+      Client client = factory.getClient(ctx, clientConfig.get());
 
-    if (!request.startOfMessage()) {
-      log.debug("not start of stream");
-      client.write(request);
-      return;
+      if (!request.startOfMessage()) {
+        log.debug("not start of stream");
+        client.write(request);
+        return;
+      }
+      log.debug("start of stream");
+
+      String proxyHost = buildProxyHost(request, clientConfig.get());
+      Request proxyRequest = buildRequest(request, proxyHost, buildProxyPath(request, route));
+
+      appendXForwardedFor(ctx, proxyRequest);
+
+      client.write(proxyRequest);
+    } else {
+      Response notFound = ResponseBuilders.newNotFound(request);
+      ctx.writeAndFlush(notFound);
     }
-    log.debug("start of stream");
-
-    String proxyHost = buildProxyHost(request, clientConfig);
-    Request proxyRequest = buildRequest(request, proxyHost, buildProxyPath(request, route));
-
-    appendXForwardedFor(ctx, proxyRequest);
-
-    client.write(proxyRequest);
   }
 }
