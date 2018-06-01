@@ -63,10 +63,11 @@ RUN apt-get -y install \
   libc-ares2 \
   libjemalloc1 \
   libjansson4 \
-&& apt install nghttp2_1.32.0-1_amd64.deb \
+&& apt install /nghttp2_1.32.0-1_amd64.deb \
 && ldconfig \
 && apt-get -y install \
   wrk \
   python3 \
   python3-pip \
-  rm nghttp2_1.32.0-1_amd64.deb
+  python3-pycurl \
+  curl

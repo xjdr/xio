@@ -1,4 +1,4 @@
-version: "2"
+version: "2.1"
 
 services:
   client:
@@ -6,9 +6,12 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    command: ["/bin/bash"]
-    stdin_open: true
-    tty: true
+    depends_on:
+      back:
+        condition: service_healthy
+      front:
+        condition: service_healthy
+    command: ["python3", "/tests/proxy_load_tests.py"]
     links:
       - front
       - back
@@ -20,6 +23,11 @@ services:
       - JAVA_OPTS # just un-setting -DDEBUG
     ports:
       - "8444:443"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "-k", "https://localhost"]
+      interval: 1s
+      timeout: 3s
+      retries: 60
 
   front:
     build:
@@ -30,3 +38,8 @@ services:
       - back
     ports:
       - "8443:443"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "-k", "https://localhost"]
+      interval: 1s
+      timeout: 3s
+      retries: 60
