@@ -40,9 +40,9 @@ public class PersistentProxyHandler extends ProxyHandler {
   @Override
   public Optional<ClientConfig> getClientConfig(ChannelHandlerContext ctx, Request request) {
     String originatingAddress = getOriginatingAddress(ctx, request);
-    val hasherPoolId =
-        persistentProxyHasher.getOne(originatingAddress.getBytes(Constants.DEFAULT_CHARSET));
     if (clientConfigMap.size() > 0) {
+      val hasherPoolId =
+        persistentProxyHasher.getOne(originatingAddress.getBytes(Constants.DEFAULT_CHARSET));
       return Optional.of(clientConfigMap.get(hasherPoolId));
     }
     return Optional.empty();
