@@ -42,7 +42,7 @@ public class PersistentProxyHandler extends ProxyHandler {
     String originatingAddress = getOriginatingAddress(ctx, request);
     if (clientConfigMap.size() > 0) {
       val hasherPoolId =
-        persistentProxyHasher.getOne(originatingAddress.getBytes(Constants.DEFAULT_CHARSET));
+          persistentProxyHasher.getOne(originatingAddress.getBytes(Constants.DEFAULT_CHARSET));
       return Optional.of(clientConfigMap.get(hasherPoolId));
     }
     return Optional.empty();
