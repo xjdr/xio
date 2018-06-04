@@ -9,7 +9,4 @@ echo "building int test backend server"
 ./gradlew :int-test-backend-server:installDist
 
 cd int-tests
-docker-compose build
-
-docker-compose up -d
-docker exec -it int-test-client /bin/bash
+docker-compose up --build
