@@ -8,12 +8,16 @@ import com.xjeffrose.xio.bootstrap.ChannelConfiguration;
 import com.xjeffrose.xio.bootstrap.ServerChannelConfiguration;
 import com.xjeffrose.xio.core.NullZkClient;
 import com.xjeffrose.xio.core.ZkClient;
+import com.xjeffrose.xio.http.ProxyRouteConfig;
+import com.xjeffrose.xio.http.Route;
+import com.xjeffrose.xio.server.RoutesConfig;
 import com.xjeffrose.xio.tracing.XioTracing;
 import io.netty.util.internal.PlatformDependent;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -35,6 +39,7 @@ public class ApplicationConfig {
   @Getter private final int rateLimiterPoolSize;
   @Getter private final int clientPoolSize;
   @Getter private final XioTracing tracing;
+  @Getter @Setter private RoutesConfig routeConfig;
 
   @Getter
   private final Map<String, List<Double>> clientRateLimitOverride =
@@ -92,6 +97,10 @@ public class ApplicationConfig {
       log.error("Invalid server '{}', available servers: {}", server, servers);
       throw e;
     }
+  }
+
+  public Map<Route, ProxyRouteConfig> proxyRoutes() {
+    return routeConfig.proxyRoutes();
   }
 
   // TODO(CK): parse settings at construction time
