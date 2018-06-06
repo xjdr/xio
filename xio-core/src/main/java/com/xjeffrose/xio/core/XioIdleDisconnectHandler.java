@@ -1,5 +1,6 @@
 package com.xjeffrose.xio.core;
 
+import com.xjeffrose.xio.http.internal.ProxyClientIdle;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.handler.timeout.IdleStateHandler;
@@ -24,6 +25,14 @@ public class XioIdleDisconnectHandler extends IdleStateHandler {
         writerIdleTime.toMillis(),
         allIdleTime.toMillis(),
         TimeUnit.MILLISECONDS);
+  }
+
+  @Override
+  public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+    super.userEventTriggered(ctx, evt);
+    if (evt instanceof ProxyClientIdle) {
+      ctx.channel().close();
+    }
   }
 
   @Override

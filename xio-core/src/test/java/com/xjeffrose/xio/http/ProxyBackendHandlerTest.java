@@ -1,7 +1,7 @@
 package com.xjeffrose.xio.http;
 
+import com.xjeffrose.xio.http.internal.ProxyClientIdle;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.embedded.EmbeddedChannel;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,6 +26,6 @@ public class ProxyBackendHandlerTest extends Assert {
   @Test
   public void testDisconnectWhenClientIsIdle() throws Exception {
     subject.channelInactive(clientCtx);
-    verify(frontEndCtx).fireUserEventTriggered(any());
+    verify(frontEndCtx).fireUserEventTriggered(ProxyClientIdle.INSTANCE);
   }
 }
