@@ -54,7 +54,7 @@ public class ProxyBackendHandler extends ChannelInboundHandlerAdapter {
     // TODO(CK): this should really be some sort of notification to the frontend
     // that the backend closed. Keepalive/h2 will require the connection to stay open, we
     // shouldn't be closing it.
-    frontend.close();
+    frontend.fireUserEventTriggered(null);
   }
 
   @Override
