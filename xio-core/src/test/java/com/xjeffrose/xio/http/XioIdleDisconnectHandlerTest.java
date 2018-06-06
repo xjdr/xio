@@ -2,7 +2,6 @@ package com.xjeffrose.xio.http;
 
 import com.xjeffrose.xio.core.XioIdleDisconnectHandler;
 import com.xjeffrose.xio.http.internal.ProxyClientIdle;
-import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.embedded.EmbeddedChannel;
 import org.junit.Assert;
 import org.junit.Before;

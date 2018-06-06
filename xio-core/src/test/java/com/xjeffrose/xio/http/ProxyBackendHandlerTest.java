@@ -1,5 +1,7 @@
 package com.xjeffrose.xio.http;
 
+import static org.mockito.Mockito.verify;
+
 import com.xjeffrose.xio.http.internal.ProxyClientIdle;
 import io.netty.channel.ChannelHandlerContext;
 import org.junit.Assert;
@@ -7,9 +9,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
 
 public class ProxyBackendHandlerTest extends Assert {
 
