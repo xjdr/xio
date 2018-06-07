@@ -1,6 +1,5 @@
 package com.xjeffrose.xio.http;
 
-import com.xjeffrose.xio.core.XioIdleDisconnectHandler;
 import com.xjeffrose.xio.core.XioMessageLogger;
 import com.xjeffrose.xio.pipeline.Pipelines;
 import com.xjeffrose.xio.tracing.XioTracing;
@@ -64,7 +63,6 @@ public class ClientChannelInitializer extends ChannelInitializer {
     }
     channel
         .pipeline()
-        .addLast("idle handler", new XioIdleDisconnectHandler(60, 60, 60))
         .addLast("message logging", new XioMessageLogger(Client.class, "objects"))
         .addLast("request buffer", new RequestBuffer())
         .addLast(APP_HANDLER, appHandler.get());
