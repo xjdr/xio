@@ -1,7 +1,6 @@
 package com.xjeffrose.xio.http;
 
 import com.xjeffrose.xio.core.XioIdleDisconnectHandler;
-import com.xjeffrose.xio.http.internal.ProxyClientIdle;
 import io.netty.channel.embedded.EmbeddedChannel;
 import org.junit.Assert;
 import org.junit.Before;
@@ -21,7 +20,6 @@ public class XioIdleDisconnectHandlerTest extends Assert {
 
   @Test
   public void testReceivedClientIdleUserEvent() {
-    channel.pipeline().fireUserEventTriggered(ProxyClientIdle.INSTANCE);
     assertFalse(channel.isOpen());
   }
 }

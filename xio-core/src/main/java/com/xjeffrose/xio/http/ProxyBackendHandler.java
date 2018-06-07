@@ -1,6 +1,6 @@
 package com.xjeffrose.xio.http;
 
-import com.xjeffrose.xio.http.internal.ProxyClientIdle;
+import com.xjeffrose.xio.http.internal.ProxyClientState;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -52,10 +52,7 @@ public class ProxyBackendHandler extends ChannelInboundHandlerAdapter {
   @Override
   public void channelInactive(ChannelHandlerContext ctx) throws Exception {
     log.debug("RawBackendHandler[{}] channelInactive", this);
-    // TODO(CK): this should really be some sort of notification to the frontend
-    // that the backend closed. Keepalive/h2 will require the connection to stay open, we
-    // shouldn't be closing it.
-    frontend.fireUserEventTriggered(ProxyClientIdle.INSTANCE);
+    frontend.fireUserEventTriggered(ProxyClientState.CLOSED);
   }
 
   @Override
