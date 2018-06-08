@@ -1,5 +1,6 @@
 package com.xjeffrose.xio.http;
 
+import com.xjeffrose.xio.core.XioIdleDisconnectHandler;
 import com.xjeffrose.xio.core.XioMessageLogger;
 import com.xjeffrose.xio.pipeline.Pipelines;
 import com.xjeffrose.xio.tracing.XioTracing;
@@ -61,6 +62,14 @@ public class ClientChannelInitializer extends ChannelInitializer {
       val traceHandler = tracing.newClientHandler(state.config.isTlsEnabled());
       Pipelines.addHandler(channel.pipeline(), "distributed tracing", traceHandler);
     }
+
+    if (state.idleTimeoutEnabled) {
+      int duration = state.idleTimeoutDuration;
+      channel
+          .pipeline()
+          .addLast("idle handler", new XioIdleDisconnectHandler(duration, duration, duration));
+    }
+
     channel
         .pipeline()
         .addLast("message logging", new XioMessageLogger(Client.class, "objects"))
