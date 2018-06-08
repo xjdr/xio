@@ -14,12 +14,14 @@ import lombok.extern.slf4j.Slf4j;
 @Accessors(fluent = true)
 @Getter
 public class ClientConfig {
+
   private final Map<ChannelOption<Object>, Object> bootstrapOptions;
   private final String name;
   private final TlsConfig tls;
   private final boolean messageLoggerEnabled;
   private final InetSocketAddress local;
   private final InetSocketAddress remote;
+  private final IdleTimeoutConfig idleTimeoutConfig;
 
   public String getName() {
     return name;
@@ -48,11 +50,22 @@ public class ClientConfig {
       local = new InetSocketAddress(config.getString("localIp"), config.getInt("localPort"));
     }
     remote = new InetSocketAddress(config.getString("remoteIp"), config.getInt("remotePort"));
+
+    boolean idleTimeoutEnabled = config.getBoolean("idleTimeoutEnabled");
+    int idleTimeoutDuration = 0;
+    if (idleTimeoutEnabled) {
+      idleTimeoutDuration = config.getInt("idleTimeoutDuration");
+    }
+    idleTimeoutConfig = new IdleTimeoutConfig(idleTimeoutEnabled, idleTimeoutDuration);
   }
 
   public boolean isTlsEnabled() {
     return tls.isUseSsl();
   }
+
+  public IdleTimeoutConfig getIdleTimeoutConfig() {
+    return idleTimeoutConfig;
+  };
 
   public static ClientConfig fromConfig(String key, Config config) {
     return new ClientConfig(config.getConfig(key));

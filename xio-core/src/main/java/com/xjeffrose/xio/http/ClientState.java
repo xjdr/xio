@@ -13,6 +13,8 @@ public class ClientState {
   public final ClientConfig config;
   public final InetSocketAddress remote;
   public final SslContext sslContext;
+  public final boolean idleTimeoutEnabled;
+  public final int idleTimeoutDuration;
 
   private static SslContext sslContext(boolean enableTls, ClientConfig clientConfig) {
     if (enableTls) {
@@ -31,6 +33,8 @@ public class ClientState {
     this.config = config;
     this.remote = remote;
     this.sslContext = sslContext;
+    idleTimeoutEnabled = config.getIdleTimeoutConfig().enabled;
+    idleTimeoutDuration = config.getIdleTimeoutConfig().duration;
   }
 
   public ClientState(
@@ -42,9 +46,6 @@ public class ClientState {
   }
 
   public ClientState(ClientChannelConfiguration channelConfig, ClientConfig config) {
-    this.channelConfig = channelConfig;
-    this.config = config;
-    this.remote = config.remote();
-    this.sslContext = sslContext(config.isTlsEnabled(), config);
+    this(channelConfig, config, config.remote(), sslContext(config.isTlsEnabled(), config));
   }
 }
