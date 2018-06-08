@@ -5,6 +5,7 @@ import static org.powermock.api.mockito.PowerMockito.when;
 import com.typesafe.config.ConfigFactory;
 import com.xjeffrose.xio.bootstrap.ChannelConfiguration;
 import com.xjeffrose.xio.client.ClientConfig;
+import com.xjeffrose.xio.core.XioIdleDisconnectHandler;
 import com.xjeffrose.xio.tracing.HttpClientTracingHandler;
 import com.xjeffrose.xio.tracing.XioTracing;
 import io.netty.channel.ChannelHandler;
@@ -110,5 +111,37 @@ public class ClientChannelInitializerTest extends Assert {
     val testChannel = new EmbeddedChannel(subject);
     val result = testChannel.pipeline().get(SslHandler.class);
     assertNull(result);
+  }
+
+  @Test
+  public void testDisableIdleTimeout() {
+    val channelConfig = ChannelConfiguration.clientConfig(1, "worker");
+    val clientConfig = new ClientConfig(ConfigFactory.load().getConfig("xio.idleDisabledClient"));
+    val clientState = new ClientState(channelConfig, clientConfig);
+    // when we have enabled Tracing the tracing returns a non-null newClientHandler
+    when(tracing.newClientHandler(clientConfig.getTls().isUseSsl())).thenReturn(tracingHandler);
+
+    subject = new ClientChannelInitializer(clientState, () -> appHandler, tracing);
+
+    // Assert that we did not add a HttpClientTracingHandler to the pipeline
+    val testChannel = new EmbeddedChannel(subject);
+    val result = testChannel.pipeline().get(XioIdleDisconnectHandler.class);
+    assertNull(result);
+  }
+
+  @Test
+  public void testEnableIdleTimeout() {
+    val channelConfig = ChannelConfiguration.clientConfig(1, "worker");
+    val clientConfig = new ClientConfig(ConfigFactory.load().getConfig("xio.idleEnabledClient"));
+    val clientState = new ClientState(channelConfig, clientConfig);
+    // when we have enabled Tracing the tracing returns a non-null newClientHandler
+    when(tracing.newClientHandler(clientConfig.getTls().isUseSsl())).thenReturn(tracingHandler);
+
+    subject = new ClientChannelInitializer(clientState, () -> appHandler, tracing);
+
+    // Assert that we did not add a HttpClientTracingHandler to the pipeline
+    val testChannel = new EmbeddedChannel(subject);
+    val result = testChannel.pipeline().get(XioIdleDisconnectHandler.class);
+    assertNotNull(result);
   }
 }
