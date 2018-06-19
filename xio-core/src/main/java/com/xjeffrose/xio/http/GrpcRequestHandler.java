@@ -71,14 +71,16 @@ public class GrpcRequestHandler<GrpcRequest extends
         return;
       }
 
-      ByteBuf contentBuffer = UnpooledByteBufAllocator.DEFAULT.buffer(size, size);
       int packetContentSize = actualBuffer.readableBytes() - 5;
+      ByteBuf contentBuffer = UnpooledByteBufAllocator.DEFAULT.buffer(packetContentSize, size);
       contentBuffer.writeBytes(actualBuffer.slice(5, packetContentSize));
 
       state = new GrpcState(size, contentBuffer);
     } else {
       state.buffer.writeBytes(actualBuffer);
     }
+
+    session.put(request.streamId(), state);
 
     if (request.endOfMessage()) {
       if (state.size != state.buffer.readableBytes()) {
@@ -88,28 +90,35 @@ public class GrpcRequestHandler<GrpcRequest extends
       }
 
       try {
-        GrpcRequest grpcRequest = requestParser.parse(state.buffer.nioBuffer());
-        GrpcResponse grpcResponse = appLogic.apply(grpcRequest);
-
-        byte[] dataBytes = grpcResponse.toByteArray();
-        int length = dataBytes.length;
-        byte[] lengthByteBuffer = ByteBuffer.allocate(4).putInt(length).array();
-        byte[] compressedByteBuffer = ByteBuffer.allocate(1).put((byte)0).array();
-
-        ByteBuf grpcRequestBuffer = UnpooledByteBufAllocator.DEFAULT.buffer(length + 5, length + 5);
-
-        grpcRequestBuffer.writeBytes(compressedByteBuffer);
-        grpcRequestBuffer.writeBytes(lengthByteBuffer);
-        grpcRequestBuffer.writeBytes(dataBytes);
-
-        ctx.writeAndFlush(grpcRequestBuffer);
+        ByteBuf responseBuffer = makeResponseBuffer(state.buffer.nioBuffer());
+        ctx.writeAndFlush(responseBuffer);
 
       } catch (InvalidProtocolBufferException e) {
         // TODO: return appropriate error and end connection.
         System.out.println("not able to create request object from request bytes");
         return;
       }
-
+    } else {
+      // save the state until we have the end of message
+      session.put(request.streamId(), state);
     }
+  }
+
+  private ByteBuf makeResponseBuffer(ByteBuffer requestBuffer) throws InvalidProtocolBufferException {
+    GrpcRequest grpcRequest = requestParser.parse(requestBuffer);
+    GrpcResponse grpcResponse = appLogic.apply(grpcRequest);
+
+    byte[] dataBytes = grpcResponse.toByteArray();
+    int length = dataBytes.length;
+    byte[] lengthByteBuffer = ByteBuffer.allocate(4).putInt(length).array();
+    byte[] compressedByteBuffer = ByteBuffer.allocate(1).put((byte)0).array();
+
+    ByteBuf responseBuffer = UnpooledByteBufAllocator.DEFAULT.buffer(length + 5, length + 5);
+
+    responseBuffer.writeBytes(compressedByteBuffer);
+    responseBuffer.writeBytes(lengthByteBuffer);
+    responseBuffer.writeBytes(dataBytes);
+
+    return responseBuffer;
   }
 }

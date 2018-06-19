@@ -19,6 +19,7 @@ public class GrpcRequestHandlerTest extends Assert {
 
   private EmbeddedChannel channel;
   private GrpcRequestHandler subject;
+  private static final String responsePrefix = "I'm a response: ";
 
   private ByteBuf bufferFor(com.google.protobuf.GeneratedMessageV3 protoObject) {
     byte[] dataBytes = protoObject.toByteArray();
@@ -48,10 +49,27 @@ public class GrpcRequestHandlerTest extends Assert {
     }
   }
 
+  private SegmentedRequestData fullGrpcRequest(ByteBuf grpcRequestBuffer, boolean endOfMessage) {
+    Request request = DefaultSegmentedRequest
+      .builder()
+      .path("/")
+      .method(HttpMethod.GET)
+      .headers(new DefaultHeaders())
+      .streamId(1)
+      .build();
+    DefaultSegmentedData requestData = DefaultSegmentedData
+      .builder()
+      .content(grpcRequestBuffer)
+      .endOfMessage(endOfMessage)
+      .build();
+
+    return new SegmentedRequestData(request, requestData);
+  }
+
   @Before
   public void setUp() {
     subject = new GrpcRequestHandler<HelloRequest, HelloReply>(HelloRequest::parseFrom, (HelloRequest request) -> {
-      return HelloReply.newBuilder().setMessage("I'm a reply " + request.getName()).build();
+      return HelloReply.newBuilder().setMessage(responsePrefix + request.getName()).build();
     });
 
     channel = new EmbeddedChannel(new SimpleChannelInboundHandler<Request>() {
@@ -63,29 +81,32 @@ public class GrpcRequestHandlerTest extends Assert {
   }
 
   @Test
-  public void test() {
+  public void testWholeRequest() {
     HelloRequest grpcRequest = HelloRequest.newBuilder().setName("myName").build();
     ByteBuf grpcRequestBuffer = bufferFor(grpcRequest);
 
-    Request request = DefaultSegmentedRequest
-      .builder()
-      .path("/")
-      .method(HttpMethod.GET)
-      .headers(new DefaultHeaders())
-      .build();
-    DefaultSegmentedData requestData = DefaultSegmentedData
-      .builder()
-      .content(grpcRequestBuffer)
-      .endOfMessage(true)
-      .build();
-
-    SegmentedRequestData segmentedRequest = new SegmentedRequestData(request, requestData);
-
+    SegmentedRequestData segmentedRequest = fullGrpcRequest(grpcRequestBuffer, true);
     channel.writeInbound(segmentedRequest);
 
-    // TODO brian: clean up assert
     HelloReply actualReply = protoObjectFor(channel.readOutbound(), HelloReply::parseFrom);
-    HelloReply expectedReply = HelloReply.newBuilder().setMessage("I'm a reply " + "myName").build();
+    HelloReply expectedReply = HelloReply.newBuilder().setMessage(responsePrefix + grpcRequest.getName()).build();
+    assertEquals(actualReply, expectedReply);
+  }
+
+  @Test
+  public void testSegmentedRequest() {
+    HelloRequest grpcRequest = HelloRequest.newBuilder().setName("myName").build();
+    ByteBuf grpcRequestBuffer = bufferFor(grpcRequest);
+
+    int middleIndex = grpcRequestBuffer.readableBytes() / 2;
+    ByteBuf firstHalf = grpcRequestBuffer.slice(0, middleIndex);
+    ByteBuf secondHalf = grpcRequestBuffer.slice(middleIndex, grpcRequestBuffer.readableBytes() - middleIndex);
+
+    channel.writeInbound(fullGrpcRequest(firstHalf, false));
+    channel.writeInbound(fullGrpcRequest(secondHalf, true));
+
+    HelloReply actualReply = protoObjectFor(channel.readOutbound(), HelloReply::parseFrom);
+    HelloReply expectedReply = HelloReply.newBuilder().setMessage(responsePrefix + grpcRequest.getName()).build();
     assertEquals(actualReply, expectedReply);
   }
 }
