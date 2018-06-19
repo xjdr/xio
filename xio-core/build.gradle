@@ -44,6 +44,8 @@ dependencies {
   implementation group: 'io.dropwizard.metrics', name: 'metrics-core', version: metrics_version
   implementation group: 'io.dropwizard.metrics', name: 'metrics-jmx', version: metrics_version
 
+  implementation group: 'io.grpc', name: 'grpc-protobuf', version: grpc_version
+
   //region tests
   testImplementation group: 'net.jodah', name: 'concurrentunit', version: concurrentunit_version
   testImplementation group: 'ch.qos.logback', name: 'logback-classic', version: logback_version
@@ -64,7 +66,6 @@ dependencies {
     exclude(module: 'grpc-core')
     exclude(module: 'netty-codec-http2')
   }
-  testImplementation group: 'io.grpc', name: 'grpc-protobuf', version: grpc_version
   testImplementation group: 'io.grpc', name: 'grpc-stub', version: grpc_version
 }
 
