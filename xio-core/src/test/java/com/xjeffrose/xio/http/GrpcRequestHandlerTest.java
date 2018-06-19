@@ -10,12 +10,11 @@ import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import java.nio.ByteBuffer;
+import java.util.Objects;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.nio.ByteBuffer;
-import java.util.Objects;
 
 public class GrpcRequestHandlerTest extends Assert {
 
@@ -25,17 +24,20 @@ public class GrpcRequestHandlerTest extends Assert {
 
   @Before
   public void setUp() {
-    subject = new GrpcRequestHandler<>(HelloRequest::parseFrom, (HelloRequest request) -> HelloReply
-      .newBuilder()
-      .setMessage(responsePrefix + request.getName())
-      .build());
+    subject =
+        new GrpcRequestHandler<>(
+            HelloRequest::parseFrom,
+            (HelloRequest request) ->
+                HelloReply.newBuilder().setMessage(responsePrefix + request.getName()).build());
 
-    channel = new EmbeddedChannel(new SimpleChannelInboundHandler<Request>() {
-      @Override
-      protected void channelRead0(ChannelHandlerContext ctx, Request request) {
-        subject.handle(ctx, request, null);
-      }
-    });
+    channel =
+        new EmbeddedChannel(
+            new SimpleChannelInboundHandler<Request>() {
+              @Override
+              protected void channelRead0(ChannelHandlerContext ctx, Request request) {
+                subject.handle(ctx, request, null);
+              }
+            });
   }
 
   @Test
@@ -44,7 +46,7 @@ public class GrpcRequestHandlerTest extends Assert {
     ByteBuf grpcRequestBuffer = bufferFor(grpcRequest);
     int streamId = 123;
 
-    SegmentedRequestData segmentedRequest = fullGrpcRequest(grpcRequestBuffer, streamId,true);
+    SegmentedRequestData segmentedRequest = fullGrpcRequest(grpcRequestBuffer, streamId, true);
     channel.writeInbound(segmentedRequest);
 
     Response response = channel.readOutbound();
@@ -55,7 +57,8 @@ public class GrpcRequestHandlerTest extends Assert {
     assertEquals("application/grpc+proto", response.headers().get(HttpHeaderNames.CONTENT_TYPE));
 
     HelloReply actualReply = protoObjectFor(segmentedData.content(), HelloReply::parseFrom);
-    HelloReply expectedReply = HelloReply.newBuilder().setMessage(responsePrefix + grpcRequest.getName()).build();
+    HelloReply expectedReply =
+        HelloReply.newBuilder().setMessage(responsePrefix + grpcRequest.getName()).build();
     assertEquals(actualReply, expectedReply);
 
     assertEquals("0", Objects.requireNonNull(segmentedData.trailingHeaders()).get("grpc-status"));
@@ -70,7 +73,8 @@ public class GrpcRequestHandlerTest extends Assert {
 
     int middleIndex = grpcRequestBuffer.readableBytes() / 2;
     ByteBuf firstHalf = grpcRequestBuffer.slice(0, middleIndex);
-    ByteBuf secondHalf = grpcRequestBuffer.slice(middleIndex, grpcRequestBuffer.readableBytes() - middleIndex);
+    ByteBuf secondHalf =
+        grpcRequestBuffer.slice(middleIndex, grpcRequestBuffer.readableBytes() - middleIndex);
 
     channel.writeInbound(fullGrpcRequest(firstHalf, streamId, false));
     channel.writeInbound(fullGrpcRequest(secondHalf, streamId, true));
@@ -83,7 +87,8 @@ public class GrpcRequestHandlerTest extends Assert {
     assertEquals("application/grpc+proto", response.headers().get(HttpHeaderNames.CONTENT_TYPE));
 
     HelloReply actualReply = protoObjectFor(segmentedData.content(), HelloReply::parseFrom);
-    HelloReply expectedReply = HelloReply.newBuilder().setMessage(responsePrefix + grpcRequest.getName()).build();
+    HelloReply expectedReply =
+        HelloReply.newBuilder().setMessage(responsePrefix + grpcRequest.getName()).build();
     assertEquals(actualReply, expectedReply);
 
     assertEquals("0", Objects.requireNonNull(segmentedData.trailingHeaders()).get("grpc-status"));
@@ -113,7 +118,7 @@ public class GrpcRequestHandlerTest extends Assert {
   @Test
   public void testIndicatedSizeTooLarge() {
     byte[] lengthByteBuffer = ByteBuffer.allocate(4).putInt(1_000_001).array();
-    byte[] compressedByteBuffer = ByteBuffer.allocate(1).put((byte)0).array();
+    byte[] compressedByteBuffer = ByteBuffer.allocate(1).put((byte) 0).array();
     int streamId = 345;
 
     ByteBuf grpcRequestBuffer = UnpooledByteBufAllocator.DEFAULT.buffer(5, 5);
@@ -159,7 +164,7 @@ public class GrpcRequestHandlerTest extends Assert {
     HelloRequest grpcRequest = HelloRequest.newBuilder().setName("myName").build();
     byte[] dataBytes = grpcRequest.toByteArray();
     byte[] lengthByteBuffer = ByteBuffer.allocate(4).putInt(2).array();
-    byte[] compressedByteBuffer = ByteBuffer.allocate(1).put((byte)0).array();
+    byte[] compressedByteBuffer = ByteBuffer.allocate(1).put((byte) 0).array();
     int streamId = 567;
 
     int length = dataBytes.length;
@@ -187,7 +192,7 @@ public class GrpcRequestHandlerTest extends Assert {
     HelloRequest grpcRequest = HelloRequest.newBuilder().setName("myName").build();
     byte[] dataBytes = grpcRequest.toByteArray();
     byte[] lengthByteBuffer = ByteBuffer.allocate(4).putInt(6).array();
-    byte[] compressedByteBuffer = ByteBuffer.allocate(1).put((byte)0).array();
+    byte[] compressedByteBuffer = ByteBuffer.allocate(1).put((byte) 0).array();
     int streamId = 567;
 
     int length = dataBytes.length;
@@ -199,7 +204,8 @@ public class GrpcRequestHandlerTest extends Assert {
 
     int middleIndex = grpcRequestBuffer.readableBytes() / 2;
     ByteBuf firstHalf = grpcRequestBuffer.slice(0, middleIndex);
-    ByteBuf secondHalf = grpcRequestBuffer.slice(middleIndex, grpcRequestBuffer.readableBytes() - middleIndex);
+    ByteBuf secondHalf =
+        grpcRequestBuffer.slice(middleIndex, grpcRequestBuffer.readableBytes() - middleIndex);
 
     channel.writeInbound(fullGrpcRequest(firstHalf, streamId, false));
     channel.writeInbound(fullGrpcRequest(secondHalf, streamId, true));
@@ -220,7 +226,7 @@ public class GrpcRequestHandlerTest extends Assert {
     HelloRequest grpcRequest = HelloRequest.newBuilder().setName("myName").build();
     byte[] dataBytes = grpcRequest.toByteArray();
     byte[] lengthByteBuffer = ByteBuffer.allocate(4).putInt(900_000).array();
-    byte[] compressedByteBuffer = ByteBuffer.allocate(1).put((byte)0).array();
+    byte[] compressedByteBuffer = ByteBuffer.allocate(1).put((byte) 0).array();
     int streamId = 567;
 
     int length = dataBytes.length;
@@ -243,12 +249,13 @@ public class GrpcRequestHandlerTest extends Assert {
     assertTrue(segmentedData.endOfMessage());
   }
 
-  private ByteBuf bufferFor(com.google.protobuf.GeneratedMessageV3 protoObject, boolean compressed) {
+  private ByteBuf bufferFor(
+      com.google.protobuf.GeneratedMessageV3 protoObject, boolean compressed) {
     byte[] dataBytes = protoObject.toByteArray();
     int length = dataBytes.length;
     byte[] lengthByteBuffer = ByteBuffer.allocate(4).putInt(length).array();
     int compressedFlag = compressed ? 1 : 0;
-    byte[] compressedByteBuffer = ByteBuffer.allocate(1).put((byte)compressedFlag).array();
+    byte[] compressedByteBuffer = ByteBuffer.allocate(1).put((byte) compressedFlag).array();
 
     ByteBuf grpcRequestBuffer = UnpooledByteBufAllocator.DEFAULT.buffer(length + 5, length + 5);
 
@@ -263,7 +270,8 @@ public class GrpcRequestHandlerTest extends Assert {
     return bufferFor(protoObject, false);
   }
 
-  private <T extends GeneratedMessageV3> T protoObjectFor(ByteBuf originalBuffer, GrpcRequestParser<T> parser) {
+  private <T extends GeneratedMessageV3> T protoObjectFor(
+      ByteBuf originalBuffer, GrpcRequestParser<T> parser) {
     int size = originalBuffer.slice(1, 4).readInt();
     ByteBuf buffer = UnpooledByteBufAllocator.DEFAULT.buffer(size, size);
     buffer.writeBytes(originalBuffer.slice(5, size));
@@ -276,19 +284,20 @@ public class GrpcRequestHandlerTest extends Assert {
     }
   }
 
-  private SegmentedRequestData fullGrpcRequest(ByteBuf grpcRequestBuffer, int streamId, boolean endOfMessage) {
-    Request request = DefaultSegmentedRequest
-      .builder()
-      .path("/")
-      .method(HttpMethod.GET)
-      .headers(new DefaultHeaders())
-      .streamId(streamId)
-      .build();
-    DefaultSegmentedData requestData = DefaultSegmentedData
-      .builder()
-      .content(grpcRequestBuffer)
-      .endOfMessage(endOfMessage)
-      .build();
+  private SegmentedRequestData fullGrpcRequest(
+      ByteBuf grpcRequestBuffer, int streamId, boolean endOfMessage) {
+    Request request =
+        DefaultSegmentedRequest.builder()
+            .path("/")
+            .method(HttpMethod.GET)
+            .headers(new DefaultHeaders())
+            .streamId(streamId)
+            .build();
+    DefaultSegmentedData requestData =
+        DefaultSegmentedData.builder()
+            .content(grpcRequestBuffer)
+            .endOfMessage(endOfMessage)
+            .build();
 
     return new SegmentedRequestData(request, requestData);
   }

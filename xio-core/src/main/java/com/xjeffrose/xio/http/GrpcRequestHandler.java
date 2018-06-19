@@ -7,15 +7,16 @@ import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.*;
 import io.netty.util.AttributeKey;
-
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.function.Function;
 
 // Documentation for gRPC over HTTP2: https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-HTTP2.md
 
-public class GrpcRequestHandler<GrpcRequest extends
-  com.google.protobuf.GeneratedMessageV3, GrpcResponse extends com.google.protobuf.GeneratedMessageV3> implements PipelineRequestHandler {
+public class GrpcRequestHandler<
+        GrpcRequest extends com.google.protobuf.GeneratedMessageV3,
+        GrpcResponse extends com.google.protobuf.GeneratedMessageV3>
+    implements PipelineRequestHandler {
 
   private static final String GRPC_TRAILING_HEADER_STATUS_KEY = "grpc-status";
   private static final String GRPC_CONTENT_TYPE_VALUE = "application/grpc+proto";
@@ -62,7 +63,7 @@ public class GrpcRequestHandler<GrpcRequest extends
   }
 
   private static final AttributeKey<HashMap<Integer, GrpcState>> CHANNEL_MESSAGE_SESSION_KEY =
-    AttributeKey.newInstance("xio_grpc_session");
+      AttributeKey.newInstance("xio_grpc_session");
 
   private static final int sizeTooLargeToHandle = 1_000_000;
 
@@ -78,7 +79,8 @@ public class GrpcRequestHandler<GrpcRequest extends
   private final GrpcRequestParser<GrpcRequest> requestParser;
   private final Function<GrpcRequest, GrpcResponse> appLogic;
 
-  GrpcRequestHandler(GrpcRequestParser<GrpcRequest> requestParser, Function<GrpcRequest, GrpcResponse> appLogic) {
+  GrpcRequestHandler(
+      GrpcRequestParser<GrpcRequest> requestParser, Function<GrpcRequest, GrpcResponse> appLogic) {
     this.requestParser = requestParser;
     this.appLogic = appLogic;
   }
@@ -87,7 +89,7 @@ public class GrpcRequestHandler<GrpcRequest extends
   public void handle(ChannelHandlerContext ctx, Request request, RouteState route) {
     ByteBuf actualBuffer;
     if (request instanceof SegmentedRequestData) {
-      SegmentedRequestData segmentedRequest = (SegmentedRequestData)request;
+      SegmentedRequestData segmentedRequest = (SegmentedRequestData) request;
       actualBuffer = segmentedRequest.content();
     } else {
       actualBuffer = request.body();
@@ -135,7 +137,8 @@ public class GrpcRequestHandler<GrpcRequest extends
 
       state = new GrpcState(size, contentBuffer);
     } else {
-      boolean accumulatedIsLargerThanIndicatedSize = state.buffer.readableBytes() + actualBuffer.readableBytes() > state.size;
+      boolean accumulatedIsLargerThanIndicatedSize =
+          state.buffer.readableBytes() + actualBuffer.readableBytes() > state.size;
       if (accumulatedIsLargerThanIndicatedSize) {
         // TODO: Chris, how do we shut down this request so we don't recieve future packets
         sendResponse(ctx, request.streamId(), Unpooled.EMPTY_BUFFER, GrpcStatus.INTERNAL);
@@ -167,27 +170,28 @@ public class GrpcRequestHandler<GrpcRequest extends
     }
   }
 
-  private void sendResponse(ChannelHandlerContext ctx, int streamId, ByteBuf grpcResponseBuffer, GrpcStatus status) {
-    Headers headers = new DefaultHeaders()
-      .set(HttpHeaderNames.CONTENT_TYPE, GRPC_CONTENT_TYPE_VALUE);
-    DefaultSegmentedResponse segmentedResponse = DefaultSegmentedResponse
-      .builder()
-      .status(HttpResponseStatus.OK)
-      .streamId(streamId)
-      .headers(headers)
-      .build();
+  private void sendResponse(
+      ChannelHandlerContext ctx, int streamId, ByteBuf grpcResponseBuffer, GrpcStatus status) {
+    Headers headers =
+        new DefaultHeaders().set(HttpHeaderNames.CONTENT_TYPE, GRPC_CONTENT_TYPE_VALUE);
+    DefaultSegmentedResponse segmentedResponse =
+        DefaultSegmentedResponse.builder()
+            .status(HttpResponseStatus.OK)
+            .streamId(streamId)
+            .headers(headers)
+            .build();
 
     ctx.writeAndFlush(segmentedResponse);
 
     // TODO: need to add status-message
-    Headers trailingHeaders = new DefaultHeaders()
-      .set(GRPC_TRAILING_HEADER_STATUS_KEY, status.toString());
-    DefaultSegmentedData data = DefaultSegmentedData
-      .builder()
-      .content(grpcResponseBuffer)
-      .trailingHeaders(trailingHeaders)
-      .endOfMessage(true)
-      .build();
+    Headers trailingHeaders =
+        new DefaultHeaders().set(GRPC_TRAILING_HEADER_STATUS_KEY, status.toString());
+    DefaultSegmentedData data =
+        DefaultSegmentedData.builder()
+            .content(grpcResponseBuffer)
+            .trailingHeaders(trailingHeaders)
+            .endOfMessage(true)
+            .build();
 
     ctx.writeAndFlush(data);
 
@@ -196,14 +200,15 @@ public class GrpcRequestHandler<GrpcRequest extends
     session.remove(streamId);
   }
 
-  private ByteBuf makeResponseBuffer(ByteBuffer requestBuffer) throws InvalidProtocolBufferException {
+  private ByteBuf makeResponseBuffer(ByteBuffer requestBuffer)
+      throws InvalidProtocolBufferException {
     GrpcRequest grpcRequest = requestParser.parse(requestBuffer);
     GrpcResponse grpcResponse = appLogic.apply(grpcRequest);
 
     byte[] dataBytes = grpcResponse.toByteArray();
     int length = dataBytes.length;
     byte[] lengthByteBuffer = ByteBuffer.allocate(4).putInt(length).array();
-    byte[] compressedByteBuffer = ByteBuffer.allocate(1).put((byte)0).array();
+    byte[] compressedByteBuffer = ByteBuffer.allocate(1).put((byte) 0).array();
 
     ByteBuf responseBuffer = UnpooledByteBufAllocator.DEFAULT.buffer(length + 5, length + 5);
 
