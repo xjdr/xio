@@ -19,7 +19,10 @@ public class GrpcRequestHandler<
         GrpcResponse extends com.google.protobuf.GeneratedMessageV3>
     implements PipelineRequestHandler {
 
+  private static final int METADATA_SIZE = 5;
+  private static final int MAX_PAYLOAD_SIZE = 1_000_000;
   private static final String GRPC_TRAILING_HEADER_STATUS_KEY = "grpc-status";
+  private static final String GRPC_TRAILING_HEADER_MESSAGE_KEY = "grpc-message";
   private static final String GRPC_CONTENT_TYPE_VALUE = "application/grpc+proto";
   private static final String GRPC_MESSAGE_NO_COMPRESSION = "compression not supported";
   private static final String GRPC_MESSAGE_LARGE_SIZE = "payload is too large";
@@ -73,8 +76,6 @@ public class GrpcRequestHandler<
   private static final AttributeKey<HashMap<Integer, GrpcState>> CHANNEL_MESSAGE_SESSION_KEY =
       AttributeKey.newInstance("xio_grpc_session");
 
-  private static final int sizeTooLargeToHandle = 1_000_000;
-
   private static HashMap<Integer, GrpcState> lazyCreateSession(ChannelHandlerContext ctx) {
     HashMap<Integer, GrpcState> session = ctx.channel().attr(CHANNEL_MESSAGE_SESSION_KEY).get();
     if (session == null) {
@@ -103,16 +104,16 @@ public class GrpcRequestHandler<
       actualBuffer = request.body();
     }
 
-    HashMap<Integer, GrpcState> session = lazyCreateSession(ctx);
-    GrpcState state = session.get(request.streamId());
-
     if (actualBuffer == null || !actualBuffer.isReadable()) {
       return;
     }
 
+    HashMap<Integer, GrpcState> session = lazyCreateSession(ctx);
+    GrpcState state = session.get(request.streamId());
+
     if (state == null) {
-      boolean haveMetaData = actualBuffer.isReadable(5);
-      if (!haveMetaData) {
+      boolean hasMetaData = actualBuffer.isReadable(METADATA_SIZE);
+      if (!hasMetaData) {
         sendResponse(
             ctx,
             request.streamId(),
@@ -134,7 +135,7 @@ public class GrpcRequestHandler<
       }
 
       int size = actualBuffer.slice(1, 4).readInt();
-      if (size >= sizeTooLargeToHandle) {
+      if (size >= MAX_PAYLOAD_SIZE) {
         sendResponse(
             ctx,
             request.streamId(),
@@ -144,7 +145,7 @@ public class GrpcRequestHandler<
         return;
       }
 
-      int packetContentSize = actualBuffer.readableBytes() - 5;
+      int packetContentSize = actualBuffer.readableBytes() - METADATA_SIZE;
 
       boolean firstChunkIsLargerThanIndicatedSize = packetContentSize > size;
       if (firstChunkIsLargerThanIndicatedSize) {
@@ -158,7 +159,7 @@ public class GrpcRequestHandler<
       }
 
       ByteBuf contentBuffer = UnpooledByteBufAllocator.DEFAULT.buffer(packetContentSize, size);
-      contentBuffer.writeBytes(actualBuffer.slice(5, packetContentSize));
+      contentBuffer.writeBytes(actualBuffer.slice(METADATA_SIZE, packetContentSize));
 
       state = new GrpcState(size, contentBuffer);
     } else {
@@ -221,12 +222,11 @@ public class GrpcRequestHandler<
 
     ctx.writeAndFlush(segmentedResponse);
 
-    // TODO: need to add status-message
     Headers trailingHeaders =
         new DefaultHeaders().set(GRPC_TRAILING_HEADER_STATUS_KEY, status.toString());
 
     if (!statusMessage.isEmpty()) {
-      trailingHeaders.add("grpc-message", grpcEncodedString(statusMessage));
+      trailingHeaders.add(GRPC_TRAILING_HEADER_MESSAGE_KEY, grpcEncodedString(statusMessage));
     }
 
     DefaultSegmentedData data =
@@ -256,7 +256,8 @@ public class GrpcRequestHandler<
     byte[] lengthByteBuffer = ByteBuffer.allocate(4).putInt(length).array();
     byte[] compressedByteBuffer = ByteBuffer.allocate(1).put((byte) 0).array();
 
-    ByteBuf responseBuffer = UnpooledByteBufAllocator.DEFAULT.buffer(length + 5, length + 5);
+    ByteBuf responseBuffer =
+        UnpooledByteBufAllocator.DEFAULT.buffer(length + METADATA_SIZE, length + METADATA_SIZE);
 
     responseBuffer.writeBytes(compressedByteBuffer);
     responseBuffer.writeBytes(lengthByteBuffer);
