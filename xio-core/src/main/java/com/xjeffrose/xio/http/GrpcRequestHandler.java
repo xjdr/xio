@@ -7,6 +7,7 @@ import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.*;
 import io.netty.util.AttributeKey;
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.function.Function;
@@ -20,6 +21,13 @@ public class GrpcRequestHandler<
 
   private static final String GRPC_TRAILING_HEADER_STATUS_KEY = "grpc-status";
   private static final String GRPC_CONTENT_TYPE_VALUE = "application/grpc+proto";
+  private static final String GRPC_MESSAGE_NO_COMPRESSION = "compression not supported";
+  private static final String GRPC_MESSAGE_LARGE_SIZE = "payload is too large";
+  private static final String GRPC_MESSAGE_NO_METADATA = "metadata not provided";
+  private static final String GRPC_MESSAGE_WRONG_SIZE =
+      "indicated payload size does not match actual payload size";
+  private static final String GRPC_MESSAGE_CANNOT_MAKE_RESPONSE =
+      "unable to create response object";
 
   private enum GrpcStatus { // These are defined by gRPC
     OK("0"),
@@ -105,21 +113,34 @@ public class GrpcRequestHandler<
     if (state == null) {
       boolean haveMetaData = actualBuffer.isReadable(5);
       if (!haveMetaData) {
-        // TODO: Chris, not sure how we want to handle scenarios where we don't get the entire metadata in the first packet
-        sendResponse(ctx, request.streamId(), Unpooled.EMPTY_BUFFER, GrpcStatus.INTERNAL);
+        sendResponse(
+            ctx,
+            request.streamId(),
+            Unpooled.EMPTY_BUFFER,
+            GrpcStatus.INTERNAL,
+            GRPC_MESSAGE_NO_METADATA);
         return;
       }
 
       boolean isCompressed = actualBuffer.slice(0, 1).readBoolean();
       if (isCompressed) {
-        sendResponse(ctx, request.streamId(), Unpooled.EMPTY_BUFFER, GrpcStatus.UNIMPLEMENTED);
+        sendResponse(
+            ctx,
+            request.streamId(),
+            Unpooled.EMPTY_BUFFER,
+            GrpcStatus.UNIMPLEMENTED,
+            GRPC_MESSAGE_NO_COMPRESSION);
         return;
       }
 
       int size = actualBuffer.slice(1, 4).readInt();
       if (size >= sizeTooLargeToHandle) {
-        // TODO: Chris, how do we shut down this request so we don't recieve future packets
-        sendResponse(ctx, request.streamId(), Unpooled.EMPTY_BUFFER, GrpcStatus.RESOURCE_EXHAUSTED);
+        sendResponse(
+            ctx,
+            request.streamId(),
+            Unpooled.EMPTY_BUFFER,
+            GrpcStatus.RESOURCE_EXHAUSTED,
+            GRPC_MESSAGE_LARGE_SIZE);
         return;
       }
 
@@ -127,8 +148,12 @@ public class GrpcRequestHandler<
 
       boolean firstChunkIsLargerThanIndicatedSize = packetContentSize > size;
       if (firstChunkIsLargerThanIndicatedSize) {
-        // TODO: Chris, how do we shut down this request so we don't recieve future packets
-        sendResponse(ctx, request.streamId(), Unpooled.EMPTY_BUFFER, GrpcStatus.INTERNAL);
+        sendResponse(
+            ctx,
+            request.streamId(),
+            Unpooled.EMPTY_BUFFER,
+            GrpcStatus.INTERNAL,
+            GRPC_MESSAGE_WRONG_SIZE);
         return;
       }
 
@@ -140,8 +165,12 @@ public class GrpcRequestHandler<
       boolean accumulatedIsLargerThanIndicatedSize =
           state.buffer.readableBytes() + actualBuffer.readableBytes() > state.size;
       if (accumulatedIsLargerThanIndicatedSize) {
-        // TODO: Chris, how do we shut down this request so we don't recieve future packets
-        sendResponse(ctx, request.streamId(), Unpooled.EMPTY_BUFFER, GrpcStatus.INTERNAL);
+        sendResponse(
+            ctx,
+            request.streamId(),
+            Unpooled.EMPTY_BUFFER,
+            GrpcStatus.INTERNAL,
+            GRPC_MESSAGE_WRONG_SIZE);
         return;
       }
 
@@ -157,21 +186,30 @@ public class GrpcRequestHandler<
 
   private void handleGrpcRequest(ChannelHandlerContext ctx, GrpcState state, int streamId) {
     if (state.size != state.buffer.readableBytes()) {
-      // TODO: Chris, how do we shut down this request so we don't recieve future packets
-      sendResponse(ctx, streamId, Unpooled.EMPTY_BUFFER, GrpcStatus.INTERNAL);
+      sendResponse(
+          ctx, streamId, Unpooled.EMPTY_BUFFER, GrpcStatus.INTERNAL, GRPC_MESSAGE_WRONG_SIZE);
       return;
     }
 
     try {
       ByteBuf grpcResponseBuffer = makeResponseBuffer(state.buffer.nioBuffer());
-      sendResponse(ctx, streamId, grpcResponseBuffer, GrpcStatus.OK);
+      sendResponse(ctx, streamId, grpcResponseBuffer, GrpcStatus.OK, "");
     } catch (InvalidProtocolBufferException e) {
-      sendResponse(ctx, streamId, Unpooled.EMPTY_BUFFER, GrpcStatus.INTERNAL);
+      sendResponse(
+          ctx,
+          streamId,
+          Unpooled.EMPTY_BUFFER,
+          GrpcStatus.INTERNAL,
+          GRPC_MESSAGE_CANNOT_MAKE_RESPONSE);
     }
   }
 
   private void sendResponse(
-      ChannelHandlerContext ctx, int streamId, ByteBuf grpcResponseBuffer, GrpcStatus status) {
+      ChannelHandlerContext ctx,
+      int streamId,
+      ByteBuf grpcResponseBuffer,
+      GrpcStatus status,
+      String statusMessage) {
     Headers headers =
         new DefaultHeaders().set(HttpHeaderNames.CONTENT_TYPE, GRPC_CONTENT_TYPE_VALUE);
     DefaultSegmentedResponse segmentedResponse =
@@ -186,6 +224,11 @@ public class GrpcRequestHandler<
     // TODO: need to add status-message
     Headers trailingHeaders =
         new DefaultHeaders().set(GRPC_TRAILING_HEADER_STATUS_KEY, status.toString());
+
+    if (!statusMessage.isEmpty()) {
+      trailingHeaders.add("grpc-message", grpcEncodedString(statusMessage));
+    }
+
     DefaultSegmentedData data =
         DefaultSegmentedData.builder()
             .content(grpcResponseBuffer)
@@ -195,9 +238,12 @@ public class GrpcRequestHandler<
 
     ctx.writeAndFlush(data);
 
-    // TODO: Chris, I assume we need to remove the state at this point
     HashMap<Integer, GrpcState> session = lazyCreateSession(ctx);
     session.remove(streamId);
+
+    if (status != GrpcStatus.OK) {
+      ctx.close();
+    }
   }
 
   private ByteBuf makeResponseBuffer(ByteBuffer requestBuffer)
@@ -217,5 +263,21 @@ public class GrpcRequestHandler<
     responseBuffer.writeBytes(dataBytes);
 
     return responseBuffer;
+  }
+
+  private String grpcEncodedString(String input) {
+    StringBuilder output = new StringBuilder();
+    byte[] bytes;
+
+    try {
+      bytes = input.getBytes("UTF-8");
+    } catch (UnsupportedEncodingException e) {
+      return "";
+    }
+
+    for (byte b : bytes) {
+      output.append(String.format("%%%02x", b));
+    }
+    return output.toString();
   }
 }

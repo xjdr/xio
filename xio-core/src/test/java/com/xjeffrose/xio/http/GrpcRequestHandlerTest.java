@@ -62,6 +62,7 @@ public class GrpcRequestHandlerTest extends Assert {
     assertEquals(actualReply, expectedReply);
 
     assertEquals("0", Objects.requireNonNull(segmentedData.trailingHeaders()).get("grpc-status"));
+    assertFalse(Objects.requireNonNull(segmentedData.trailingHeaders()).contains("grpc-message"));
     assertTrue(segmentedData.endOfMessage());
   }
 
@@ -92,6 +93,7 @@ public class GrpcRequestHandlerTest extends Assert {
     assertEquals(actualReply, expectedReply);
 
     assertEquals("0", Objects.requireNonNull(segmentedData.trailingHeaders()).get("grpc-status"));
+    assertFalse(Objects.requireNonNull(segmentedData.trailingHeaders()).contains("grpc-message"));
     assertTrue(segmentedData.endOfMessage());
   }
 
@@ -112,6 +114,11 @@ public class GrpcRequestHandlerTest extends Assert {
     assertEquals("application/grpc+proto", response.headers().get(HttpHeaderNames.CONTENT_TYPE));
 
     assertEquals("12", Objects.requireNonNull(segmentedData.trailingHeaders()).get("grpc-status"));
+    String actualMessage =
+        grpcDecodedString(
+            Objects.requireNonNull(
+                Objects.requireNonNull(segmentedData.trailingHeaders()).get("grpc-message")));
+    assertEquals("compression not supported", actualMessage);
     assertTrue(segmentedData.endOfMessage());
   }
 
@@ -135,6 +142,11 @@ public class GrpcRequestHandlerTest extends Assert {
     assertEquals("application/grpc+proto", response.headers().get(HttpHeaderNames.CONTENT_TYPE));
 
     assertEquals("8", Objects.requireNonNull(segmentedData.trailingHeaders()).get("grpc-status"));
+    String actualMessage =
+        grpcDecodedString(
+            Objects.requireNonNull(
+                Objects.requireNonNull(segmentedData.trailingHeaders()).get("grpc-message")));
+    assertEquals("payload is too large", actualMessage);
     assertTrue(segmentedData.endOfMessage());
   }
 
@@ -156,6 +168,11 @@ public class GrpcRequestHandlerTest extends Assert {
     assertEquals("application/grpc+proto", response.headers().get(HttpHeaderNames.CONTENT_TYPE));
 
     assertEquals("13", Objects.requireNonNull(segmentedData.trailingHeaders()).get("grpc-status"));
+    String actualMessage =
+        grpcDecodedString(
+            Objects.requireNonNull(
+                Objects.requireNonNull(segmentedData.trailingHeaders()).get("grpc-message")));
+    assertEquals("metadata not provided", actualMessage);
     assertTrue(segmentedData.endOfMessage());
   }
 
@@ -184,6 +201,11 @@ public class GrpcRequestHandlerTest extends Assert {
     assertEquals("application/grpc+proto", response.headers().get(HttpHeaderNames.CONTENT_TYPE));
 
     assertEquals("13", Objects.requireNonNull(segmentedData.trailingHeaders()).get("grpc-status"));
+    String actualMessage =
+        grpcDecodedString(
+            Objects.requireNonNull(
+                Objects.requireNonNull(segmentedData.trailingHeaders()).get("grpc-message")));
+    assertEquals("indicated payload size does not match actual payload size", actualMessage);
     assertTrue(segmentedData.endOfMessage());
   }
 
@@ -218,6 +240,11 @@ public class GrpcRequestHandlerTest extends Assert {
     assertEquals("application/grpc+proto", response.headers().get(HttpHeaderNames.CONTENT_TYPE));
 
     assertEquals("13", Objects.requireNonNull(segmentedData.trailingHeaders()).get("grpc-status"));
+    String actualMessage =
+        grpcDecodedString(
+            Objects.requireNonNull(
+                Objects.requireNonNull(segmentedData.trailingHeaders()).get("grpc-message")));
+    assertEquals("indicated payload size does not match actual payload size", actualMessage);
     assertTrue(segmentedData.endOfMessage());
   }
 
@@ -246,6 +273,11 @@ public class GrpcRequestHandlerTest extends Assert {
     assertEquals("application/grpc+proto", response.headers().get(HttpHeaderNames.CONTENT_TYPE));
 
     assertEquals("13", Objects.requireNonNull(segmentedData.trailingHeaders()).get("grpc-status"));
+    String actualMessage =
+        grpcDecodedString(
+            Objects.requireNonNull(
+                Objects.requireNonNull(segmentedData.trailingHeaders()).get("grpc-message")));
+    assertEquals("indicated payload size does not match actual payload size", actualMessage);
     assertTrue(segmentedData.endOfMessage());
   }
 
@@ -300,5 +332,14 @@ public class GrpcRequestHandlerTest extends Assert {
             .build();
 
     return new SegmentedRequestData(request, requestData);
+  }
+
+  private String grpcDecodedString(String input) {
+    StringBuilder output = new StringBuilder();
+
+    for (String hex : input.split("%")) {
+      if (!"".equals(hex)) output.append((char) Integer.parseInt(hex, 16));
+    }
+    return output.toString();
   }
 }
