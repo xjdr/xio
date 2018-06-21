@@ -63,6 +63,7 @@ public class GrpcRequestHandlerTest extends Assert {
 
     assertEquals("0", Objects.requireNonNull(segmentedData.trailingHeaders()).get("grpc-status"));
     assertFalse(Objects.requireNonNull(segmentedData.trailingHeaders()).contains("grpc-message"));
+    assertEquals(streamId, segmentedData.streamId());
     assertTrue(segmentedData.endOfMessage());
   }
 
@@ -94,6 +95,7 @@ public class GrpcRequestHandlerTest extends Assert {
 
     assertEquals("0", Objects.requireNonNull(segmentedData.trailingHeaders()).get("grpc-status"));
     assertFalse(Objects.requireNonNull(segmentedData.trailingHeaders()).contains("grpc-message"));
+    assertEquals(streamId, segmentedData.streamId());
     assertTrue(segmentedData.endOfMessage());
   }
 
@@ -119,6 +121,7 @@ public class GrpcRequestHandlerTest extends Assert {
             Objects.requireNonNull(
                 Objects.requireNonNull(segmentedData.trailingHeaders()).get("grpc-message")));
     assertEquals("compression not supported", actualMessage);
+    assertEquals(streamId, segmentedData.streamId());
     assertTrue(segmentedData.endOfMessage());
   }
 
@@ -147,6 +150,7 @@ public class GrpcRequestHandlerTest extends Assert {
             Objects.requireNonNull(
                 Objects.requireNonNull(segmentedData.trailingHeaders()).get("grpc-message")));
     assertEquals("payload is too large", actualMessage);
+    assertEquals(streamId, segmentedData.streamId());
     assertTrue(segmentedData.endOfMessage());
   }
 
@@ -173,6 +177,7 @@ public class GrpcRequestHandlerTest extends Assert {
             Objects.requireNonNull(
                 Objects.requireNonNull(segmentedData.trailingHeaders()).get("grpc-message")));
     assertEquals("metadata not provided", actualMessage);
+    assertEquals(streamId, segmentedData.streamId());
     assertTrue(segmentedData.endOfMessage());
   }
 
@@ -206,6 +211,7 @@ public class GrpcRequestHandlerTest extends Assert {
             Objects.requireNonNull(
                 Objects.requireNonNull(segmentedData.trailingHeaders()).get("grpc-message")));
     assertEquals("indicated payload size does not match actual payload size", actualMessage);
+    assertEquals(streamId, segmentedData.streamId());
     assertTrue(segmentedData.endOfMessage());
   }
 
@@ -245,6 +251,7 @@ public class GrpcRequestHandlerTest extends Assert {
             Objects.requireNonNull(
                 Objects.requireNonNull(segmentedData.trailingHeaders()).get("grpc-message")));
     assertEquals("indicated payload size does not match actual payload size", actualMessage);
+    assertEquals(streamId, segmentedData.streamId());
     assertTrue(segmentedData.endOfMessage());
   }
 
@@ -278,6 +285,7 @@ public class GrpcRequestHandlerTest extends Assert {
             Objects.requireNonNull(
                 Objects.requireNonNull(segmentedData.trailingHeaders()).get("grpc-message")));
     assertEquals("indicated payload size does not match actual payload size", actualMessage);
+    assertEquals(streamId, segmentedData.streamId());
     assertTrue(segmentedData.endOfMessage());
   }
 
@@ -329,6 +337,7 @@ public class GrpcRequestHandlerTest extends Assert {
         DefaultSegmentedData.builder()
             .content(grpcRequestBuffer)
             .endOfMessage(endOfMessage)
+            .streamId(streamId)
             .build();
 
     return new SegmentedRequestData(request, requestData);
