@@ -36,7 +36,7 @@ import org.junit.Test;
 import org.junit.rules.TestName;
 
 @Slf4j
-public class GrpcFunctionalTest extends Assert {
+public class GrpcProxyTest extends Assert {
 
   private EventLoopGroup group;
 
