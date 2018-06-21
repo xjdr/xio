@@ -337,6 +337,7 @@ public class GrpcRequestHandlerTest extends Assert {
         DefaultSegmentedData.builder()
             .content(grpcRequestBuffer)
             .endOfMessage(endOfMessage)
+            .streamId(streamId)
             .build();
 
     return new SegmentedRequestData(request, requestData);
