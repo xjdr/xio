@@ -215,8 +215,8 @@ public class GrpcRequestHandler<
         new DefaultHeaders().set(HttpHeaderNames.CONTENT_TYPE, GRPC_CONTENT_TYPE_VALUE);
     DefaultSegmentedResponse segmentedResponse =
         DefaultSegmentedResponse.builder()
-            .status(HttpResponseStatus.OK)
             .streamId(streamId)
+            .status(HttpResponseStatus.OK)
             .headers(headers)
             .build();
 
@@ -231,6 +231,7 @@ public class GrpcRequestHandler<
 
     DefaultSegmentedData data =
         DefaultSegmentedData.builder()
+            .streamId(streamId)
             .content(grpcResponseBuffer)
             .trailingHeaders(trailingHeaders)
             .endOfMessage(true)
