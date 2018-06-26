@@ -12,6 +12,7 @@ public class RouteState {
   private final PipelineRequestHandler handler;
 
   public final String path;
+  public final String permissionNeeded;
 
   public static Route buildRoute(RouteConfig config) {
     return Route.build(config.path());
@@ -21,6 +22,7 @@ public class RouteState {
       Function<RouteConfig, Route> factory, RouteConfig config, PipelineRequestHandler handler) {
     this.route = factory.apply(config);
     this.path = config.path();
+    this.permissionNeeded = config.permissionNeeded();
     this.handler = handler;
   }
 
@@ -28,9 +30,11 @@ public class RouteState {
     this(RouteState::buildRoute, config, handler);
   }
 
-  public RouteState(String path, Route route, PipelineRequestHandler handler) {
+  public RouteState(
+      String path, Route route, String permissionNeeded, PipelineRequestHandler handler) {
     this.path = path;
     this.route = route;
+    this.permissionNeeded = permissionNeeded;
     this.handler = handler;
   }
 
