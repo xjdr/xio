@@ -88,7 +88,7 @@ public class GrpcRequestHandler<
   private final GrpcRequestParser<GrpcRequest> requestParser;
   private final Function<GrpcRequest, GrpcResponse> appLogic;
 
-  public GrpcRequestHandler(
+  GrpcRequestHandler(
       GrpcRequestParser<GrpcRequest> requestParser, Function<GrpcRequest, GrpcResponse> appLogic) {
     this.requestParser = requestParser;
     this.appLogic = appLogic;
