@@ -8,11 +8,9 @@ import lombok.experimental.Accessors;
 @Accessors(fluent = true)
 @Getter
 public class RouteState {
+  private final RouteConfig config;
   private final Route route;
   private final PipelineRequestHandler handler;
-
-  public final String path;
-  public final String permissionNeeded;
 
   public static Route buildRoute(RouteConfig config) {
     return Route.build(config.path());
@@ -20,22 +18,13 @@ public class RouteState {
 
   public RouteState(
       Function<RouteConfig, Route> factory, RouteConfig config, PipelineRequestHandler handler) {
-    this.route = factory.apply(config);
-    this.path = config.path();
-    this.permissionNeeded = config.permissionNeeded();
+    this.config = config;
+    route = factory.apply(config);
     this.handler = handler;
   }
 
   public RouteState(RouteConfig config, PipelineRequestHandler handler) {
     this(RouteState::buildRoute, config, handler);
-  }
-
-  public RouteState(
-      String path, Route route, String permissionNeeded, PipelineRequestHandler handler) {
-    this.path = path;
-    this.route = route;
-    this.permissionNeeded = permissionNeeded;
-    this.handler = handler;
   }
 
   public static RouteState defaultRoute(PipelineRequestHandler handler) {
@@ -45,5 +34,9 @@ public class RouteState {
 
   public boolean matches(String path) {
     return route.matches(path);
+  }
+
+  public String path() {
+    return config.path();
   }
 }

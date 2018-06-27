@@ -149,7 +149,7 @@ public class EdgeProxyFunctionalTest extends Assert {
                       // LinkedHashMap<String, ProxyRouteState> where the
                       // route path is the key and
                       // ProxyRouteState is the value
-                      .collect(toLinkedMap(state -> state.path, state -> state))));
+                      .collect(toLinkedMap(state -> state.path(), state -> state))));
     }
 
     @Override
