@@ -34,7 +34,6 @@ public class RouteConfig {
     }
   }
 
-  private final Config config;
   private final List<HttpMethod> methods;
   private final String host; // just the host part of the authority
   private final String path;
@@ -98,7 +97,6 @@ public class RouteConfig {
     */
 
   public RouteConfig(Config config) {
-    this.config = config;
     this.methods = convert(config.getEnumList(Method.class, "methods"));
     this.host = config.getString("host");
     this.path = notEmpty(config, "path");
@@ -111,5 +109,12 @@ public class RouteConfig {
     this.permissionNeeded = notEmpty(config, "permissionNeeded");
     // Preconditions.checkArgument(!permissionNeeded.isEmpty(), "%s permissionNeeded must not be
     // empty", location(config, "permissionNeeded"));
+  }
+
+  public RouteConfig(List<HttpMethod> methods, String host, String path, String permissionNeeded) {
+    this.methods = methods;
+    this.host = host;
+    this.path = path;
+    this.permissionNeeded = permissionNeeded;
   }
 }
