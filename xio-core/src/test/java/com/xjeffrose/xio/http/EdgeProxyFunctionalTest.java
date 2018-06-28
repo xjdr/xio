@@ -29,6 +29,8 @@ import java.util.function.Function;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import io.netty.handler.codec.http.HttpHeaderNames;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
@@ -306,6 +308,9 @@ public class EdgeProxyFunctionalTest extends Assert {
     server.enqueue(buildResponse());
     Response response = client.newCall(request).execute();
     assertEquals(200, response.code());
+    if (response.headers().names().contains(HttpHeaderNames.TRANSFER_ENCODING.toString())) {
+      assertFalse(response.headers().names().contains(HttpHeaderNames.CONTENT_LENGTH.toString()));
+    }
 
     RecordedRequest servedRequest = server.takeRequest();
     assertEquals("/hello/world", servedRequest.getRequestUrl().encodedPath());
