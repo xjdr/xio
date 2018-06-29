@@ -1,7 +1,5 @@
 package com.xjeffrose.xio.http;
 
-import static com.xjeffrose.xio.helpers.TlsHelper.getKeyManagers;
-
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.typesafe.config.Config;
@@ -21,6 +19,19 @@ import com.xjeffrose.xio.tracing.XioTracing;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpHeaderNames;
+import lombok.Getter;
+import lombok.experimental.Accessors;
+import lombok.extern.slf4j.Slf4j;
+import okhttp3.*;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.mockwebserver.MockResponse;
+import okhttp3.mockwebserver.MockWebServer;
+import okhttp3.mockwebserver.RecordedRequest;
+import okhttp3.mockwebserver.SocketPolicy;
+import org.junit.*;
+import org.junit.rules.TestName;
+
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -30,26 +41,8 @@ import java.util.function.Function;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import lombok.Getter;
-import lombok.experimental.Accessors;
-import lombok.extern.slf4j.Slf4j;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Protocol;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
-import okhttp3.mockwebserver.MockResponse;
-import okhttp3.mockwebserver.MockWebServer;
-import okhttp3.mockwebserver.RecordedRequest;
-import okhttp3.mockwebserver.SocketPolicy;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
+
+import static com.xjeffrose.xio.helpers.TlsHelper.getKeyManagers;
 
 @Slf4j
 public class EdgeProxyFunctionalTest extends Assert {
@@ -59,12 +52,12 @@ public class EdgeProxyFunctionalTest extends Assert {
   public class RouteConfigs<T extends RouteConfig> {
     private final List<T> configs;
 
-    public RouteConfigs(List<T> configs) {
+    RouteConfigs(List<T> configs) {
       this.configs = configs;
     }
 
     // Convenience method to get access to a stream of route configs
-    public Stream<T> stream() {
+    Stream<T> stream() {
       return configs.stream();
     }
   }
@@ -75,11 +68,11 @@ public class EdgeProxyFunctionalTest extends Assert {
 
     private final AtomicReference<ImmutableMap<String, T>> routes;
 
-    public RouteStates(ImmutableMap<String, T> routes) {
+    RouteStates(ImmutableMap<String, T> routes) {
       this.routes = new AtomicReference<>(routes);
     }
 
-    public ImmutableMap<String, RouteState> routes() {
+    ImmutableMap<String, RouteState> routes() {
       return (ImmutableMap<String, RouteState>) routes.get();
     }
   }
@@ -92,7 +85,7 @@ public class EdgeProxyFunctionalTest extends Assert {
     // TODO(CK): replace this?
     private final ImmutableSet<String> allPermissions;
 
-    public EdgeProxyConfig(Config config) {
+    EdgeProxyConfig(Config config) {
       super(config);
       List<Config> routes = (List<Config>) config.getConfigList("routes");
 
@@ -115,8 +108,8 @@ public class EdgeProxyFunctionalTest extends Assert {
     private final ProxyClientFactory clientFactory;
     private XioTracing tracing = null;
 
-    public <T, K, U> Collector<T, ?, Map<K, U>> toLinkedMap(
-        Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper) {
+    <T, K, U> Collector<T, ?, Map<K, U>> toLinkedMap(
+      Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper) {
 
       return Collectors.toMap(
           keyMapper,
@@ -127,7 +120,7 @@ public class EdgeProxyFunctionalTest extends Assert {
           LinkedHashMap::new);
     }
 
-    public EdgeProxyState(EdgeProxyConfig config) {
+    EdgeProxyState(EdgeProxyConfig config) {
       super(config);
       clientFactory = new ProxyClientFactory(this);
       routeStates =
@@ -150,7 +143,7 @@ public class EdgeProxyFunctionalTest extends Assert {
                       // LinkedHashMap<String, ProxyRouteState> where the
                       // route path is the key and
                       // ProxyRouteState is the value
-                      .collect(toLinkedMap(state -> state.path(), state -> state))));
+                      .collect(toLinkedMap(RouteState::path, state -> state))));
     }
 
     @Override
@@ -161,7 +154,7 @@ public class EdgeProxyFunctionalTest extends Assert {
       return tracing;
     }
 
-    public ImmutableMap<String, RouteState> routes() {
+    ImmutableMap<String, RouteState> routes() {
       return routeStates.routes();
     }
   }
@@ -169,7 +162,7 @@ public class EdgeProxyFunctionalTest extends Assert {
   public class EdgeProxyApplicationBootstrap extends ApplicationBootstrap {
     EdgeProxyState state;
 
-    public SmartHttpPipeline pipelineFragment() {
+    SmartHttpPipeline pipelineFragment() {
       return new SmartHttpPipeline() {
 
         @Override
@@ -216,7 +209,7 @@ public class EdgeProxyFunctionalTest extends Assert {
       this.state = state;
     }
 
-    public EdgeProxyApplicationBootstrap() {
+    EdgeProxyApplicationBootstrap() {
       this(new EdgeProxyState(new EdgeProxyConfig(config())));
     }
   }
@@ -226,9 +219,9 @@ public class EdgeProxyFunctionalTest extends Assert {
     JulBridge.initialize();
   }
 
-  OkHttpClient client;
-  MockWebServer server;
-  Application edgeProxy;
+  private OkHttpClient client;
+  private MockWebServer server;
+  private Application edgeProxy;
 
   @Rule public TestName testName = new TestName();
 
@@ -267,11 +260,11 @@ public class EdgeProxyFunctionalTest extends Assert {
     server.close();
   }
 
-  int port() {
+  private int port() {
     return edgeProxy.instrumentation("main").boundAddress().getPort();
   }
 
-  String url(String prefix, int port) {
+  private String url(String prefix, int port) {
     StringBuilder path =
         new StringBuilder("https://")
             .append("127.0.0.1")
@@ -282,7 +275,7 @@ public class EdgeProxyFunctionalTest extends Assert {
     return path.toString();
   }
 
-  MockResponse buildResponse() {
+  private MockResponse buildResponse() {
     return new MockResponse().setBody("hello, world").setSocketPolicy(SocketPolicy.KEEP_OPEN);
   }
 
