@@ -1,6 +1,7 @@
 package com.xjeffrose.xio.http;
 
 import com.google.protobuf.InvalidProtocolBufferException;
+import io.grpc.Status;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.buffer.UnpooledByteBufAllocator;
@@ -31,37 +32,6 @@ public class GrpcRequestHandler<
       "indicated payload size does not match actual payload size";
   private static final String GRPC_MESSAGE_CANNOT_MAKE_RESPONSE =
       "unable to create response object";
-
-  private enum GrpcStatus { // These are defined by gRPC
-    OK("0"),
-    CANCELLED("1"),
-    UNKNOWN("2"),
-    INVALID_ARGUMENT("3"),
-    DEADLINE_EXCEEDED("4"),
-    NOT_FOUND("5"),
-    ALREADY_EXISTS("6"),
-    PERMISSION_DENIED("7"),
-    RESOURCE_EXHAUSTED("8"),
-    FAILED_PRECONDITION("9"),
-    ABORTED("10"),
-    OUT_OF_RANGE("11"),
-    UNIMPLEMENTED("12"),
-    INTERNAL("13"),
-    UNAVAILABLE("14"),
-    DATA_LOSS("15"),
-    UNAUTHENTICATED("16");
-
-    private final String text;
-
-    GrpcStatus(final String text) {
-      this.text = text;
-    }
-
-    @Override
-    public String toString() {
-      return text;
-    }
-  }
 
   private static class GrpcState {
     int size;
@@ -122,7 +92,7 @@ public class GrpcRequestHandler<
             ctx,
             request.streamId(),
             Unpooled.EMPTY_BUFFER,
-            GrpcStatus.INTERNAL,
+            Status.INTERNAL,
             GRPC_MESSAGE_NO_METADATA);
         return;
       }
@@ -133,7 +103,7 @@ public class GrpcRequestHandler<
             ctx,
             request.streamId(),
             Unpooled.EMPTY_BUFFER,
-            GrpcStatus.UNIMPLEMENTED,
+            Status.UNIMPLEMENTED,
             GRPC_MESSAGE_NO_COMPRESSION);
         return;
       }
@@ -144,7 +114,7 @@ public class GrpcRequestHandler<
             ctx,
             request.streamId(),
             Unpooled.EMPTY_BUFFER,
-            GrpcStatus.RESOURCE_EXHAUSTED,
+            Status.RESOURCE_EXHAUSTED,
             GRPC_MESSAGE_LARGE_SIZE);
         return;
       }
@@ -157,7 +127,7 @@ public class GrpcRequestHandler<
             ctx,
             request.streamId(),
             Unpooled.EMPTY_BUFFER,
-            GrpcStatus.INTERNAL,
+            Status.INTERNAL,
             GRPC_MESSAGE_WRONG_SIZE);
         return;
       }
@@ -174,7 +144,7 @@ public class GrpcRequestHandler<
             ctx,
             request.streamId(),
             Unpooled.EMPTY_BUFFER,
-            GrpcStatus.INTERNAL,
+            Status.INTERNAL,
             GRPC_MESSAGE_WRONG_SIZE);
         return;
       }
@@ -192,19 +162,19 @@ public class GrpcRequestHandler<
   private void handleGrpcRequest(ChannelHandlerContext ctx, GrpcState state, int streamId) {
     if (state.size != state.buffer.readableBytes()) {
       sendResponse(
-          ctx, streamId, Unpooled.EMPTY_BUFFER, GrpcStatus.INTERNAL, GRPC_MESSAGE_WRONG_SIZE);
+          ctx, streamId, Unpooled.EMPTY_BUFFER, Status.INTERNAL, GRPC_MESSAGE_WRONG_SIZE);
       return;
     }
 
     try {
       ByteBuf grpcResponseBuffer = makeResponseBuffer(state.buffer.nioBuffer());
-      sendResponse(ctx, streamId, grpcResponseBuffer, GrpcStatus.OK, "");
+      sendResponse(ctx, streamId, grpcResponseBuffer, Status.OK, "");
     } catch (InvalidProtocolBufferException e) {
       sendResponse(
           ctx,
           streamId,
           Unpooled.EMPTY_BUFFER,
-          GrpcStatus.INTERNAL,
+          Status.INTERNAL,
           GRPC_MESSAGE_CANNOT_MAKE_RESPONSE);
     }
   }
@@ -213,7 +183,7 @@ public class GrpcRequestHandler<
       ChannelHandlerContext ctx,
       int streamId,
       ByteBuf grpcResponseBuffer,
-      GrpcStatus status,
+      Status status,
       String statusMessage) {
     Headers headers =
         new DefaultHeaders().set(HttpHeaderNames.CONTENT_TYPE, GRPC_CONTENT_TYPE_VALUE);
@@ -227,7 +197,7 @@ public class GrpcRequestHandler<
     ctx.writeAndFlush(segmentedResponse);
 
     Headers trailingHeaders =
-        new DefaultHeaders().set(GRPC_TRAILING_HEADER_STATUS_KEY, status.toString());
+        new DefaultHeaders().set(GRPC_TRAILING_HEADER_STATUS_KEY, Integer.toString(status.getCode().value()));
 
     if (!statusMessage.isEmpty()) {
       trailingHeaders.add(GRPC_TRAILING_HEADER_MESSAGE_KEY, grpcEncodedString(statusMessage));
@@ -246,7 +216,7 @@ public class GrpcRequestHandler<
     HashMap<Integer, GrpcState> session = lazyCreateSession(ctx);
     session.remove(streamId);
 
-    if (status != GrpcStatus.OK) {
+    if (status != Status.OK) {
       ctx.close();
     }
   }
