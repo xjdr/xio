@@ -12,6 +12,7 @@ import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import java.nio.ByteBuffer;
 import java.util.Objects;
+import java.util.function.Function;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,6 +39,16 @@ public class GrpcRequestHandlerTest extends Assert {
                 subject.handle(ctx, request, null);
               }
             });
+  }
+
+  @Test
+  public void testGetAppLogic() {
+    Function<HelloRequest, HelloReply> expectedAppLogic =
+        (HelloRequest request) -> HelloReply.getDefaultInstance();
+    GrpcRequestHandler handler =
+        new GrpcRequestHandler<>(HelloRequest::parseFrom, expectedAppLogic);
+
+    assertSame(expectedAppLogic, handler.getAppLogic());
   }
 
   @Test

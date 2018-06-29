@@ -94,6 +94,10 @@ public class GrpcRequestHandler<
     this.appLogic = appLogic;
   }
 
+  public Function<GrpcRequest, GrpcResponse> getAppLogic() {
+    return appLogic;
+  }
+
   @Override
   public void handle(ChannelHandlerContext ctx, Request request, RouteState route) {
     ByteBuf actualBuffer;
