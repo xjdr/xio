@@ -20,6 +20,7 @@ import com.xjeffrose.xio.test.OkHttpUnsafe;
 import com.xjeffrose.xio.tracing.XioTracing;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.HttpHeaderNames;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -29,8 +30,6 @@ import java.util.function.Function;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import io.netty.handler.codec.http.HttpHeaderNames;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
