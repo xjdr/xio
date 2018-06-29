@@ -1,5 +1,7 @@
 package com.xjeffrose.xio.http;
 
+import static com.xjeffrose.xio.helpers.TlsHelper.getKeyManagers;
+
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.typesafe.config.Config;
@@ -19,6 +21,15 @@ import com.xjeffrose.xio.tracing.XioTracing;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpHeaderNames;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
@@ -31,18 +42,6 @@ import okhttp3.mockwebserver.RecordedRequest;
 import okhttp3.mockwebserver.SocketPolicy;
 import org.junit.*;
 import org.junit.rules.TestName;
-
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Function;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static com.xjeffrose.xio.helpers.TlsHelper.getKeyManagers;
 
 @Slf4j
 public class EdgeProxyFunctionalTest extends Assert {
@@ -109,7 +108,7 @@ public class EdgeProxyFunctionalTest extends Assert {
     private XioTracing tracing = null;
 
     <T, K, U> Collector<T, ?, Map<K, U>> toLinkedMap(
-      Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper) {
+        Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper) {
 
       return Collectors.toMap(
           keyMapper,
@@ -279,7 +278,7 @@ public class EdgeProxyFunctionalTest extends Assert {
     return new MockResponse().setBody("hello, world").setSocketPolicy(SocketPolicy.KEEP_OPEN);
   }
 
-  void get(String prefix, int port) throws Exception {
+  private void get(String prefix, int port) throws Exception {
     String url = url(prefix, port);
     Request request = new Request.Builder().url(url).build();
 
@@ -291,17 +290,24 @@ public class EdgeProxyFunctionalTest extends Assert {
     assertEquals("/hello/world", servedRequest.getRequestUrl().encodedPath());
   }
 
-  private Response post(String prefix, int port) throws Exception {
+  private void post(String prefix, int port) throws Exception {
     String url = url(prefix, port);
     MediaType mediaType = MediaType.parse("text/plain");
     RequestBody body = RequestBody.create(mediaType, "this is the post body");
     Request request = new Request.Builder().url(url).post(body).build();
 
     server.enqueue(buildResponse());
-    return client.newCall(request).execute();
-  }
+    Response response = client.newCall(request).execute();
+    assertEquals(200, response.code());
+    if (response.headers().names().contains(HttpHeaderNames.TRANSFER_ENCODING.toString())) {
+      assertFalse(response.headers().names().contains(HttpHeaderNames.CONTENT_LENGTH.toString()));
+    }
 
-  private void checkServedRequest() throws Exception {
+    if (response.headers().names().contains(HttpHeaderNames.CONTENT_LENGTH.toString())) {
+      assertFalse(
+          response.headers().names().contains(HttpHeaderNames.TRANSFER_ENCODING.toString()));
+    }
+
     RecordedRequest servedRequest = server.takeRequest();
     assertEquals("/hello/world", servedRequest.getRequestUrl().encodedPath());
     assertEquals("this is the post body", servedRequest.getBody().readUtf8());
@@ -314,11 +320,7 @@ public class EdgeProxyFunctionalTest extends Assert {
 
   @Test
   public void sanityCheckHttpPost() throws Exception {
-    Response response = post("", server.getPort());
-    assertEquals(200, response.code());
-    assertFalse(response.headers().names().contains(HttpHeaderNames.TRANSFER_ENCODING.toString()));
-    assertTrue(response.headers().names().contains(HttpHeaderNames.CONTENT_LENGTH.toString()));
-    checkServedRequest();
+    post("", server.getPort());
   }
 
   @Test
@@ -330,11 +332,7 @@ public class EdgeProxyFunctionalTest extends Assert {
   @Test
   public void testHttpPost() throws Exception {
     edgeProxy = new EdgeProxyApplicationBootstrap().build();
-    Response response = post("/valid-path", port());
-    assertEquals(200, response.code());
-    assertTrue(response.headers().names().contains(HttpHeaderNames.TRANSFER_ENCODING.toString()));
-    assertFalse(response.headers().names().contains(HttpHeaderNames.CONTENT_LENGTH.toString()));
-    checkServedRequest();
+    post("/valid-path", port());
   }
 
   @Test
