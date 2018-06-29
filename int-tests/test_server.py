@@ -39,6 +39,8 @@ class TestReverseProxyServer(TestCase):
     self.assertEqual('backend1', response.headers['x-tag'])
     self.assertEqual(method, response.headers['x-method'])
     self.assertEqual('echo', response.headers['x-echo'])
+    keys = { k.lower(): k for k in response.headers.keys() }
+    self.assertFalse('transfer-encoding' in keys and 'content-length' in keys)
     self.assertEqual({'title': 'Release', 'description': 'the Kraken'}, response.json_body)
     self.assertEqual(200, response.status)
 

@@ -138,6 +138,7 @@ public class Http1ServerCodec extends ChannelDuplexHandler {
         // We don't know the size of the message payload so set TransferEncoding to chunked
         if (!response.headers().contains(HttpHeaderNames.TRANSFER_ENCODING)) {
           response.headers().set(HttpHeaderNames.TRANSFER_ENCODING, HttpHeaderValues.CHUNKED);
+          response.headers().remove(HttpHeaderNames.CONTENT_LENGTH);
         }
 
         obj =
