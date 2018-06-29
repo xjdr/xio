@@ -341,6 +341,7 @@ public class EdgeProxyFunctionalTest extends Assert {
     assertEquals(200, response.code());
     assertTrue(response.headers().names().contains(HttpHeaderNames.TRANSFER_ENCODING.toString()));
     assertFalse(response.headers().names().contains(HttpHeaderNames.CONTENT_LENGTH.toString()));
+    checkServedRequest();
   }
 
   @Test
