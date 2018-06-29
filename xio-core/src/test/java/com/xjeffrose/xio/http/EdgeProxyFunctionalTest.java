@@ -298,19 +298,17 @@ public class EdgeProxyFunctionalTest extends Assert {
     assertEquals("/hello/world", servedRequest.getRequestUrl().encodedPath());
   }
 
-  void post(String prefix, int port) throws Exception {
+  private Response post(String prefix, int port) throws Exception {
     String url = url(prefix, port);
     MediaType mediaType = MediaType.parse("text/plain");
     RequestBody body = RequestBody.create(mediaType, "this is the post body");
     Request request = new Request.Builder().url(url).post(body).build();
 
     server.enqueue(buildResponse());
-    Response response = client.newCall(request).execute();
-    assertEquals(200, response.code());
-    if (response.headers().names().contains(HttpHeaderNames.TRANSFER_ENCODING.toString())) {
-      assertFalse(response.headers().names().contains(HttpHeaderNames.CONTENT_LENGTH.toString()));
-    }
+    return client.newCall(request).execute();
+  }
 
+  private void checkServedRequest() throws Exception {
     RecordedRequest servedRequest = server.takeRequest();
     assertEquals("/hello/world", servedRequest.getRequestUrl().encodedPath());
     assertEquals("this is the post body", servedRequest.getBody().readUtf8());
@@ -323,7 +321,11 @@ public class EdgeProxyFunctionalTest extends Assert {
 
   @Test
   public void sanityCheckHttpPost() throws Exception {
-    post("", server.getPort());
+    Response response = post("", server.getPort());
+    assertEquals(200, response.code());
+    assertFalse(response.headers().names().contains(HttpHeaderNames.TRANSFER_ENCODING.toString()));
+    assertTrue(response.headers().names().contains(HttpHeaderNames.CONTENT_LENGTH.toString()));
+    checkServedRequest();
   }
 
   @Test
@@ -335,7 +337,10 @@ public class EdgeProxyFunctionalTest extends Assert {
   @Test
   public void testHttpPost() throws Exception {
     edgeProxy = new EdgeProxyApplicationBootstrap().build();
-    post("/valid-path", port());
+    Response response = post("/valid-path", port());
+    assertEquals(200, response.code());
+    assertTrue(response.headers().names().contains(HttpHeaderNames.TRANSFER_ENCODING.toString()));
+    assertFalse(response.headers().names().contains(HttpHeaderNames.CONTENT_LENGTH.toString()));
   }
 
   @Test
