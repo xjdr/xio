@@ -9,7 +9,6 @@ import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.*;
 import io.netty.util.AttributeKey;
-
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
@@ -60,7 +59,8 @@ public class GrpcRequestHandler<
   private final GrpcAppLogic<GrpcRequest, GrpcResponse> appLogic;
 
   public GrpcRequestHandler(
-      GrpcRequestParser<GrpcRequest> requestParser, GrpcAppLogic<GrpcRequest, GrpcResponse> appLogic) {
+      GrpcRequestParser<GrpcRequest> requestParser,
+      GrpcAppLogic<GrpcRequest, GrpcResponse> appLogic) {
     this.requestParser = requestParser;
     this.appLogic = appLogic;
   }
@@ -158,7 +158,10 @@ public class GrpcRequestHandler<
   private void handleGrpcRequest(ChannelHandlerContext ctx, GrpcState state, int streamId) {
     if (state.size != state.buffer.readableBytes()) {
       sendResponse(
-          ctx, streamId, Unpooled.EMPTY_BUFFER, Status.INTERNAL.withDescription(GRPC_MESSAGE_WRONG_SIZE));
+          ctx,
+          streamId,
+          Unpooled.EMPTY_BUFFER,
+          Status.INTERNAL.withDescription(GRPC_MESSAGE_WRONG_SIZE));
       return;
     }
 
@@ -172,19 +175,12 @@ public class GrpcRequestHandler<
           Unpooled.EMPTY_BUFFER,
           Status.INTERNAL.withDescription(GRPC_MESSAGE_CANNOT_MAKE_RESPONSE));
     } catch (StatusException e) {
-      sendResponse(
-        ctx,
-        streamId,
-        Unpooled.EMPTY_BUFFER,
-        e.getStatus());
+      sendResponse(ctx, streamId, Unpooled.EMPTY_BUFFER, e.getStatus());
     }
   }
 
   private void sendResponse(
-      ChannelHandlerContext ctx,
-      int streamId,
-      ByteBuf grpcResponseBuffer,
-      Status status) {
+      ChannelHandlerContext ctx, int streamId, ByteBuf grpcResponseBuffer, Status status) {
     Headers headers =
         new DefaultHeaders().set(HttpHeaderNames.CONTENT_TYPE, GRPC_CONTENT_TYPE_VALUE);
     DefaultSegmentedResponse segmentedResponse =
@@ -197,10 +193,12 @@ public class GrpcRequestHandler<
     ctx.writeAndFlush(segmentedResponse);
 
     Headers trailingHeaders =
-        new DefaultHeaders().set(GRPC_TRAILING_HEADER_STATUS_KEY, Integer.toString(status.getCode().value()));
+        new DefaultHeaders()
+            .set(GRPC_TRAILING_HEADER_STATUS_KEY, Integer.toString(status.getCode().value()));
 
     if (status.getDescription() != null) {
-      trailingHeaders.add(GRPC_TRAILING_HEADER_MESSAGE_KEY, grpcEncodedString(status.getDescription()));
+      trailingHeaders.add(
+          GRPC_TRAILING_HEADER_MESSAGE_KEY, grpcEncodedString(status.getDescription()));
     }
 
     DefaultSegmentedData data =

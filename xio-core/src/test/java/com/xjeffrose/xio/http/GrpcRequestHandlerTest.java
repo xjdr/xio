@@ -26,7 +26,9 @@ public class GrpcRequestHandlerTest extends Assert {
 
   @Before
   public void setUp() {
-    GrpcAppLogic<HelloRequest, HelloReply> appLogic = (HelloRequest request) -> HelloReply.newBuilder().setMessage(responsePrefix + request.getName()).build();
+    GrpcAppLogic<HelloRequest, HelloReply> appLogic =
+        (HelloRequest request) ->
+            HelloReply.newBuilder().setMessage(responsePrefix + request.getName()).build();
     subject = new GrpcRequestHandler<>(HelloRequest::parseFrom, appLogic);
 
     channel =
@@ -302,20 +304,21 @@ public class GrpcRequestHandlerTest extends Assert {
   public void testAppLogicThrowingAnErrorNoDescription() {
     Status grpcStatus = Status.ALREADY_EXISTS;
 
-    GrpcAppLogic<HelloRequest, HelloReply> appLogic = (HelloRequest request) -> {
-      throw new StatusException(grpcStatus);
-    };
+    GrpcAppLogic<HelloRequest, HelloReply> appLogic =
+        (HelloRequest request) -> {
+          throw new StatusException(grpcStatus);
+        };
 
     subject = new GrpcRequestHandler<>(HelloRequest::parseFrom, appLogic);
 
     channel =
-      new EmbeddedChannel(
-        new SimpleChannelInboundHandler<Request>() {
-          @Override
-          protected void channelRead0(ChannelHandlerContext ctx, Request request) {
-            subject.handle(ctx, request, null);
-          }
-        });
+        new EmbeddedChannel(
+            new SimpleChannelInboundHandler<Request>() {
+              @Override
+              protected void channelRead0(ChannelHandlerContext ctx, Request request) {
+                subject.handle(ctx, request, null);
+              }
+            });
 
     ByteBuf grpcRequestBuffer = bufferFor(HelloRequest.getDefaultInstance());
     int streamId = 123;
@@ -332,7 +335,9 @@ public class GrpcRequestHandlerTest extends Assert {
 
     assertFalse(segmentedData.content().isReadable());
 
-    assertEquals(Integer.toString(grpcStatus.getCode().value()), Objects.requireNonNull(segmentedData.trailingHeaders()).get("grpc-status"));
+    assertEquals(
+        Integer.toString(grpcStatus.getCode().value()),
+        Objects.requireNonNull(segmentedData.trailingHeaders()).get("grpc-status"));
     assertFalse(Objects.requireNonNull(segmentedData.trailingHeaders()).contains("grpc-message"));
     assertEquals(streamId, segmentedData.streamId());
     assertTrue(segmentedData.endOfMessage());
@@ -342,20 +347,21 @@ public class GrpcRequestHandlerTest extends Assert {
   public void testAppLogicThrowingAnErrorWithDescription() {
     Status grpcStatus = Status.ALREADY_EXISTS.withDescription("This thing done been here");
 
-    GrpcAppLogic<HelloRequest, HelloReply> appLogic = (HelloRequest request) -> {
-      throw new StatusException(grpcStatus);
-    };
+    GrpcAppLogic<HelloRequest, HelloReply> appLogic =
+        (HelloRequest request) -> {
+          throw new StatusException(grpcStatus);
+        };
 
     subject = new GrpcRequestHandler<>(HelloRequest::parseFrom, appLogic);
 
     channel =
-      new EmbeddedChannel(
-        new SimpleChannelInboundHandler<Request>() {
-          @Override
-          protected void channelRead0(ChannelHandlerContext ctx, Request request) {
-            subject.handle(ctx, request, null);
-          }
-        });
+        new EmbeddedChannel(
+            new SimpleChannelInboundHandler<Request>() {
+              @Override
+              protected void channelRead0(ChannelHandlerContext ctx, Request request) {
+                subject.handle(ctx, request, null);
+              }
+            });
 
     ByteBuf grpcRequestBuffer = bufferFor(HelloRequest.getDefaultInstance());
     int streamId = 123;
@@ -372,11 +378,13 @@ public class GrpcRequestHandlerTest extends Assert {
 
     assertFalse(segmentedData.content().isReadable());
 
-    assertEquals(Integer.toString(grpcStatus.getCode().value()), Objects.requireNonNull(segmentedData.trailingHeaders()).get("grpc-status"));
+    assertEquals(
+        Integer.toString(grpcStatus.getCode().value()),
+        Objects.requireNonNull(segmentedData.trailingHeaders()).get("grpc-status"));
     String actualMessage =
-      grpcDecodedString(
-        Objects.requireNonNull(
-          Objects.requireNonNull(segmentedData.trailingHeaders()).get("grpc-message")));
+        grpcDecodedString(
+            Objects.requireNonNull(
+                Objects.requireNonNull(segmentedData.trailingHeaders()).get("grpc-message")));
     assertEquals(grpcStatus.getDescription(), actualMessage);
     assertEquals(streamId, segmentedData.streamId());
     assertTrue(segmentedData.endOfMessage());
