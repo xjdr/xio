@@ -1,24 +1,59 @@
 package com.xjeffrose.xio.backend.server;
 
+import com.codahale.metrics.health.HealthCheck;
+import com.google.gson.JsonObject;
+import com.nordstrom.xrpc.server.Handler;
+import com.nordstrom.xrpc.server.RouteBuilder;
+import com.nordstrom.xrpc.server.Routes;
+import com.nordstrom.xrpc.server.Server;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 import lombok.extern.slf4j.Slf4j;
+
+import java.io.IOException;
 
 @Slf4j
 public class Main {
-
   public static void main(String args[]) throws Exception {
-    if (args.length < 3) {
-      throw new RuntimeException("please specify server 'port', 'header-tag' and 'h2' arguments");
+    Config config = ConfigFactory.load("application.conf");
+    Server server = new Server(config.getConfig("xrpc"));
+    Main.configure(server);
+
+    try {
+      // Fire away
+      server.listenAndServe();
+    } catch (IOException e) {
+      log.error("Failed to start people server", e);
     }
 
-    // header-tag might be the ip address of this host or any other information you
-    // would like to use to identify the traffic served up by this host
-    final int port = Integer.parseInt(args[0]);
-    final String name = args[1];
-    final Boolean h2Capable = Boolean.parseBoolean(args[2]);
-    RestHandlers.setTag(name);
+    Runtime.getRuntime().addShutdownHook(new Thread(server::shutdown));
+  }
 
-    log.warn("starting h2 capable:{} service:{} on port:{}", h2Capable, name, port);
-    RestServer server = new RestServer(port, true, h2Capable);
-    server.start();
+  public static void configure(Server server) {
+    // Add handlers for /v1 routes
+    server.addRoutes(new KrakenRoutes());
+
+    // Add a service specific health check
+    server.addHealthCheck(
+      "simple",
+      new HealthCheck() {
+        @Override
+        protected Result check() {
+          System.out.println("Health Check Ran");
+          return Result.healthy();
+        }
+      });
+  }
+
+  private static class KrakenRoutes extends RouteBuilder {
+    KrakenRoutes() {
+      Handler handler = (request) -> {
+        JsonObject object = new JsonObject();
+        object.addProperty("title", "Release");
+        object.addProperty("description", "the Kraken");
+        return request.ok(object.toString());
+      };
+      get("/", handler);
+    }
   }
 }
