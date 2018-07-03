@@ -4,7 +4,6 @@ import com.codahale.metrics.health.HealthCheck;
 import com.google.gson.JsonObject;
 import com.nordstrom.xrpc.server.Handler;
 import com.nordstrom.xrpc.server.RouteBuilder;
-import com.nordstrom.xrpc.server.Routes;
 import com.nordstrom.xrpc.server.Server;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
@@ -30,7 +29,7 @@ public class Main {
   }
 
   public static void configure(Server server) {
-    // Add handlers for /v1 routes
+    // Add handlers for routes
     server.addRoutes(new KrakenRoutes());
 
     // Add a service specific health check

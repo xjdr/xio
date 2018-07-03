@@ -6,17 +6,9 @@ plugins {
 description = 'The backend server to use for integration testing.'
 mainClassName = 'com.xjeffrose.xio.backend.server.Main'
 
-def jackson_version = '2.9.4'
-
 dependencies {
   implementation group: 'com.nordstrom.xrpc', name: 'xrpc', version: '0.5.0'
 
   implementation group: 'ch.qos.logback', name: 'logback-classic', version: logback_version
-  implementation group: 'ch.qos.logback', name: 'logback-core', version: logback_version
   implementation group: 'org.codehaus.groovy', name: 'groovy-all', version: groovy_version
-
-  implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: jackson_version
-  implementation group: 'com.fasterxml.jackson.module', name: 'jackson-module-parameter-names', version: jackson_version
-  implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jdk8', version: jackson_version
-  implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: jackson_version
 }
