@@ -20,7 +20,7 @@ class TestReverseProxyServer(TestCase):
 
   @classmethod
   def setup_back(cls, h2: bool, verbose=False):
-    back_ready_str = "starting to accept connections"
+    back_ready_str = "Active Connections"
     global back_end
     back_end = Server(back_init.init_script, back_ready_str, h2, name="backend1", port=8444, verbose=verbose).run()
 
