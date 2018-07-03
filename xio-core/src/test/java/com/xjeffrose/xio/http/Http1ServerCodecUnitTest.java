@@ -5,6 +5,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.*;
 import static io.netty.handler.codec.http.HttpVersion.*;
 
 import com.google.common.util.concurrent.Uninterruptibles;
+import com.xjeffrose.xio.http.internal.Http2HeadersWrapper;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.UnpooledByteBufAllocator;
@@ -194,11 +195,10 @@ public class Http1ServerCodecUnitTest extends Assert {
   @Test
   public void testStreamingResponse() throws Exception {
     outputReceived = new CountDownLatch(3);
-    ByteBuf body = ByteBufUtil.writeUtf8(UnpooledByteBufAllocator.DEFAULT, "response");
+    ByteBufUtil.writeUtf8(UnpooledByteBufAllocator.DEFAULT, "response");
 
     FullHttpRequest requestIn = new DefaultFullHttpRequest(HTTP_1_1, GET, "/");
 
-    DefaultHttp2Headers h2Headers;
     SegmentedResponse responseIn =
         DefaultSegmentedResponse.builder().status(OK).headers(new DefaultHeaders()).build();
     ByteBuf body1 = ByteBufUtil.writeUtf8(UnpooledByteBufAllocator.DEFAULT, "body1");
@@ -240,6 +240,45 @@ public class Http1ServerCodecUnitTest extends Assert {
     assertTrue(bodyOut2 != null);
     assertFalse(bodyOut2.content() == null);
     assertEquals(body2, bodyOut2.content());
+
+    // https://tools.ietf.org/html/rfc7230#section-3.3.2
+    assertEquals(HttpHeaderValues.CHUNKED.toString(), responseOut.headers().get(HttpHeaderNames.TRANSFER_ENCODING));
+    assertNull(responseOut.headers().get(HttpHeaderNames.CONTENT_LENGTH));
+  }
+
+  @Test
+  public void testStreamingProxiedH2Response() throws Exception {
+    outputReceived = new CountDownLatch(3);
+    ByteBufUtil.writeUtf8(UnpooledByteBufAllocator.DEFAULT, "response");
+
+    FullHttpRequest requestIn = new DefaultFullHttpRequest(HTTP_1_1, GET, "/");
+
+    Headers headers = new Http2HeadersWrapper(new DefaultHttp2Headers());
+    SegmentedResponse responseIn =
+      DefaultSegmentedResponse.builder().status(OK).headers(headers).build();
+    ByteBuf body1 = ByteBufUtil.writeUtf8(UnpooledByteBufAllocator.DEFAULT, "body1");
+    SegmentedData content =
+      DefaultSegmentedData.builder().content(body1).endOfMessage(false).build();
+    ByteBuf body2 = ByteBufUtil.writeUtf8(UnpooledByteBufAllocator.DEFAULT, "body2");
+    SegmentedData lastContent =
+      DefaultSegmentedData.builder()
+        .content(body2)
+        .endOfMessage(true)
+        .trailingHeaders(new DefaultHeaders())
+        .build();
+
+    channel.writeInbound(requestIn);
+    channel.runPendingTasks(); // blocks
+    channel.writeOutbound(responseIn);
+    channel.writeOutbound(content);
+    channel.writeOutbound(lastContent);
+
+    channel.runPendingTasks(); // blocks
+
+    Uninterruptibles.awaitUninterruptibly(outputReceived);
+
+    HttpResponse responseOut = (HttpResponse) responses.remove(0);
+
 
     // https://tools.ietf.org/html/rfc7230#section-3.3.2
     assertEquals(HttpHeaderValues.CHUNKED.toString(), responseOut.headers().get(HttpHeaderNames.TRANSFER_ENCODING));

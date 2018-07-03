@@ -11,19 +11,7 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.DefaultHttpContent;
-import io.netty.handler.codec.http.DefaultHttpResponse;
-import io.netty.handler.codec.http.DefaultLastHttpContent;
-import io.netty.handler.codec.http.EmptyHttpHeaders;
-import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.HttpContent;
-import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpHeaderValues;
-import io.netty.handler.codec.http.HttpObject;
-import io.netty.handler.codec.http.HttpRequest;
-import io.netty.handler.codec.http.HttpVersion;
-import io.netty.handler.codec.http.LastHttpContent;
+import io.netty.handler.codec.http.*;
 import io.netty.util.AttributeKey;
 import lombok.extern.slf4j.Slf4j;
 
@@ -134,18 +122,19 @@ public class Http1ServerCodec extends ChannelDuplexHandler {
                 full.headers().http1Headers(false, false),
                 EmptyHttpHeaders.INSTANCE);
       } else {
-        // TODO(CK): TransferEncoding
         // We don't know the size of the message payload so set TransferEncoding to chunked
+        HttpHeaders headers = response.headers().http1Headers(false, false);
         if (!response.headers().contains(HttpHeaderNames.TRANSFER_ENCODING)) {
-          response.headers().set(HttpHeaderNames.TRANSFER_ENCODING, HttpHeaderValues.CHUNKED);
-          response.headers().remove(HttpHeaderNames.CONTENT_LENGTH);
+          headers.set(HttpHeaderNames.TRANSFER_ENCODING, HttpHeaderValues.CHUNKED);
+          headers.remove(HttpHeaderNames.CONTENT_LENGTH);
         }
 
         obj =
             new DefaultHttpResponse(
                 HttpVersion.HTTP_1_1,
                 response.status(),
-                response.headers().http1Headers(false, false));
+                headers
+                );
       }
 
       ChannelFuture future = ctx.write(obj, promise);
