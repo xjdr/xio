@@ -129,12 +129,7 @@ public class Http1ServerCodec extends ChannelDuplexHandler {
           headers.remove(HttpHeaderNames.CONTENT_LENGTH);
         }
 
-        obj =
-            new DefaultHttpResponse(
-                HttpVersion.HTTP_1_1,
-                response.status(),
-                headers
-                );
+        obj = new DefaultHttpResponse(HttpVersion.HTTP_1_1, response.status(), headers);
       }
 
       ChannelFuture future = ctx.write(obj, promise);

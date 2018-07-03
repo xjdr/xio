@@ -15,12 +15,10 @@ import io.netty.channel.ChannelPromise;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.codec.http.*;
-
+import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
-
-import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -242,7 +240,9 @@ public class Http1ServerCodecUnitTest extends Assert {
     assertEquals(body2, bodyOut2.content());
 
     // https://tools.ietf.org/html/rfc7230#section-3.3.2
-    assertEquals(HttpHeaderValues.CHUNKED.toString(), responseOut.headers().get(HttpHeaderNames.TRANSFER_ENCODING));
+    assertEquals(
+        HttpHeaderValues.CHUNKED.toString(),
+        responseOut.headers().get(HttpHeaderNames.TRANSFER_ENCODING));
     assertNull(responseOut.headers().get(HttpHeaderNames.CONTENT_LENGTH));
   }
 
@@ -255,17 +255,17 @@ public class Http1ServerCodecUnitTest extends Assert {
 
     Headers headers = new Http2HeadersWrapper(new DefaultHttp2Headers());
     SegmentedResponse responseIn =
-      DefaultSegmentedResponse.builder().status(OK).headers(headers).build();
+        DefaultSegmentedResponse.builder().status(OK).headers(headers).build();
     ByteBuf body1 = ByteBufUtil.writeUtf8(UnpooledByteBufAllocator.DEFAULT, "body1");
     SegmentedData content =
-      DefaultSegmentedData.builder().content(body1).endOfMessage(false).build();
+        DefaultSegmentedData.builder().content(body1).endOfMessage(false).build();
     ByteBuf body2 = ByteBufUtil.writeUtf8(UnpooledByteBufAllocator.DEFAULT, "body2");
     SegmentedData lastContent =
-      DefaultSegmentedData.builder()
-        .content(body2)
-        .endOfMessage(true)
-        .trailingHeaders(new DefaultHeaders())
-        .build();
+        DefaultSegmentedData.builder()
+            .content(body2)
+            .endOfMessage(true)
+            .trailingHeaders(new DefaultHeaders())
+            .build();
 
     channel.writeInbound(requestIn);
     channel.runPendingTasks(); // blocks
@@ -279,9 +279,10 @@ public class Http1ServerCodecUnitTest extends Assert {
 
     HttpResponse responseOut = (HttpResponse) responses.remove(0);
 
-
     // https://tools.ietf.org/html/rfc7230#section-3.3.2
-    assertEquals(HttpHeaderValues.CHUNKED.toString(), responseOut.headers().get(HttpHeaderNames.TRANSFER_ENCODING));
+    assertEquals(
+        HttpHeaderValues.CHUNKED.toString(),
+        responseOut.headers().get(HttpHeaderNames.TRANSFER_ENCODING));
     assertNull(responseOut.headers().get(HttpHeaderNames.CONTENT_LENGTH));
   }
 }
