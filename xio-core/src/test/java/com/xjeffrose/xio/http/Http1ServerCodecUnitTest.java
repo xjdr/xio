@@ -13,21 +13,13 @@ import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.embedded.EmbeddedChannel;
-import io.netty.handler.codec.http.DefaultFullHttpRequest;
-import io.netty.handler.codec.http.DefaultHttpContent;
-import io.netty.handler.codec.http.DefaultHttpRequest;
-import io.netty.handler.codec.http.DefaultLastHttpContent;
-import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.FullHttpResponse;
-import io.netty.handler.codec.http.HttpContent;
-import io.netty.handler.codec.http.HttpMethod;
-import io.netty.handler.codec.http.HttpObject;
-import io.netty.handler.codec.http.HttpRequest;
-import io.netty.handler.codec.http.HttpResponse;
-import io.netty.handler.codec.http.LastHttpContent;
+import io.netty.handler.codec.http.*;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+
+import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -193,6 +185,10 @@ public class Http1ServerCodecUnitTest extends Assert {
     assertEquals(OK, responseOut.status());
     assertFalse(((FullHttpResponse) responseOut).content() == null);
     assertEquals(body, ((FullHttpResponse) responseOut).content());
+
+    // https://tools.ietf.org/html/rfc7230#section-3.3.2
+    assertNotNull(responseOut.headers().get(HttpHeaderNames.CONTENT_LENGTH));
+    assertNull(responseOut.headers().get(HttpHeaderNames.TRANSFER_ENCODING));
   }
 
   @Test
@@ -201,6 +197,8 @@ public class Http1ServerCodecUnitTest extends Assert {
     ByteBuf body = ByteBufUtil.writeUtf8(UnpooledByteBufAllocator.DEFAULT, "response");
 
     FullHttpRequest requestIn = new DefaultFullHttpRequest(HTTP_1_1, GET, "/");
+
+    DefaultHttp2Headers h2Headers;
     SegmentedResponse responseIn =
         DefaultSegmentedResponse.builder().status(OK).headers(new DefaultHeaders()).build();
     ByteBuf body1 = ByteBufUtil.writeUtf8(UnpooledByteBufAllocator.DEFAULT, "body1");
@@ -242,5 +240,9 @@ public class Http1ServerCodecUnitTest extends Assert {
     assertTrue(bodyOut2 != null);
     assertFalse(bodyOut2.content() == null);
     assertEquals(body2, bodyOut2.content());
+
+    // https://tools.ietf.org/html/rfc7230#section-3.3.2
+    assertEquals(HttpHeaderValues.CHUNKED.toString(), responseOut.headers().get(HttpHeaderNames.TRANSFER_ENCODING));
+    assertNull(responseOut.headers().get(HttpHeaderNames.CONTENT_LENGTH));
   }
 }
