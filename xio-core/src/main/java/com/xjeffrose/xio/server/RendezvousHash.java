@@ -1,5 +1,6 @@
 package com.xjeffrose.xio.server;
 
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.hash.Funnel;
 import com.google.common.hash.HashFunction;
@@ -10,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.concurrent.ConcurrentSkipListMap;
+import javax.annotation.Nullable;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -18,7 +19,6 @@ public class RendezvousHash<T> {
 
   private final HashFunction hasher;
   private final Funnel<T> nodeFunnel;
-  private final Map<Long, T> hashMap = new ConcurrentSkipListMap<>();
   private final Set<T> nodeList = Sets.newConcurrentHashSet();
 
   public RendezvousHash(Funnel<T> nodeFunnel, Collection<? extends T> init) {
@@ -41,7 +41,9 @@ public class RendezvousHash<T> {
     nodeList.addAll(list);
   }
 
+  @Nullable
   public T getOne(byte[] key) {
+    Map<Long, T> hashMap = Maps.newTreeMap();
     hashMap.clear();
 
     nodeList.forEach(
@@ -50,11 +52,11 @@ public class RendezvousHash<T> {
               hasher.newHasher().putBytes(key).putObject(node, nodeFunnel).hash().asLong(), node);
         });
 
-    return hashMap.remove(hashMap.keySet().stream().max(Long::compare).orElse(null));
+    return hashMap.keySet().stream().max(Long::compare).map(hashMap::remove).orElse(null);
   }
 
   public List<T> get(byte[] key, int listSize) {
-    hashMap.clear();
+    Map<Long, T> hashMap = Maps.newTreeMap();
     List<T> nodes = new ArrayList<>(listSize);
 
     nodeList.forEach(
