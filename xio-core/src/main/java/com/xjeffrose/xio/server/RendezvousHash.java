@@ -44,7 +44,6 @@ public class RendezvousHash<T> {
   @Nullable
   public T getOne(byte[] key) {
     Map<Long, T> hashMap = Maps.newTreeMap();
-    hashMap.clear();
 
     nodeList.forEach(
         node -> {
