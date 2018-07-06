@@ -46,15 +46,17 @@ public class RendezvousHash<T> {
     Map<Long, T> hashMap = Maps.newTreeMap();
 
     nodeList.forEach(
-        node -> {
-          hashMap.put(
-              hasher.newHasher().putBytes(key).putObject(node, nodeFunnel).hash().asLong(), node);
-        });
+        node ->
+            hashMap.put(
+                hasher.newHasher().putBytes(key).putObject(node, nodeFunnel).hash().asLong(),
+                node));
 
-    return hashMap.keySet().stream()
-      .max(Long::compare)   // find the largest key
-      .map(hashMap::get)    // return the largest key
-      .orElse(null);  // or return null if the map is empty
+    return hashMap
+        .keySet()
+        .stream()
+        .max(Long::compare) // find the largest key
+        .map(hashMap::get) // return the largest key
+        .orElse(null); // or return null if the map is empty
   }
 
   public List<T> get(byte[] key, int listSize) {
