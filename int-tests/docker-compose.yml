@@ -11,6 +11,8 @@ services:
         condition: service_healthy
       front:
         condition: service_healthy
+#    stdin_open: true # docker-compose run client /bin/bash
+#    tty: true
     command: ["python3", "/tests/proxy_load_tests.py"]
     links:
       - front
@@ -24,10 +26,10 @@ services:
     ports:
       - "8444:443"
     healthcheck:
-      test: ["CMD", "curl", "-f", "-k", "https://localhost"]
+      test: ["CMD", "curl", "-m", "1", "-f", "-k", "https://localhost"]
       interval: 1s
       timeout: 3s
-      retries: 60
+      retries: 10
 
   front:
     build:
@@ -39,7 +41,7 @@ services:
     ports:
       - "8443:443"
     healthcheck:
-      test: ["CMD", "curl", "-f", "-k", "https://localhost"]
+      test: ["CMD", "curl", "-m", "1", "-f", "-k", "https://localhost"]
       interval: 1s
       timeout: 3s
-      retries: 60
+      retries: 10
