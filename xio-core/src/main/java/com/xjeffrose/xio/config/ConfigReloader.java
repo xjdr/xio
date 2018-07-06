@@ -7,6 +7,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.util.*;
@@ -58,33 +60,26 @@ public class ConfigReloader<T> {
     this.updater = null;
   }
 
-  private Config parse(Reader reader) {
-    Config config = ConfigFactory.parseReader(reader);
+  private Config parse(File file) {
+    Config config = ConfigFactory.parseFile(file);
     return ConfigFactory.load(config);
   }
 
-  private Meta<T> load(File file) {
+  private Meta<T> load(String filePath) {
     final MessageDigest digest;
     try {
       digest = MessageDigest.getInstance("SHA-256");
     } catch (Exception e) {
-      throw new IllegalStateException(
-          "Couldn't load config from file '" + file.getAbsolutePath() + "'", e);
+      throw new IllegalStateException("Couldn't load config from file '" + filePath + "'", e);
     }
-
-    try (FileInputStream fileInputStream = new FileInputStream(file);
-        DigestInputStream digestInputStream = new DigestInputStream(fileInputStream, digest);
-        InputStreamReader reader = new InputStreamReader(digestInputStream)) {
-      T value = factory.apply(parse(reader));
+    try {
+      File file = new File(filePath);
+      T value = factory.apply(parse(file));
+      digest.update(Files.readAllBytes(Paths.get(filePath)));
       return new Meta<>(value, file.getAbsolutePath(), file.lastModified(), digest.digest());
     } catch (Exception e) {
-      throw new IllegalStateException(
-          "Couldn't load config from file '" + file.getAbsolutePath() + "'", e);
+      throw new IllegalStateException("Couldn't load config from file '" + filePath + "'", e);
     }
-  }
-
-  private Meta<T> load(String file) {
-    return load(new File(file));
   }
 
   private boolean shouldPerformUpdate(ConfigFileMetadata current, ConfigFileMetadata previous) {
@@ -137,10 +132,9 @@ public class ConfigReloader<T> {
     try {
       // check to see if any of the specific watch files have changed
       if (haveWatchFilesChanged()) {
-        File path = new File(metadata.path);
         // suck up the original file which includes all the sub files
         ConfigFactory.invalidateCaches();
-        Meta<T> update = load(path);
+        Meta<T> update = load(metadata.path);
         updater.accept(metadata.value, update.value);
         metadata = update;
       } else {
