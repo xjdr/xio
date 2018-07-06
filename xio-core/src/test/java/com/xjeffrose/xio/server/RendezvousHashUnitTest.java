@@ -1,7 +1,5 @@
 package com.xjeffrose.xio.server;
 
-import static org.junit.Assert.assertEquals;
-
 import com.google.common.collect.ImmutableMap;
 import com.google.common.hash.Funnels;
 import com.xjeffrose.xio.core.Constants;
