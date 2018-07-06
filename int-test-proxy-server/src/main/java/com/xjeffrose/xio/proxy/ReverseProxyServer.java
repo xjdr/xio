@@ -1,13 +1,13 @@
 package com.xjeffrose.xio.proxy;
 
-import com.google.common.collect.ImmutableMap;
 import com.typesafe.config.Config;
 import com.xjeffrose.xio.application.Application;
 import com.xjeffrose.xio.application.ApplicationConfig;
 import com.xjeffrose.xio.application.ApplicationState;
 import com.xjeffrose.xio.bootstrap.ApplicationBootstrap;
-import com.xjeffrose.xio.core.SocketAddressHelper;
-import com.xjeffrose.xio.http.*;
+import com.xjeffrose.xio.http.PipelineRouter;
+import com.xjeffrose.xio.http.ProxyClientFactory;
+import com.xjeffrose.xio.http.ProxyRouteConfig;
 import com.xjeffrose.xio.pipeline.SmartHttpPipeline;
 import io.netty.channel.ChannelHandler;
 import java.util.Optional;
@@ -27,7 +27,8 @@ public class ReverseProxyServer {
     ProxyRouteConfig proxyRouteConfig =
         new ProxyRouteConfig(config.getConfig("xio.testProxyRoute"));
 
-    ClientFactory clientFactory = new ProxyClientFactory(appState);
+    ProxyClientFactory clientFactory = new ProxyClientFactory(appState);
+    RouteStates routeStates = new RouteStates(proxyRouteConfig, appState, clientFactory);
 
     application =
         new ApplicationBootstrap(appState.config())
@@ -38,10 +39,7 @@ public class ReverseProxyServer {
                         new SmartHttpPipeline() {
                           @Override
                           public ChannelHandler getApplicationRouter() {
-                            return new PipelineRouter(
-                                ImmutableMap.of(),
-                                new ProxyHandler(
-                                    clientFactory, proxyRouteConfig, new SocketAddressHelper()));
+                            return new PipelineRouter(routeStates.routeMap());
                           }
                         }))
             .build();

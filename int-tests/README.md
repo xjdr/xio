@@ -26,3 +26,35 @@ Note: Any java changes will be recompiled before the tests are run.
 ```bash
 ./container_tests.sh
 ```
+
+# Containerized Tests (Running Manually)
+
+```
+# Build servers 
+./gradlew :int-test-proxy-server:installDist && ./gradlew :int-test-backend-server:installDist
+
+# Build docker images 
+cd int-tests && docker-compose build
+
+# Run client and and servers in docker
+docker-compose run client /bin/bash
+
+# Run tests in docker client container
+python3 /tests/proxy_load_tests.py
+
+# Run wrk, curl, h2load etc
+curl -kv https://back/
+curl -kv https://front/
+wrk -t4 -c400 -d30s https://front/
+h2load -t4 -c400 -D30 https://front/
+
+# Exit docker client container
+exit
+
+# Stop docker containers
+docker-compose stop
+```
+
+
+
+
