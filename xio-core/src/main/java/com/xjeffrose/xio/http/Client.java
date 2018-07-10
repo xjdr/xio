@@ -17,6 +17,7 @@ public class Client {
   private final ChannelFutureListener writeListener;
   private final ChannelFutureListener releaseListener;
   private Channel channel;
+  private boolean reusable = true;
 
   public Client(ClientState state, Supplier<ChannelHandler> appHandler, XioTracing tracing) {
     this.state = state;
@@ -45,6 +46,7 @@ public class Client {
         f -> {
           log.debug("Channel closed");
           channel = null;
+          reusable = false;
         };
   }
 
@@ -110,5 +112,14 @@ public class Client {
       channel.pipeline().remove(ClientChannelInitializer.APP_HANDLER);
       Http2ClientStreamMapper.http2ClientStreamMapper(channel.pipeline().firstContext()).clear();
     }
+  }
+
+  /**
+   * @return if true this {@link Client }is reusable or false if when the channel was closed and we
+   *     do not want to reconnect since the the {@link ClientState}'s worker group will be
+   *     incorrect.
+   */
+  public boolean isReusable() {
+    return reusable;
   }
 }
