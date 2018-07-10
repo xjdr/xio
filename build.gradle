@@ -10,6 +10,7 @@ allprojects {
   apply plugin: 'com.jfrog.bintray'
 
   repositories {
+    mavenLocal()
     jcenter()
   }
 
