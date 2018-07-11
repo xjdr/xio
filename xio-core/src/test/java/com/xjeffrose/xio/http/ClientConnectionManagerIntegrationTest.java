@@ -51,13 +51,6 @@ public class ClientConnectionManagerIntegrationTest extends Assert {
     return new ClientConnectionManager(clientState, clientChannelInit);
   }
 
-  @After
-  public void tearDown() throws Exception {
-    if (server != null) {
-      server.close();
-    }
-  }
-
   @Test
   public void testInitialConditions() {
     subject = subjectFactory(true);
@@ -91,5 +84,6 @@ public class ClientConnectionManagerIntegrationTest extends Assert {
     assertEquals(ClientConnectionState.CONNECTING, subject.connectionState());
     connectionResult.await(5000);
     assertEquals(ClientConnectionState.CONNECTED, subject.connectionState());
+    server.close();
   }
 }
