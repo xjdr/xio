@@ -60,19 +60,25 @@ public class ClientPool {
     return getPool(config.remote())
         .values()
         .stream()
-        .filter(
-            meta -> {
-              boolean available = meta.available.getAndSet(false);
-              if (available) {
-                int count = meta.usageCount.incrementAndGet();
-                log.debug("reusing client in pool with usage count {}", count);
-                meta.client.prepareForReuse(() -> new ProxyBackendHandler(ctx));
-              }
-              return available;
-            })
+        .filter(meta -> checkClientMetaState(ctx, config, meta))
         .findFirst()
         .map(mta -> mta.client)
         .orElseGet(clientSupplier);
+  }
+
+  private boolean checkClientMetaState(ChannelHandlerContext ctx, ClientConfig config, Meta meta) {
+    boolean available = meta.available.getAndSet(false);
+    if (available && meta.client.isReusable()) {
+      int count = meta.usageCount.incrementAndGet();
+      log.debug("reusing client in pool with usage count {}", count);
+      meta.client.prepareForReuse(() -> new ProxyBackendHandler(ctx));
+      return true;
+    } else {
+      if (!meta.client.isReusable()) {
+        clientPool.remove(config.remote());
+      }
+      return false;
+    }
   }
 
   private static class Meta {
