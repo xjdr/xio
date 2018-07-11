@@ -89,7 +89,7 @@ public class ClientConnectionManagerIntegrationTest extends Assert {
     subject = subjectFactory(true);
     Future<Void> connectionResult = subject.connect();
     assertEquals(ClientConnectionState.CONNECTING, subject.connectionState());
-    connectionResult.await(5000);
+    connectionResult.await(60000);
     assertEquals(ClientConnectionState.CONNECTED, subject.connectionState());
   }
 }
