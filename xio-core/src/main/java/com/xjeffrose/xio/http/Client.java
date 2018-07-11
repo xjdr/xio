@@ -18,6 +18,7 @@ public class Client {
   private ClientState state;
 
   public Client(ClientState state, ClientConnectionManager manager) {
+
     this.state = state;
     this.manager = manager;
     writeListener =
@@ -147,5 +148,14 @@ public class Client {
       this.request = request;
       this.promise = promise;
     }
+  }
+
+  /**
+   * @return if true this {@link Client }is reusable or false if when the channel was closed and we
+   *     do not want to reconnect since the the {@link ClientState}'s worker group will be
+   *     incorrect.
+   */
+  public boolean isReusable() {
+    return manager.isReusable();
   }
 }
