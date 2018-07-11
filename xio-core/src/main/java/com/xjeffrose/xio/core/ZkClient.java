@@ -3,6 +3,7 @@ package com.xjeffrose.xio.core;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,6 +11,9 @@ import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.curator.RetryPolicy;
+import org.apache.curator.ensemble.exhibitor.DefaultExhibitorRestClient;
+import org.apache.curator.ensemble.exhibitor.ExhibitorEnsembleProvider;
+import org.apache.curator.ensemble.exhibitor.Exhibitors;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.imps.CuratorFrameworkState;
@@ -42,6 +46,29 @@ public class ZkClient implements ConfigurationProvider {
     connectionString = serverSet;
     RetryPolicy retryPolicy = new ExponentialBackoffRetry(1000, 3);
     client = CuratorFrameworkFactory.newClient(serverSet, retryPolicy);
+  }
+
+  public static ZkClient fromExhibitor(Collection<String> serverSet, int restPort) {
+    try {
+      Exhibitors exhibitors = new Exhibitors(serverSet, restPort, () -> "");
+      RetryPolicy retryPolicy = new ExponentialBackoffRetry(1000, 3);
+      ExhibitorEnsembleProvider ensemble =
+          new ExhibitorEnsembleProvider(
+              exhibitors,
+              new DefaultExhibitorRestClient(),
+              "/exhibitor/v1/cluster/list",
+              61000,
+              retryPolicy);
+      ensemble.pollForInitialEnsemble();
+      CuratorFramework curatorClient =
+          CuratorFrameworkFactory.builder()
+              .ensembleProvider(ensemble)
+              .retryPolicy(retryPolicy)
+              .build();
+      return new ZkClient(curatorClient);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 
   // Used by NullZkClient
