@@ -1,8 +1,11 @@
 package com.xjeffrose.xio.core;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
+import okhttp3.mockwebserver.MockResponse;
+import okhttp3.mockwebserver.MockWebServer;
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
@@ -14,6 +17,23 @@ import org.junit.Assert;
 import org.junit.Test;
 
 public class ZkClientFunctionalTest extends Assert {
+
+  @Test
+  public void testFromExhibitor() throws Exception {
+    MockWebServer server = new MockWebServer();
+    server.enqueue(
+        new MockResponse()
+            .setBody(
+                "count=5&server0=10.10.1.1&server1=10.10.1.2&server2=10.10.1.3&server3=10.10.1.4&server4=10.10.1.5&port=2181")
+            .setHeader("Content-Type", "application/x-www-form-urlencoded"));
+    server.start();
+    ZkClient client = ZkClient.fromExhibitor(Arrays.asList("127.0.0.1"), server.getPort());
+
+    assertEquals(
+        "10.10.1.1:2181,10.10.1.2:2181,10.10.1.3:2181,10.10.1.4:2181,10.10.1.5:2181",
+        client.getConnectionString());
+    server.shutdown();
+  }
 
   @Test
   public void testUpdaterBeforeStart() throws Exception {

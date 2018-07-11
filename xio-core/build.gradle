@@ -9,6 +9,8 @@ plugins {
 
 googleJavaFormat {
   exclude "out/**/*"
+  exclude "target/generated-sources/**/*.java"
+  exclude "target/generated-test-sources/**/*.java"
 }
 
 jacocoTestReport {

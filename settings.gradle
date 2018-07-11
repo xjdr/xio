@@ -3,6 +3,7 @@ include ':xio'
 include ':xio-test'
 include ':configuration-server'
 include 'chicago-example'
+include 'exhibitor-test-app'
 include 'int-test-backend-server'
 include 'int-test-proxy-server'
 

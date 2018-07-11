@@ -22,7 +22,7 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.embedded.EmbeddedChannel;
-import io.netty.handler.codec.http.DefaultHttpRequest;
+import io.netty.handler.codec.http.DefaultFullHttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.CharsetUtil;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -42,25 +42,27 @@ public class HttpServerTracingHandlerTest extends Assert {
 
       Tracer tracer = httpTracing.tracing().tracer();
 
-      request
-          .httpTraceInfo()
-          .getSpan()
-          .ifPresent(
-              parent -> {
-                Span span = tracer.newChild(parent.context()).name("child").start();
-                span.finish();
-              });
+      if (request.endOfMessage()) {
+        request
+            .httpTraceInfo()
+            .getSpan()
+            .ifPresent(
+                parent -> {
+                  Span span = tracer.newChild(parent.context()).name("child").start();
+                  span.finish();
+                });
 
-      val response =
-          DefaultFullResponse.builder()
-              .status(status)
-              .headers(new DefaultHeaders())
-              .httpTraceInfo(request.httpTraceInfo())
-              .status(status)
-              .body(content)
-              .build();
+        val response =
+            DefaultFullResponse.builder()
+                .status(status)
+                .headers(new DefaultHeaders())
+                .httpTraceInfo(request.httpTraceInfo())
+                .status(status)
+                .body(content)
+                .build();
 
-      ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
+        ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
+      }
     }
   }
 
@@ -102,7 +104,7 @@ public class HttpServerTracingHandlerTest extends Assert {
                       new Http1ServerCodec(),
                       new HttpServerTracingHandler(httpTracingState),
                       new ApplicationHandler());
-              DefaultHttpRequest request = new DefaultHttpRequest(HTTP_1_1, GET, "/foo");
+              DefaultFullHttpRequest request = new DefaultFullHttpRequest(HTTP_1_1, GET, "/foo");
               channel.writeInbound(request);
               channel.runPendingTasks();
 
