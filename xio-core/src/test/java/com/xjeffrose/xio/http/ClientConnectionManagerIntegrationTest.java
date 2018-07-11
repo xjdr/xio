@@ -70,13 +70,9 @@ public class ClientConnectionManagerIntegrationTest extends Assert {
     // don't set up fake origin backend server so we can connect to it
     Future<Void> connectionResult = subject.connect();
     assertEquals(ClientConnectionState.CONNECTING, subject.connectionState());
-    connectionResult.awaitUninterruptibly(5000);
-    // this is best effort, sometimes it takes like 60 seconds for the connection to fail (i'm trying to
-    // write connect to 127.0.0.0:8888 which should fail. I make this best effort because i dont want to
-    // set the timer to 60 seconds)
-    if (connectionResult.isDone()) {
-      assertEquals(ClientConnectionState.CLOSED_CONNECTION, subject.connectionState());
-    }
+    connectionResult.awaitUninterruptibly(60000);
+    // this is best effort, sometimes it takes like 60 seconds for the connection to fail
+    assertEquals(ClientConnectionState.CLOSED_CONNECTION, subject.connectionState());
   }
 
   @Test
