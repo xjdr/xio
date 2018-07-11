@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import javax.annotation.Nullable;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.curator.RetryPolicy;
@@ -252,13 +251,14 @@ public class ZkClient implements ConfigurationProvider {
     }
 
     cache
-      .getListenable()
-      .addListener(
-        new TreeCacheListener() {
-          @Override
-          public void childEvent(CuratorFramework client, TreeCacheEvent event) throws Exception {
-            updater.accept(event);
-          }
-        });
+        .getListenable()
+        .addListener(
+            new TreeCacheListener() {
+              @Override
+              public void childEvent(CuratorFramework client, TreeCacheEvent event)
+                  throws Exception {
+                updater.accept(event);
+              }
+            });
   }
 }

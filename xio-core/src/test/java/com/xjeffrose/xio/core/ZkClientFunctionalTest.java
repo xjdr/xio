@@ -3,7 +3,6 @@ package com.xjeffrose.xio.core;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
-
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
@@ -69,7 +68,7 @@ public class ZkClientFunctionalTest extends Assert {
 
       RetryPolicy retryPolicy = new RetryOneTime(1);
       try (CuratorFramework client =
-             CuratorFrameworkFactory.newClient(server.getConnectString(), retryPolicy)) {
+          CuratorFrameworkFactory.newClient(server.getConnectString(), retryPolicy)) {
         client.start();
         String path = "/xio/watched/node-init";
 
@@ -81,18 +80,18 @@ public class ZkClientFunctionalTest extends Assert {
 
         // add new updater after the client has been started
         zkClient.registerUpdater(
-          new ConfigurationUpdater() {
-            @Override
-            public String getPath() {
-              return path;
-            }
+            new ConfigurationUpdater() {
+              @Override
+              public String getPath() {
+                return path;
+              }
 
-            @Override
-            public void update(byte[] data) {
-              result.set(new String(data));
-              signal.countDown();
-            }
-          });
+              @Override
+              public void update(byte[] data) {
+                result.set(new String(data));
+                signal.countDown();
+              }
+            });
 
         client.create().orSetData().creatingParentsIfNeeded().forPath(path, payload.getBytes());
 
@@ -166,13 +165,17 @@ public class ZkClientFunctionalTest extends Assert {
 
       RetryPolicy retryPolicy = new RetryOneTime(1);
       try (CuratorFramework client =
-             CuratorFrameworkFactory.newClient(server.getConnectString(), retryPolicy)) {
+          CuratorFrameworkFactory.newClient(server.getConnectString(), retryPolicy)) {
         client.start();
 
         String treeNodePath = "/xio/watched/tree-start";
 
         // add the initial nodes (added parent nodes first)
-        client.create().orSetData().creatingParentsIfNeeded().forPath(treeNodePath + "/one", payload1.getBytes());
+        client
+            .create()
+            .orSetData()
+            .creatingParentsIfNeeded()
+            .forPath(treeNodePath + "/one", payload1.getBytes());
 
         ZkClient zkClient = new ZkClient(server.getConnectString());
 
@@ -183,17 +186,20 @@ public class ZkClientFunctionalTest extends Assert {
         // start the client which will notify of all nodes added then followed by an initialized event
         zkClient.start();
 
-        zkClient.registerForTreeNodeEvents(treeNodePath, treeCacheEvent -> {
-          results.add(treeCacheEvent);
+        zkClient.registerForTreeNodeEvents(
+            treeNodePath,
+            treeCacheEvent -> {
+              results.add(treeCacheEvent);
 
-          if (treeCacheEvent.getType().equals(TreeCacheEvent.Type.INITIALIZED)) {
-            initializedLatch.countDown();
-          }
+              if (treeCacheEvent.getType().equals(TreeCacheEvent.Type.INITIALIZED)) {
+                initializedLatch.countDown();
+              }
 
-          if (initializedLatch.getCount() == 0 && treeCacheEvent.getType().equals(TreeCacheEvent.Type.NODE_ADDED)) {
-            nodeAddedAfterwardLatch.countDown();
-          }
-        });
+              if (initializedLatch.getCount() == 0
+                  && treeCacheEvent.getType().equals(TreeCacheEvent.Type.NODE_ADDED)) {
+                nodeAddedAfterwardLatch.countDown();
+              }
+            });
 
         // wait for the initial events to finish
         initializedLatch.await();
@@ -206,7 +212,11 @@ public class ZkClientFunctionalTest extends Assert {
         assertEquals(payload1, zkClient.get(treeNodePath + "/one"));
 
         // add new child node
-        client.create().orSetData().creatingParentsIfNeeded().forPath(treeNodePath + "/two", payload2.getBytes());
+        client
+            .create()
+            .orSetData()
+            .creatingParentsIfNeeded()
+            .forPath(treeNodePath + "/two", payload2.getBytes());
 
         // wait for new node to be added
         nodeAddedAfterwardLatch.await();
