@@ -100,23 +100,23 @@ public class Client {
     // this will happen on the same eventloop as the write so we don't need to worry about
     // trying to write to this queue at the same time we are dequeing
     while (!requestQueue.isEmpty()) {
-      Client.ClientPayload pair = (Client.ClientPayload) requestQueue.remove();
-      log.debug("== Dequeue req: " + pair.request + " on client: " + this);
+      Client.ClientPayload requestPayload = (Client.ClientPayload) requestQueue.remove();
+      log.debug("== Dequeue req: " + requestPayload.request + " on client: " + this);
       if (connectionSuccess) {
-        this.rawWrite(pair.request)
+        this.rawWrite(requestPayload.request)
             .addListener(
                 (writeResult) -> {
                   if (writeResult.isDone() && writeResult.isSuccess()) {
-                    log.debug("== Req: " + pair.request + " succeeded on client: " + this);
-                    pair.promise.setSuccess();
+                    log.debug("== Req: " + requestPayload.request + " succeeded on client: " + this);
+                    requestPayload.promise.setSuccess();
                   } else {
-                    log.debug("== Req: " + pair.request + " failed on client: " + this);
-                    pair.promise.setFailure(connectionResult.cause());
+                    log.debug("== Req: " + requestPayload.request + " failed on client: " + this);
+                    requestPayload.promise.setFailure(connectionResult.cause());
                   }
                 });
       } else {
-        log.debug("== Req: " + pair.request + " failed on client: " + this);
-        pair.promise.setFailure(connectionResult.cause());
+        log.debug("== Req: " + requestPayload.request + " failed on client: " + this);
+        requestPayload.promise.setFailure(connectionResult.cause());
       }
     }
   }
