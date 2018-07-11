@@ -16,6 +16,7 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.concurrent.Future;
 import java.io.File;
 import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 import okhttp3.Protocol;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.After;
@@ -76,9 +77,14 @@ public class ClientConnectionManagerIntegrationTest extends Assert {
     subject = subjectFactory(true);
     Future<Void> connectionResult = subject.connect();
     assertEquals(ClientConnectionState.CONNECTING, subject.connectionState());
-    connectionResult.await(5000);
-    assertEquals(ClientConnectionState.CONNECTED, subject.connectionState());
-    server.close();
+    try {
+      connectionResult.get(5, TimeUnit.SECONDS);
+    } catch (Exception e) {
+      System.out.println("Connection exception = " + e.toString());
+    } finally {
+      assertEquals(ClientConnectionState.CONNECTED, subject.connectionState());
+      server.close();
+    }
   }
 
   @Test
@@ -87,8 +93,12 @@ public class ClientConnectionManagerIntegrationTest extends Assert {
     // don't set up fake origin backend server so we can connect to it
     Future<Void> connectionResult = subject.connect();
     assertEquals(ClientConnectionState.CONNECTING, subject.connectionState());
-    connectionResult.awaitUninterruptibly(5000);
-    // this is best effort, sometimes it takes like 60 seconds for the connection to fail
-    assertEquals(ClientConnectionState.CLOSED_CONNECTION, subject.connectionState());
+    try {
+      connectionResult.get(5, TimeUnit.SECONDS);
+    } catch (Exception e) {
+
+    } finally {
+      assertEquals(ClientConnectionState.CLOSED_CONNECTION, subject.connectionState());
+    }
   }
 }

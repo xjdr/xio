@@ -107,7 +107,8 @@ public class Client {
             .addListener(
                 (writeResult) -> {
                   if (writeResult.isDone() && writeResult.isSuccess()) {
-                    log.debug("== Req: " + requestPayload.request + " succeeded on client: " + this);
+                    log.debug(
+                        "== Req: " + requestPayload.request + " succeeded on client: " + this);
                     requestPayload.promise.setSuccess();
                   } else {
                     log.debug("== Req: " + requestPayload.request + " failed on client: " + this);
