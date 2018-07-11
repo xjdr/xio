@@ -156,6 +156,6 @@ public class Client {
    *     incorrect.
    */
   public boolean isReusable() {
-    return manager.isReusable();
+    return manager.connectionState() == ClientConnectionState.CONNECTED;
   }
 }

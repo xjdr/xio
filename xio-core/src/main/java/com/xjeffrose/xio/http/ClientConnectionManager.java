@@ -15,7 +15,6 @@ public class ClientConnectionManager {
   private ChannelFutureListener connectionListener;
   private ChannelFuture currentChannelFuture;
   private ClientState state;
-  private boolean reusable = true;
   private ClientConnectionState connectionState = ClientConnectionState.NOT_CONNECTED;
 
   Channel currentChannel() {
@@ -34,7 +33,6 @@ public class ClientConnectionManager {
           log.debug("Channel closed");
           connectionState = ClientConnectionState.CLOSED_CONNECTION;
           this.currentChannelFuture = null;
-          this.reusable = false;
         };
     connectionListener =
         f -> {
@@ -45,7 +43,6 @@ public class ClientConnectionManager {
             log.debug("Connection failed", f.cause());
             connectionState = ClientConnectionState.CLOSED_CONNECTION;
             this.currentChannelFuture = null;
-            this.reusable = false;
           }
         };
   }
@@ -70,10 +67,6 @@ public class ClientConnectionManager {
 
   public ClientConnectionState connectionState() {
     return connectionState;
-  }
-
-  public boolean isReusable() {
-    return reusable;
   }
 
   public void setBackendHandlerSupplier(Supplier<ChannelHandler> handlerSupplier) {
