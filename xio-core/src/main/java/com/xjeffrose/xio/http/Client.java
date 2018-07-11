@@ -55,8 +55,7 @@ public class Client {
     if (manager.connectionState() == ClientConnectionState.NOT_CONNECTED) {
       // If we are not in a connected state we should buffer the requests until we find out
       // what happened to the connection try.  The connectFuture calls back on the same eventloop,
-      // unless this is a reused client from the client pool, eventually we should reconnect client on the
-      // new serverchannel's event loop.
+      // since we are never reconnecting clients for different serverchannel eventloops
       log.debug(
           "== No channel exists, lets connect on client: " + this + " with request: " + request);
       ChannelFuture connectFuture = manager.connect();
