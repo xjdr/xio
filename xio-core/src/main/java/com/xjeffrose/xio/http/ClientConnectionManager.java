@@ -19,7 +19,10 @@ public class ClientConnectionManager {
   private ClientConnectionState connectionState = ClientConnectionState.NOT_CONNECTED;
 
   Channel currentChannel() {
-    return currentChannelFuture.channel();
+    if (currentChannelFuture != null) {
+      return currentChannelFuture.channel();
+    }
+    return null;
   }
 
   public ClientConnectionManager(ClientState state, ClientChannelInitializer channelInitializer) {
@@ -41,6 +44,7 @@ public class ClientConnectionManager {
           } else {
             log.debug("Connection failed", f.cause());
             connectionState = ClientConnectionState.CLOSED_CONNECTION;
+            this.currentChannelFuture = null;
             this.reusable = false;
           }
         };
