@@ -4,5 +4,5 @@ public enum ClientConnectionState {
   NOT_CONNECTED,
   CONNECTING,
   CONNECTED,
-  FAILED_CONNECTION
+  CLOSED_CONNECTION
 }

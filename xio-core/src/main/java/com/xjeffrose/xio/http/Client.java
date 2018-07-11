@@ -1,44 +1,40 @@
 package com.xjeffrose.xio.http;
 
-import com.xjeffrose.xio.tracing.XioTracing;
 import io.netty.channel.*;
 import io.netty.util.concurrent.Future;
 import java.net.InetSocketAddress;
 import java.util.ArrayDeque;
+import java.util.Optional;
 import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Supplier;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class Client {
- // private Queue<ClientPayload> requestQueue = new ConcurrentLinkedQueue();
   Queue<ClientPayload> requestQueue = new ArrayDeque<>();
   private ChannelFuture connectFuture;
   private ChannelFutureListener writeListener;
   private ClientConnectionManager manager;
-  private ClientState clientState;
-  private ClientChannelInitializer channelInitializer;
+  private ClientState state;
 
-  public Client(ClientState state, Supplier<ChannelHandler> appHandler, XioTracing tracing) {
-    this.clientState = state;
-    this.channelInitializer = new ClientChannelInitializer(state, appHandler, tracing);
-    this.manager = new ClientConnectionManager(state, this.channelInitializer);
+  public Client(ClientState state, ClientConnectionManager manager) {
+    this.state = state;
+    this.manager = manager;
     writeListener =
-      f -> {
-        if (f.isDone() && f.isSuccess()) {
-          log.debug("Write succeeded");
-        } else {
-          log.debug("Write failed", f.cause());
-          if (manager.currentChannel() != null) {
-            log.debug("pipeline: {}", manager.currentChannel().pipeline());
+        f -> {
+          if (f.isDone() && f.isSuccess()) {
+            log.debug("Write succeeded");
+          } else {
+            log.debug("Write failed", f.cause());
+            if (manager.currentChannel() != null) {
+              log.debug("pipeline: {}", manager.currentChannel().pipeline());
+            }
           }
-        }
-      };
+        };
   }
 
   public InetSocketAddress remoteAddress() {
-    return clientState.remote;
+    return state.remote;
   }
 
   /**
@@ -55,20 +51,24 @@ public class Client {
    * @param request The Request object that we ultimately want to send outbound
    * @return A ChannelFuture that succeeds when both the connect and write succeed
    */
-  public ChannelFuture write(Request request) {
+  public Optional<ChannelFuture> write(Request request) {
     ChannelPromise promise;
     if (manager.connectionState() == ClientConnectionState.NOT_CONNECTED) {
       // If we are not in a connected state we should buffer the requests until we find out
-      // what happened to the connection try.  The connectFuture calls back on the same eventloop
-      log.debug("== No channel exists, lets connect on client: " + this + " with request: " + request);
+      // what happened to the connection try.  The connectFuture calls back on the same eventloop,
+      // unless this is a reused client from the client pool, eventually we should reconnect client on the
+      // new serverchannel's event loop.
+      log.debug(
+          "== No channel exists, lets connect on client: " + this + " with request: " + request);
       ChannelFuture connectFuture = manager.connect();
       promise = manager.currentChannel().newPromise();
       log.debug("== Adding req: " + request + " to queue on client: " + this);
       this.requestQueue.add(new Client.ClientPayload(request, promise));
-      connectFuture.addListener((connectionResult) -> {
-        executeBufferedRequests(connectionResult);
-      });
-      return promise;
+      connectFuture.addListener(
+          (connectionResult) -> {
+            executeBufferedRequests(connectionResult);
+          });
+      return Optional.of(promise);
     } else if (manager.connectionState() == ClientConnectionState.CONNECTING) {
       // we are in the middle of connecting so lets just add to the queue
       // this is a non concurrent queue because these write calls methods will be called on the
@@ -76,22 +76,21 @@ public class Client {
       promise = manager.currentChannel().newPromise();
       log.debug("== Adding req: " + request + " to queue on client: " + this);
       this.requestQueue.add(new Client.ClientPayload(request, promise));
-      return promise;
+      return Optional.of(promise);
     } else if (manager.connectionState() == ClientConnectionState.CONNECTED) {
       // we are already connected so fire away
       log.debug("== already connected, just writing req: " + request + " on client: " + this);
-      return this.rawWrite(request);
+      return Optional.of(this.rawWrite(request));
     } else {
-      // Right now when a connection fails we don't retry blindly, we need to do something smarter so
-      // we do not bombard the origin server with infinite retry. the channel should still exist so we shouldn't
-      // have issues creating a newFailedFuture
       log.debug("== Connect failed on client: " + this);
-      return manager.currentChannel().newFailedFuture(this.connectFuture.cause());
+      return Optional.empty();
     }
   }
 
   private ChannelFuture rawWrite(Request request) {
-    return request.endOfMessage() ? manager.currentChannel().writeAndFlush(request).addListener(this.writeListener) : manager.currentChannel().write(request).addListener(this.writeListener);
+    return request.endOfMessage()
+        ? manager.currentChannel().writeAndFlush(request).addListener(this.writeListener)
+        : manager.currentChannel().write(request).addListener(this.writeListener);
   }
 
   private void executeBufferedRequests(Future<? super Void> connectionResult) {
@@ -100,19 +99,21 @@ public class Client {
     // loop through the queue until it's empty and fire away
     // this will happen on the same eventloop as the write so we don't need to worry about
     // trying to write to this queue at the same time we are dequeing
-    while(!requestQueue.isEmpty()) {
-      Client.ClientPayload pair = (Client.ClientPayload)requestQueue.remove();
+    while (!requestQueue.isEmpty()) {
+      Client.ClientPayload pair = (Client.ClientPayload) requestQueue.remove();
       log.debug("== Dequeue req: " + pair.request + " on client: " + this);
       if (connectionSuccess) {
-        this.rawWrite(pair.request).addListener((writeResult) -> {
-          if (writeResult.isDone() && writeResult.isSuccess()) {
-            log.debug("== Req: " + pair.request + " succeeded on client: " + this);
-            pair.promise.setSuccess();
-          } else {
-            log.debug("== Req: " + pair.request + " failed on client: " + this);
-            pair.promise.setFailure(connectionResult.cause());
-          }
-        });
+        this.rawWrite(pair.request)
+            .addListener(
+                (writeResult) -> {
+                  if (writeResult.isDone() && writeResult.isSuccess()) {
+                    log.debug("== Req: " + pair.request + " succeeded on client: " + this);
+                    pair.promise.setSuccess();
+                  } else {
+                    log.debug("== Req: " + pair.request + " failed on client: " + this);
+                    pair.promise.setFailure(connectionResult.cause());
+                  }
+                });
       } else {
         pair.promise.setFailure(connectionResult.cause());
       }
@@ -120,16 +121,21 @@ public class Client {
   }
 
   public void prepareForReuse(Supplier<ChannelHandler> handlerSupplier) {
-    channelInitializer.setAppHandler(handlerSupplier);
+    manager.setBackendHandlerSupplier(handlerSupplier);
     if (manager.currentChannel() != null) {
-      manager.currentChannel().pipeline().addLast(ClientChannelInitializer.APP_HANDLER, handlerSupplier.get());
+      manager
+          .currentChannel()
+          .pipeline()
+          .addLast(ClientChannelInitializer.APP_HANDLER, handlerSupplier.get());
     }
   }
 
   public void recycle() {
     if (manager.currentChannel() != null) {
       manager.currentChannel().pipeline().remove(ClientChannelInitializer.APP_HANDLER);
-      Http2ClientStreamMapper.http2ClientStreamMapper(manager.currentChannel().pipeline().firstContext()).clear();
+      Http2ClientStreamMapper.http2ClientStreamMapper(
+              manager.currentChannel().pipeline().firstContext())
+          .clear();
     }
   }
 
