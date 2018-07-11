@@ -6,13 +6,18 @@ import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
+import org.apache.curator.framework.imps.CuratorFrameworkState;
 import org.apache.curator.framework.recipes.cache.NodeCache;
 import org.apache.curator.framework.recipes.cache.NodeCacheListener;
+import org.apache.curator.framework.recipes.cache.TreeCache;
+import org.apache.curator.framework.recipes.cache.TreeCacheEvent;
+import org.apache.curator.framework.recipes.cache.TreeCacheListener;
 import org.apache.curator.framework.recipes.leader.LeaderSelector;
 import org.apache.curator.framework.recipes.leader.LeaderSelectorListener;
 import org.apache.curator.retry.ExponentialBackoffRetry;
@@ -26,6 +31,7 @@ public class ZkClient implements ConfigurationProvider {
   private CuratorFramework client;
   private String connectionString;
   private Map<String, NodeCache> nodeCaches = new HashMap<>();
+  private Map<String, TreeCache> treeCaches = new HashMap<>();
 
   public ZkClient(CuratorFramework client) {
     this.client = client;
@@ -92,11 +98,21 @@ public class ZkClient implements ConfigurationProvider {
     }
   }
 
+  public void startTreeCache(TreeCache cache) {
+    try {
+      cache.start();
+    } catch (Exception e) {
+      log.error("Error starting treeCache {}", cache, e);
+      throw new RuntimeException(e);
+    }
+  }
+
   public void start() {
     try {
       client.start();
       client.blockUntilConnected();
       nodeCaches.values().forEach(this::startNodeCache);
+      treeCaches.values().forEach(this::startTreeCache);
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
     }
@@ -117,6 +133,7 @@ public class ZkClient implements ConfigurationProvider {
       leaderSelector.close();
     }
     nodeCaches.values().forEach(this::stopNodeCache);
+    treeCaches.values().forEach(TreeCache::close);
     client.close();
   }
 
@@ -197,8 +214,24 @@ public class ZkClient implements ConfigurationProvider {
     return cache;
   }
 
+  private TreeCache getOrCreateTreeCache(String path) {
+    TreeCache cache;
+
+    if (treeCaches.containsKey(path)) {
+      cache = treeCaches.get(path);
+    } else {
+      cache = new TreeCache(client, path);
+
+      treeCaches.put(path, cache);
+    }
+    return cache;
+  }
+
   public void registerUpdater(ConfigurationUpdater updater) {
     NodeCache cache = getOrCreateNodeCache(updater.getPath());
+    if (client.getState().equals(CuratorFrameworkState.STARTED)) {
+      startNodeCache(cache);
+    }
 
     cache
         .getListenable()
@@ -207,6 +240,24 @@ public class ZkClient implements ConfigurationProvider {
               @Override
               public void nodeChanged() {
                 updater.update(cache.getCurrentData().getData());
+              }
+            });
+  }
+
+  public void registerForTreeNodeEvents(String path, Consumer<TreeCacheEvent> updater) {
+    TreeCache cache = getOrCreateTreeCache(path);
+    if (client.getState().equals(CuratorFrameworkState.STARTED)) {
+      startTreeCache(cache);
+    }
+
+    cache
+        .getListenable()
+        .addListener(
+            new TreeCacheListener() {
+              @Override
+              public void childEvent(CuratorFramework client, TreeCacheEvent event)
+                  throws Exception {
+                updater.accept(event);
               }
             });
   }
