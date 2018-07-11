@@ -51,21 +51,15 @@ public class ClientConnectionManagerIntegrationTest extends Assert {
     return new ClientConnectionManager(clientState, clientChannelInit);
   }
 
+  @After
+  public void tearDown() throws Exception {
+    subject = null;
+  }
+
   @Test
   public void testInitialConditions() {
     subject = subjectFactory(true);
     assertEquals(subject.connectionState(), ClientConnectionState.NOT_CONNECTED);
-  }
-
-  @Test
-  public void testConnectingFailingConnection() throws Exception {
-    subject = subjectFactory(false);
-    // don't set up fake origin backend server so we can connect to it
-    Future<Void> connectionResult = subject.connect();
-    assertEquals(ClientConnectionState.CONNECTING, subject.connectionState());
-    connectionResult.awaitUninterruptibly(60000);
-    // this is best effort, sometimes it takes like 60 seconds for the connection to fail
-    assertEquals(ClientConnectionState.CLOSED_CONNECTION, subject.connectionState());
   }
 
   @Test
@@ -85,5 +79,16 @@ public class ClientConnectionManagerIntegrationTest extends Assert {
     connectionResult.await(5000);
     assertEquals(ClientConnectionState.CONNECTED, subject.connectionState());
     server.close();
+  }
+
+  @Test
+  public void testConnectingFailingConnection() throws Exception {
+    subject = subjectFactory(false);
+    // don't set up fake origin backend server so we can connect to it
+    Future<Void> connectionResult = subject.connect();
+    assertEquals(ClientConnectionState.CONNECTING, subject.connectionState());
+    connectionResult.awaitUninterruptibly(5000);
+    // this is best effort, sometimes it takes like 60 seconds for the connection to fail
+    assertEquals(ClientConnectionState.CLOSED_CONNECTION, subject.connectionState());
   }
 }
