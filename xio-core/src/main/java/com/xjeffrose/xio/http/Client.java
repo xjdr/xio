@@ -12,13 +12,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class Client {
   Queue<ClientPayload> requestQueue = new ArrayDeque<>();
-  private ChannelFuture connectFuture;
   private ChannelFutureListener writeListener;
   private ClientConnectionManager manager;
   private ClientState state;
 
   public Client(ClientState state, ClientConnectionManager manager) {
-
     this.state = state;
     this.manager = manager;
     writeListener =
@@ -73,7 +71,9 @@ public class Client {
     } else if (manager.connectionState() == ClientConnectionState.CONNECTING) {
       // we are in the middle of connecting so lets just add to the queue
       // this is a non concurrent queue because these write calls methods will be called on the
-      // same eventloop as the connectFuture.listener callback
+      // same eventloop as the connectFuture.listener callback. We do not reconnect on previously
+      // connected clients so we don't have to worry about new serverchannel's trying to call connect
+      // on a client that was bound to previous serverchannel's eventloop
       promise = manager.currentChannel().newPromise();
       log.debug("== Adding req: " + request + " to queue on client: " + this);
       this.requestQueue.add(new Client.ClientPayload(request, promise));
@@ -116,6 +116,7 @@ public class Client {
                   }
                 });
       } else {
+        log.debug("== Req: " + pair.request + " failed on client: " + this);
         pair.promise.setFailure(connectionResult.cause());
       }
     }
