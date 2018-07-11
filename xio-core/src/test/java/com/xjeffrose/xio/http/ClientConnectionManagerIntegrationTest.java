@@ -70,7 +70,7 @@ public class ClientConnectionManagerIntegrationTest extends Assert {
     // don't set up fake origin backend server so we can connect to it
     Future<Void> connectionResult = subject.connect();
     assertEquals(ClientConnectionState.CONNECTING, subject.connectionState());
-    connectionResult.awaitUninterruptibly(5000);
+    connectionResult.awaitUninterruptibly(60000);
     // this is best effort, sometimes it takes like 60 seconds for the connection to fail
     assertEquals(ClientConnectionState.CLOSED_CONNECTION, subject.connectionState());
   }
@@ -89,7 +89,7 @@ public class ClientConnectionManagerIntegrationTest extends Assert {
     subject = subjectFactory(true);
     Future<Void> connectionResult = subject.connect();
     assertEquals(ClientConnectionState.CONNECTING, subject.connectionState());
-    connectionResult.await(60000);
+    connectionResult.await(5000);
     assertEquals(ClientConnectionState.CONNECTED, subject.connectionState());
   }
 }
