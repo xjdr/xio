@@ -6,12 +6,10 @@ import com.xjeffrose.xio.SSL.TlsConfig;
 import io.netty.channel.ChannelOption;
 import java.net.InetSocketAddress;
 import java.util.Map;
-
+import javax.annotation.Nullable;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
-
-import javax.annotation.Nullable;
 
 @Slf4j
 @Accessors(fluent = true)
@@ -62,7 +60,14 @@ public class ClientConfig {
     idleTimeoutConfig = new IdleTimeoutConfig(idleTimeoutEnabled, idleTimeoutDuration);
   }
 
-  public ClientConfig(Map<ChannelOption<Object>, Object> bootstrapOptions, String name, TlsConfig tls, boolean messageLoggerEnabled, InetSocketAddress local, InetSocketAddress remote, IdleTimeoutConfig idleTimeoutConfig) {
+  public ClientConfig(
+      Map<ChannelOption<Object>, Object> bootstrapOptions,
+      String name,
+      TlsConfig tls,
+      boolean messageLoggerEnabled,
+      InetSocketAddress local,
+      InetSocketAddress remote,
+      IdleTimeoutConfig idleTimeoutConfig) {
     this.bootstrapOptions = bootstrapOptions;
     this.name = name;
     this.tls = tls;
@@ -95,8 +100,8 @@ public class ClientConfig {
   /**
    * Used to create a ClientConfig at runtime.
    *
-   * If a value is not set, it defaults to using the default object's value.
-   * */
+   * <p>If a value is not set, it defaults to using the default object's value.
+   */
   public static class Builder {
     private ClientConfig fallbackObject;
     private Map<ChannelOption<Object>, Object> bootstrapOptions;
@@ -148,19 +153,17 @@ public class ClientConfig {
 
     public ClientConfig build() {
       return new ClientConfig(
-        valueOrFallback(bootstrapOptions, fallbackObject.bootstrapOptions()),
-        valueOrFallback(name, fallbackObject.name()),
-        valueOrFallback(tls, fallbackObject.tls()),
-        valueOrFallback(messageLoggerEnabled, fallbackObject.messageLoggerEnabled()),
-        valueOrFallback(local, fallbackObject.local()),
-        valueOrFallback(remote, fallbackObject.remote()),
-        valueOrFallback(idleTimeoutConfig, fallbackObject.idleTimeoutConfig())
-      );
+          valueOrFallback(bootstrapOptions, fallbackObject.bootstrapOptions()),
+          valueOrFallback(name, fallbackObject.name()),
+          valueOrFallback(tls, fallbackObject.tls()),
+          valueOrFallback(messageLoggerEnabled, fallbackObject.messageLoggerEnabled()),
+          valueOrFallback(local, fallbackObject.local()),
+          valueOrFallback(remote, fallbackObject.remote()),
+          valueOrFallback(idleTimeoutConfig, fallbackObject.idleTimeoutConfig()));
     }
 
     private <T> T valueOrFallback(@Nullable T value, T fallback) {
       return value != null ? value : fallback;
     }
   }
-
 }

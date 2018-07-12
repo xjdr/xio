@@ -4,12 +4,11 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.xjeffrose.xio.SSL.TlsConfig;
 import io.netty.channel.ChannelOption;
+import java.net.InetSocketAddress;
+import java.util.Map;
 import org.assertj.core.util.Maps;
 import org.junit.Assert;
 import org.junit.Test;
-
-import java.net.InetSocketAddress;
-import java.util.Map;
 
 public class ClientConfigTest extends Assert {
   @Test
@@ -24,17 +23,16 @@ public class ClientConfigTest extends Assert {
     InetSocketAddress expectedRemote = new InetSocketAddress("remote ip", 22222);
     IdleTimeoutConfig expectedIdleTimeoutConfig = new IdleTimeoutConfig(true, 55);
 
-
-    ClientConfig subject = ClientConfig
-      .newBuilder(fallbackObject)
-      .setBootstrapOptions(expectedBootstrapOptions)
-      .setName(expectedName)
-      .setTls(expectedTls)
-      .setMessageLoggerEnabled(expectedMessageLoggerEnabled)
-      .setLocal(expectedLocal)
-      .setRemote(expectedRemote)
-      .setIdleTimeoutConfig(expectedIdleTimeoutConfig)
-      .build();
+    ClientConfig subject =
+        ClientConfig.newBuilder(fallbackObject)
+            .setBootstrapOptions(expectedBootstrapOptions)
+            .setName(expectedName)
+            .setTls(expectedTls)
+            .setMessageLoggerEnabled(expectedMessageLoggerEnabled)
+            .setLocal(expectedLocal)
+            .setRemote(expectedRemote)
+            .setIdleTimeoutConfig(expectedIdleTimeoutConfig)
+            .build();
 
     assertEquals(expectedBootstrapOptions, subject.bootstrapOptions());
     assertEquals(expectedName, subject.name());
@@ -47,10 +45,9 @@ public class ClientConfigTest extends Assert {
 
   @Test
   public void testBuilderFallbackValues() {
-    ClientConfig fallbackObject = new ClientConfig(ConfigFactory.load().getConfig("xio.clientTemplate"));
-    ClientConfig subject = ClientConfig
-      .newBuilder(fallbackObject)
-      .build();
+    ClientConfig fallbackObject =
+        new ClientConfig(ConfigFactory.load().getConfig("xio.clientTemplate"));
+    ClientConfig subject = ClientConfig.newBuilder(fallbackObject).build();
 
     assertNotNull(subject);
   }

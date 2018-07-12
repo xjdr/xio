@@ -2,14 +2,12 @@ package com.xjeffrose.xio.http;
 
 import com.typesafe.config.Config;
 import com.xjeffrose.xio.client.ClientConfig;
+import io.netty.handler.codec.http.HttpMethod;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import io.netty.handler.codec.http.HttpMethod;
+import javax.annotation.Nullable;
 import lombok.Getter;
 import lombok.experimental.Accessors;
-
-import javax.annotation.Nullable;
 
 /*
 url = scheme, authority, path, query-string, fragment
@@ -68,7 +66,15 @@ public class ProxyRouteConfig extends RouteConfig {
     // validatePath(config.getString("proxyPath"), config.origin());
   }
 
-  public ProxyRouteConfig(List<HttpMethod> methods, String host, String path, String permissionNeeded, List<ClientConfig> clientConfigs, ProxyHostPolicy proxyHostPolicy, String proxyHost, String proxyPath) {
+  public ProxyRouteConfig(
+      List<HttpMethod> methods,
+      String host,
+      String path,
+      String permissionNeeded,
+      List<ClientConfig> clientConfigs,
+      ProxyHostPolicy proxyHostPolicy,
+      String proxyHost,
+      String proxyPath) {
     super(methods, host, path, permissionNeeded);
     this.clientConfigs = clientConfigs;
     this.proxyHostPolicy = proxyHostPolicy;
@@ -83,8 +89,8 @@ public class ProxyRouteConfig extends RouteConfig {
   /**
    * Used to create a ProxyRouteConfig at runtime.
    *
-   * If a value is not set, it defaults to using the default object's value.
-   * */
+   * <p>If a value is not set, it defaults to using the default object's value.
+   */
   public static class Builder {
     private ProxyRouteConfig fallbackObject;
     private List<HttpMethod> methods;
@@ -142,15 +148,14 @@ public class ProxyRouteConfig extends RouteConfig {
 
     public ProxyRouteConfig build() {
       return new ProxyRouteConfig(
-        valueOrFallback(methods, fallbackObject.methods()),
-        valueOrFallback(host, fallbackObject.host()),
-        valueOrFallback(path, fallbackObject.path()),
-        valueOrFallback(permissionNeeded, fallbackObject.permissionNeeded()),
-        valueOrFallback(clientConfigs, fallbackObject.clientConfigs()),
-        valueOrFallback(proxyHostPolicy, fallbackObject.proxyHostPolicy()),
-        valueOrFallback(proxyHost, fallbackObject.proxyHost()),
-        valueOrFallback(proxyPath, fallbackObject.proxyPath())
-      );
+          valueOrFallback(methods, fallbackObject.methods()),
+          valueOrFallback(host, fallbackObject.host()),
+          valueOrFallback(path, fallbackObject.path()),
+          valueOrFallback(permissionNeeded, fallbackObject.permissionNeeded()),
+          valueOrFallback(clientConfigs, fallbackObject.clientConfigs()),
+          valueOrFallback(proxyHostPolicy, fallbackObject.proxyHostPolicy()),
+          valueOrFallback(proxyHost, fallbackObject.proxyHost()),
+          valueOrFallback(proxyPath, fallbackObject.proxyPath()));
     }
 
     private <T> T valueOrFallback(@Nullable T value, T fallback) {
