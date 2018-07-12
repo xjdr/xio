@@ -110,8 +110,11 @@ public class HttpClientTracingHandlerIntegrationTest { // extends ITHttpClient<X
     val channelConfig = ChannelConfiguration.clientConfig(1, "worker");
     val clientConfig = new ClientConfig(ConfigFactory.load().getConfig("xio.baseClient"));
     val clientState = new ClientState(channelConfig, clientConfig);
-
-    val client = new Client(clientState, () -> new ApplicationHandler(), tracing);
+    ClientChannelInitializer clientChannelInit =
+        new ClientChannelInitializer(clientState, () -> new ApplicationHandler(), tracing);
+    ClientConnectionManager connManager =
+        new ClientConnectionManager(clientState, clientChannelInit);
+    val client = new Client(clientState, connManager);
 
     return client;
   }
@@ -148,12 +151,7 @@ public class HttpClientTracingHandlerIntegrationTest { // extends ITHttpClient<X
             .host("127.0.0.1" + ":" + server.getPort())
             .build();
 
-    // we call connect first then we call write
-    val connectFuture = client.connect();
-    connectFuture.addListener(
-        (result) -> {
-          client.write(request);
-        });
+    client.write(request);
     // We wait on the local future because this signals the full roundtrip between outbound and
     // return trip from
     // the Application Handler out and then back in.

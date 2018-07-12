@@ -21,7 +21,11 @@ public class ProxyClientFactory extends ClientFactory {
   @Override
   public Client createClient(ChannelHandlerContext ctx, ClientConfig config) {
     ClientState clientState = state.createClientState(channelConfig(ctx), config);
-    Client client = new Client(clientState, () -> new ProxyBackendHandler(ctx), getTracing());
+    ClientChannelInitializer clientChannelInit =
+        new ClientChannelInitializer(clientState, () -> new ProxyBackendHandler(ctx), getTracing());
+    ClientConnectionManager connManager =
+        new ClientConnectionManager(clientState, clientChannelInit);
+    Client client = new Client(clientState, connManager);
     ctx.channel().closeFuture().addListener(f -> clientPool.release(client));
     log.debug("creating client");
     return client;

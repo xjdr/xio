@@ -117,7 +117,12 @@ public class GrpcProxyTest extends Assert {
           @Override
           public Client createClient(ChannelHandlerContext ctx, ClientConfig config) {
             ClientState clientState = new ClientState(channelConfig(ctx), config);
-            return new Client(clientState, () -> new ProxyBackendHandler(ctx), getTracing());
+            ClientChannelInitializer clientChannelInit =
+                new ClientChannelInitializer(
+                    clientState, () -> new ProxyBackendHandler(ctx), getTracing());
+            ClientConnectionManager connManager =
+                new ClientConnectionManager(clientState, clientChannelInit);
+            return new Client(clientState, connManager);
           }
         };
 

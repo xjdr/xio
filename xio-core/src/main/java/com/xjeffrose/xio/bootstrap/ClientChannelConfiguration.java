@@ -8,7 +8,8 @@ public class ClientChannelConfiguration {
   private final EventLoopGroup workerGroup;
   private final Class<? extends Channel> channelClass;
 
-  ClientChannelConfiguration(EventLoopGroup workerGroup, Class<? extends Channel> channelClass) {
+  public ClientChannelConfiguration(
+      EventLoopGroup workerGroup, Class<? extends Channel> channelClass) {
     this.workerGroup = workerGroup;
     this.channelClass = channelClass;
   }

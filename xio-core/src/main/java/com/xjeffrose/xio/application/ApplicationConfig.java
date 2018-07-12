@@ -10,6 +10,8 @@ import com.xjeffrose.xio.core.NullZkClient;
 import com.xjeffrose.xio.core.ZkClient;
 import com.xjeffrose.xio.tracing.XioTracing;
 import io.netty.util.internal.PlatformDependent;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -104,11 +106,19 @@ public class ApplicationConfig {
         bossThreads, bossNameFormat, workerThreads, workerNameFormat);
   }
 
+  // TODO(CK): refactor this into a ZooKeeperConfig that the ZkClient constructor will accept
   public ZkClient zookeeperClient() {
     if (zookeeperCluster.isEmpty()) {
       return new NullZkClient();
     } else {
-      return new ZkClient(zookeeperCluster);
+      if (zookeeperCluster.startsWith("exhibitor:")) {
+        String[] values = zookeeperCluster.replace("exhibitor:", "").split(":");
+        int restPort = Integer.parseInt(values[0]);
+        Collection<String> serverSet = Arrays.asList(values[1].split(","));
+        return ZkClient.fromExhibitor(serverSet, restPort);
+      } else {
+        return new ZkClient(zookeeperCluster);
+      }
     }
   }
 }

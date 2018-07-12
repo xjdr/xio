@@ -1,0 +1,16 @@
+plugins {
+  id 'java'
+  id 'application'
+}
+
+mainClassName = 'com.xjeffrose.xio.exhibitor.Main'
+
+dependencies {
+  implementation project(':xio')
+  implementation(group: 'org.apache.curator', name: 'curator-recipes', version: curator_version) {
+    exclude(module: 'zookeeper')
+  }
+  implementation group: 'ch.qos.logback', name: 'logback-classic', version: logback_version
+  implementation group: 'ch.qos.logback', name: 'logback-core', version: logback_version
+  implementation group: 'org.codehaus.groovy', name: 'groovy-all', version: groovy_version
+}
