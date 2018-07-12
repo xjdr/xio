@@ -100,7 +100,7 @@ public class ClientConfig {
   /**
    * Used to create a ClientConfig at runtime.
    *
-   * <p>If a value is not set, it defaults to using the default object's value.
+   * <p>If a value is not set, it defaults to using the fallbackObject's's value.
    */
   public static class Builder {
     private ClientConfig fallbackObject;
