@@ -79,6 +79,20 @@ public class RouteConfig {
     return value;
   }
 
+  protected static void ensureNotEmpty(String name, String value) {
+    Preconditions.checkArgument(!value.isEmpty(), "%s '%s' must not be empty", name, value);
+  }
+
+  protected static void ensureStartsWith(String name, String value, String startsWith) {
+    Preconditions.checkArgument(
+        value.startsWith(startsWith), "%s '%s' must start with '%s'", name, value, startsWith);
+  }
+
+  protected static void ensureEndsWith(String name, String value, String endsWith) {
+    Preconditions.checkArgument(
+        value.endsWith(endsWith), "%s '%s' must end with '%s'", name, value, endsWith);
+  }
+
   /*
       https://docs.oracle.com/javase/8/docs/api/java/util/function/Predicate.html
   https://github.com/google/guava/wiki/FunctionalExplained
@@ -96,6 +110,7 @@ public class RouteConfig {
     }
     */
 
+  // TODO(br): find a way to combine preconditions
   public RouteConfig(Config config) {
     this.methods = convert(config.getEnumList(Method.class, "methods"));
     this.host = config.getString("host");
@@ -112,6 +127,10 @@ public class RouteConfig {
   }
 
   public RouteConfig(List<HttpMethod> methods, String host, String path, String permissionNeeded) {
+    ensureNotEmpty("permissionNeeded", permissionNeeded);
+    ensureNotEmpty("path", path);
+    ensureStartsWith("path", path, "/");
+
     this.methods = methods;
     this.host = host;
     this.path = path;

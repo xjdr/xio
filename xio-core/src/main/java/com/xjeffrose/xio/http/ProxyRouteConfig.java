@@ -48,9 +48,10 @@ public class ProxyRouteConfig extends RouteConfig {
   private final String proxyPath; // must end in slash
 
   private static List<ClientConfig> buildClientConfigs(List<Config> configs) {
-    return configs.stream().map(ClientConfig::new).collect(Collectors.toList());
+    return configs.stream().map(ClientConfig::from).collect(Collectors.toList());
   }
 
+  // TODO(br): find a way to combine preconditions
   public ProxyRouteConfig(Config config) {
     super(config);
     // validatePath(config.getString("path"), config.origin());
@@ -76,6 +77,10 @@ public class ProxyRouteConfig extends RouteConfig {
       String proxyHost,
       String proxyPath) {
     super(methods, host, path, permissionNeeded);
+    ensureEndsWith("path", path, "/");
+    ensureStartsWith("proxyPath", proxyPath, "/");
+    ensureEndsWith("proxyPath", proxyPath, "/");
+
     this.clientConfigs = clientConfigs;
     this.proxyHostPolicy = proxyHostPolicy;
     this.proxyHost = proxyHost;

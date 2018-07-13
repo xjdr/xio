@@ -36,28 +36,29 @@ public class ClientConfig {
     return messageLoggerEnabled;
   }
 
-  public ClientConfig(Config config) {
-    bootstrapOptions = null;
-    name = config.getString("name");
-    tls = new TlsConfig(config.getConfig("settings.tls"));
-    if (!tls.isUseSsl() && tls.isLogInsecureConfig()) {
-      log.warn("Client '{}' has useSsl set to false!", name);
-    }
-    messageLoggerEnabled = config.getBoolean("settings.messageLoggerEnabled");
+  public static ClientConfig from(Config config) {
+    String name = config.getString("name");
+    TlsConfig tls = new TlsConfig(config.getConfig("settings.tls"));
+    boolean messageLoggerEnabled = config.getBoolean("settings.messageLoggerEnabled");
 
-    if (config.getString("localIp").isEmpty()) {
-      local = null;
-    } else {
+    InetSocketAddress local = null;
+    if (!config.getString("localIp").isEmpty()) {
       local = new InetSocketAddress(config.getString("localIp"), config.getInt("localPort"));
     }
-    remote = new InetSocketAddress(config.getString("remoteIp"), config.getInt("remotePort"));
+
+    InetSocketAddress remote =
+        new InetSocketAddress(config.getString("remoteIp"), config.getInt("remotePort"));
 
     boolean idleTimeoutEnabled = config.getBoolean("idleTimeoutEnabled");
     int idleTimeoutDuration = 0;
     if (idleTimeoutEnabled) {
       idleTimeoutDuration = config.getInt("idleTimeoutDuration");
     }
-    idleTimeoutConfig = new IdleTimeoutConfig(idleTimeoutEnabled, idleTimeoutDuration);
+    IdleTimeoutConfig idleTimeoutConfig =
+        new IdleTimeoutConfig(idleTimeoutEnabled, idleTimeoutDuration);
+
+    return new ClientConfig(
+        null, name, tls, messageLoggerEnabled, local, remote, idleTimeoutConfig);
   }
 
   public ClientConfig(
@@ -71,6 +72,9 @@ public class ClientConfig {
     this.bootstrapOptions = bootstrapOptions;
     this.name = name;
     this.tls = tls;
+    if (!tls.isUseSsl() && tls.isLogInsecureConfig()) {
+      log.warn("Client '{}' has useSsl set to false!", name);
+    }
     this.messageLoggerEnabled = messageLoggerEnabled;
     this.local = local;
     this.remote = remote;
@@ -86,7 +90,7 @@ public class ClientConfig {
   };
 
   public static ClientConfig fromConfig(String key, Config config) {
-    return new ClientConfig(config.getConfig(key));
+    return ClientConfig.from(config.getConfig(key));
   }
 
   public static ClientConfig fromConfig(String key) {

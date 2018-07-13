@@ -20,13 +20,13 @@ public class ProxyRouteConfigTest extends Assert {
     List<ClientConfig> expectedClientConfigs =
         Lists.newArrayList(
             ClientConfig.newBuilder(
-                    new ClientConfig(ConfigFactory.load().getConfig("xio.clientTemplate")))
+                    ClientConfig.from(ConfigFactory.load().getConfig("xio.clientTemplate")))
                 .setName("client config name")
                 .build());
     ProxyRouteConfig.ProxyHostPolicy expectedProxyHostPolicy =
         ProxyRouteConfig.ProxyHostPolicy.UseConfigValue;
     String expectedProxyHost = "proxyHost";
-    String expectedProxyPath = "proxyPath";
+    String expectedProxyPath = "/proxyPath/";
 
     ProxyRouteConfig subject =
         ProxyRouteConfig.newBuilder(fallbackObject)

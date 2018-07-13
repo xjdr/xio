@@ -108,7 +108,7 @@ public class HttpClientTracingHandlerIntegrationTest { // extends ITHttpClient<X
 
   Client newClient(int port, XioTracing tracing) {
     val channelConfig = ChannelConfiguration.clientConfig(1, "worker");
-    val clientConfig = new ClientConfig(ConfigFactory.load().getConfig("xio.baseClient"));
+    val clientConfig = ClientConfig.from(ConfigFactory.load().getConfig("xio.baseClient"));
     val clientState = new ClientState(channelConfig, clientConfig);
     ClientChannelInitializer clientChannelInit =
         new ClientChannelInitializer(clientState, () -> new ApplicationHandler(), tracing);
