@@ -26,7 +26,7 @@ public class ProxyRouteConfigTest extends Assert {
     ProxyRouteConfig.ProxyHostPolicy expectedProxyHostPolicy =
         ProxyRouteConfig.ProxyHostPolicy.UseConfigValue;
     String expectedProxyHost = "proxyHost";
-    String expectedProxyPath = "proxyPath";
+    String expectedProxyPath = "/proxyPath/";
 
     ProxyRouteConfig subject =
         ProxyRouteConfig.newBuilder(fallbackObject)

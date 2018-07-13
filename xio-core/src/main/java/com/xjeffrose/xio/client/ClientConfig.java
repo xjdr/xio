@@ -46,16 +46,19 @@ public class ClientConfig {
       local = new InetSocketAddress(config.getString("localIp"), config.getInt("localPort"));
     }
 
-    InetSocketAddress remote = new InetSocketAddress(config.getString("remoteIp"), config.getInt("remotePort"));
+    InetSocketAddress remote =
+        new InetSocketAddress(config.getString("remoteIp"), config.getInt("remotePort"));
 
     boolean idleTimeoutEnabled = config.getBoolean("idleTimeoutEnabled");
     int idleTimeoutDuration = 0;
     if (idleTimeoutEnabled) {
       idleTimeoutDuration = config.getInt("idleTimeoutDuration");
     }
-    IdleTimeoutConfig idleTimeoutConfig = new IdleTimeoutConfig(idleTimeoutEnabled, idleTimeoutDuration);
+    IdleTimeoutConfig idleTimeoutConfig =
+        new IdleTimeoutConfig(idleTimeoutEnabled, idleTimeoutDuration);
 
-    return new ClientConfig(null, name, tls, messageLoggerEnabled, local, remote, idleTimeoutConfig);
+    return new ClientConfig(
+        null, name, tls, messageLoggerEnabled, local, remote, idleTimeoutConfig);
   }
 
   public ClientConfig(

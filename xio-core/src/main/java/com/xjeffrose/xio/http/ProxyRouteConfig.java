@@ -1,6 +1,5 @@
 package com.xjeffrose.xio.http;
 
-import com.google.common.base.Preconditions;
 import com.typesafe.config.Config;
 import com.xjeffrose.xio.client.ClientConfig;
 import io.netty.handler.codec.http.HttpMethod;

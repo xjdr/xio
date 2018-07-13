@@ -84,11 +84,13 @@ public class RouteConfig {
   }
 
   protected static void ensureStartsWith(String name, String value, String startsWith) {
-    Preconditions.checkArgument(value.startsWith(startsWith), "%s '%s' must start with '%s'", name, value, startsWith);
+    Preconditions.checkArgument(
+        value.startsWith(startsWith), "%s '%s' must start with '%s'", name, value, startsWith);
   }
 
   protected static void ensureEndsWith(String name, String value, String endsWith) {
-    Preconditions.checkArgument(value.endsWith(endsWith), "%s '%s' must end with '%s'", name, value, endsWith);
+    Preconditions.checkArgument(
+        value.endsWith(endsWith), "%s '%s' must end with '%s'", name, value, endsWith);
   }
 
   /*
