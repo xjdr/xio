@@ -44,7 +44,7 @@ public class ClientConnectionManagerIntegrationTest extends Assert {
       configFile = new File("src/test/resources/ClientConnectionManagerTestFail.conf");
     }
     Config config = ConfigFactory.parseFile(configFile);
-    ClientConfig clientConfig = new ClientConfig(config);
+    ClientConfig clientConfig = ClientConfig.from(config);
     ClientState clientState = new ClientState(channelConfiguration, clientConfig);
 
     ClientChannelInitializer clientChannelInit =

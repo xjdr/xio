@@ -14,7 +14,7 @@ public class ClientConfigTest extends Assert {
   @Test
   public void testBuilderCustomValues() {
     Config config = ConfigFactory.load();
-    ClientConfig fallbackObject = new ClientConfig(config.getConfig("xio.clientTemplate"));
+    ClientConfig fallbackObject = ClientConfig.from(config.getConfig("xio.clientTemplate"));
     Map expectedBootstrapOptions = Maps.newHashMap(ChannelOption.AUTO_READ, new Object());
     String expectedName = "name";
     TlsConfig expectedTls = new TlsConfig(ConfigFactory.load("tls-reference"));
@@ -46,7 +46,7 @@ public class ClientConfigTest extends Assert {
   @Test
   public void testBuilderFallbackValues() {
     ClientConfig fallbackObject =
-        new ClientConfig(ConfigFactory.load().getConfig("xio.clientTemplate"));
+        ClientConfig.from(ConfigFactory.load().getConfig("xio.clientTemplate"));
     ClientConfig subject = ClientConfig.newBuilder(fallbackObject).build();
 
     assertNotNull(subject);

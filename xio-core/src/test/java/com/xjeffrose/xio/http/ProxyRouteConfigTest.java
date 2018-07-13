@@ -20,7 +20,7 @@ public class ProxyRouteConfigTest extends Assert {
     List<ClientConfig> expectedClientConfigs =
         Lists.newArrayList(
             ClientConfig.newBuilder(
-                    new ClientConfig(ConfigFactory.load().getConfig("xio.clientTemplate")))
+                    ClientConfig.from(ConfigFactory.load().getConfig("xio.clientTemplate")))
                 .setName("client config name")
                 .build());
     ProxyRouteConfig.ProxyHostPolicy expectedProxyHostPolicy =
