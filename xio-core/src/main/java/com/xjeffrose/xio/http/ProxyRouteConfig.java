@@ -36,7 +36,7 @@ url = scheme, authority, path, query-string, fragment
 @Accessors(fluent = true)
 @Getter
 public class ProxyRouteConfig extends RouteConfig {
-  enum ProxyHostPolicy {
+  public enum ProxyHostPolicy {
     UseRequestHeader,
     UseRemoteAddress,
     UseConfigValue;
