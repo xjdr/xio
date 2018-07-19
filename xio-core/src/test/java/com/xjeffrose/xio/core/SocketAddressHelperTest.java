@@ -27,7 +27,7 @@ public class SocketAddressHelperTest extends Assert {
 
   @Test
   public void testNonSocketOrSocketServerChannel() throws Exception {
-    val result = subject.extractRemoteAddress(channel);
+    val result = subject.extractRemoteAddressAndPort(channel);
     assertTrue(result == null);
   }
 
@@ -35,7 +35,7 @@ public class SocketAddressHelperTest extends Assert {
   public void testWithoutInetSocketAddressSocketServerChannel() throws Exception {
     when(serverSocketChannel.remoteAddress()).thenReturn(null);
 
-    val result = subject.extractRemoteAddress(serverSocketChannel);
+    val result = subject.extractRemoteAddressAndPort(serverSocketChannel);
     assertTrue(result == null);
   }
 
@@ -43,26 +43,30 @@ public class SocketAddressHelperTest extends Assert {
   public void testInetSocketAddressSocketChannel() throws Exception {
     when(socketChannel.remoteAddress()).thenReturn(null);
 
-    val result = subject.extractRemoteAddress(socketChannel);
+    val result = subject.extractRemoteAddressAndPort(socketChannel);
     assertTrue(result == null);
   }
 
   @Test
   public void testValidAddressSocketServerChannel() throws Exception {
+    val testPort = 123;
     val testAddress = "192.168.0.1";
-    val inetSocketAddress = new InetSocketAddress(testAddress, 123);
+    val inetSocketAddress = new InetSocketAddress(testAddress, testPort);
+    val expectedResult = testAddress + ":" + String.valueOf(testPort);
     when(serverSocketChannel.remoteAddress()).thenReturn(inetSocketAddress);
 
-    val result = subject.extractRemoteAddress(serverSocketChannel);
-    assertTrue(result.equals(testAddress));
+    val result = subject.extractRemoteAddressAndPort(serverSocketChannel);
+    assertTrue(result.equals(expectedResult));
   }
 
   @Test
   public void testValidAddressSocketChannel() throws Exception {
+    val testPort = 2;
     val testAddress = "192.168.0.1";
-    val inetSocketAddress = new InetSocketAddress(testAddress, 2);
+    val inetSocketAddress = new InetSocketAddress(testAddress, testPort);
+    val expectedResult = testAddress + ":" + String.valueOf(testPort);
     when(socketChannel.remoteAddress()).thenReturn(inetSocketAddress);
-    val result = subject.extractRemoteAddress(socketChannel);
-    assertTrue(result.equals(testAddress));
+    val result = subject.extractRemoteAddressAndPort(socketChannel);
+    assertTrue(result.equals(expectedResult));
   }
 }
