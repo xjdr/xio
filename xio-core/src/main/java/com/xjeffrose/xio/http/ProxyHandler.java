@@ -95,10 +95,10 @@ public class ProxyHandler implements PipelineRequestHandler {
     return result;
   }
 
-  protected String getOriginatingAddress(ChannelHandlerContext ctx, Request request) {
+  protected String getOriginatingAddressAndPort(ChannelHandlerContext ctx, Request request) {
     val rawXFF = request.headers().get(X_FORWARDED_FOR);
     if (rawXFF == null || rawXFF.toString().trim().isEmpty()) {
-      return addressHelper.extractRemoteAddress(ctx.channel());
+      return addressHelper.extractRemoteAddressAndPort(ctx.channel());
     } else {
       String stringXFF = rawXFF.toString();
       if (stringXFF.contains(",")) {
@@ -112,13 +112,13 @@ public class ProxyHandler implements PipelineRequestHandler {
   }
 
   private void appendXForwardedFor(ChannelHandlerContext ctx, Request request) {
-    val remoteAddress = addressHelper.extractRemoteAddress(ctx.channel());
-    if (remoteAddress != null) {
+    val remoteAddressAndPort = addressHelper.extractRemoteAddressAndPort(ctx.channel());
+    if (remoteAddressAndPort != null) {
       val rawXFF = request.headers().get(X_FORWARDED_FOR);
       if (rawXFF == null || rawXFF.toString().trim().isEmpty()) {
-        request.headers().set(X_FORWARDED_FOR, remoteAddress);
+        request.headers().set(X_FORWARDED_FOR, remoteAddressAndPort);
       } else {
-        val newXFF = rawXFF.toString().trim() + ", " + remoteAddress;
+        val newXFF = rawXFF.toString().trim() + ", " + remoteAddressAndPort;
         request.headers().set(X_FORWARDED_FOR, newXFF);
       }
     }

@@ -94,7 +94,7 @@ public class ClientConnectionManagerIntegrationTest extends Assert {
     Future<Void> connectionResult = subject.connect();
     assertEquals(ClientConnectionState.CONNECTING, subject.connectionState());
     try {
-      connectionResult.get(5, TimeUnit.SECONDS);
+      connectionResult.get(30, TimeUnit.SECONDS);
     } catch (Exception e) {
 
     } finally {
