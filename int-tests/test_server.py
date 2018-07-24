@@ -19,10 +19,10 @@ class TestReverseProxyServer(TestCase):
       each.kill()
 
   @classmethod
-  def setup_back(cls, h2: bool, verbose=False):
+  def setup_back(cls, h2: bool, h1_tls: bool = True, verbose=False):
     back_ready_str = "Active Connections"
     global back_end
-    back_end = Server(back_init.init_script, back_ready_str, h2, name="backend1", port=8444, verbose=verbose).run()
+    back_end = Server(back_init.init_script, back_ready_str, h2, h1_tls, name="backend1", port=8444, verbose=verbose).run()
 
   @classmethod
   def setup_front(cls, h2: bool, verbose=False):
@@ -45,7 +45,46 @@ class TestReverseProxyServer(TestCase):
     self.assertEqual(200, response.status)
 
 
+class TestReverseProxyServerH1H1PlainText(TestReverseProxyServer):
+
+  @classmethod
+  def setUpClass(cls):
+    print("setup h1:h1")
+    cls.setup_front(h2=False)
+    cls.setup_back(h2=False, h1_tls=False)
+
+  # @skip
+  def test_backend_server_get_h1_works(self):
+    response = http_get(url='http://localhost:{}/'.format(back_end.port), headers={"x-echo": "echo"}, h2=False)
+    self.check_response(response, 'GET')
+
+  # @skip
+  def test_backend_server_post_h1_works(self):
+    response = http_post(url='http://localhost:{}/'.format(back_end.port), data={"key": "value"},
+                         headers={"x-echo": "echo"}, h2=False)
+    self.check_response(response, 'POST')
+
+  # @skip
+  def test_proxy_get_h1_h1(self):
+    responses = [
+      http_get(url='https://localhost:8443/', headers={"x-echo": "echo"}, h2=False),
+      http_get(url='https://localhost:8443/', headers={"x-echo": "echo"}, h2=False),
+    ]
+    for response in responses:
+      self.check_response(response, 'GET')
+
+  # @skip
+  def test_proxy_post_h1_h1(self):
+    responses = [
+      http_post(url='https://localhost:8443/', data={"key": "value"}, headers={"x-echo": "echo"}, h2=False),
+      http_post(url='https://localhost:8443/', data={"key": "value"}, headers={"x-echo": "echo"}, h2=False),
+    ]
+    for response in responses:
+      self.check_response(response, 'POST')
+
+
 class TestReverseProxyServerH1H1(TestReverseProxyServer):
+
   @classmethod
   def setUpClass(cls):
     print("setup h1:h1")
@@ -89,6 +128,33 @@ class TestReverseProxyServerH2H1(TestReverseProxyServer):
     print("setup h2:h1")
     cls.setup_front(h2=True)
     cls.setup_back(h2=False)
+
+  # @skip
+  def test_proxy_get_h2_h1(self):
+    responses = [
+      http_get(url='https://localhost:8443/', headers={"x-echo": "echo"}, h2=True),
+      http_get(url='https://localhost:8443/', headers={"x-echo": "echo"}, h2=True),
+    ]
+    for response in responses:
+      self.check_response(response, 'GET')
+
+  # @skip
+  def test_proxy_post_h2_h1(self):
+    responses = [
+      http_post(url='https://localhost:8443/', data={"key": "value"}, headers={"x-echo": "echo"}, h2=True),
+      http_post(url='https://localhost:8443/', data={"key": "value"}, headers={"x-echo": "echo"}, h2=True),
+    ]
+    for response in responses:
+      self.check_response(response, 'POST')
+
+
+class TestReverseProxyServerH2H1PlainText(TestReverseProxyServer):
+
+  @classmethod
+  def setUpClass(cls):
+    print("setup h2:h1")
+    cls.setup_front(h2=True)
+    cls.setup_back(h2=False, h1_tls=False)
 
   # @skip
   def test_proxy_get_h2_h1(self):
@@ -155,10 +221,6 @@ class TestReverseProxyServerH2H2(TestReverseProxyServer):
     ]
     for response in responses:
       self.check_response(response, 'POST')
-
-  # todo: (WK) :
-  # test large POST
-  # wrk2 and h2load load tests
 
 
 if __name__ == '__main__':
