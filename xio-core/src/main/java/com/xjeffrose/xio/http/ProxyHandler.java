@@ -2,6 +2,7 @@ package com.xjeffrose.xio.http;
 
 import com.xjeffrose.xio.client.ClientConfig;
 import com.xjeffrose.xio.core.SocketAddressHelper;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.AsciiString;
 import java.util.List;
@@ -146,7 +147,7 @@ public class ProxyHandler implements PipelineRequestHandler {
 
       if (!request.startOfMessage()) {
         log.debug("not start of stream");
-        client.write(request);
+        writeClientRequest(ctx, client, request);
         return;
       }
       log.debug("start of stream");
@@ -156,8 +157,29 @@ public class ProxyHandler implements PipelineRequestHandler {
 
       appendXForwardedFor(ctx, proxyRequest);
 
-      client.write(proxyRequest);
+      writeClientRequest(ctx, client, proxyRequest);
     } else {
+      Response notFound = ResponseBuilders.newNotFound(request);
+      ctx.writeAndFlush(notFound);
+    }
+  }
+
+  private void writeClientRequest(ChannelHandlerContext ctx, Client client, Request request) {
+    Optional<ChannelFuture> optionalFuture = client.write(request);
+    optionalFuture.ifPresent(
+        channelFuture ->
+            channelFuture.addListener(
+                (f) -> {
+                  if (!f.isSuccess()) {
+                    // todo: (WK) do something more polite
+                    // we should probably emit a signal and have the application codec handle the event based
+                    // on the the response state
+                    // h2 - keep the connection open and close the stream
+                    // h1 - respond with 503 if not mid-stream
+                    ctx.close();
+                  }
+                }));
+    if (!optionalFuture.isPresent()) {
       Response notFound = ResponseBuilders.newNotFound(request);
       ctx.writeAndFlush(notFound);
     }

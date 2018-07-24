@@ -14,18 +14,19 @@ import java.util.Optional;
 
 public class ReverseProxyServer {
   private final String proxyConfig;
+  private final String routeConfig;
   private Application application;
 
-  public ReverseProxyServer(String proxyConfig) {
+  public ReverseProxyServer(String proxyConfig, String routeConfig) {
     this.proxyConfig = proxyConfig;
+    this.routeConfig = routeConfig;
   }
 
   public void start(Config config) {
     ApplicationState appState =
         new ApplicationState(ApplicationConfig.fromConfig(proxyConfig, config));
 
-    ProxyRouteConfig proxyRouteConfig =
-        new ProxyRouteConfig(config.getConfig("xio.testProxyRoute"));
+    ProxyRouteConfig proxyRouteConfig = new ProxyRouteConfig(config.getConfig(routeConfig));
 
     ProxyClientFactory clientFactory = new ProxyClientFactory(appState);
     RouteStates routeStates = new RouteStates(proxyRouteConfig, appState, clientFactory);

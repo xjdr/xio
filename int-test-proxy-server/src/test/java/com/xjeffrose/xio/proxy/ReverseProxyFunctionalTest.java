@@ -90,7 +90,7 @@ public class ReverseProxyFunctionalTest extends Assert {
     } else {
       proxyConfig = "xio.h1ReverseProxy";
     }
-    reverseProxy = new ReverseProxyServer(proxyConfig);
+    reverseProxy = new ReverseProxyServer(proxyConfig, "xio.testProxyRoute");
     reverseProxy.start(config);
   }
 
