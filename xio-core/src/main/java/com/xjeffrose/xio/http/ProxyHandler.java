@@ -171,8 +171,12 @@ public class ProxyHandler implements PipelineRequestHandler {
             channelFuture.addListener(
                 (f) -> {
                   if (!f.isSuccess()) {
-                    Response notFound = ResponseBuilders.newServiceUnavailable(request);
-                    ctx.writeAndFlush(notFound);
+                    // todo: (WK) do something more polite
+                    // we should probably emit a signal and have the application codec handle the event based
+                    // on the the response state
+                    // h2 - keep the connection open and close the stream
+                    // h1 - respond with 503 if not mid-stream
+                    ctx.close();
                   }
                 }));
     if (!optionalFuture.isPresent()) {
