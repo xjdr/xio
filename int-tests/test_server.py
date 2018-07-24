@@ -25,15 +25,20 @@ class TestReverseProxyServer(TestCase):
     back_end = Server(back_init.init_script, back_ready_str, h2, h1_tls, name="backend1", port=8444, verbose=verbose).run()
 
   @classmethod
-  def setup_front(cls, h2: bool, verbose=False):
+  def setup_front(cls, h2: bool, back_tsl: bool = True, verbose=False):
     front_ready_str = "proxy accepting connections"
     conf = path.abspath(path.join(module_dir, "proxy.conf"))
     if h2:
       proxy_config = 'xio.h2ReverseProxy'
     else:
       proxy_config = 'xio.h1ReverseProxy'
+    if back_tsl:
+      client_config = 'xio.testProxyRoute'
+    else:
+      client_config = 'xio.testProxyRoutePlainText'
     global front_end
-    front_end = Server(front_init.init_script, front_ready_str, conf, proxy_config, name="proxy", verbose=verbose).run()
+    front_end = Server(front_init.init_script, front_ready_str, conf, proxy_config, client_config,
+                       name="proxy", verbose=verbose).run()
 
   def check_response(self, response: Response, method: str):
     self.assertEqual('backend1', response.headers['x-tag'])
@@ -50,7 +55,7 @@ class TestReverseProxyServerH1H1PlainText(TestReverseProxyServer):
   @classmethod
   def setUpClass(cls):
     print("setup h1:h1")
-    cls.setup_front(h2=False)
+    cls.setup_front(h2=False, back_tsl=False)
     cls.setup_back(h2=False, h1_tls=False)
 
   # @skip
@@ -153,7 +158,7 @@ class TestReverseProxyServerH2H1PlainText(TestReverseProxyServer):
   @classmethod
   def setUpClass(cls):
     print("setup h2:h1")
-    cls.setup_front(h2=True)
+    cls.setup_front(h2=True, back_tsl=False)
     cls.setup_back(h2=False, h1_tls=False)
 
   # @skip

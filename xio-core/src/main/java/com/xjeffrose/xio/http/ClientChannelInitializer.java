@@ -7,7 +7,7 @@ import com.xjeffrose.xio.tracing.XioTracing;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelInitializer;
-import io.netty.handler.codec.http.HttpServerCodec;
+import io.netty.handler.codec.http.HttpClientCodec;
 import java.util.function.Supplier;
 import lombok.Setter;
 import lombok.val;
@@ -55,8 +55,8 @@ public class ClientChannelInitializer extends ChannelInitializer {
       // No need for an http2 handler as we don't allow that over cleartext
       channel
           .pipeline()
-          .addLast("codec", new HttpServerCodec())
-          .addLast("application codec", new Http1ServerCodec());
+          .addLast("codec", new HttpClientCodec())
+          .addLast("application codec", new Http1ClientCodec());
     }
     if (tracing != null) {
       val traceHandler = tracing.newClientHandler(state.config.isTlsEnabled());
@@ -70,10 +70,12 @@ public class ClientChannelInitializer extends ChannelInitializer {
           .addLast("idle handler", new XioIdleDisconnectHandler(duration, duration, duration));
     }
 
-    channel
-        .pipeline()
-        .addLast("message logging", new XioMessageLogger(Client.class, "objects"))
-        .addLast("request buffer", new RequestBuffer())
-        .addLast(APP_HANDLER, appHandler.get());
+    channel.pipeline().addLast("message logging", new XioMessageLogger(Client.class, "objects"));
+
+    if (state.sslContext != null) {
+      channel.pipeline().addLast("request buffer", new RequestBuffer());
+    }
+
+    channel.pipeline().addLast(APP_HANDLER, appHandler.get());
   }
 }
