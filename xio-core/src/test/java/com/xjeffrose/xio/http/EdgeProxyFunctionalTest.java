@@ -25,7 +25,6 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collector;
@@ -241,9 +240,6 @@ public class EdgeProxyFunctionalTest extends Assert {
     client =
         OkHttpUnsafe.getUnsafeClient()
             .newBuilder()
-            .connectTimeout(15, TimeUnit.MINUTES)
-            .readTimeout(15, TimeUnit.MINUTES)
-            .writeTimeout(15, TimeUnit.MINUTES)
             .protocols(Arrays.asList(Protocol.HTTP_2, Protocol.HTTP_1_1))
             .build();
 
