@@ -157,7 +157,7 @@ public class ProxyHandler implements PipelineRequestHandler {
 
       appendXForwardedFor(ctx, proxyRequest);
 
-      writeClientRequest(ctx, client, request);
+      writeClientRequest(ctx, client, proxyRequest);
     } else {
       Response notFound = ResponseBuilders.newNotFound(request);
       ctx.writeAndFlush(notFound);
