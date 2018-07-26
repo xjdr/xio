@@ -4,18 +4,18 @@ import com.google.common.collect.Lists;
 import com.xjeffrose.xio.http.RouteConfig;
 import com.xjeffrose.xio.http.RouteState;
 import io.netty.handler.codec.http.HttpMethod;
-
-import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
+import javax.annotation.Nullable;
 
 public class GrpcRouteStateBuilder {
-  public List<RouteState> buildGrpcRouteStates(List<GrpcService> grpcServices, @Nullable Consumer<GrpcRoute> extraSetupFunction) {
+  public List<RouteState> buildGrpcRouteStates(
+      List<GrpcService> grpcServices, @Nullable Consumer<GrpcRoute> extraSetupFunction) {
     List<RouteState> routeStates = Lists.newArrayList();
 
-    for (GrpcService service: grpcServices) {
-      for (GrpcRoute route: service.getRoutes()) {
+    for (GrpcService service : grpcServices) {
+      for (GrpcRoute route : service.getRoutes()) {
         if (extraSetupFunction != null) {
           extraSetupFunction.accept(route);
         }
