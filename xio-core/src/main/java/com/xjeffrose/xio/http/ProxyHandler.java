@@ -2,6 +2,7 @@ package com.xjeffrose.xio.http;
 
 import com.xjeffrose.xio.client.ClientConfig;
 import com.xjeffrose.xio.core.SocketAddressHelper;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.AsciiString;
 import java.util.List;
@@ -95,10 +96,10 @@ public class ProxyHandler implements PipelineRequestHandler {
     return result;
   }
 
-  protected String getOriginatingAddress(ChannelHandlerContext ctx, Request request) {
+  protected String getOriginatingAddressAndPort(ChannelHandlerContext ctx, Request request) {
     val rawXFF = request.headers().get(X_FORWARDED_FOR);
     if (rawXFF == null || rawXFF.toString().trim().isEmpty()) {
-      return addressHelper.extractRemoteAddress(ctx.channel());
+      return addressHelper.extractRemoteAddressAndPort(ctx.channel());
     } else {
       String stringXFF = rawXFF.toString();
       if (stringXFF.contains(",")) {
@@ -112,13 +113,13 @@ public class ProxyHandler implements PipelineRequestHandler {
   }
 
   private void appendXForwardedFor(ChannelHandlerContext ctx, Request request) {
-    val remoteAddress = addressHelper.extractRemoteAddress(ctx.channel());
-    if (remoteAddress != null) {
+    val remoteAddressAndPort = addressHelper.extractRemoteAddressAndPort(ctx.channel());
+    if (remoteAddressAndPort != null) {
       val rawXFF = request.headers().get(X_FORWARDED_FOR);
       if (rawXFF == null || rawXFF.toString().trim().isEmpty()) {
-        request.headers().set(X_FORWARDED_FOR, remoteAddress);
+        request.headers().set(X_FORWARDED_FOR, remoteAddressAndPort);
       } else {
-        val newXFF = rawXFF.toString().trim() + ", " + remoteAddress;
+        val newXFF = rawXFF.toString().trim() + ", " + remoteAddressAndPort;
         request.headers().set(X_FORWARDED_FOR, newXFF);
       }
     }
@@ -146,7 +147,7 @@ public class ProxyHandler implements PipelineRequestHandler {
 
       if (!request.startOfMessage()) {
         log.debug("not start of stream");
-        client.write(request);
+        writeClientRequest(ctx, client, request);
         return;
       }
       log.debug("start of stream");
@@ -156,8 +157,29 @@ public class ProxyHandler implements PipelineRequestHandler {
 
       appendXForwardedFor(ctx, proxyRequest);
 
-      client.write(proxyRequest);
+      writeClientRequest(ctx, client, proxyRequest);
     } else {
+      Response notFound = ResponseBuilders.newNotFound(request);
+      ctx.writeAndFlush(notFound);
+    }
+  }
+
+  private void writeClientRequest(ChannelHandlerContext ctx, Client client, Request request) {
+    Optional<ChannelFuture> optionalFuture = client.write(request);
+    optionalFuture.ifPresent(
+        channelFuture ->
+            channelFuture.addListener(
+                (f) -> {
+                  if (!f.isSuccess()) {
+                    // todo: (WK) do something more polite
+                    // we should probably emit a signal and have the application codec handle the event based
+                    // on the the response state
+                    // h2 - keep the connection open and close the stream
+                    // h1 - respond with 503 if not mid-stream
+                    ctx.close();
+                  }
+                }));
+    if (!optionalFuture.isPresent()) {
       Response notFound = ResponseBuilders.newNotFound(request);
       ctx.writeAndFlush(notFound);
     }

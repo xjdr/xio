@@ -23,7 +23,11 @@ import static spark.Spark.*;
 public class Main {
   public static void main(String args[]) throws Exception {
     if (args.length < 3) {
-      throw new RuntimeException("please specify server 'port', 'header-tag' and 'h2' arguments");
+      throw new RuntimeException("please specify arguments for server: \n" +
+        "port number \n" +
+        "header-tag, \n" +
+        "h2 (true|false) \n" +
+        "h1 tls (true|false) - optional and ignored for h2, default true");
     }
 
     // header-tag might be the ip address of this host or any other information you
@@ -45,17 +49,25 @@ public class Main {
 
       Runtime.getRuntime().addShutdownHook(new Thread(server::shutdown));
     } else {
-      setupSpark(port, name);
+      final Boolean tls;
+      if (args.length > 3) {
+        tls = Boolean.parseBoolean(args[3]);
+      } else {
+        tls = true;
+      }
+      setupSpark(port, name, tls);
       awaitInitialization();
       System.out.println("Active Connections");
     }
   }
 
-  private static void setupSpark(int port, String name) throws Exception {
-    Resource keystore = new ClassPathResource("snakeoil.jks");
-    URL url = keystore.getURL();
-    String path = url.toString();
-    secure(path, "snakeoil", path, "snakeoil");
+  private static void setupSpark(int port, String name, boolean tls) throws Exception {
+    if (tls) {
+      Resource keystore = new ClassPathResource("snakeoil.jks");
+      URL url = keystore.getURL();
+      String path = url.toString();
+      secure(path, "snakeoil", path, "snakeoil");
+    }
     port(port);
     get("/", (req, res) -> setupSparkResponse(name, req, res));
     post("/", (req, res) -> setupSparkResponse(name, req, res));

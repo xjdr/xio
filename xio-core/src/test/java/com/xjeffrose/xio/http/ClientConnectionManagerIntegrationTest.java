@@ -77,6 +77,7 @@ public class ClientConnectionManagerIntegrationTest extends Assert {
     subject = subjectFactory(true);
     Future<Void> connectionResult = subject.connect();
     assertEquals(ClientConnectionState.CONNECTING, subject.connectionState());
+    Thread.sleep(100); //todo: (WK) do something smarter
     try {
       connectionResult.get(5, TimeUnit.SECONDS);
     } catch (Exception e) {
@@ -93,10 +94,10 @@ public class ClientConnectionManagerIntegrationTest extends Assert {
     // don't set up fake origin backend server so we can connect to it
     Future<Void> connectionResult = subject.connect();
     assertEquals(ClientConnectionState.CONNECTING, subject.connectionState());
+    Thread.sleep(100); //todo: (WK) do something smarter
     try {
-      connectionResult.get(5, TimeUnit.SECONDS);
-    } catch (Exception e) {
-
+      connectionResult.get(30, TimeUnit.SECONDS);
+    } catch (Exception ignored) {
     } finally {
       assertEquals(ClientConnectionState.CLOSED_CONNECTION, subject.connectionState());
     }

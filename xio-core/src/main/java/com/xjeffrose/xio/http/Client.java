@@ -37,13 +37,6 @@ public class Client {
   }
 
   /**
-   * Creates a channel and returns a channel connection future This also sets the channel instance
-   * variable so if we later call write it will not try to reconnect
-   *
-   * @return A ChannelFuture that succeeds on connect
-   */
-
-  /**
    * Combines the connection and writing into one command. This method dispatches both a connect and
    * command call concurrently. If there is already an existing channel we just do the write
    *
@@ -54,25 +47,22 @@ public class Client {
     ChannelPromise promise;
     if (manager.connectionState() == ClientConnectionState.NOT_CONNECTED) {
       // If we are not in a connected state we should buffer the requests until we find out
-      // what happened to the connection try.  The connectFuture calls back on the same eventloop,
-      // since we are never reconnecting clients for different serverchannel eventloops
+      // what happened to the connection try.  The connectFuture calls back on the same event loop,
+      // since we are never reconnecting clients for different server channel event loops
       log.debug(
           "== No channel exists, lets connect on client: " + this + " with request: " + request);
       ChannelFuture connectFuture = manager.connect();
       promise = manager.currentChannel().newPromise();
       log.debug("== Adding req: " + request + " to queue on client: " + this);
       this.requestQueue.add(new Client.ClientPayload(request, promise));
-      connectFuture.addListener(
-          (connectionResult) -> {
-            executeBufferedRequests(connectionResult);
-          });
+      connectFuture.addListener(this::executeBufferedRequests);
       return Optional.of(promise);
     } else if (manager.connectionState() == ClientConnectionState.CONNECTING) {
       // we are in the middle of connecting so lets just add to the queue
       // this is a non concurrent queue because these write calls methods will be called on the
-      // same eventloop as the connectFuture.listener callback. We do not reconnect on previously
-      // connected clients so we don't have to worry about new serverchannel's trying to call connect
-      // on a client that was bound to previous serverchannel's eventloop
+      // same event loop as the connectFuture.listener callback. We do not reconnect on previously
+      // connected clients so we don't have to worry about new server channel's trying to call connect
+      // on a client that was bound to previous server channel's event loop
       promise = manager.currentChannel().newPromise();
       log.debug("== Adding req: " + request + " to queue on client: " + this);
       this.requestQueue.add(new Client.ClientPayload(request, promise));
@@ -97,10 +87,10 @@ public class Client {
     boolean connectionSuccess = connectionResult.isDone() && connectionResult.isSuccess();
     log.debug("== Connection success was " + connectionSuccess);
     // loop through the queue until it's empty and fire away
-    // this will happen on the same eventloop as the write so we don't need to worry about
-    // trying to write to this queue at the same time we are dequeing
+    // this will happen on the same event loop as the write so we don't need to worry about
+    // trying to write to this queue at the same time we dequeue
     while (!requestQueue.isEmpty()) {
-      Client.ClientPayload requestPayload = (Client.ClientPayload) requestQueue.remove();
+      Client.ClientPayload requestPayload = requestQueue.remove();
       log.debug("== Dequeue req: " + requestPayload.request + " on client: " + this);
       if (connectionSuccess) {
         this.rawWrite(requestPayload.request)
@@ -112,7 +102,13 @@ public class Client {
                     requestPayload.promise.setSuccess();
                   } else {
                     log.debug("== Req: " + requestPayload.request + " failed on client: " + this);
-                    requestPayload.promise.setFailure(connectionResult.cause());
+                    final Throwable cause;
+                    if (connectionResult.cause() != null) {
+                      cause = connectionResult.cause();
+                    } else {
+                      cause = new RuntimeException("unknown cause");
+                    }
+                    requestPayload.promise.setFailure(cause);
                   }
                 });
       } else {

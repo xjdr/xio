@@ -16,7 +16,17 @@ public class ResponseBuilders {
     return defaultHeaders(DefaultFullResponse.builder())
         .body(Unpooled.EMPTY_BUFFER)
         .httpTraceInfo(request.httpTraceInfo())
+        .streamId(request.streamId())
         .status(HttpResponseStatus.NOT_FOUND)
+        .build();
+  }
+
+  public static Response newServiceUnavailable(Request request) {
+    return defaultHeaders(DefaultFullResponse.builder())
+        .body(Unpooled.EMPTY_BUFFER)
+        .httpTraceInfo(request.httpTraceInfo())
+        .streamId(request.streamId())
+        .status(HttpResponseStatus.SERVICE_UNAVAILABLE)
         .build();
   }
 
@@ -27,6 +37,7 @@ public class ResponseBuilders {
   public static DefaultFullResponse.Builder newOk(Request request) {
     return defaultHeaders(
         DefaultFullResponse.builder()
+            .streamId(request.streamId())
             .httpTraceInfo(request.httpTraceInfo())
             .status(HttpResponseStatus.OK));
   }

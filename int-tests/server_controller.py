@@ -69,7 +69,9 @@ class Server:
     self._name = kwargs.get('name', 'unnamed')
     self._verbose = kwargs.get('verbose', False)
     if len(args) > 1:
-      argv = functools.reduce(lambda a, b: ("", str(a).strip() + " " + str(b).strip()), args)[1]
+      argv = ' '
+      for each in [str(i).strip() for i in args if len(str(i)) > 0]:
+        argv += ' ' + each
     elif len(args) is 1:
       argv = str(args[0]).strip()
     else:

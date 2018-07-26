@@ -13,10 +13,10 @@
         - v1-dependencies-
     - run:
         name: install dependencies
-        command: ./gradlew :xio:dependencies
+        command: ./gradlew dependencies
     - run:
         name: run build test verify
-        command: ./gradlew :xio:build
+        command: ./gradlew build
     - run:
         name: build reports
         command: ./gradlew :xio:jacocoTestReport :xio:coveralls :xio:javadoc

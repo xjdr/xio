@@ -10,24 +10,24 @@ import lombok.val;
 public class SocketAddressHelper {
 
   @Nullable
-  public String extractRemoteAddress(Channel channel) {
+  public String extractRemoteAddressAndPort(Channel channel) {
     if (channel instanceof ServerSocketChannel) {
       val inetSocketAddress = ((ServerSocketChannel) channel).remoteAddress();
-      return computeAddress(inetSocketAddress);
+      return computeAddressAndPort(inetSocketAddress);
     } else if (channel instanceof SocketChannel) {
       val inetSocketAddress = ((SocketChannel) channel).remoteAddress();
-      return computeAddress(inetSocketAddress);
+      return computeAddressAndPort(inetSocketAddress);
     } else {
       return null;
     }
   }
 
   @Nullable
-  private String computeAddress(InetSocketAddress inetSocketAddress) {
+  private String computeAddressAndPort(InetSocketAddress inetSocketAddress) {
     if (inetSocketAddress != null) {
       val inetAddress = inetSocketAddress.getAddress();
       if (inetAddress != null) {
-        return inetAddress.getHostAddress();
+        return inetAddress.getHostAddress() + ":" + String.valueOf(inetSocketAddress.getPort());
       }
     }
     return null;
