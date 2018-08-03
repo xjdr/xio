@@ -5,7 +5,7 @@ import com.xjeffrose.xio.http.Request;
 import com.xjeffrose.xio.http.Response;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import javax.annotation.ParametersAreNonnullByDefault;
-import zipkin.Endpoint;
+import zipkin2.Endpoint;
 
 @ParametersAreNonnullByDefault
 class XioHttpClientAdapter extends HttpClientAdapter<Request, Response> {

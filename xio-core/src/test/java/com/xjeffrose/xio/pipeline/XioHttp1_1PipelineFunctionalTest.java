@@ -35,7 +35,7 @@ public class XioHttp1_1PipelineFunctionalTest extends Assert {
               + "\r\n"
               + "HEADER: Connection = Keep-Alive\r\n"
               + "HEADER: Accept-Encoding = gzip\r\n"
-              + "HEADER: User-Agent = okhttp/3.9.1\r\n"
+              + "HEADER: User-Agent = okhttp/3.11.0\r\n"
               + "\r\n"
               + "END OF CONTENT\r\n";
 

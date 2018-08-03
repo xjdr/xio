@@ -41,7 +41,7 @@ dependencies {
   implementation group: 'org.apache.thrift', name: 'libthrift', version: libthrift_version
   implementation group: 'io.zipkin.brave', name: 'brave-instrumentation-http', version: zipkin_brave_brave_instrumentation_http_version
   implementation group: 'io.zipkin.brave', name: 'brave-context-slf4j', version: zipkin_brave_brave_context_slf4j_version
-  implementation group: 'io.zipkin.reporter', name: 'zipkin-sender-okhttp3', version: zipkin_reporter_zipkin_sender_okhttp3_version
+  implementation group: 'io.zipkin.reporter2', name: 'zipkin-sender-okhttp3', version: zipkin_reporter_zipkin_sender_okhttp3_version
 
   implementation group: 'io.dropwizard.metrics', name: 'metrics-core', version: metrics_version
   implementation group: 'io.dropwizard.metrics', name: 'metrics-jmx', version: metrics_version
