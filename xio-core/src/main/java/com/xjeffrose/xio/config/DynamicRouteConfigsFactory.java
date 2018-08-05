@@ -4,21 +4,15 @@ import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
 import java.util.ArrayList;
 
-public class DynamicRouteConfigsWrapper {
+public class DynamicRouteConfigsFactory {
 
-  private final ArrayList<DynamicRouteConfig> dynamicRouteConfigs;
-
-  public DynamicRouteConfigsWrapper(String string) {
-      Gson gson = new Gson();
-      DynamicRouteEntry[] dynamicRouteEntries = gson.fromJson(string, DynamicRouteEntry[].class);
-      dynamicRouteConfigs = createDynamicRouteConfigs(dynamicRouteEntries);
+  public static ArrayList<DynamicRouteConfig> build(String string) {
+    Gson gson = new Gson();
+    DynamicRouteEntry[] dynamicRouteEntries = gson.fromJson(string, DynamicRouteEntry[].class);
+    return createDynamicRouteConfigs(dynamicRouteEntries);
   }
 
-  public ArrayList<DynamicRouteConfig> getDynamicRouteConfigs() {
-    return dynamicRouteConfigs;
-  }
-
-  private ArrayList<DynamicRouteConfig> createDynamicRouteConfigs(DynamicRouteEntry[] dynamicRouteEntries) {
+  private static ArrayList<DynamicRouteConfig> createDynamicRouteConfigs(DynamicRouteEntry[] dynamicRouteEntries) {
     ArrayList<DynamicRouteConfig> dynamicRouteconfigs = new ArrayList<>();
     for (DynamicRouteEntry dynamicRouteEntry : dynamicRouteEntries) {
       ArrayList<DynamicClientConfig> dynamicClientConfigs = createDynamicClientConfigs(dynamicRouteEntry);
@@ -27,7 +21,7 @@ public class DynamicRouteConfigsWrapper {
     return dynamicRouteconfigs;
   }
 
-  private ArrayList<DynamicClientConfig> createDynamicClientConfigs(DynamicRouteEntry dynamicRouteEntry) {
+  private static ArrayList<DynamicClientConfig> createDynamicClientConfigs(DynamicRouteEntry dynamicRouteEntry) {
     ArrayList<DynamicClientConfig> dynamicClientConfigs = new ArrayList<>();
     for (String clientIp : dynamicRouteEntry.getClientsIps()) {
       dynamicClientConfigs.add(new DynamicClientConfig(dynamicRouteEntry.getClientName(), clientIp, dynamicRouteEntry.getPort(), dynamicRouteEntry.isTlsEnabled()));

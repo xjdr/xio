@@ -4,31 +4,23 @@ import com.google.gson.*;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import javax.servlet.ServletRegistration;
 import java.io.File;
-import java.lang.reflect.Array;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 
-public class DynamicRouteConfigsWrapperTest extends Assert {
+public class DynamicRouteConfigsFactoryUnitTest extends Assert {
 
-  DynamicRouteConfigsWrapper subject;
-  JsonArray expectedResults;
-
+  String content;
   @Before
   public void before() throws Exception {
-    ClassLoader classLoader = new DynamicRouteConfigsWrapperTest().getClass().getClassLoader();
+    ClassLoader classLoader = new DynamicRouteConfigsFactoryUnitTest().getClass().getClassLoader();
     File file = new File(classLoader.getResource("route_parameters.json").getFile());
-    String content = new String(Files.readAllBytes(file.toPath()));
-    subject = new DynamicRouteConfigsWrapper(content);
+    content = new String(Files.readAllBytes(file.toPath()));
   }
 
   @Test
   public void testGenerationOfDynamicRouteConfigs_valid_config() throws Exception {
-    ArrayList<DynamicRouteConfig> results = subject.getDynamicRouteConfigs();
+    ArrayList<DynamicRouteConfig> results = DynamicRouteConfigsFactory.build(content);
     assertEquals(3, results.size());
 
     ArrayList<DynamicClientConfig> clientConfigs1 = new ArrayList<>();
@@ -44,9 +36,9 @@ public class DynamicRouteConfigsWrapperTest extends Assert {
     ArrayList<DynamicClientConfig> clientConfigs3 = new ArrayList<>();
     DynamicRouteConfig expectedRouteConfig3 = new DynamicRouteConfig("route3", "/path3/", clientConfigs3);
 
-    DynamicRouteConfig resultRouteconfig1 = subject.getDynamicRouteConfigs().get(0);
-    DynamicRouteConfig resultRouteconfig2 = subject.getDynamicRouteConfigs().get(1);
-    DynamicRouteConfig resultRouteconfig3 = subject.getDynamicRouteConfigs().get(2);
+    DynamicRouteConfig resultRouteconfig1 = results.get(0);
+    DynamicRouteConfig resultRouteconfig2 = results.get(1);
+    DynamicRouteConfig resultRouteconfig3 = results.get(2);
 
     assertEquals(expectedRouteConfig1, resultRouteconfig1);
     assertEquals(expectedRouteConfig2, resultRouteconfig2);
@@ -55,7 +47,7 @@ public class DynamicRouteConfigsWrapperTest extends Assert {
 
   @Test
   public void testGenerationOfDynamicRouteConfigs_valid_config_mismatch() throws Exception {
-    ArrayList<DynamicRouteConfig> results = subject.getDynamicRouteConfigs();
+    ArrayList<DynamicRouteConfig> results = DynamicRouteConfigsFactory.build(content);
     assertEquals(3, results.size());
 
     ArrayList<DynamicClientConfig> clientConfigs1 = new ArrayList<>();
@@ -71,9 +63,9 @@ public class DynamicRouteConfigsWrapperTest extends Assert {
     ArrayList<DynamicClientConfig> clientConfigs3 = new ArrayList<>();
     DynamicRouteConfig expectedRouteConfig3 = new DynamicRouteConfig("route3bad", "/path3/bad", clientConfigs3);
 
-    DynamicRouteConfig resultRouteconfig1 = subject.getDynamicRouteConfigs().get(0);
-    DynamicRouteConfig resultRouteconfig2 = subject.getDynamicRouteConfigs().get(1);
-    DynamicRouteConfig resultRouteconfig3 = subject.getDynamicRouteConfigs().get(2);
+    DynamicRouteConfig resultRouteconfig1 = results.get(0);
+    DynamicRouteConfig resultRouteconfig2 = results.get(1);
+    DynamicRouteConfig resultRouteconfig3 = results.get(2);
 
     assertNotEquals(expectedRouteConfig1, resultRouteconfig1);
     assertNotEquals(expectedRouteConfig2, resultRouteconfig2);
