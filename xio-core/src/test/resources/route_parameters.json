@@ -13,7 +13,7 @@
       "client_name": "client2",
       "port_number": 5678,
       "tls_enabled": true,
-      "ip_addresses": ["2.2.3.4", "2.3.4.5"]
+      "ip_addresses": ["2.2.3.4", "2.2.3.5"]
   },
   {
       "name": "route3",
