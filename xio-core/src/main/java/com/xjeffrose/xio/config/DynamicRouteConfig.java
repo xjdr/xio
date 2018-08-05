@@ -9,7 +9,8 @@ public class DynamicRouteConfig {
   private String path;
   private ArrayList<DynamicClientConfig> clientConfigs;
 
-  public DynamicRouteConfig(String name, String path, ArrayList<DynamicClientConfig> clientConfigs) {
+  public DynamicRouteConfig(
+      String name, String path, ArrayList<DynamicClientConfig> clientConfigs) {
     this.name = name;
     this.path = path;
     this.clientConfigs = clientConfigs;
@@ -36,13 +37,12 @@ public class DynamicRouteConfig {
     }
 
     DynamicRouteConfig drc = (DynamicRouteConfig) other;
-    return drc.name.equals(name) &&
-           drc.path.equals(path) &&
-           Arrays.equals(drc.clientConfigs.toArray(), clientConfigs.toArray());
+    return drc.name.equals(name)
+        && drc.path.equals(path)
+        && Arrays.equals(drc.clientConfigs.toArray(), clientConfigs.toArray());
   }
 
   public int hashCode() {
     return Objects.hash(name, path) + clientConfigs.toArray().hashCode();
   }
-
 }

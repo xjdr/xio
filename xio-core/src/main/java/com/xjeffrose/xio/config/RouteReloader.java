@@ -57,7 +57,8 @@ public class RouteReloader<T> {
   public static void main(String args[]) throws Exception {
     ScheduledExecutorService executor = new ScheduledThreadPoolExecutor(1);
     RouteReloader x =
-        new RouteReloader<ArrayList<DynamicRouteConfig>>(executor, DynamicRouteConfigsFactory::build);
+        new RouteReloader<ArrayList<DynamicRouteConfig>>(
+            executor, DynamicRouteConfigsFactory::build);
     DynamicRouteConfigsFactory val = (DynamicRouteConfigsFactory) x.init(args[0]);
     x.start(
         (oldVal, newVal) -> {

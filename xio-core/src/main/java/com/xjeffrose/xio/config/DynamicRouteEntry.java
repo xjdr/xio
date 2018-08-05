@@ -35,7 +35,7 @@ public class DynamicRouteEntry {
 
   public String[] getClientsIps() {
     if (clientsIps == null) {
-      return new String[]{};
+      return new String[] {};
     }
     return clientsIps;
   }

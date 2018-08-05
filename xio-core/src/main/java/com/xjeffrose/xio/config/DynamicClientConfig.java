@@ -39,10 +39,10 @@ public class DynamicClientConfig {
       return false;
     }
     DynamicClientConfig occ = (DynamicClientConfig) other;
-    return Objects.equals(occ.clientName, clientName) &&
-           Objects.equals(occ.ipAddress, ipAddress) &&
-           occ.port == port &&
-           occ.tlsEnabled == tlsEnabled;
+    return Objects.equals(occ.clientName, clientName)
+        && Objects.equals(occ.ipAddress, ipAddress)
+        && occ.port == port
+        && occ.tlsEnabled == tlsEnabled;
   }
 
   public int hashCode() {
