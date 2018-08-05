@@ -4,14 +4,14 @@ import com.google.gson.Gson;
 import java.util.ArrayList;
 
 /**
- * This class is used to generate a List<DynamicRouteConfig> based in a JSON string input matching the format
- * described in /test/resources/route_parameters.json
+ * This class is used to generate a List<DynamicRouteConfig> based in a JSON string input matching
+ * the format described in /test/resources/route_parameters.json
  */
 public class DynamicRouteConfigsFactory {
 
   /**
-   * This is a factory method used to invoke the build operation given a JSON input string
-   * The output of this file is the raw material used to build ProxyRoutes dynamically from JSON
+   * This is a factory method used to invoke the build operation given a JSON input string The
+   * output of this file is the raw material used to build ProxyRoutes dynamically from JSON
    */
   public static ArrayList<DynamicRouteConfig> build(String string) {
     Gson gson = new Gson();

@@ -3,8 +3,9 @@ package com.xjeffrose.xio.config;
 import com.google.gson.annotations.SerializedName;
 
 /**
- * This class is the POJO representation of the data elements inside the route.json file
- * This is used as the base input for RouteReloading. It is later transformed into a List<DynamicRouteConfig>
+ * This class is the POJO representation of the data elements inside the route.json file This is
+ * used as the base input for RouteReloading. It is later transformed into a
+ * List<DynamicRouteConfig>
  */
 public class DynamicRouteEntry {
   @SerializedName("name")

@@ -4,9 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
 
-/**
- * This class is the POJO representation of the input data that maps to a RouteConfig/RouteState
- */
+/** This class is the POJO representation of the input data that maps to a RouteConfig/RouteState */
 public class DynamicRouteConfig {
   private String name;
   private String path;
