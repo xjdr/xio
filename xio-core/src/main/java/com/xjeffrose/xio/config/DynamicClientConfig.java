@@ -2,6 +2,9 @@ package com.xjeffrose.xio.config;
 
 import java.util.Objects;
 
+/**
+ * This class is a POJO representation of the input data that maps to a ClientConfig
+ */
 public class DynamicClientConfig {
   private String clientName;
   private String ipAddress;

@@ -21,9 +21,6 @@ public class RouteReloaderUnitTest extends Assert {
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   private static final String inputJson = "input.json";
-  private static final String initialInput = "route_parameters.json";
-  private static final String changedInput = "route_parameters_changed.json";
-
   private static final String helloWorldValue = "helloworld";
   private static final String badValue = "badValue";
   private static final String changedValue = "changedValue";
