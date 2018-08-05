@@ -20,7 +20,7 @@ public class RouteReloaderUnitTest extends Assert {
 
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
-  private static final String inputJson = "input.json";
+  private static final String inputJsonFilename = "input.json";
   private static final String helloWorldValue = "helloworld";
   private static final String badValue = "badValue";
   private static final String changedValue = "changedValue";
@@ -80,7 +80,7 @@ public class RouteReloaderUnitTest extends Assert {
     RouteReloader<TrivialFactory> subject =
         new RouteReloader<TrivialFactory>(executor, TrivialFactory::new);
     String initialFileContents = helloWorldValue;
-    String input = rawCreateConf(initialFileContents, inputJson);
+    String input = rawCreateConf(initialFileContents, inputJsonFilename);
     TrivialFactory initialValue = subject.init(input);
     assertEquals(initialFileContents, initialValue.inputString);
   }
@@ -92,7 +92,7 @@ public class RouteReloaderUnitTest extends Assert {
     RouteReloader<TrivialFactory> subject =
         new RouteReloader<TrivialFactory>(executor, TrivialFactory::new);
     String initialFileContents = badValue;
-    String input = rawCreateConf(initialFileContents, inputJson);
+    String input = rawCreateConf(initialFileContents, inputJsonFilename);
     TrivialFactory initialValue = subject.init(input);
   }
 
@@ -100,15 +100,15 @@ public class RouteReloaderUnitTest extends Assert {
   public void testReload_WhenWatchedFilesDoNotChange() throws Exception {
 
     AtomicBoolean fireUpdatedCalled = new AtomicBoolean(false);
-    // set initial conditions for applicationConf and includeFileConf
     ScheduledExecutorService executor = new ScheduledThreadPoolExecutor(1);
 
     RouteReloader<TrivialFactory> subject =
         new RouteReloader<TrivialFactory>(executor, TrivialFactory::new);
     String initialFileContents = helloWorldValue;
-    String input = rawCreateConf(initialFileContents, inputJson);
-    // when the input file changes we will get a update fired
+    String input = rawCreateConf(initialFileContents, inputJsonFilename);
+    // init the subject with an file that contains the helloworldvalue
     TrivialFactory initialValue = subject.init(input);
+    // the result from the init should be the baseline TrivialFactory output and it should match the helloworldvalue
     assertEquals(initialFileContents, initialValue.inputString);
 
     TrivialState state =
@@ -119,8 +119,10 @@ public class RouteReloaderUnitTest extends Assert {
           }
         };
 
+    // start the threaded update
     subject.start(state::update);
     Thread.sleep(5000);
+    // since we did not change any files we should not get an update
     assertFalse(fireUpdatedCalled.get());
     // the update should have never been called and these values should not be set
     assertEquals(null, state.oldValue);
@@ -133,15 +135,15 @@ public class RouteReloaderUnitTest extends Assert {
       throws Exception {
 
     AtomicBoolean fireUpdatedCalled = new AtomicBoolean(false);
-    // set initial conditions for applicationConf and includeFileConf
     ScheduledExecutorService executor = new ScheduledThreadPoolExecutor(1);
 
     RouteReloader<TrivialFactory> subject =
         new RouteReloader<TrivialFactory>(executor, TrivialFactory::new);
     String initialFileContents = helloWorldValue;
-    String input = rawCreateConf(initialFileContents, inputJson);
-    // when the input file changes we will get a update fired
+    String input = rawCreateConf(initialFileContents, inputJsonFilename);
+    // init the subject with an file that contains the helloworldvalue
     TrivialFactory initialValue = subject.init(input);
+    // the result from the init should be the baseline TrivialFactory output and it should match the helloworldvalue
     assertEquals(initialFileContents, initialValue.inputString);
 
     TrivialState state =
@@ -155,10 +157,10 @@ public class RouteReloaderUnitTest extends Assert {
     subject.start(state::update);
     Thread.sleep(5000);
     String changedFileContents = helloWorldValue;
-    // create new file over old file with same value
-    String changed = rawCreateConf(changedFileContents, inputJson);
+    // create new file and overwrite the old file with same value
+    String changed = rawCreateConf(changedFileContents, inputJsonFilename);
     Thread.sleep(5000);
-    // the update should have never been called
+    // the update should have never been called since the digest (file contents) did not change
     assertFalse(fireUpdatedCalled.get());
     // these values should not have been set since the update did not occur
     assertEquals(null, state.oldValue);
@@ -171,15 +173,15 @@ public class RouteReloaderUnitTest extends Assert {
       throws Exception {
 
     AtomicBoolean fireUpdatedCalled = new AtomicBoolean(false);
-    // set initial conditions for applicationConf and includeFileConf
     ScheduledExecutorService executor = new ScheduledThreadPoolExecutor(1);
 
     RouteReloader<TrivialFactory> subject =
         new RouteReloader<TrivialFactory>(executor, TrivialFactory::new);
     String initialFileContents = helloWorldValue;
-    String input = rawCreateConf(initialFileContents, inputJson);
-    // when the input file changes we will get a update fired
+    String input = rawCreateConf(initialFileContents, inputJsonFilename);
+    // init the subject with an file that contains the helloworldvalue
     TrivialFactory initialValue = subject.init(input);
+    // the result from the init should be the baseline TrivialFactory output and it should match the helloworldvalue
     assertEquals(initialFileContents, initialValue.inputString);
 
     TrivialState state =
@@ -193,10 +195,10 @@ public class RouteReloaderUnitTest extends Assert {
     subject.start(state::update);
     Thread.sleep(5000);
     String changedFileContents = changedValue;
-    // create new file over old file with different value
-    String changed = rawCreateConf(changedFileContents, inputJson);
+    // create new file overwrite the old file with different value
+    String changed = rawCreateConf(changedFileContents, inputJsonFilename);
     Thread.sleep(5000);
-    // the update should have been called
+    // the update should have been called since the file contents have changed
     assertTrue(fireUpdatedCalled.get());
     // the old value in the update should be the original value
     assertEquals(initialFileContents, state.oldValue.inputString);
@@ -209,15 +211,15 @@ public class RouteReloaderUnitTest extends Assert {
   public void testReload_WhenWatchedFilesChange_BadUpdate() throws Exception {
 
     AtomicBoolean fireUpdatedCalled = new AtomicBoolean(false);
-    // set initial conditions for applicationConf and includeFileConf
     ScheduledExecutorService executor = new ScheduledThreadPoolExecutor(1);
 
     RouteReloader<TrivialFactory> subject =
         new RouteReloader<TrivialFactory>(executor, TrivialFactory::new);
     String initialFileContents = helloWorldValue;
-    String input = rawCreateConf(initialFileContents, inputJson);
-    // when the input file changes we will get a update fired
+    String input = rawCreateConf(initialFileContents, inputJsonFilename);
+    // init the subject with an file that contains the helloworldvalue
     TrivialFactory initialValue = subject.init(input);
+    // the result from the init should be the baseline TrivialFactory output and it should match the helloworldvalue
     assertEquals(initialFileContents, initialValue.inputString);
 
     TrivialState state =
@@ -231,8 +233,8 @@ public class RouteReloaderUnitTest extends Assert {
     subject.start(state::update);
     Thread.sleep(5000);
     String changedFileContents = badValue;
-    // create new file over old file with BAD value
-    String changed = rawCreateConf(changedFileContents, inputJson);
+    // create new file overwrite the old file with BAD value
+    String changed = rawCreateConf(changedFileContents, inputJsonFilename);
     Thread.sleep(5000);
     // the update should have never been called since the update was BAD
     assertFalse(fireUpdatedCalled.get());
@@ -250,7 +252,7 @@ public class RouteReloaderUnitTest extends Assert {
     RouteReloader<TrivialFactory> subject =
         new RouteReloader<TrivialFactory>(executor, TrivialFactory::new);
     String initialFileContents = helloWorldValue;
-    String input = rawCreateConf(initialFileContents, inputJson);
+    String input = rawCreateConf(initialFileContents, inputJsonFilename);
     TrivialState state =
         new TrivialState() {
           @Override
@@ -259,7 +261,7 @@ public class RouteReloaderUnitTest extends Assert {
           }
         };
 
-    // this should throw an exception
+    // this should throw an exception since we called start without first calling init
     subject.start(state::update);
   }
 
@@ -267,14 +269,12 @@ public class RouteReloaderUnitTest extends Assert {
   public void testStartHappyPath() throws Exception {
 
     AtomicBoolean fireUpdatedCalled = new AtomicBoolean(false);
-    // set initial conditions for applicationConf and includeFileConf
     ScheduledExecutorService executor = new ScheduledThreadPoolExecutor(1);
 
     RouteReloader<TrivialFactory> subject =
         new RouteReloader<TrivialFactory>(executor, TrivialFactory::new);
     String initialFileContents = helloWorldValue;
-    String input = rawCreateConf(initialFileContents, inputJson);
-    // when the input file changes we will get a update fired
+    String input = rawCreateConf(initialFileContents, inputJsonFilename);
     TrivialFactory initialValue = subject.init(input);
     assertEquals(initialFileContents, initialValue.inputString);
 
@@ -286,7 +286,7 @@ public class RouteReloaderUnitTest extends Assert {
           }
         };
 
-    // this should NOT throw an exception
+    // this should NOT throw an exception because we called init before calling start
     subject.start(state::update);
     executor.shutdown();
   }
