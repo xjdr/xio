@@ -20,13 +20,13 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class RouteReloader<T> {
 
-  private static class Meta<T> {
+  private static class RouteMeta<T> {
     final T value;
     final String path;
     final long lastModified;
     final byte[] digest;
 
-    Meta(T value, String path, long lastModified, byte[] digest) {
+    RouteMeta(T value, String path, long lastModified, byte[] digest) {
       this.value = value;
       this.path = path;
       this.lastModified = lastModified;
@@ -34,12 +34,12 @@ public class RouteReloader<T> {
     }
   }
 
-  private static class ConfigFileMetadata {
+  private static class RouteConfigFileMetadata {
     final String path;
     final long lastModified;
     final byte[] digest;
 
-    ConfigFileMetadata(String path, long lastModified, byte[] digest) {
+    RouteConfigFileMetadata(String path, long lastModified, byte[] digest) {
       this.path = path;
       this.lastModified = lastModified;
       this.digest = digest;
@@ -49,9 +49,9 @@ public class RouteReloader<T> {
   private final ScheduledExecutorService executor;
   private final Function<String, T> factory;
   private BiConsumer<T, T> updater;
-  private com.xjeffrose.xio.config.RouteReloader.Meta<T> metadata;
-  private Map<String, com.xjeffrose.xio.config.RouteReloader.ConfigFileMetadata> watchFiles =
-      new HashMap<String, com.xjeffrose.xio.config.RouteReloader.ConfigFileMetadata>();
+  private RouteMeta<T> metadata;
+  private Map<String, RouteConfigFileMetadata> watchFiles =
+      new HashMap<String, RouteConfigFileMetadata>();
 
   public RouteReloader(ScheduledExecutorService executor, Function<String, T> factory) {
     this.executor = executor;
@@ -65,7 +65,7 @@ public class RouteReloader<T> {
     return metadata.value;
   }
 
-  private com.xjeffrose.xio.config.RouteReloader.Meta<T> load(String filePath) {
+  private RouteMeta<T> load(String filePath) {
     final MessageDigest digest;
     try {
       digest = MessageDigest.getInstance("SHA-256");
@@ -78,22 +78,19 @@ public class RouteReloader<T> {
       String fileContents = new String(encoded, Charset.defaultCharset());
       T value = factory.apply(fileContents);
       digest.update(Files.readAllBytes(Paths.get(filePath)));
-      return new com.xjeffrose.xio.config.RouteReloader.Meta<>(
-          value, file.getAbsolutePath(), file.lastModified(), digest.digest());
+      return new RouteMeta<>(value, file.getAbsolutePath(), file.lastModified(), digest.digest());
     } catch (Exception e) {
       throw new IllegalStateException("Couldn't load config from file '" + filePath + "'", e);
     }
   }
 
   private boolean shouldPerformUpdate(
-      com.xjeffrose.xio.config.RouteReloader.ConfigFileMetadata current,
-      com.xjeffrose.xio.config.RouteReloader.ConfigFileMetadata previous) {
+      RouteConfigFileMetadata current, RouteConfigFileMetadata previous) {
     return (current.lastModified > previous.lastModified
         && !MessageDigest.isEqual(current.digest, previous.digest));
   }
 
-  private com.xjeffrose.xio.config.RouteReloader.ConfigFileMetadata loadMetaData(File configFile)
-      throws IllegalStateException {
+  private RouteConfigFileMetadata loadMetaData(File configFile) throws IllegalStateException {
     final MessageDigest digest;
     try {
       digest = MessageDigest.getInstance("SHA-256");
@@ -104,7 +101,7 @@ public class RouteReloader<T> {
 
     try {
       digest.update(Files.readAllBytes(Paths.get(configFile.getAbsolutePath())));
-      return new com.xjeffrose.xio.config.RouteReloader.ConfigFileMetadata(
+      return new RouteConfigFileMetadata(
           configFile.getAbsolutePath(), configFile.lastModified(), digest.digest());
     } catch (Exception e) {
       throw new IllegalStateException(
@@ -115,7 +112,7 @@ public class RouteReloader<T> {
   private boolean haveWatchFilesChanged() {
     try {
       Set<String> keys = new HashSet<String>(watchFiles.keySet());
-      List<com.xjeffrose.xio.config.RouteReloader.ConfigFileMetadata> toUpdateList =
+      List<RouteConfigFileMetadata> toUpdateList =
           keys.stream()
               .map(filePath -> loadMetaData(new File(filePath)))
               .filter(
@@ -137,7 +134,7 @@ public class RouteReloader<T> {
       // check to see if any of the specific watch files have changed
       if (haveWatchFilesChanged()) {
         // suck up the original file which includes all the sub files
-        com.xjeffrose.xio.config.RouteReloader.Meta<T> update = load(metadata.path);
+        RouteMeta<T> update = load(metadata.path);
         updater.accept(metadata.value, update.value);
         metadata = update;
       } else {
@@ -155,7 +152,7 @@ public class RouteReloader<T> {
 
   private void addWatchFile(File file) throws IllegalStateException {
     if (!watchFiles.containsKey(file.getAbsolutePath())) {
-      com.xjeffrose.xio.config.RouteReloader.ConfigFileMetadata configMetaData = loadMetaData(file);
+      RouteConfigFileMetadata configMetaData = loadMetaData(file);
       watchFiles.put(file.getAbsolutePath(), configMetaData);
     } else {
       log.error("Attempted to add duplicate watch file: " + file.getAbsolutePath());
