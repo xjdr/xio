@@ -11,7 +11,6 @@ import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.util.*;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -53,19 +52,6 @@ public class RouteReloader<T> {
   private com.xjeffrose.xio.config.RouteReloader.Meta<T> metadata;
   private Map<String, com.xjeffrose.xio.config.RouteReloader.ConfigFileMetadata> watchFiles =
       new HashMap<String, com.xjeffrose.xio.config.RouteReloader.ConfigFileMetadata>();
-
-  public static void main(String args[]) throws Exception {
-    ScheduledExecutorService executor = new ScheduledThreadPoolExecutor(1);
-    RouteReloader x =
-        new RouteReloader<ArrayList<DynamicRouteConfig>>(
-            executor, DynamicRouteConfigsFactory::build);
-    DynamicRouteConfigsFactory val = (DynamicRouteConfigsFactory) x.init(args[0]);
-    x.start(
-        (oldVal, newVal) -> {
-          System.out.println(newVal);
-        });
-    Thread.sleep(100000);
-  }
 
   public RouteReloader(ScheduledExecutorService executor, Function<String, T> factory) {
     this.executor = executor;
