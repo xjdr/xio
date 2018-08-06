@@ -1,13 +1,10 @@
 package com.xjeffrose.xio.config;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.List;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-
-import java.util.List;
 
 /**
  * This class is the POJO representation of the data elements inside the route.json file This is
