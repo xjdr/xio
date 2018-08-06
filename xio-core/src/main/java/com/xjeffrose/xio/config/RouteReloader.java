@@ -20,32 +20,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class RouteReloader<T> {
 
-  private static class RouteMeta<T> {
-    final T value;
-    final String path;
-    final long lastModified;
-    final byte[] digest;
-
-    RouteMeta(T value, String path, long lastModified, byte[] digest) {
-      this.value = value;
-      this.path = path;
-      this.lastModified = lastModified;
-      this.digest = digest;
-    }
-  }
-
-  private static class RouteConfigFileMetadata {
-    final String path;
-    final long lastModified;
-    final byte[] digest;
-
-    RouteConfigFileMetadata(String path, long lastModified, byte[] digest) {
-      this.path = path;
-      this.lastModified = lastModified;
-      this.digest = digest;
-    }
-  }
-
   private final ScheduledExecutorService executor;
   private final Function<String, T> factory;
   private BiConsumer<T, T> updater;
@@ -63,6 +37,14 @@ public class RouteReloader<T> {
     metadata = load(file);
     addWatchFile(new File(file));
     return metadata.value;
+  }
+
+  public void start(BiConsumer<T, T> updater) {
+    checkNotNull(updater, "updater cannot be null");
+    checkNotNull(metadata, "init must be called before start");
+    checkState(this.updater == null, "start cannot be called more than once");
+    setUpdater(updater);
+    executor.scheduleWithFixedDelay(this::checkForUpdates, 2000, 2000, TimeUnit.MILLISECONDS);
   }
 
   private RouteMeta<T> load(String filePath) {
@@ -109,7 +91,11 @@ public class RouteReloader<T> {
     }
   }
 
-  private boolean haveWatchFilesChangedAndUpdateMetadata() {
+  private void updateChangedWatchFiles(List<RouteConfigFileMetadata> toUpdateList) {
+    toUpdateList.forEach(update -> watchFiles.put(update.path, update));
+  }
+
+  private List<RouteConfigFileMetadata> getChangedFiles() {
     try {
       Set<String> keys = new HashSet<String>(watchFiles.keySet());
       List<RouteConfigFileMetadata> toUpdateList =
@@ -120,19 +106,20 @@ public class RouteReloader<T> {
                       shouldPerformUpdate(currentMetaData, watchFiles.get(currentMetaData.path)))
               .collect(Collectors.toList());
 
-      toUpdateList.forEach(update -> watchFiles.put(update.path, update));
-      return !toUpdateList.isEmpty();
+      return toUpdateList;
     } catch (Exception e) {
       log.error("Caught exception while checking for if watch files have changed", e);
     }
-    return false;
+    return new ArrayList<RouteConfigFileMetadata>();
   }
 
   @VisibleForTesting
   void checkForUpdates() {
     try {
       // check to see if any of the specific watch files have changed
-      if (haveWatchFilesChangedAndUpdateMetadata()) {
+      List<RouteConfigFileMetadata> toUpdateList = getChangedFiles();
+      if (!toUpdateList.isEmpty()) {
+        updateChangedWatchFiles(toUpdateList);
         // suck up the original file which includes all the sub files
         RouteMeta<T> update = load(metadata.path);
         updater.accept(metadata.value, update.value);
@@ -159,11 +146,29 @@ public class RouteReloader<T> {
     }
   }
 
-  public void start(BiConsumer<T, T> updater) {
-    checkNotNull(updater, "updater cannot be null");
-    checkNotNull(metadata, "init must be called before start");
-    checkState(this.updater == null, "start cannot be called more than once");
-    setUpdater(updater);
-    executor.scheduleWithFixedDelay(this::checkForUpdates, 2000, 2000, TimeUnit.MILLISECONDS);
+  private static class RouteMeta<T> {
+    final T value;
+    final String path;
+    final long lastModified;
+    final byte[] digest;
+
+    RouteMeta(T value, String path, long lastModified, byte[] digest) {
+      this.value = value;
+      this.path = path;
+      this.lastModified = lastModified;
+      this.digest = digest;
+    }
+  }
+
+  private static class RouteConfigFileMetadata {
+    final String path;
+    final long lastModified;
+    final byte[] digest;
+
+    RouteConfigFileMetadata(String path, long lastModified, byte[] digest) {
+      this.path = path;
+      this.lastModified = lastModified;
+      this.digest = digest;
+    }
   }
 }
