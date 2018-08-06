@@ -141,22 +141,4 @@ public class HttpClientTracingHandlerIntegrationTest {
     byte[] bytes = Hex.decodeHex(responseHex.toCharArray());
     assertEquals(expectedResponse, new String(bytes, "UTF-8"));
   }
-
-  //  // @Override
-  //  @Test(expected = ComparisonFailure.class)
-  //  public void redirect() throws Exception {
-  //    throw new AssumptionViolatedException("client does not support redirect");
-  //  }
-  //
-  //  // @Override
-  //  @Test(expected = ComparisonFailure.class)
-  //  public void addsStatusCodeWhenNotOk() throws Exception {
-  //    throw new AssumptionViolatedException("test is flaky");
-  //  }
-  //
-  //  // @Override
-  //  @Test(expected = ComparisonFailure.class)
-  //  public void httpPathTagExcludesQueryParams() throws Exception {
-  //    throw new AssumptionViolatedException("test is flaky");
-  //  }
 }

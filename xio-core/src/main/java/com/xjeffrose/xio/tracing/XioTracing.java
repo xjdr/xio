@@ -29,7 +29,7 @@ public class XioTracing {
         // puts trace IDs into logs
         .currentTraceContext(MDCCurrentTraceContext.create())
         .spanReporter(buildReporter(zipkinUrl))
-        .sampler(Sampler.create(samplingRate)) // TODO: Investigate BoundarySampler
+        .sampler(Sampler.create(samplingRate))
         .build();
   }
 
