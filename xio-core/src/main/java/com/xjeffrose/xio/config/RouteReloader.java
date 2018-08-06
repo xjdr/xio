@@ -21,13 +21,13 @@ import lombok.extern.slf4j.Slf4j;
 public class RouteReloader<T> {
 
   private final ScheduledExecutorService executor;
-  private final Function<String, T> factory;
+  private final ThrowingFunction<String, T> factory;
   private BiConsumer<T, T> updater;
   private RouteMeta<T> metadata;
   private Map<String, RouteConfigFileMetadata> watchFiles =
       new HashMap<String, RouteConfigFileMetadata>();
 
-  public RouteReloader(ScheduledExecutorService executor, Function<String, T> factory) {
+  public RouteReloader(ScheduledExecutorService executor, ThrowingFunction<String, T> factory) {
     this.executor = executor;
     this.factory = factory;
     this.updater = null;
