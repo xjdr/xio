@@ -1,5 +1,6 @@
 package com.xjeffrose.xio.config;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -17,13 +18,13 @@ public class DynamicRouteConfigsFactory {
    */
   public static List<DynamicRouteConfig> build(String string) throws IOException {
     ObjectMapper objectMapper = new ObjectMapper();
-    DynamicRouteEntry[] dynamicRouteEntries =
-        objectMapper.readValue(string, DynamicRouteEntry[].class);
+    List<DynamicRouteEntry> dynamicRouteEntries =
+        objectMapper.readValue(string, new TypeReference<List<DynamicRouteEntry>>() {});
     return createDynamicRouteConfigs(dynamicRouteEntries);
   }
 
   private static List<DynamicRouteConfig> createDynamicRouteConfigs(
-      DynamicRouteEntry[] dynamicRouteEntries) {
+      List<DynamicRouteEntry> dynamicRouteEntries) {
     ArrayList<DynamicRouteConfig> dynamicRouteconfigs = new ArrayList<>();
     for (DynamicRouteEntry dynamicRouteEntry : dynamicRouteEntries) {
       List<DynamicClientConfig> dynamicClientConfigs =

@@ -2,29 +2,15 @@ package com.xjeffrose.xio.config;
 
 import java.util.List;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 /** This class is the POJO representation of the input data that maps to a RouteConfig/RouteState */
 @EqualsAndHashCode
+@RequiredArgsConstructor
+@Getter
 public class DynamicRouteConfig {
-  private String name;
-  private String path;
-  private List<DynamicClientConfig> clientConfigs;
-
-  public DynamicRouteConfig(String name, String path, List<DynamicClientConfig> clientConfigs) {
-    this.name = name;
-    this.path = path;
-    this.clientConfigs = clientConfigs;
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  public String getPath() {
-    return path;
-  }
-
-  public List<DynamicClientConfig> getClientConfigs() {
-    return clientConfigs;
-  }
+  private final String name;
+  private final String path;
+  private final List<DynamicClientConfig> clientConfigs;
 }

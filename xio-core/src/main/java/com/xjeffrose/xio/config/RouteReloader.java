@@ -109,7 +109,7 @@ public class RouteReloader<T> {
     }
   }
 
-  private boolean haveWatchFilesChanged() {
+  private boolean haveWatchFilesChangedAndUpdateMetadata() {
     try {
       Set<String> keys = new HashSet<String>(watchFiles.keySet());
       List<RouteConfigFileMetadata> toUpdateList =
@@ -132,7 +132,7 @@ public class RouteReloader<T> {
   void checkForUpdates() {
     try {
       // check to see if any of the specific watch files have changed
-      if (haveWatchFilesChanged()) {
+      if (haveWatchFilesChangedAndUpdateMetadata()) {
         // suck up the original file which includes all the sub files
         RouteMeta<T> update = load(metadata.path);
         updater.accept(metadata.value, update.value);
