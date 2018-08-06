@@ -1,6 +1,6 @@
 package com.xjeffrose.xio.config;
 
-import com.google.gson.annotations.SerializedName;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * This class is the POJO representation of the data elements inside the route.json file This is
@@ -8,22 +8,22 @@ import com.google.gson.annotations.SerializedName;
  * List<DynamicRouteConfig>
  */
 public class DynamicRouteEntry {
-  @SerializedName("name")
+  @JsonProperty("name")
   private String name;
 
-  @SerializedName("path")
+  @JsonProperty("path")
   private String path;
 
-  @SerializedName("client_name")
+  @JsonProperty("client_name")
   private String clientName;
 
-  @SerializedName("ip_addresses")
+  @JsonProperty("ip_addresses")
   private String[] clientsIps;
 
-  @SerializedName("port_number")
+  @JsonProperty("port_number")
   private int port;
 
-  @SerializedName("tls_enabled")
+  @JsonProperty("tls_enabled")
   private boolean tlsEnabled;
 
   public String getName() {

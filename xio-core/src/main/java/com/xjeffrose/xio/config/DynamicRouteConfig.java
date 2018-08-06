@@ -1,17 +1,16 @@
 package com.xjeffrose.xio.config;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Objects;
+import java.util.List;
+import lombok.EqualsAndHashCode;
 
 /** This class is the POJO representation of the input data that maps to a RouteConfig/RouteState */
+@EqualsAndHashCode
 public class DynamicRouteConfig {
   private String name;
   private String path;
-  private ArrayList<DynamicClientConfig> clientConfigs;
+  private List<DynamicClientConfig> clientConfigs;
 
-  public DynamicRouteConfig(
-      String name, String path, ArrayList<DynamicClientConfig> clientConfigs) {
+  public DynamicRouteConfig(String name, String path, List<DynamicClientConfig> clientConfigs) {
     this.name = name;
     this.path = path;
     this.clientConfigs = clientConfigs;
@@ -25,25 +24,7 @@ public class DynamicRouteConfig {
     return path;
   }
 
-  public ArrayList<DynamicClientConfig> getClientConfigs() {
+  public List<DynamicClientConfig> getClientConfigs() {
     return clientConfigs;
-  }
-
-  public boolean equals(Object other) {
-    if (other == this) {
-      return true;
-    }
-    if (!(other instanceof DynamicRouteConfig)) {
-      return false;
-    }
-
-    DynamicRouteConfig drc = (DynamicRouteConfig) other;
-    return drc.name.equals(name)
-        && drc.path.equals(path)
-        && Arrays.equals(drc.clientConfigs.toArray(), clientConfigs.toArray());
-  }
-
-  public int hashCode() {
-    return Objects.hash(name, path) + clientConfigs.toArray().hashCode();
   }
 }

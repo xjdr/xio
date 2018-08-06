@@ -1,8 +1,9 @@
 package com.xjeffrose.xio.config;
 
-import java.util.Objects;
+import lombok.EqualsAndHashCode;
 
 /** This class is a POJO representation of the input data that maps to a ClientConfig */
+@EqualsAndHashCode
 public class DynamicClientConfig {
   private String clientName;
   private String ipAddress;
@@ -30,23 +31,5 @@ public class DynamicClientConfig {
 
   public boolean isTlsEnabled() {
     return tlsEnabled;
-  }
-
-  public boolean equals(Object other) {
-    if (other == this) {
-      return true;
-    }
-    if (!(other instanceof DynamicClientConfig)) {
-      return false;
-    }
-    DynamicClientConfig occ = (DynamicClientConfig) other;
-    return Objects.equals(occ.clientName, clientName)
-        && Objects.equals(occ.ipAddress, ipAddress)
-        && occ.port == port
-        && occ.tlsEnabled == tlsEnabled;
-  }
-
-  public int hashCode() {
-    return Objects.hash(clientName, ipAddress, port, tlsEnabled);
   }
 }
