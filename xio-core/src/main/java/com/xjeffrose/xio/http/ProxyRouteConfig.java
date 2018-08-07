@@ -3,6 +3,8 @@ package com.xjeffrose.xio.http;
 import com.typesafe.config.Config;
 import com.xjeffrose.xio.client.ClientConfig;
 import io.netty.handler.codec.http.HttpMethod;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
@@ -67,6 +69,25 @@ public class ProxyRouteConfig extends RouteConfig {
     // validatePath(config.getString("proxyPath"), config.origin());
   }
 
+  // TODO(br): find a way to combine preconditions
+  public ProxyRouteConfig(Config config, boolean startWithEmptyClientConfigs) {
+    super(config);
+    // validatePath(config.getString("path"), config.origin());
+    endsWith(config, "path", "/");
+    //    List<Config> foo = config.getConfigList("clients");
+    // clientConfigs = buildClientConfigs(foo);
+    if (startWithEmptyClientConfigs) {
+      clientConfigs = new ArrayList<ClientConfig>();
+    } else {
+      clientConfigs = buildClientConfigs((List<Config>) config.getConfigList("clients"));
+    }
+    // clientConfigs = buildClientConfigs(new ArrayList<>());
+    proxyHostPolicy = config.getEnum(ProxyHostPolicy.class, "proxyHostPolicy");
+    proxyHost = config.getString("proxyHost");
+    proxyPath = startsWith(config, "proxyPath", "/");
+    endsWith(config, "proxyPath", "/");
+    // validatePath(config.getString("proxyPath"), config.origin());
+  }
   public ProxyRouteConfig(
       List<HttpMethod> methods,
       String host,
