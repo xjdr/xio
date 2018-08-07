@@ -9,18 +9,16 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ProxyClientFactory extends ClientFactory {
 
-  private final ApplicationState state;
   private final ClientPool clientPool;
 
   public ProxyClientFactory(ApplicationState state) {
     super(state.tracing());
-    this.state = state;
     this.clientPool = new ClientPool(state.config().getClientPoolSize());
   }
 
   @Override
   public Client createClient(ChannelHandlerContext ctx, ClientConfig config) {
-    ClientState clientState = state.createClientState(channelConfig(ctx), config);
+    ClientState clientState = new ClientState(channelConfig(ctx), config);
     ClientChannelInitializer clientChannelInit =
         new ClientChannelInitializer(clientState, () -> new ProxyBackendHandler(ctx), getTracing());
     ClientConnectionManager connManager =

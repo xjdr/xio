@@ -6,12 +6,8 @@ import com.typesafe.config.ConfigException;
 import com.typesafe.config.ConfigFactory;
 import com.xjeffrose.xio.bootstrap.ChannelConfiguration;
 import com.xjeffrose.xio.bootstrap.ServerChannelConfiguration;
-import com.xjeffrose.xio.core.NullZkClient;
-import com.xjeffrose.xio.core.ZkClient;
 import com.xjeffrose.xio.tracing.XioTracing;
 import io.netty.util.internal.PlatformDependent;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -36,6 +32,8 @@ public class ApplicationConfig {
   @Getter private final double hardReqPerSec;
   @Getter private final int rateLimiterPoolSize;
   @Getter private final int clientPoolSize;
+
+  // TODO(br): this should be moved out of here since ApplicationConfig should only hold onto immutable configuration info
   @Getter private final XioTracing tracing;
 
   @Getter
@@ -104,21 +102,5 @@ public class ApplicationConfig {
   public ServerChannelConfiguration serverChannelConfig() {
     return ChannelConfiguration.serverConfig(
         bossThreads, bossNameFormat, workerThreads, workerNameFormat);
-  }
-
-  // TODO(CK): refactor this into a ZooKeeperConfig that the ZkClient constructor will accept
-  public ZkClient zookeeperClient() {
-    if (zookeeperCluster.isEmpty()) {
-      return new NullZkClient();
-    } else {
-      if (zookeeperCluster.startsWith("exhibitor:")) {
-        String[] values = zookeeperCluster.replace("exhibitor:", "").split(":");
-        int restPort = Integer.parseInt(values[0]);
-        Collection<String> serverSet = Arrays.asList(values[1].split(","));
-        return ZkClient.fromExhibitor(serverSet, restPort);
-      } else {
-        return new ZkClient(zookeeperCluster);
-      }
-    }
   }
 }

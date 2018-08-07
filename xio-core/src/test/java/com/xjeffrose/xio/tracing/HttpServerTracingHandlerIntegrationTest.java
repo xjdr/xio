@@ -36,6 +36,7 @@ public class HttpServerTracingHandlerIntegrationTest extends Assert {
 
   @Before
   public void before() throws Exception {
+
     application =
         new ApplicationBootstrap("xio.testZipkinApplication", XioTracingDecorator::new)
             .addServer(

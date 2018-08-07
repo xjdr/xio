@@ -1,8 +1,10 @@
 package com.xjeffrose.xio.core;
 
+import com.xjeffrose.xio.application.ApplicationConfig;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -36,6 +38,27 @@ public class ZkClient implements ConfigurationProvider {
   private String connectionString;
   private Map<String, NodeCache> nodeCaches = new HashMap<>();
   private Map<String, TreeCache> treeCaches = new HashMap<>();
+
+  // TODO(CK): refactor this into a ZooKeeperConfig that the ZkClient constructor will accept
+  public static ZkClient buildZkClient(ApplicationConfig applicationConfig) {
+    String zookeeperCluster = applicationConfig.getZookeeperCluster();
+    ZkClient zkClient;
+
+    if (zookeeperCluster.isEmpty()) {
+      zkClient = new NullZkClient();
+    } else {
+      if (zookeeperCluster.startsWith("exhibitor:")) {
+        String[] values = zookeeperCluster.replace("exhibitor:", "").split(":");
+        int restPort = Integer.parseInt(values[0]);
+        Collection<String> serverSet = Arrays.asList(values[1].split(","));
+        zkClient = ZkClient.fromExhibitor(serverSet, restPort);
+      } else {
+        zkClient = new ZkClient(zookeeperCluster);
+      }
+    }
+
+    return zkClient;
+  }
 
   public ZkClient(CuratorFramework client) {
     this.client = client;

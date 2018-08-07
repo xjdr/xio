@@ -12,11 +12,6 @@ import lombok.experimental.Accessors;
 public class ProxyRouteState extends RouteState {
   private final List<ClientState> clientStates;
 
-  private static List<ClientState> buildClientStates(
-      ApplicationState state, List<ClientConfig> configs) {
-    return configs.stream().map(state::createClientState).collect(Collectors.toList());
-  }
-
   public static Route buildRoute(RouteConfig config) {
     return Route.build(config.path() + ":*path");
   }
@@ -26,7 +21,12 @@ public class ProxyRouteState extends RouteState {
   // List<ClientStates>)
   public ProxyRouteState(ApplicationState state, ProxyRouteConfig config, ProxyHandler handler) {
     super(ProxyRouteState::buildRoute, config, handler);
-    clientStates = buildClientStates(state, config.clientConfigs());
+    List<ClientConfig> configs = config.clientConfigs();
+    clientStates =
+        configs
+            .stream()
+            .map(clientConfig -> new ClientState(clientConfig, state.workerGroup()))
+            .collect(Collectors.toList());
   }
 
   @Override

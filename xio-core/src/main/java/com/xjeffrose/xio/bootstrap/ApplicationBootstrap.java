@@ -5,7 +5,11 @@ import com.typesafe.config.ConfigFactory;
 import com.xjeffrose.xio.application.Application;
 import com.xjeffrose.xio.application.ApplicationConfig;
 import com.xjeffrose.xio.application.ApplicationState;
+import com.xjeffrose.xio.application.XioServiceLocator;
 import com.xjeffrose.xio.config.Configurator;
+import com.xjeffrose.xio.core.ZkClient;
+import com.xjeffrose.xio.filter.Http1FilterConfig;
+import com.xjeffrose.xio.filter.IpFilterConfig;
 import com.xjeffrose.xio.server.XioServer;
 import com.xjeffrose.xio.server.XioServerConfig;
 import com.xjeffrose.xio.server.XioServerState;
@@ -52,16 +56,16 @@ public class ApplicationBootstrap {
   public ApplicationBootstrap(ApplicationConfig config, ApplicationState state) {
     this.config = config;
     this.state = state;
+
+    XioServiceLocator.INSTANCE = new XioServiceLocator(config, state);
   }
 
   public ApplicationBootstrap(ApplicationConfig config) {
-    this.config = config;
-    this.state = new ApplicationState(config);
+    this(config, new ApplicationState(config));
   }
 
   public ApplicationBootstrap(ApplicationState state) {
-    this.config = state.config();
-    this.state = state;
+    this(state.config(), state);
   }
 
   public ApplicationBootstrap(Config config) {
@@ -95,7 +99,14 @@ public class ApplicationBootstrap {
   public Application build() {
     Map<String, XioServer> servers = new HashMap<>();
     serverBootstraps.forEach((k, v) -> servers.put(k, v.build()));
+
+    ZkClient zkClient = state.getZkClient();
+    zkClient.registerUpdater(
+        new IpFilterConfig.Updater(config.getIpFilterPath(), state::setIpFilterConfig));
+    zkClient.registerUpdater(
+        new Http1FilterConfig.Updater(config.getHttp1FilterPath(), state::setHttp1FilterConfig));
     state.getZkClient().start();
+
     Configurator configurator = Configurator.build(config.settings());
     configurator.start();
     Application application = new Application(config, servers, state, configurator);

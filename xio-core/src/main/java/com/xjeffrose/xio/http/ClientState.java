@@ -1,8 +1,10 @@
 package com.xjeffrose.xio.http;
 
 import com.xjeffrose.xio.SSL.SslContextFactory;
+import com.xjeffrose.xio.bootstrap.ChannelConfiguration;
 import com.xjeffrose.xio.bootstrap.ClientChannelConfiguration;
 import com.xjeffrose.xio.client.ClientConfig;
+import io.netty.channel.EventLoopGroup;
 import io.netty.handler.ssl.SslContext;
 import java.net.InetSocketAddress;
 
@@ -47,5 +49,9 @@ public class ClientState {
 
   public ClientState(ClientChannelConfiguration channelConfig, ClientConfig config) {
     this(channelConfig, config, config.remote(), sslContext(config.isTlsEnabled(), config));
+  }
+
+  public ClientState(ClientConfig config, EventLoopGroup workerGroup) {
+    this(ChannelConfiguration.clientConfig(workerGroup), config);
   }
 }
