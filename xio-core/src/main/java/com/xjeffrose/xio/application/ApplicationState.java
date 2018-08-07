@@ -4,6 +4,7 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.jmx.JmxReporter;
 import com.google.common.annotations.VisibleForTesting;
 import com.xjeffrose.xio.bootstrap.ServerChannelConfiguration;
+import com.xjeffrose.xio.bootstrap.XioServiceLocator;
 import com.xjeffrose.xio.core.ZkClient;
 import com.xjeffrose.xio.filter.Http1FilterConfig;
 import com.xjeffrose.xio.filter.IpFilterConfig;
@@ -71,6 +72,6 @@ public class ApplicationState {
 
   // TODO(br): Remove this. Objects should be injected with the ZkClient from XioServiceLocator instead of getting it from here.
   public ZkClient getZkClient() {
-    return XioServiceLocator.INSTANCE.getZkClient();
+    return XioServiceLocator.getInstance().getZkClient();
   }
 }

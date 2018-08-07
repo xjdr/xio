@@ -5,7 +5,6 @@ import com.typesafe.config.ConfigFactory;
 import com.xjeffrose.xio.application.Application;
 import com.xjeffrose.xio.application.ApplicationConfig;
 import com.xjeffrose.xio.application.ApplicationState;
-import com.xjeffrose.xio.application.XioServiceLocator;
 import com.xjeffrose.xio.config.Configurator;
 import com.xjeffrose.xio.core.ZkClient;
 import com.xjeffrose.xio.filter.Http1FilterConfig;
@@ -57,7 +56,7 @@ public class ApplicationBootstrap {
     this.config = config;
     this.state = state;
 
-    XioServiceLocator.INSTANCE = new XioServiceLocator(config, state);
+    XioServiceLocator.buildInstance(config, state);
   }
 
   public ApplicationBootstrap(ApplicationConfig config) {
