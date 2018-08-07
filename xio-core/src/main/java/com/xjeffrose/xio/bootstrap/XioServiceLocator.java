@@ -12,21 +12,26 @@ public class XioServiceLocator {
   private ApplicationConfig applicationConfig;
   private ApplicationState applicationState;
 
-  private XioServiceLocator(ApplicationConfig applicationConfig, ApplicationState applicationState) {
+  private XioServiceLocator(
+      ApplicationConfig applicationConfig, ApplicationState applicationState) {
     this.applicationConfig = applicationConfig;
     this.applicationState = applicationState;
   }
 
   public static XioServiceLocator getInstance() {
-    Preconditions.checkNotNull(instance, "XioServiceLocator is created by ApplicationBootstrap during it's constructor. Make sure that an ApplicationBootstrap has been created before accessing XioServiceLocator.");
+    Preconditions.checkNotNull(
+        instance,
+        "XioServiceLocator is created by ApplicationBootstrap during it's constructor. Make sure that an ApplicationBootstrap has been created before accessing XioServiceLocator.");
     return instance;
   }
 
   /**
-   * This is how ApplicationBootstrap initializes the shared instance of XioServiceLocator.
-   * The above statement is why this function is package private and XioServiceLocator is in the bootstrap package.
-   * */
-  static void buildInstance(ApplicationConfig applicationConfig, ApplicationState applicationState) {
+   * This is how ApplicationBootstrap initializes the shared instance of XioServiceLocator. The
+   * above statement is why this function is package private and XioServiceLocator is in the
+   * bootstrap package.
+   */
+  static void buildInstance(
+      ApplicationConfig applicationConfig, ApplicationState applicationState) {
     XioServiceLocator.instance = new XioServiceLocator(applicationConfig, applicationState);
   }
 
