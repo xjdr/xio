@@ -1,5 +1,6 @@
 package com.xjeffrose.xio.bootstrap;
 
+import com.google.common.base.Preconditions;
 import com.xjeffrose.xio.application.ApplicationConfig;
 import com.xjeffrose.xio.application.ApplicationState;
 import com.xjeffrose.xio.core.ZkClient;
@@ -17,6 +18,7 @@ public class XioServiceLocator {
   }
 
   public static XioServiceLocator getInstance() {
+    Preconditions.checkNotNull(instance, "XioServiceLocator is created by ApplicationBootstrap during it's constructor. Make sure that an ApplicationBootstrap has been created before accessing XioServiceLocator.");
     return instance;
   }
 
