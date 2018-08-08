@@ -3,14 +3,11 @@ package com.xjeffrose.xio.application;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.jmx.JmxReporter;
 import com.google.common.annotations.VisibleForTesting;
-import com.xjeffrose.xio.bootstrap.ChannelConfiguration;
-import com.xjeffrose.xio.bootstrap.ClientChannelConfiguration;
 import com.xjeffrose.xio.bootstrap.ServerChannelConfiguration;
-import com.xjeffrose.xio.client.ClientConfig;
+import com.xjeffrose.xio.bootstrap.XioServiceLocator;
 import com.xjeffrose.xio.core.ZkClient;
 import com.xjeffrose.xio.filter.Http1FilterConfig;
 import com.xjeffrose.xio.filter.IpFilterConfig;
-import com.xjeffrose.xio.http.ClientState;
 import com.xjeffrose.xio.tracing.XioTracing;
 import io.netty.channel.EventLoopGroup;
 import java.util.concurrent.atomic.AtomicReference;
@@ -22,8 +19,6 @@ public class ApplicationState {
   @Accessors(fluent = true)
   @Getter
   private final ApplicationConfig config;
-
-  @Getter private final ZkClient zkClient;
 
   @Getter private final ServerChannelConfiguration channelConfiguration;
 
@@ -50,17 +45,9 @@ public class ApplicationState {
     this.metricRegistry = new MetricRegistry();
     JmxReporter jmxReporter = JmxReporter.forRegistry(metricRegistry).build();
     jmxReporter.start();
-
-    zkClient = config.zookeeperClient();
-    channelConfiguration = config.serverChannelConfig();
-
-    ipFilterConfig = new AtomicReference<>(new IpFilterConfig());
-    zkClient.registerUpdater(
-        new IpFilterConfig.Updater(config.getIpFilterPath(), this::setIpFilterConfig));
-
-    http1FilterConfig = new AtomicReference<>(new Http1FilterConfig());
-    zkClient.registerUpdater(
-        new Http1FilterConfig.Updater(config.getHttp1FilterPath(), this::setHttp1FilterConfig));
+    this.channelConfiguration = config.serverChannelConfig();
+    this.ipFilterConfig = new AtomicReference<>(new IpFilterConfig());
+    this.http1FilterConfig = new AtomicReference<>(new Http1FilterConfig());
   }
 
   public EventLoopGroup workerGroup() {
@@ -83,12 +70,8 @@ public class ApplicationState {
     http1FilterConfig.set(newConfig);
   }
 
-  public ClientState createClientState(
-      ClientChannelConfiguration channelConfig, ClientConfig config) {
-    return new ClientState(channelConfig, config);
-  }
-
-  public ClientState createClientState(ClientConfig config) {
-    return createClientState(ChannelConfiguration.clientConfig(workerGroup()), config);
+  // TODO(br): Remove this. Objects should be injected with the ZkClient from XioServiceLocator instead of getting it from here.
+  public ZkClient getZkClient() {
+    return XioServiceLocator.getInstance().getZkClient();
   }
 }
