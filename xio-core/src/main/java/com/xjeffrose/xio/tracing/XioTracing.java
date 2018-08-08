@@ -7,10 +7,10 @@ import brave.sampler.Sampler;
 import com.typesafe.config.Config;
 import lombok.NonNull;
 import lombok.val;
-import zipkin.Span;
-import zipkin.reporter.AsyncReporter;
-import zipkin.reporter.Reporter;
-import zipkin.reporter.okhttp3.OkHttpSender;
+import zipkin2.Span;
+import zipkin2.reporter.AsyncReporter;
+import zipkin2.reporter.Reporter;
+import zipkin2.reporter.okhttp3.OkHttpSender;
 
 public class XioTracing {
 
@@ -28,7 +28,7 @@ public class XioTracing {
         .localServiceName(name)
         // puts trace IDs into logs
         .currentTraceContext(MDCCurrentTraceContext.create())
-        .reporter(buildReporter(zipkinUrl))
+        .spanReporter(buildReporter(zipkinUrl))
         .sampler(Sampler.create(samplingRate))
         .build();
   }

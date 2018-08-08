@@ -1,8 +1,8 @@
 package com.xjeffrose.xio.tracing;
 
 import brave.Tracing;
-import brave.internal.StrictCurrentTraceContext;
 import brave.propagation.CurrentTraceContext;
+import brave.propagation.StrictCurrentTraceContext;
 import brave.sampler.Sampler;
 import com.typesafe.config.Config;
 import com.xjeffrose.xio.application.Application;
@@ -31,8 +31,8 @@ import org.junit.Test;
 
 public class HttpServerTracingHandlerIntegrationTest extends Assert {
 
-  Application application = null;
-  CountDownLatch latch;
+  private Application application = null;
+  private CountDownLatch latch;
 
   @Before
   public void before() throws Exception {
@@ -68,16 +68,20 @@ public class HttpServerTracingHandlerIntegrationTest extends Assert {
 
   private class XioTracingDecorator extends XioTracing {
 
-    CurrentTraceContext currentTraceContext = new StrictCurrentTraceContext();
+    private CurrentTraceContext currentTraceContext;
 
-    public XioTracingDecorator(Config config) {
+    XioTracingDecorator(Config config) {
       super(config);
     }
 
     @Override
     protected Tracing buildTracing(String name, String zipkinUrl, float samplingRate) {
+      if (currentTraceContext == null) {
+        currentTraceContext = new StrictCurrentTraceContext();
+      }
+
       return Tracing.newBuilder()
-          .reporter(ignored -> latch.countDown())
+          .spanReporter(ignored -> latch.countDown())
           .currentTraceContext(currentTraceContext)
           .sampler(Sampler.ALWAYS_SAMPLE)
           .build();
