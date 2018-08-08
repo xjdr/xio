@@ -5,7 +5,7 @@ import com.xjeffrose.xio.http.Request;
 import com.xjeffrose.xio.http.Response;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import javax.annotation.ParametersAreNonnullByDefault;
-import zipkin.Endpoint;
+import zipkin2.Endpoint;
 
 @ParametersAreNonnullByDefault
 class XioHttpServerAdapter extends HttpServerAdapter<Request, Response> {
@@ -52,6 +52,6 @@ class XioHttpServerAdapter extends HttpServerAdapter<Request, Response> {
       return true;
     }
     String remoteIp = request.headers().get("x-remote-ip");
-    return remoteIp != null && builder.parseIp(remoteIp);
+    return builder.parseIp(remoteIp);
   }
 }

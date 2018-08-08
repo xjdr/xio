@@ -8,8 +8,8 @@ import brave.Span;
 import brave.Tracer;
 import brave.Tracing;
 import brave.http.HttpTracing;
-import brave.internal.StrictCurrentTraceContext;
 import brave.propagation.CurrentTraceContext;
+import brave.propagation.StrictCurrentTraceContext;
 import brave.propagation.TraceContext;
 import brave.sampler.Sampler;
 import com.xjeffrose.xio.http.DefaultFullResponse;
@@ -66,7 +66,7 @@ public class HttpServerTracingHandlerTest extends Assert {
     }
   }
 
-  ConcurrentLinkedDeque<zipkin.Span> spans = new ConcurrentLinkedDeque<>();
+  ConcurrentLinkedDeque<zipkin2.Span> spans = new ConcurrentLinkedDeque<>();
 
   CurrentTraceContext currentTraceContext = new StrictCurrentTraceContext();
   HttpTracing httpTracing;
@@ -74,12 +74,12 @@ public class HttpServerTracingHandlerTest extends Assert {
 
   Tracing.Builder tracingBuilder(Sampler sampler) {
     return Tracing.newBuilder()
-        .reporter(
+        .spanReporter(
             s -> {
               // make sure the context was cleared prior to finish.. no leaks!
               TraceContext current = httpTracing.tracing().currentTraceContext().get();
               if (current != null) {
-                Assert.assertNotEquals(current.spanId(), s.id);
+                Assert.assertNotEquals(current.spanId(), s.id());
               }
               spans.add(s);
             })
