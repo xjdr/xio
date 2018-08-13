@@ -3,11 +3,7 @@ package com.xjeffrose.xio.http.test_helpers;
 import static org.junit.Assert.*;
 
 import com.google.common.collect.ImmutableMap;
-import com.typesafe.config.ConfigFactory;
-import com.xjeffrose.xio.application.ApplicationConfig;
-import com.xjeffrose.xio.application.ApplicationState;
 import com.xjeffrose.xio.bootstrap.XioServerBootstrap;
-import com.xjeffrose.xio.bootstrap.XioServiceLocator;
 import com.xjeffrose.xio.http.Http2Response;
 import com.xjeffrose.xio.http.PipelineRequestHandler;
 import com.xjeffrose.xio.http.PipelineRouter;

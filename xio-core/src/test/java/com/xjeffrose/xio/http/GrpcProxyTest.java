@@ -6,7 +6,6 @@ import com.typesafe.config.ConfigFactory;
 import com.xjeffrose.xio.application.ApplicationConfig;
 import com.xjeffrose.xio.application.ApplicationState;
 import com.xjeffrose.xio.bootstrap.XioServerBootstrap;
-import com.xjeffrose.xio.bootstrap.XioServiceLocator;
 import com.xjeffrose.xio.client.ClientConfig;
 import com.xjeffrose.xio.core.SocketAddressHelper;
 import com.xjeffrose.xio.http.test_helpers.GrpcClient;
