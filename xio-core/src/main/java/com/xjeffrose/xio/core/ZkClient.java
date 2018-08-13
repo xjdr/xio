@@ -26,6 +26,7 @@ import org.apache.curator.framework.recipes.cache.TreeCacheEvent;
 import org.apache.curator.framework.recipes.cache.TreeCacheListener;
 import org.apache.curator.framework.recipes.leader.LeaderSelector;
 import org.apache.curator.framework.recipes.leader.LeaderSelectorListener;
+import org.apache.curator.framework.recipes.shared.SharedCount;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.zookeeper.CreateMode;
 
@@ -310,5 +311,9 @@ public class ZkClient implements ConfigurationProvider {
                 updater.accept(event);
               }
             });
+  }
+
+  public SharedCount createSharedCounter(String path, int seedValue) {
+    return new SharedCount(client, path, seedValue);
   }
 }

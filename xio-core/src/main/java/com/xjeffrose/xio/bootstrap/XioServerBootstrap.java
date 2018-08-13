@@ -36,6 +36,9 @@ public class XioServerBootstrap {
     pipelineAssembler = new XioPipelineAssembler(appState, config, state);
     this.config = config;
     this.state = state;
+
+    XioServiceLocator.buildInstance(appState.config(), appState);
+
     bindAddress(config.getBindAddress());
     channelConfig(appState.getChannelConfiguration());
   }
