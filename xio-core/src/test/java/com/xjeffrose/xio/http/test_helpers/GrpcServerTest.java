@@ -32,11 +32,6 @@ public class GrpcServerTest {
 
   @Test
   public void testGrpcServer() throws Exception {
-    ApplicationConfig applicationConfig =
-        ApplicationConfig.fromConfig("xio.defaultApplication", ConfigFactory.load());
-    ApplicationState applicationState = new ApplicationState(applicationConfig);
-    XioServiceLocator.TEST_ONLY_buildInstance(applicationConfig, applicationState);
-
     final Http2Headers cannedHeaders = new DefaultHttp2Headers();
     cannedHeaders
         .status("200")
