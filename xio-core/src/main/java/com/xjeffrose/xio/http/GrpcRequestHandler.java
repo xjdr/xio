@@ -9,8 +9,8 @@ import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.*;
 import io.netty.util.AttributeKey;
-import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
 // Documentation for gRPC over HTTP2: https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-HTTP2.md
@@ -243,11 +243,7 @@ public class GrpcRequestHandler<
     StringBuilder output = new StringBuilder();
     byte[] bytes;
 
-    try {
-      bytes = input.getBytes("UTF-8");
-    } catch (UnsupportedEncodingException e) {
-      return "";
-    }
+    bytes = input.getBytes(StandardCharsets.UTF_8);
 
     for (byte b : bytes) {
       output.append(String.format("%%%02x", b));
