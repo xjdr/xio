@@ -3,8 +3,17 @@ package com.xjeffrose.xio.http.test_helpers;
 import static org.junit.Assert.*;
 
 import com.google.common.collect.ImmutableMap;
+import com.typesafe.config.ConfigFactory;
+import com.xjeffrose.xio.application.ApplicationConfig;
+import com.xjeffrose.xio.application.ApplicationState;
 import com.xjeffrose.xio.bootstrap.XioServerBootstrap;
-import com.xjeffrose.xio.http.*;
+import com.xjeffrose.xio.bootstrap.XioServiceLocator;
+import com.xjeffrose.xio.http.Http2Response;
+import com.xjeffrose.xio.http.PipelineRequestHandler;
+import com.xjeffrose.xio.http.PipelineRouter;
+import com.xjeffrose.xio.http.Request;
+import com.xjeffrose.xio.http.RouteState;
+import com.xjeffrose.xio.http.SegmentedRequestData;
 import com.xjeffrose.xio.pipeline.SmartHttpPipeline;
 import com.xjeffrose.xio.server.XioServer;
 import helloworld.HelloReply;
@@ -23,6 +32,11 @@ public class GrpcServerTest {
 
   @Test
   public void testGrpcServer() throws Exception {
+    ApplicationConfig applicationConfig =
+        ApplicationConfig.fromConfig("xio.defaultApplication", ConfigFactory.load());
+    ApplicationState applicationState = new ApplicationState(applicationConfig);
+    XioServiceLocator.TEST_ONLY_buildInstance(applicationConfig, applicationState);
+
     final Http2Headers cannedHeaders = new DefaultHttp2Headers();
     cannedHeaders
         .status("200")

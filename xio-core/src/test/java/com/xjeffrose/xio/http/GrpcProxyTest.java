@@ -6,6 +6,7 @@ import com.typesafe.config.ConfigFactory;
 import com.xjeffrose.xio.application.ApplicationConfig;
 import com.xjeffrose.xio.application.ApplicationState;
 import com.xjeffrose.xio.bootstrap.XioServerBootstrap;
+import com.xjeffrose.xio.bootstrap.XioServiceLocator;
 import com.xjeffrose.xio.client.ClientConfig;
 import com.xjeffrose.xio.core.SocketAddressHelper;
 import com.xjeffrose.xio.http.test_helpers.GrpcClient;
@@ -100,6 +101,11 @@ public class GrpcProxyTest extends Assert {
 
   @Test
   public void testGrpcProxyRequest() throws Exception {
+    ApplicationConfig applicationConfig =
+        ApplicationConfig.fromConfig("xio.defaultApplication", ConfigFactory.load());
+    ApplicationState applicationState = new ApplicationState(applicationConfig);
+    XioServiceLocator.TEST_ONLY_buildInstance(applicationConfig, applicationState);
+
     GrpcServer server = GrpcServer.run();
     // TODO(CK): this creates global state across tests we should do something smarter
     System.setProperty("xio.baseClient.remotePort", Integer.toString(server.getPort()));

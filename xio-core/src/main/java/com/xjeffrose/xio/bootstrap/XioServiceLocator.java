@@ -1,5 +1,6 @@
 package com.xjeffrose.xio.bootstrap;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.xjeffrose.xio.application.ApplicationConfig;
 import com.xjeffrose.xio.application.ApplicationState;
@@ -31,6 +32,12 @@ public class XioServiceLocator {
    * bootstrap package.
    */
   static void buildInstance(
+      ApplicationConfig applicationConfig, ApplicationState applicationState) {
+    XioServiceLocator.instance = new XioServiceLocator(applicationConfig, applicationState);
+  }
+
+  @VisibleForTesting
+  public static void TEST_ONLY_buildInstance(
       ApplicationConfig applicationConfig, ApplicationState applicationState) {
     XioServiceLocator.instance = new XioServiceLocator(applicationConfig, applicationState);
   }
