@@ -7,17 +7,28 @@ import brave.sampler.Sampler;
 import com.typesafe.config.Config;
 import lombok.NonNull;
 import lombok.val;
+import okhttp3.OkHttpClient;
 import zipkin2.Span;
+import zipkin2.codec.Encoding;
 import zipkin2.reporter.AsyncReporter;
 import zipkin2.reporter.Reporter;
+import zipkin2.reporter.okhttp3.OkHttpClientBuilderFactory;
 import zipkin2.reporter.okhttp3.OkHttpSender;
+import zipkin2.reporter.okhttp3.OkHttpSenderBuilderFactory;
 
 public class XioTracing {
 
   private final Tracing tracing;
 
   Reporter<Span> buildReporter(@NonNull String zipkinUrl) {
-    return AsyncReporter.builder(OkHttpSender.create(zipkinUrl)).build();
+    OkHttpClient.Builder clientBuilder = OkHttpClientBuilderFactory.createZipkinClientBuilder();
+    OkHttpSender sender =
+        OkHttpSenderBuilderFactory.createSenderBuilder(clientBuilder)
+            .encoding(Encoding.JSON)
+            .endpoint(zipkinUrl)
+            .compressionEnabled(false)
+            .build();
+    return AsyncReporter.builder(sender).build();
   }
 
   Tracing buildTracing(@NonNull String name, @NonNull String zipkinUrl, float samplingRate) {
