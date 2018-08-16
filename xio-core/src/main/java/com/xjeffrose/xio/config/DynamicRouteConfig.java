@@ -9,8 +9,12 @@ import lombok.RequiredArgsConstructor;
 @EqualsAndHashCode
 @RequiredArgsConstructor
 @Getter
-public class DynamicRouteConfig {
+public class DynamicRouteConfig implements Comparable<DynamicRouteConfig> {
   private final String name;
   private final String path;
   private final List<DynamicClientConfig> clientConfigs;
+
+  public int compareTo(DynamicRouteConfig other) {
+    return path.compareTo(other.path);
+  }
 }
