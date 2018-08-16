@@ -3,7 +3,6 @@ package com.xjeffrose.xio.config;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.*;
 
 /**
@@ -23,10 +22,12 @@ public class DynamicRouteConfigsFactory {
     return createDynamicRouteConfigs(dynamicRouteEntries);
   }
 
-  private static List<DynamicRouteConfig> createDynamicRouteConfigs(List<DynamicRouteEntry> dynamicRouteEntries) {
+  private static List<DynamicRouteConfig> createDynamicRouteConfigs(
+      List<DynamicRouteEntry> dynamicRouteEntries) {
     ArrayList<DynamicRouteConfig> dynamicRouteConfigs = new ArrayList<>();
     // This is used to group together route configs that share the same path
-    Map<String, ArrayList<DynamicRouteEntry>> groupedRouteEntries = groupRouteEntriesByPath(dynamicRouteEntries);
+    Map<String, ArrayList<DynamicRouteEntry>> groupedRouteEntries =
+        groupRouteEntriesByPath(dynamicRouteEntries);
     // Now we will squash the various versions of each route together
     for (ArrayList<DynamicRouteEntry> routeEntries : groupedRouteEntries.values()) {
       if (!routeEntries.isEmpty()) {
@@ -39,7 +40,8 @@ public class DynamicRouteConfigsFactory {
         // combine the generated clientConfigs from different instances of this route path
         ArrayList<DynamicClientConfig> dynamicClientConfigs = new ArrayList<>();
         for (DynamicRouteEntry routeEntry : routeEntries) {
-          List<DynamicClientConfig> generatedClientConfigList = createDynamicClientConfigs(routeEntry);
+          List<DynamicClientConfig> generatedClientConfigList =
+              createDynamicClientConfigs(routeEntry);
           dynamicClientConfigs.addAll(generatedClientConfigList);
         }
         dynamicRouteConfigs.add(new DynamicRouteConfig(name, path, dynamicClientConfigs));
@@ -50,7 +52,8 @@ public class DynamicRouteConfigsFactory {
     return dynamicRouteConfigs;
   }
 
-  private static Map<String, ArrayList<DynamicRouteEntry>> groupRouteEntriesByPath(List<DynamicRouteEntry> dynamicRouteEntries) {
+  private static Map<String, ArrayList<DynamicRouteEntry>> groupRouteEntriesByPath(
+      List<DynamicRouteEntry> dynamicRouteEntries) {
     Map<String, ArrayList<DynamicRouteEntry>> consolidationMap = new HashMap<>();
     for (DynamicRouteEntry entry : dynamicRouteEntries) {
       if (consolidationMap.containsKey(entry.getPath())) {
