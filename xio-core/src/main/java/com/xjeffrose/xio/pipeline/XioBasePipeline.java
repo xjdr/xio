@@ -43,7 +43,7 @@ public abstract class XioBasePipeline implements XioPipelineFragment {
 
   public abstract String applicationProtocol();
 
-  public ChannelHandler getApplicationCodec() {
+  public ChannelHandler getApplicationCodec(XioServerConfig config) {
     return null;
   }
 
@@ -85,7 +85,7 @@ public abstract class XioBasePipeline implements XioPipelineFragment {
     } else {
       throw new RuntimeException("No codec configured");
     }
-    addHandler(pipeline, "application codec", getApplicationCodec());
+    addHandler(pipeline, "application codec", getApplicationCodec(config));
     addHandler(pipeline, "metric handler", new MetricsHandler(appState.getMetricRegistry()));
     addHandler(pipeline, "distributed tracing", state.tracingHandler(appState));
     addHandler(pipeline, "application router", getApplicationRouter());

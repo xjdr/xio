@@ -3,7 +3,10 @@ package com.xjeffrose.xio.pipeline;
 import com.xjeffrose.xio.bootstrap.XioServerBootstrap;
 import com.xjeffrose.xio.fixtures.SampleHandler;
 import com.xjeffrose.xio.helpers.ClientHelper;
+import com.xjeffrose.xio.http.ApplicationCodecPlaceholderHandler;
 import com.xjeffrose.xio.server.XioServer;
+import com.xjeffrose.xio.server.XioServerConfig;
+import io.netty.channel.ChannelHandler;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import okhttp3.Response;
@@ -16,7 +19,13 @@ public class XioHttp1_1PipelineFunctionalTest extends Assert {
   public void testProxyServer() throws IOException {
     XioServerBootstrap bootstrap =
         XioServerBootstrap.fromConfig("xio.testHttpServer")
-            .addToPipeline(new SmartHttpPipeline(() -> new SampleHandler()));
+            .addToPipeline(
+                new SmartHttpPipeline(() -> new SampleHandler()) {
+                  @Override
+                  public ChannelHandler getApplicationCodec(XioServerConfig config) {
+                    return ApplicationCodecPlaceholderHandler.INSTANCE;
+                  }
+                });
     try (XioServer server = bootstrap.build()) {
       InetSocketAddress address = server.getInstrumentation().addressBound();
       Response response = ClientHelper.http(address);

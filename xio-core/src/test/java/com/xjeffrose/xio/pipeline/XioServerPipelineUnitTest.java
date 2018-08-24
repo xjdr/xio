@@ -75,7 +75,7 @@ public class XioServerPipelineUnitTest {
           }
 
           @Override
-          public ChannelHandler getApplicationCodec() {
+          public ChannelHandler getApplicationCodec(XioServerConfig config) {
             return new XioNoOpHandler();
           }
 
