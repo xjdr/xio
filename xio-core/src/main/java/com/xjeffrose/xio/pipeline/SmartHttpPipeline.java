@@ -1,13 +1,7 @@
 package com.xjeffrose.xio.pipeline;
 
 import com.xjeffrose.xio.application.ApplicationState;
-import com.xjeffrose.xio.http.ApplicationCodecPlaceholderHandler;
-import com.xjeffrose.xio.http.CodecPlaceholderHandler;
-import com.xjeffrose.xio.http.GentleSslHandler;
-import com.xjeffrose.xio.http.Http2HandlerBuilder;
-import com.xjeffrose.xio.http.HttpNegotiationHandler;
-import com.xjeffrose.xio.http.HttpsUpgradeHandler;
-import com.xjeffrose.xio.http.RouteApplicator;
+import com.xjeffrose.xio.http.*;
 import com.xjeffrose.xio.server.XioServerConfig;
 import com.xjeffrose.xio.server.XioServerState;
 import io.netty.channel.ChannelHandler;
@@ -71,8 +65,12 @@ public class SmartHttpPipeline extends XioServerPipeline {
     }
   }
 
-  public ChannelHandler getApplicationCodec() {
-    return ApplicationCodecPlaceholderHandler.INSTANCE;
+  public ChannelHandler getApplicationCodec(XioServerConfig config) {
+    if (config.getTls().isUseSsl()) {
+      return ApplicationCodecPlaceholderHandler.INSTANCE;
+    } else {
+      return new Http1ServerCodec();
+    }
   }
 
   public ChannelHandler getApplicationHandler() {
