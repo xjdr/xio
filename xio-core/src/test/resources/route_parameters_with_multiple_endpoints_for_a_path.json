@@ -5,7 +5,8 @@
     "client_name": "client1",
     "port_number": 1234,
     "tls_enabled": false,
-    "ip_addresses": ["1.2.3.4", "1.2.3.5"]
+    "ip_addresses": ["1.2.3.4", "1.2.3.5"],
+    "extra_stuff": "extra_stuff"
   },
   {
     "name": "route1",
@@ -13,7 +14,8 @@
     "client_name": "client1-new",
     "port_number": 1235,
     "tls_enabled": true,
-    "ip_addresses": ["1.2.3.6", "1.2.3.7"]
+    "ip_addresses": ["1.2.3.6", "1.2.3.7"],
+    "more_extra_stuff": "extra_stuff"
   },
   {
     "name": "route2",
@@ -21,7 +23,8 @@
     "client_name": "client2",
     "port_number": 5678,
     "tls_enabled": true,
-    "ip_addresses": ["2.2.3.4", "2.2.3.5"]
+    "ip_addresses": ["2.2.3.4", "2.2.3.5"],
+    "more_more_extra_stuff": "extra_stuff"
   },
   {
     "name": "route3",
@@ -29,6 +32,7 @@
     "client_name": "client3",
     "port_number": 9012,
     "tls_enabled": false,
-    "ip_addresses": []
+    "ip_addresses": [],
+    "more_more_more_extra_stuff": "extra_stuff"
   }
 ]
