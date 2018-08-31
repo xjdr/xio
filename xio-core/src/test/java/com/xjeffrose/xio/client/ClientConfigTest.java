@@ -35,7 +35,6 @@ public class ClientConfigTest extends Assert {
             .build();
 
     assertEquals(expectedBootstrapOptions, subject.bootstrapOptions());
-    assertEquals(expectedName, subject.name());
     assertEquals(expectedTls, subject.tls());
     assertEquals(expectedMessageLoggerEnabled, subject.messageLoggerEnabled());
     assertEquals(expectedLocal, subject.local());

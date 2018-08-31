@@ -10,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Getter
 public class DynamicRouteConfig implements Comparable<DynamicRouteConfig> {
-  private final String name;
   private final String path;
   private final List<DynamicClientConfig> clientConfigs;
 

@@ -34,7 +34,6 @@ public class DynamicRouteConfigsFactory {
         // We will use the first entries name/path as the base template, this is not really an issue for paths since these are
         // grouped by path anyway
         DynamicRouteEntry firstElement = routeEntries.get(0);
-        String name = firstElement.getName();
         String path = firstElement.getPath();
 
         // combine the generated clientConfigs from different instances of this route path
@@ -44,7 +43,7 @@ public class DynamicRouteConfigsFactory {
               createDynamicClientConfigs(routeEntry);
           dynamicClientConfigs.addAll(generatedClientConfigList);
         }
-        dynamicRouteConfigs.add(new DynamicRouteConfig(name, path, dynamicClientConfigs));
+        dynamicRouteConfigs.add(new DynamicRouteConfig(path, dynamicClientConfigs));
       }
     }
     // lets sort these from shortest to longest and in alphabetical order
@@ -75,10 +74,7 @@ public class DynamicRouteConfigsFactory {
     for (String clientIp : dynamicRouteEntry.getClientsIps()) {
       dynamicClientConfigs.add(
           new DynamicClientConfig(
-              dynamicRouteEntry.getClientName(),
-              clientIp,
-              dynamicRouteEntry.getPort(),
-              dynamicRouteEntry.isTlsEnabled()));
+              clientIp, dynamicRouteEntry.getPort(), dynamicRouteEntry.isTlsEnabled()));
     }
     return dynamicClientConfigs;
   }

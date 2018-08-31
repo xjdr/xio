@@ -17,16 +17,11 @@ import lombok.extern.slf4j.Slf4j;
 public class ClientConfig {
 
   private final Map<ChannelOption<Object>, Object> bootstrapOptions;
-  private final String name;
   private final TlsConfig tls;
   private final boolean messageLoggerEnabled;
   private final InetSocketAddress local;
   private final InetSocketAddress remote;
   private final IdleTimeoutConfig idleTimeoutConfig;
-
-  public String getName() {
-    return name;
-  }
 
   public TlsConfig getTls() {
     return tls;
@@ -37,7 +32,6 @@ public class ClientConfig {
   }
 
   public static ClientConfig from(Config config) {
-    String name = config.getString("name");
     TlsConfig tls = new TlsConfig(config.getConfig("settings.tls"));
     boolean messageLoggerEnabled = config.getBoolean("settings.messageLoggerEnabled");
 
@@ -57,23 +51,20 @@ public class ClientConfig {
     IdleTimeoutConfig idleTimeoutConfig =
         new IdleTimeoutConfig(idleTimeoutEnabled, idleTimeoutDuration);
 
-    return new ClientConfig(
-        null, name, tls, messageLoggerEnabled, local, remote, idleTimeoutConfig);
+    return new ClientConfig(null, tls, messageLoggerEnabled, local, remote, idleTimeoutConfig);
   }
 
   public ClientConfig(
       Map<ChannelOption<Object>, Object> bootstrapOptions,
-      String name,
       TlsConfig tls,
       boolean messageLoggerEnabled,
       InetSocketAddress local,
       InetSocketAddress remote,
       IdleTimeoutConfig idleTimeoutConfig) {
     this.bootstrapOptions = bootstrapOptions;
-    this.name = name;
     this.tls = tls;
     if (!tls.isUseSsl() && tls.isLogInsecureConfig()) {
-      log.warn("Client '{}' has useSsl set to false!", name);
+      log.warn("Client '{}' has useSsl set to false!", remote.toString());
     }
     this.messageLoggerEnabled = messageLoggerEnabled;
     this.local = local;
@@ -158,7 +149,6 @@ public class ClientConfig {
     public ClientConfig build() {
       return new ClientConfig(
           valueOrFallback(bootstrapOptions, fallbackObject.bootstrapOptions()),
-          valueOrFallback(name, fallbackObject.name()),
           valueOrFallback(tls, fallbackObject.tls()),
           valueOrFallback(messageLoggerEnabled, fallbackObject.messageLoggerEnabled()),
           valueOrFallback(local, fallbackObject.local()),
