@@ -100,7 +100,6 @@ public class ClientConfig {
   public static class Builder {
     private ClientConfig fallbackObject;
     private Map<ChannelOption<Object>, Object> bootstrapOptions;
-    private String name;
     private TlsConfig tls;
     private boolean messageLoggerEnabled;
     private InetSocketAddress local;
@@ -113,11 +112,6 @@ public class ClientConfig {
 
     public Builder setBootstrapOptions(Map<ChannelOption<Object>, Object> bootstrapOptions) {
       this.bootstrapOptions = bootstrapOptions;
-      return this;
-    }
-
-    public Builder setName(String name) {
-      this.name = name;
       return this;
     }
 
