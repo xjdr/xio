@@ -22,20 +22,17 @@ public class DynamicRouteConfigsFactoryUnitTest extends Assert {
     assertEquals(3, results.size());
 
     List<DynamicClientConfig> clientConfigs1 = new ArrayList<>();
-    clientConfigs1.add(new DynamicClientConfig("client1", "1.2.3.4", 1234, false));
-    clientConfigs1.add(new DynamicClientConfig("client1", "1.2.3.5", 1234, false));
-    DynamicRouteConfig expectedRouteConfig1 =
-        new DynamicRouteConfig("route1", "/path1/", clientConfigs1);
+    clientConfigs1.add(new DynamicClientConfig("1.2.3.4", 1234, false));
+    clientConfigs1.add(new DynamicClientConfig("1.2.3.5", 1234, false));
+    DynamicRouteConfig expectedRouteConfig1 = new DynamicRouteConfig("/path1/", clientConfigs1);
 
     List<DynamicClientConfig> clientConfigs2 = new ArrayList<>();
-    clientConfigs2.add(new DynamicClientConfig("client2", "2.2.3.4", 5678, true));
-    clientConfigs2.add(new DynamicClientConfig("client2", "2.2.3.5", 5678, true));
-    DynamicRouteConfig expectedRouteConfig2 =
-        new DynamicRouteConfig("route2", "/path2/", clientConfigs2);
+    clientConfigs2.add(new DynamicClientConfig("2.2.3.4", 5678, true));
+    clientConfigs2.add(new DynamicClientConfig("2.2.3.5", 5678, true));
+    DynamicRouteConfig expectedRouteConfig2 = new DynamicRouteConfig("/path2/", clientConfigs2);
 
     List<DynamicClientConfig> clientConfigs3 = new ArrayList<>();
-    DynamicRouteConfig expectedRouteConfig3 =
-        new DynamicRouteConfig("route3", "/path3/", clientConfigs3);
+    DynamicRouteConfig expectedRouteConfig3 = new DynamicRouteConfig("/path3/", clientConfigs3);
 
     // lets sort the results =p
     DynamicRouteConfig resultRouteconfig1 = results.get(0);
@@ -56,22 +53,19 @@ public class DynamicRouteConfigsFactoryUnitTest extends Assert {
     assertEquals(3, results.size());
 
     List<DynamicClientConfig> clientConfigs1 = new ArrayList<>();
-    clientConfigs1.add(new DynamicClientConfig("client1", "1.2.3.4", 1234, false));
-    clientConfigs1.add(new DynamicClientConfig("client1", "1.2.3.5", 1234, false));
-    clientConfigs1.add(new DynamicClientConfig("client1-new", "1.2.3.6", 1235, true));
-    clientConfigs1.add(new DynamicClientConfig("client1-new", "1.2.3.7", 1235, true));
-    DynamicRouteConfig expectedRouteConfig1 =
-        new DynamicRouteConfig("route1", "/path1/", clientConfigs1);
+    clientConfigs1.add(new DynamicClientConfig("1.2.3.4", 1234, false));
+    clientConfigs1.add(new DynamicClientConfig("1.2.3.5", 1234, false));
+    clientConfigs1.add(new DynamicClientConfig("1.2.3.6", 1235, true));
+    clientConfigs1.add(new DynamicClientConfig("1.2.3.7", 1235, true));
+    DynamicRouteConfig expectedRouteConfig1 = new DynamicRouteConfig("/path1/", clientConfigs1);
 
     List<DynamicClientConfig> clientConfigs2 = new ArrayList<>();
-    clientConfigs2.add(new DynamicClientConfig("client2", "2.2.3.4", 5678, true));
-    clientConfigs2.add(new DynamicClientConfig("client2", "2.2.3.5", 5678, true));
-    DynamicRouteConfig expectedRouteConfig2 =
-        new DynamicRouteConfig("route2", "/path2/", clientConfigs2);
+    clientConfigs2.add(new DynamicClientConfig("2.2.3.4", 5678, true));
+    clientConfigs2.add(new DynamicClientConfig("2.2.3.5", 5678, true));
+    DynamicRouteConfig expectedRouteConfig2 = new DynamicRouteConfig("/path2/", clientConfigs2);
 
     List<DynamicClientConfig> clientConfigs3 = new ArrayList<>();
-    DynamicRouteConfig expectedRouteConfig3 =
-        new DynamicRouteConfig("route3", "/path3/", clientConfigs3);
+    DynamicRouteConfig expectedRouteConfig3 = new DynamicRouteConfig("/path3/", clientConfigs3);
 
     // lets sort the results =p
     DynamicRouteConfig resultRouteconfig1 = results.get(0);
@@ -90,20 +84,17 @@ public class DynamicRouteConfigsFactoryUnitTest extends Assert {
     assertEquals(3, results.size());
 
     List<DynamicClientConfig> clientConfigs1 = new ArrayList<>();
-    clientConfigs1.add(new DynamicClientConfig("client1bad", "1.2.3.4bad", 12340, false));
-    clientConfigs1.add(new DynamicClientConfig("client1bad", "1.2.3.5bad", 12340, false));
-    DynamicRouteConfig expectedRouteConfig1 =
-        new DynamicRouteConfig("route1", "/path1/", clientConfigs1);
+    clientConfigs1.add(new DynamicClientConfig("1.2.3.4bad", 12340, false));
+    clientConfigs1.add(new DynamicClientConfig("1.2.3.5bad", 12340, false));
+    DynamicRouteConfig expectedRouteConfig1 = new DynamicRouteConfig("/path1/", clientConfigs1);
 
     List<DynamicClientConfig> clientConfigs2 = new ArrayList<>();
-    clientConfigs2.add(new DynamicClientConfig("client2bad", "2.2.3.4bad", 56780, true));
-    clientConfigs2.add(new DynamicClientConfig("client2bad", "2.2.3.5bad", 56780, true));
-    DynamicRouteConfig expectedRouteConfig2 =
-        new DynamicRouteConfig("route2bad", "/path2/bad", clientConfigs2);
+    clientConfigs2.add(new DynamicClientConfig("2.2.3.4bad", 56780, true));
+    clientConfigs2.add(new DynamicClientConfig("2.2.3.5bad", 56780, true));
+    DynamicRouteConfig expectedRouteConfig2 = new DynamicRouteConfig("/path2/bad", clientConfigs2);
 
     List<DynamicClientConfig> clientConfigs3 = new ArrayList<>();
-    DynamicRouteConfig expectedRouteConfig3 =
-        new DynamicRouteConfig("route3bad", "/path3/bad", clientConfigs3);
+    DynamicRouteConfig expectedRouteConfig3 = new DynamicRouteConfig("/path3/bad", clientConfigs3);
 
     DynamicRouteConfig resultRouteconfig1 = results.get(0);
     DynamicRouteConfig resultRouteconfig2 = results.get(1);

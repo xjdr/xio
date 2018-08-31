@@ -9,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Getter
 public class DynamicClientConfig {
-  private final String clientName;
   private final String ipAddress;
   private final int port;
   private final boolean tlsEnabled;

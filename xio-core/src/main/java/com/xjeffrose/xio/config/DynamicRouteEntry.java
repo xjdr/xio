@@ -17,14 +17,8 @@ import lombok.Setter;
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DynamicRouteEntry {
-  @JsonProperty("name")
-  private String name;
-
   @JsonProperty("path")
   private String path;
-
-  @JsonProperty("client_name")
-  private String clientName;
 
   @JsonProperty("ip_addresses")
   private List<String> clientsIps;
