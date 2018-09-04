@@ -47,7 +47,7 @@ class XioHttpClientAdapter extends HttpClientAdapter<Request, Response> {
   }
 
   @Override
-  public boolean parseServerAddress(Request request, Endpoint.Builder builder) {
+  public boolean parseServerIpAndPort(Request request, Endpoint.Builder builder) {
     String host = request.headers().get(HttpHeaderNames.HOST.toString());
     if (host != null) {
       String[] values = host.split(":");

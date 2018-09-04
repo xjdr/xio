@@ -32,6 +32,7 @@ allprojects {
     implementation group: 'com.google.auto.value', name: 'auto-value', version: auto_value_version
     annotationProcessor "org.projectlombok:lombok:$lombok_version"
     implementation group: 'org.projectlombok', name: 'lombok', version: lombok_version
+    implementation group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: '1.60'
 
     testImplementation project(':xio-test')
     testImplementation group: 'junit', name: 'junit', version: junit_version
