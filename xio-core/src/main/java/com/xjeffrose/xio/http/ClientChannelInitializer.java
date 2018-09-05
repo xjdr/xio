@@ -59,7 +59,7 @@ public class ClientChannelInitializer extends ChannelInitializer {
           .addLast("application codec", new Http1ClientCodec());
     }
     if (tracing != null) {
-      val traceHandler = tracing.newClientHandler(state.config.isTlsEnabled());
+      val traceHandler = tracing.newClientHandler();
       Pipelines.addHandler(channel.pipeline(), "distributed tracing", traceHandler);
     }
 

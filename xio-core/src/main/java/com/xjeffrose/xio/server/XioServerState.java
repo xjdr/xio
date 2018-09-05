@@ -13,8 +13,6 @@ import lombok.Getter;
 // TODO(CK): rename this to ServerState
 public class XioServerState {
 
-  private final XioServerConfig config;
-
   @Getter
   private final ChannelGroup allChannels = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
 
@@ -23,14 +21,13 @@ public class XioServerState {
   @Getter private final SslContext sslContext;
 
   public XioServerState(XioServerConfig config) {
-    this.config = config;
     channelStatistics = new ChannelStatistics(allChannels);
     sslContext = SslContextFactory.buildServerContext(config.getTls());
   }
 
   public ChannelHandler tracingHandler(ApplicationState appState) {
     if (appState.tracing() != null) {
-      return appState.tracing().newServerHandler(config.isTlsEnabled());
+      return appState.tracing().newServerHandler();
     } else {
       return null;
     }

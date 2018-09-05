@@ -8,6 +8,7 @@ import brave.Span;
 import brave.Tracer;
 import brave.Tracing;
 import brave.http.HttpTracing;
+import brave.opentracing.BraveTracer;
 import brave.propagation.CurrentTraceContext;
 import brave.propagation.StrictCurrentTraceContext;
 import brave.propagation.TraceContext;
@@ -48,8 +49,11 @@ public class HttpServerTracingHandlerTest extends Assert {
             .getSpan()
             .ifPresent(
                 parent -> {
-                  Span span = tracer.newChild(parent.context()).name("child").start();
-                  span.finish();
+                  if (parent instanceof brave.Span) {
+                    Span span =
+                        tracer.newChild(((brave.Span) parent).context()).name("child").start();
+                    span.finish();
+                  }
                 });
 
         val response =
@@ -90,7 +94,8 @@ public class HttpServerTracingHandlerTest extends Assert {
   @Before
   public void setup() throws Exception {
     httpTracing = HttpTracing.create(tracingBuilder(Sampler.ALWAYS_SAMPLE).build());
-    httpTracingState = new HttpServerTracingDispatch(httpTracing, false);
+    BraveTracer braveTracer = BraveTracer.create(httpTracing.tracing());
+    httpTracingState = new HttpServerTracingDispatch("test", braveTracer);
   }
 
   @Test
@@ -116,6 +121,6 @@ public class HttpServerTracingHandlerTest extends Assert {
     synchronized (httpTracing) {
       httpTracing.wait();
     }
-    Assert.assertEquals(2, spans.size());
+    Assert.assertEquals(1, spans.size());
   }
 }

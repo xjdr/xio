@@ -41,6 +41,9 @@ dependencies {
     exclude(module: 'log4j')
   }
   implementation group: 'org.apache.thrift', name: 'libthrift', version: libthrift_version
+  implementation group: 'io.opentracing', name: 'opentracing-api', version: '0.31.0'
+  implementation group: 'io.opentracing', name: 'opentracing-util', version: '0.31.0'
+  implementation group: 'io.opentracing.brave', name: 'brave-opentracing', version: '0.32.0'
   implementation group: 'io.zipkin.brave', name: 'brave-instrumentation-http', version: zipkin_brave_brave_instrumentation_http_version
   implementation group: 'io.zipkin.brave', name: 'brave-context-slf4j', version: zipkin_brave_brave_context_slf4j_version
   implementation group: 'io.zipkin.reporter2', name: 'zipkin-sender-okhttp3', version: zipkin_reporter_zipkin_sender_okhttp3_version

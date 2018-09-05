@@ -77,7 +77,7 @@ public class HttpServerTracingHandlerIntegrationTest extends Assert {
     }
 
     @Override
-    protected Tracing buildTracing(String name, String zipkinUrl, float samplingRate) {
+    protected Tracing buildZipkinTracing(String name, String zipkinUrl, float samplingRate) {
       if (currentTraceContext == null) {
         currentTraceContext = new StrictCurrentTraceContext();
       }

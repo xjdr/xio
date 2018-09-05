@@ -1,6 +1,6 @@
 package com.xjeffrose.xio.http;
 
-import brave.Span;
+import io.opentracing.Span;
 import java.util.Optional;
 
 /** Mutable data object storing http tracing information. */

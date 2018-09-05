@@ -1,8 +1,8 @@
 package com.xjeffrose.xio.tracing;
 
-import brave.Span;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.AttributeKey;
+import io.opentracing.Span;
 import java.util.Optional;
 
 public class HttpTracingState {

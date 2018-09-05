@@ -1,50 +1,67 @@
 package com.xjeffrose.xio.tracing;
 
-import brave.Span;
-import brave.Tracer;
-import brave.http.HttpServerHandler;
-import brave.http.HttpTracing;
-import brave.propagation.TraceContext;
+import brave.opentracing.BraveSpanContext;
 import com.xjeffrose.xio.http.Headers;
 import com.xjeffrose.xio.http.Request;
 import com.xjeffrose.xio.http.Response;
 import io.netty.channel.ChannelHandlerContext;
+import io.opentracing.Scope;
+import io.opentracing.SpanContext;
+import io.opentracing.Tracer;
+import io.opentracing.propagation.Format;
+import io.opentracing.tag.Tags;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import lombok.Getter;
 
 class HttpServerTracingDispatch extends HttpTracingState {
 
-  @Getter private final Tracer tracer;
-  @Getter private final HttpServerHandler<Request, Response> handler;
-  @Getter private final TraceContext.Extractor<Headers> extractor;
+  private final Tracer tracer;
+  private final String name;
 
-  public HttpServerTracingDispatch(HttpTracing httpTracing, boolean ssl) {
-    tracer = httpTracing.tracing().tracer();
-    handler = HttpServerHandler.create(httpTracing, new XioHttpServerAdapter(ssl));
-    extractor = httpTracing.tracing().propagation().extractor(Headers::get);
+  public HttpServerTracingDispatch(String name, Tracer tracer) {
+    this.name = name;
+    this.tracer = tracer;
   }
 
-  private Headers addRemoteIp(ChannelHandlerContext ctx, Headers headers) {
+  private void addRemoteIp(ChannelHandlerContext ctx, Headers headers) {
     SocketAddress address = ctx.channel().remoteAddress();
     if (address instanceof InetSocketAddress) {
       headers.set("x-remote-ip", ((InetSocketAddress) address).getHostString());
     }
-    return headers;
   }
 
   public void onRequest(ChannelHandlerContext ctx, Request request) {
-    Span span = handler.handleReceive(extractor, addRemoteIp(ctx, request.headers()), request);
-    setSpan(ctx, span);
-    request.httpTraceInfo().setSpan(span);
+    addRemoteIp(ctx, request.headers());
+    SpanContext receivedContext =
+        tracer.extract(Format.Builtin.HTTP_HEADERS, new HttpHeadersExtractAdapter(request));
+    Tracer.SpanBuilder spanBuilder =
+        tracer
+            .buildSpan(name)
+            .withTag(Tags.HTTP_METHOD.getKey(), request.method().toString())
+            .withTag(Tags.HTTP_URL.getKey(), request.path());
+
+    if (receivedContext != null) {
+      if (receivedContext instanceof BraveSpanContext) {
+        if (((BraveSpanContext) receivedContext).unwrap() != null) {
+          spanBuilder.asChildOf(receivedContext);
+        }
+      } else {
+        spanBuilder.asChildOf(receivedContext);
+      }
+    }
+
+    try (Scope scope = spanBuilder.startActive(false)) {
+      setSpan(ctx, scope.span());
+      request.httpTraceInfo().setSpan(scope.span());
+    }
   }
 
   public void onResponse(ChannelHandlerContext ctx, Response response, Throwable error) {
     popSpan(ctx)
         .ifPresent(
             span -> {
+              span.finish();
               response.httpTraceInfo().setSpan(span);
-              handler.handleSend(response, error, span);
             });
   }
 }

@@ -55,7 +55,7 @@ public class ClientChannelInitializerTest extends Assert {
     val clientConfig = ClientConfig.from(ConfigFactory.load().getConfig("xio.basicClient"));
     val clientState = new ClientState(channelConfig, clientConfig);
     // when we have disabled Tracing the tracing returns null for newClientHandler
-    when(tracing.newClientHandler(clientConfig.getTls().isUseSsl())).thenReturn(null);
+    when(tracing.newClientHandler()).thenReturn(null);
 
     subject = new ClientChannelInitializer(clientState, () -> appHandler, tracing);
 
@@ -71,7 +71,7 @@ public class ClientChannelInitializerTest extends Assert {
     val clientConfig = ClientConfig.from(ConfigFactory.load().getConfig("xio.basicClient"));
     val clientState = new ClientState(channelConfig, clientConfig);
     // when we have enabled Tracing the tracing returns a non-null newClientHandler
-    when(tracing.newClientHandler(clientConfig.getTls().isUseSsl())).thenReturn(tracingHandler);
+    when(tracing.newClientHandler()).thenReturn(tracingHandler);
 
     subject = new ClientChannelInitializer(clientState, () -> appHandler, tracing);
 
@@ -87,7 +87,7 @@ public class ClientChannelInitializerTest extends Assert {
     val clientConfig = ClientConfig.from(ConfigFactory.load().getConfig("xio.sslClient"));
     val clientState = new ClientState(channelConfig, clientConfig);
     // when we have enabled Tracing the tracing returns a non-null newClientHandler
-    when(tracing.newClientHandler(clientConfig.getTls().isUseSsl())).thenReturn(tracingHandler);
+    when(tracing.newClientHandler()).thenReturn(tracingHandler);
 
     subject = new ClientChannelInitializer(clientState, () -> appHandler, tracing);
 
@@ -103,7 +103,7 @@ public class ClientChannelInitializerTest extends Assert {
     val clientConfig = ClientConfig.from(ConfigFactory.load().getConfig("xio.basicClient"));
     val clientState = new ClientState(channelConfig, clientConfig);
     // when we have enabled Tracing the tracing returns a non-null newClientHandler
-    when(tracing.newClientHandler(clientConfig.getTls().isUseSsl())).thenReturn(tracingHandler);
+    when(tracing.newClientHandler()).thenReturn(tracingHandler);
 
     subject = new ClientChannelInitializer(clientState, () -> appHandler, tracing);
 
@@ -119,7 +119,7 @@ public class ClientChannelInitializerTest extends Assert {
     val clientConfig = ClientConfig.from(ConfigFactory.load().getConfig("xio.idleDisabledClient"));
     val clientState = new ClientState(channelConfig, clientConfig);
     // when we have enabled Tracing the tracing returns a non-null newClientHandler
-    when(tracing.newClientHandler(clientConfig.getTls().isUseSsl())).thenReturn(tracingHandler);
+    when(tracing.newClientHandler()).thenReturn(tracingHandler);
 
     subject = new ClientChannelInitializer(clientState, () -> appHandler, tracing);
 
@@ -135,7 +135,7 @@ public class ClientChannelInitializerTest extends Assert {
     val clientConfig = ClientConfig.from(ConfigFactory.load().getConfig("xio.idleEnabledClient"));
     val clientState = new ClientState(channelConfig, clientConfig);
     // when we have enabled Tracing the tracing returns a non-null newClientHandler
-    when(tracing.newClientHandler(clientConfig.getTls().isUseSsl())).thenReturn(tracingHandler);
+    when(tracing.newClientHandler()).thenReturn(tracingHandler);
 
     subject = new ClientChannelInitializer(clientState, () -> appHandler, tracing);
 
