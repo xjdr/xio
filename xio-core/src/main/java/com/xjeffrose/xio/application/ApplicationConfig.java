@@ -1,16 +1,14 @@
 package com.xjeffrose.xio.application;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigException;
 import com.typesafe.config.ConfigFactory;
 import com.xjeffrose.xio.bootstrap.ChannelConfiguration;
 import com.xjeffrose.xio.bootstrap.ServerChannelConfiguration;
-import com.xjeffrose.xio.tracing.XioTracing;
+import com.xjeffrose.xio.config.TracingConfig;
 import io.netty.util.internal.PlatformDependent;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -32,15 +30,13 @@ public class ApplicationConfig {
   @Getter private final double hardReqPerSec;
   @Getter private final int rateLimiterPoolSize;
   @Getter private final int clientPoolSize;
-
-  // TODO(br): this should be moved out of here since ApplicationConfig should only hold onto immutable configuration info
-  @Getter private final XioTracing tracing;
+  @Getter private final TracingConfig tracingConfig;
 
   @Getter
   private final Map<String, List<Double>> clientRateLimitOverride =
       PlatformDependent.newConcurrentHashMap();
 
-  private ApplicationConfig(Config config, XioTracing tracing) {
+  public ApplicationConfig(Config config) {
     this.config = config;
     name = config.getString("name");
     bossThreads = config.getInt("settings.bossThreads");
@@ -56,16 +52,7 @@ public class ApplicationConfig {
     hardReqPerSec = config.getDouble("settings.hard_req_per_sec");
     rateLimiterPoolSize = config.getInt("settings.rate_limiter_pool_size");
     clientPoolSize = config.getInt("clientLimits.clientPoolSize");
-    this.tracing = tracing;
-  }
-
-  @VisibleForTesting
-  public ApplicationConfig(Config config, Function<Config, XioTracing> tracingSupplier) {
-    this(config, tracingSupplier.apply(config));
-  }
-
-  public ApplicationConfig(Config config) {
-    this(config, new XioTracing(config));
+    tracingConfig = new TracingConfig(name, config.getConfig("settings.tracing"));
   }
 
   public static ApplicationConfig fromConfig(String key, Config config) {

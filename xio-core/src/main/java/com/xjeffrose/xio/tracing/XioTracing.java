@@ -4,9 +4,8 @@ import brave.Tracing;
 import brave.context.slf4j.MDCCurrentTraceContext;
 import brave.http.HttpTracing;
 import brave.sampler.Sampler;
-import com.typesafe.config.Config;
+import com.xjeffrose.xio.config.TracingConfig;
 import lombok.NonNull;
-import lombok.val;
 import okhttp3.OkHttpClient;
 import zipkin2.Span;
 import zipkin2.codec.Encoding;
@@ -44,10 +43,10 @@ public class XioTracing {
         .build();
   }
 
-  public XioTracing(Config config) {
-    val name = config.getString("name");
-    val zipkinUrl = config.getString("settings.tracing.zipkinUrl");
-    float samplingRate = ((Double) config.getDouble("settings.tracing.samplingRate")).floatValue();
+  public XioTracing(TracingConfig config) {
+    String name = config.getApplicationName();
+    String zipkinUrl = config.getZipkinUrl();
+    float samplingRate = config.getZipkinSamplingRate();
     tracing = buildTracing(name, zipkinUrl, samplingRate);
   }
 

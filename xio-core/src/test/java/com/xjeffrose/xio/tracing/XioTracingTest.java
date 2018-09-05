@@ -1,7 +1,7 @@
 package com.xjeffrose.xio.tracing;
 
-import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+import com.xjeffrose.xio.config.TracingConfig;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -9,13 +9,19 @@ import org.junit.Test;
 public class XioTracingTest extends Assert {
 
   private XioTracing subject;
-  private Config validParametersConfig;
-  private Config invalidParametersConfig;
+  private TracingConfig validParametersConfig;
+  private TracingConfig invalidParametersConfig;
 
   @Before
   public void setUp() {
-    validParametersConfig = ConfigFactory.load().getConfig("xio.validZipkinParameters");
-    invalidParametersConfig = ConfigFactory.load().getConfig("xio.invalidZipkinParameters");
+    validParametersConfig =
+        new TracingConfig(
+            "xio-tracing-test",
+            ConfigFactory.load().getConfig("xio.validZipkinParameters.settings.tracing"));
+    invalidParametersConfig =
+        new TracingConfig(
+            "xio-tracing-test",
+            ConfigFactory.load().getConfig("xio.invalidZipkinParameters.settings.tracing"));
   }
 
   @Test

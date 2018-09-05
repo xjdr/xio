@@ -4,9 +4,10 @@ import brave.Tracing;
 import brave.propagation.CurrentTraceContext;
 import brave.propagation.StrictCurrentTraceContext;
 import brave.sampler.Sampler;
-import com.typesafe.config.Config;
 import com.xjeffrose.xio.application.Application;
+import com.xjeffrose.xio.application.ApplicationConfig;
 import com.xjeffrose.xio.bootstrap.ApplicationBootstrap;
+import com.xjeffrose.xio.config.TracingConfig;
 import com.xjeffrose.xio.helpers.ClientHelper;
 import com.xjeffrose.xio.http.DefaultFullResponse;
 import com.xjeffrose.xio.http.DefaultHeaders;
@@ -36,9 +37,9 @@ public class HttpServerTracingHandlerIntegrationTest extends Assert {
 
   @Before
   public void before() throws Exception {
-
+    ApplicationConfig appConfig = ApplicationConfig.fromConfig("xio.testZipkinApplication");
     application =
-        new ApplicationBootstrap("xio.testZipkinApplication", XioTracingDecorator::new)
+        new ApplicationBootstrap(appConfig, XioTracingDecorator::new)
             .addServer(
                 "exampleServer", (bs) -> bs.addToPipeline(new SmartHttpPipeline(TestHandler::new)))
             .build();
@@ -71,7 +72,7 @@ public class HttpServerTracingHandlerIntegrationTest extends Assert {
 
     private CurrentTraceContext currentTraceContext;
 
-    XioTracingDecorator(Config config) {
+    XioTracingDecorator(TracingConfig config) {
       super(config);
     }
 

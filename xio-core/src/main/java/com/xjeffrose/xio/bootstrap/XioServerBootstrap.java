@@ -10,6 +10,7 @@ import com.xjeffrose.xio.server.XioServer;
 import com.xjeffrose.xio.server.XioServerConfig;
 import com.xjeffrose.xio.server.XioServerInstrumentation;
 import com.xjeffrose.xio.server.XioServerState;
+import com.xjeffrose.xio.tracing.XioTracing;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import java.net.InetSocketAddress;
@@ -46,9 +47,10 @@ public class XioServerBootstrap {
   // TODO(CK): refactor tests and remove this
   public static XioServerBootstrap fromConfig(String key, Config config) {
     XioServerConfig serverConfig = XioServerConfig.fromConfig(key, config);
+    ApplicationConfig appConfig =
+        ApplicationConfig.fromConfig("xio.defaultApplication", ConfigFactory.load());
     return new XioServerBootstrap(
-        new ApplicationState(
-            ApplicationConfig.fromConfig("xio.defaultApplication", ConfigFactory.load())),
+        new ApplicationState(appConfig, new XioTracing(appConfig.getTracingConfig())),
         serverConfig,
         new XioServerState(serverConfig));
   }

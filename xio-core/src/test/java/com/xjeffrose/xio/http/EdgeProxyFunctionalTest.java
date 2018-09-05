@@ -148,7 +148,8 @@ public class EdgeProxyFunctionalTest extends Assert {
     @Override
     public XioTracing tracing() {
       if (tracing == null) {
-        tracing = new XioTracing(ConfigFactory.load().getConfig("xio.edgeProxyApplication"));
+        ApplicationConfig appConfig = ApplicationConfig.fromConfig("xio.edgeProxyApplication");
+        tracing = new XioTracing(appConfig.getTracingConfig());
       }
       return tracing;
     }

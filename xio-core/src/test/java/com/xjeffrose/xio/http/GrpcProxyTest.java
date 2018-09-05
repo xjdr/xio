@@ -111,9 +111,9 @@ public class GrpcProxyTest extends Assert {
     // ProxyConfig proxyConfig = ProxyConfig.parse("https://127.0.0.1:" + server.getPort() + "/");
     ProxyRouteConfig proxyConfig =
         new ProxyRouteConfig(ConfigFactory.load().getConfig("xio.testProxyRoute"));
+    ApplicationConfig appConfig = ApplicationConfig.fromConfig("xio.testApplication", root);
     ClientFactory factory =
-        new ClientFactory(
-            new XioTracing(ConfigFactory.load().getConfig("xio.defaultApplication"))) {
+        new ClientFactory(new XioTracing(appConfig.getTracingConfig())) {
           @Override
           public Client createClient(ChannelHandlerContext ctx, ClientConfig config) {
             ClientState clientState = new ClientState(channelConfig(ctx), config);

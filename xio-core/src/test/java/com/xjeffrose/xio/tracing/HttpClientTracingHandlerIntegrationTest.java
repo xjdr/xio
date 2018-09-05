@@ -9,6 +9,7 @@ import com.typesafe.config.ConfigFactory;
 import com.xjeffrose.xio.SSL.TlsConfig;
 import com.xjeffrose.xio.bootstrap.ChannelConfiguration;
 import com.xjeffrose.xio.client.ClientConfig;
+import com.xjeffrose.xio.config.TracingConfig;
 import com.xjeffrose.xio.http.*;
 import com.xjeffrose.xio.test.JulBridge;
 import com.xjeffrose.xio.test.OkHttpUnsafe;
@@ -38,7 +39,7 @@ public class HttpClientTracingHandlerIntegrationTest {
   private MockWebServer server;
 
   private class FakeTracer extends XioTracing {
-    FakeTracer(Config config) {
+    FakeTracer(TracingConfig config) {
       super(config);
     }
 
@@ -122,7 +123,10 @@ public class HttpClientTracingHandlerIntegrationTest {
 
   @Test
   public void testOutBoundAndInboundSpan() throws Exception {
-    val client = newClient(new FakeTracer(config()));
+    TracingConfig tracingConfig =
+        new TracingConfig(
+            "tracingHandlerClientIntegrationTest", config().getConfig("settings.tracing"));
+    val client = newClient(new FakeTracer(tracingConfig));
 
     val request =
         DefaultSegmentedRequest.builder()

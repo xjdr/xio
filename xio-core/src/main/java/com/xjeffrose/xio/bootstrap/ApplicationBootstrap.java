@@ -6,6 +6,7 @@ import com.xjeffrose.xio.application.Application;
 import com.xjeffrose.xio.application.ApplicationConfig;
 import com.xjeffrose.xio.application.ApplicationState;
 import com.xjeffrose.xio.config.Configurator;
+import com.xjeffrose.xio.config.TracingConfig;
 import com.xjeffrose.xio.core.ZkClient;
 import com.xjeffrose.xio.filter.Http1FilterConfig;
 import com.xjeffrose.xio.filter.IpFilterConfig;
@@ -60,7 +61,7 @@ public class ApplicationBootstrap {
   }
 
   public ApplicationBootstrap(ApplicationConfig config) {
-    this(config, new ApplicationState(config));
+    this(config, new ApplicationState(config, new XioTracing(config.getTracingConfig())));
   }
 
   public ApplicationBootstrap(ApplicationState state) {
@@ -79,8 +80,9 @@ public class ApplicationBootstrap {
     this(application, ConfigFactory.load());
   }
 
-  public ApplicationBootstrap(String application, Function<Config, XioTracing> tracingSupplier) {
-    this(new ApplicationConfig(ConfigFactory.load().getConfig(application), tracingSupplier));
+  public ApplicationBootstrap(
+      ApplicationConfig config, Function<TracingConfig, XioTracing> tracingSupplier) {
+    this(config, new ApplicationState(config, tracingSupplier));
   }
 
   public ApplicationBootstrap addServer(

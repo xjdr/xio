@@ -5,12 +5,14 @@ import com.codahale.metrics.jmx.JmxReporter;
 import com.google.common.annotations.VisibleForTesting;
 import com.xjeffrose.xio.bootstrap.ServerChannelConfiguration;
 import com.xjeffrose.xio.bootstrap.XioServiceLocator;
+import com.xjeffrose.xio.config.TracingConfig;
 import com.xjeffrose.xio.core.ZkClient;
 import com.xjeffrose.xio.filter.Http1FilterConfig;
 import com.xjeffrose.xio.filter.IpFilterConfig;
 import com.xjeffrose.xio.tracing.XioTracing;
 import io.netty.channel.EventLoopGroup;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 
@@ -39,15 +41,25 @@ public class ApplicationState {
 
   private final AtomicReference<Http1FilterConfig> http1FilterConfig;
 
-  public ApplicationState(ApplicationConfig config) {
+  public ApplicationState(ApplicationConfig config, XioTracing tracing) {
     this.config = config;
-    this.tracing = config.getTracing();
+    this.tracing = tracing;
     this.metricRegistry = new MetricRegistry();
     JmxReporter jmxReporter = JmxReporter.forRegistry(metricRegistry).build();
     jmxReporter.start();
     this.channelConfiguration = config.serverChannelConfig();
     this.ipFilterConfig = new AtomicReference<>(new IpFilterConfig());
     this.http1FilterConfig = new AtomicReference<>(new Http1FilterConfig());
+  }
+
+  @VisibleForTesting
+  public ApplicationState(
+      ApplicationConfig config, Function<TracingConfig, XioTracing> tracingSupplier) {
+    this(config, tracingSupplier.apply(config.getTracingConfig()));
+  }
+
+  public ApplicationState(ApplicationConfig config) {
+    this(config, new XioTracing(config.getTracingConfig()));
   }
 
   public EventLoopGroup workerGroup() {
