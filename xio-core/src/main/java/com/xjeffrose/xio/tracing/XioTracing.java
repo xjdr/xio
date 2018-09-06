@@ -8,6 +8,7 @@ import com.xjeffrose.xio.config.TracingConfig;
 import datadog.opentracing.DDTracer;
 import io.opentracing.Tracer;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
 import zipkin2.Span;
 import zipkin2.codec.Encoding;
@@ -17,6 +18,7 @@ import zipkin2.reporter.okhttp3.OkHttpClientBuilderFactory;
 import zipkin2.reporter.okhttp3.OkHttpSender;
 import zipkin2.reporter.okhttp3.OkHttpSenderBuilderFactory;
 
+@Slf4j
 public class XioTracing {
 
   private Tracer tracer;
@@ -39,6 +41,7 @@ public class XioTracing {
         tracer = new DDTracer();
         break;
     }
+    log.info("Configured tracer type: {}", type.toString());
   }
 
   public boolean enabled() {

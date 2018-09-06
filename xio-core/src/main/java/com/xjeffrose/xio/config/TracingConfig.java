@@ -24,27 +24,23 @@ public class TracingConfig {
     }
     this.type = type;
 
-    switch (type) {
-      case ZIPKIN:
-        String zipkinUrl;
-        if (config.hasPath("zipkin.zipkinUrl")) {
-          zipkinUrl = config.getString("zipkin.zipkinUrl");
-        } else {
-          zipkinUrl = "";
-        }
+    if (type == TracingType.ZIPKIN) {
+      String zipkinUrl;
+      if (config.hasPath("zipkin.zipkinUrl")) {
+        zipkinUrl = config.getString("zipkin.zipkinUrl");
+      } else {
+        zipkinUrl = "";
+      }
 
-        float samplingRate;
-        if (config.hasPath("zipkin.samplingRate")) {
-          samplingRate = ((Double) config.getDouble("zipkin.samplingRate")).floatValue();
-        } else {
-          samplingRate = 0.01f;
-        }
+      float samplingRate;
+      if (config.hasPath("zipkin.samplingRate")) {
+        samplingRate = ((Double) config.getDouble("zipkin.samplingRate")).floatValue();
+      } else {
+        samplingRate = 0.01f;
+      }
 
-        this.zipkinUrl = zipkinUrl;
-        this.zipkinSamplingRate = samplingRate;
-        break;
-      case DATADOG:
-        break;
+      this.zipkinUrl = zipkinUrl;
+      this.zipkinSamplingRate = samplingRate;
     }
   }
 
