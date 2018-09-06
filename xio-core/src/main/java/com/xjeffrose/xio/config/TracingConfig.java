@@ -3,20 +3,57 @@ package com.xjeffrose.xio.config;
 import com.typesafe.config.Config;
 
 public class TracingConfig {
+  public enum TracingType {
+    ZIPKIN,
+    DATADOG
+  }
+
   private final String applicationName;
-  private final String zipkinUrl;
-  private final float zipkinSamplingRate;
+  private String zipkinUrl;
+  private float zipkinSamplingRate;
+  private final TracingType type;
 
   public TracingConfig(String applicationName, Config config) {
     this.applicationName = applicationName;
-    this.zipkinUrl = config.getString("zipkinUrl");
-    this.zipkinSamplingRate = (float) config.getDouble("samplingRate");
+
+    TracingType type;
+    if (config.hasPath("type")) {
+      type = config.getEnum(TracingType.class, "type");
+    } else {
+      type = TracingType.ZIPKIN;
+    }
+    this.type = type;
+
+    switch (type) {
+      case ZIPKIN:
+        String zipkinUrl;
+        if (config.hasPath("zipkin.zipkinUrl")) {
+          zipkinUrl = config.getString("zipkin.zipkinUrl");
+        } else {
+          zipkinUrl = "";
+        }
+
+        float samplingRate;
+        if (config.hasPath("zipkin.samplingRate")) {
+          samplingRate = ((Double) config.getDouble("zipkin.samplingRate")).floatValue();
+        } else {
+          samplingRate = 0.01f;
+        }
+
+        this.zipkinUrl = zipkinUrl;
+        this.zipkinSamplingRate = samplingRate;
+        break;
+      case DATADOG:
+        break;
+    }
   }
 
-  public TracingConfig(String applicationName, String zipkinUrl, float zipkinSamplingRate) {
+  public TracingConfig(
+      String applicationName, String zipkinUrl, float zipkinSamplingRate, TracingType type) {
     this.applicationName = applicationName;
     this.zipkinUrl = zipkinUrl;
     this.zipkinSamplingRate = zipkinSamplingRate;
+    this.type = type;
   }
 
   public String getApplicationName() {
@@ -29,5 +66,9 @@ public class TracingConfig {
 
   public float getZipkinSamplingRate() {
     return zipkinSamplingRate;
+  }
+
+  public TracingType getType() {
+    return type;
   }
 }

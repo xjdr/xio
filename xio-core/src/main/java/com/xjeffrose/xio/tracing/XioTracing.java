@@ -5,6 +5,7 @@ import brave.context.slf4j.MDCCurrentTraceContext;
 import brave.opentracing.BraveTracer;
 import brave.sampler.Sampler;
 import com.xjeffrose.xio.config.TracingConfig;
+import datadog.opentracing.DDTracer;
 import io.opentracing.Tracer;
 import lombok.NonNull;
 import okhttp3.OkHttpClient;
@@ -23,11 +24,20 @@ public class XioTracing {
 
   public XioTracing(TracingConfig config) {
     name = config.getApplicationName();
-    String zipkinUrl = config.getZipkinUrl();
-    float samplingRate = config.getZipkinSamplingRate();
-    Tracing tracing = buildZipkinTracing(this.name, zipkinUrl, samplingRate);
-    if (tracing != null) {
-      tracer = BraveTracer.create(tracing);
+    TracingConfig.TracingType type = config.getType();
+
+    switch (type) {
+      case ZIPKIN:
+        String zipkinUrl = config.getZipkinUrl();
+        float samplingRate = config.getZipkinSamplingRate();
+        Tracing tracing = buildZipkinTracing(this.name, zipkinUrl, samplingRate);
+        if (tracing != null) {
+          tracer = BraveTracer.create(tracing);
+        }
+        break;
+      case DATADOG:
+        tracer = new DDTracer();
+        break;
     }
   }
 
