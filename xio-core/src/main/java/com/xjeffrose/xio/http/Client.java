@@ -98,11 +98,11 @@ public class Client {
                 (writeResult) -> {
                   if (writeResult.isDone() && writeResult.isSuccess()) {
                     log.debug(
-                        "== Req: " + requestPayload.request + " succeeded on client: " + this);
+                        "== Req: succeeded on client: " + this);
                     requestPayload.promise.setSuccess();
                   } else {
                     log.error(
-                        "Req: " + requestPayload.request.path() + " failed on client: " + this);
+                        "Req: " + requestPayload.request + " failed on client: " + this);
                     final Throwable cause;
                     if (connectionResult.cause() != null) {
                       cause = connectionResult.cause();
@@ -113,7 +113,7 @@ public class Client {
                   }
                 });
       } else {
-        log.error("Req: " + requestPayload.request.path() + " failed on client: " + this);
+        log.error("Req: failed on client: " + this);
         requestPayload.promise.setFailure(connectionResult.cause());
       }
     }
