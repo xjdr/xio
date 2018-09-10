@@ -98,11 +98,11 @@ public class Client {
                 (writeResult) -> {
                   if (writeResult.isDone() && writeResult.isSuccess()) {
                     log.debug(
-                        "== Req: succeeded on client: " + this);
+                        "== Req: " + requestPayload.request + " succeeded on client: " + this);
                     requestPayload.promise.setSuccess();
                   } else {
                     log.error(
-                        "Req: " + requestPayload.request + " failed on client: " + this);
+                        "Req: failed on client: " + this);
                     final Throwable cause;
                     if (connectionResult.cause() != null) {
                       cause = connectionResult.cause();
