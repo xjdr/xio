@@ -24,7 +24,7 @@ public class Client {
           if (f.isDone() && f.isSuccess()) {
             log.debug("Write succeeded");
           } else {
-            log.debug("Write failed", f.cause());
+            log.error("Write failed", f.cause());
             if (manager.currentChannel() != null) {
               log.debug("pipeline: {}", manager.currentChannel().pipeline());
             }
@@ -72,7 +72,7 @@ public class Client {
       log.debug("== already connected, just writing req: " + request + " on client: " + this);
       return Optional.of(this.rawWrite(request));
     } else {
-      log.debug("== Connect failed on client: " + this);
+      log.error("Connect failed on client: " + this);
       return Optional.empty();
     }
   }
@@ -101,7 +101,7 @@ public class Client {
                         "== Req: " + requestPayload.request + " succeeded on client: " + this);
                     requestPayload.promise.setSuccess();
                   } else {
-                    log.debug("== Req: " + requestPayload.request + " failed on client: " + this);
+                    log.error("Req: " + requestPayload.request.path() + " failed on client: " + this);
                     final Throwable cause;
                     if (connectionResult.cause() != null) {
                       cause = connectionResult.cause();
@@ -112,7 +112,7 @@ public class Client {
                   }
                 });
       } else {
-        log.debug("== Req: " + requestPayload.request + " failed on client: " + this);
+        log.error("Req: " + requestPayload.request.path() + " failed on client: " + this);
         requestPayload.promise.setFailure(connectionResult.cause());
       }
     }

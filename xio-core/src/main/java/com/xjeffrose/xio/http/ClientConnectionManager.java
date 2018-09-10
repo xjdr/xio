@@ -40,7 +40,7 @@ public class ClientConnectionManager {
             log.debug("Connection succeeded");
             connectionState = ClientConnectionState.CONNECTED;
           } else {
-            log.debug("Connection failed", f.cause());
+            log.error("Connection failed", f.cause());
             connectionState = ClientConnectionState.CLOSED_CONNECTION;
             this.currentChannelFuture = null;
           }
