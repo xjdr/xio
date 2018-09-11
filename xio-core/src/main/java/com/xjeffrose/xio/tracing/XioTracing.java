@@ -7,6 +7,7 @@ import brave.sampler.Sampler;
 import com.xjeffrose.xio.config.TracingConfig;
 import datadog.opentracing.DDTracer;
 import io.opentracing.Tracer;
+import io.opentracing.util.GlobalTracer;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
@@ -38,7 +39,16 @@ public class XioTracing {
         }
         break;
       case DATADOG:
-        tracer = new DDTracer();
+        if (GlobalTracer.isRegistered()) {
+          Tracer globalTracer = GlobalTracer.get();
+          if (!(globalTracer instanceof DDTracer)) {
+            log.error("Wrong type of Global Tracer is registered: {}", globalTracer.getClass().toString());
+          }
+          tracer = globalTracer;
+        } else {
+          tracer = new DDTracer();
+          GlobalTracer.register(tracer);
+        }
         break;
     }
     log.info("Configured tracer type: {}", type.toString());
