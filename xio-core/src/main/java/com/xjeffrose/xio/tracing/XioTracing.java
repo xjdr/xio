@@ -42,7 +42,9 @@ public class XioTracing {
         if (GlobalTracer.isRegistered()) {
           Tracer globalTracer = GlobalTracer.get();
           if (!(globalTracer instanceof DDTracer)) {
-            log.error("Wrong type of Global Tracer is registered: {}", globalTracer.getClass().toString());
+            log.error(
+                "Wrong type of Global Tracer is registered: {}",
+                globalTracer.getClass().toString());
           }
           tracer = globalTracer;
         } else {

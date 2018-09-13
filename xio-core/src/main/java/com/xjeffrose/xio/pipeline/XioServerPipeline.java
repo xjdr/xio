@@ -1,8 +1,8 @@
 package com.xjeffrose.xio.pipeline;
 
 import com.xjeffrose.xio.core.XioIdleDisconnectHandler;
+import com.xjeffrose.xio.server.ServerLimits;
 import com.xjeffrose.xio.server.XioServerConfig;
-import com.xjeffrose.xio.server.XioServerLimits;
 import com.xjeffrose.xio.server.XioServerState;
 import io.netty.channel.ChannelHandler;
 
@@ -37,7 +37,7 @@ public class XioServerPipeline extends XioBasePipeline {
   }
 
   @Override
-  public ChannelHandler getIdleDisconnectHandler(XioServerLimits limits) {
+  public ChannelHandler getIdleDisconnectHandler(ServerLimits limits) {
     return new XioIdleDisconnectHandler(
         limits.maxReadIdleTime(), limits.maxWriteIdleTime(), limits.maxAllIdleTime());
   }

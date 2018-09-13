@@ -20,7 +20,7 @@ public class IpFilterConfigUnitTest extends Assert {
 
     IpFilterConfig.Updater updater = new IpFilterConfig.Updater("path", this::setIpFilterConfig);
     updater.update(marshaller.marshall(rules));
-    IpFilterConfig expected = new IpFilterConfig(rules.getBlacklistIps());
+    IpFilterConfig expected = new IpFilterConfig(rules.getBlacklistIps(), rules.getWhitelistIps());
 
     assertEquals(expected, config);
   }
