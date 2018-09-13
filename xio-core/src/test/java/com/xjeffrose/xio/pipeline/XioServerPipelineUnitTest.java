@@ -13,7 +13,6 @@ import com.xjeffrose.xio.core.XioNoOpHandler;
 import com.xjeffrose.xio.filter.Http1Filter;
 import com.xjeffrose.xio.firewall.ConnectionLimiter;
 import com.xjeffrose.xio.firewall.Firewall;
-import com.xjeffrose.xio.firewall.ServiceRateLimiter;
 import com.xjeffrose.xio.server.*;
 import com.xjeffrose.xio.tracing.HttpServerTracingHandler;
 import io.netty.channel.ChannelHandler;
@@ -94,7 +93,8 @@ public class XioServerPipelineUnitTest {
     inOrder
         .verify(pipeline, times(1))
         .addLast(eq("l4ConnectionLimiter"), isA(ConnectionLimiter.class));
-    inOrder.verify(pipeline, times(1)).addLast(eq("l4RateLimiter"), isA(ServiceRateLimiter.class));
+    //todo: (WK) ServiceRateLimiter needs to be tested b4 we allow it to be added to the pipeline
+    //inOrder.verify(pipeline, times(1)).addLast(eq("l4RateLimiter"), isA(ServiceRateLimiter.class));
     inOrder.verify(pipeline, times(1)).addLast(eq("l4Firewall"), isA(Firewall.class));
     inOrder
         .verify(pipeline, times(1))
