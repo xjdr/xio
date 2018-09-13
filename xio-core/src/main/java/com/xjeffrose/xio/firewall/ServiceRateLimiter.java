@@ -1,4 +1,4 @@
-package com.xjeffrose.xio.server;
+package com.xjeffrose.xio.firewall;
 
 import static com.codahale.metrics.MetricRegistry.name;
 
@@ -7,8 +7,9 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.google.common.hash.Funnels;
 import com.google.common.util.concurrent.RateLimiter;
-import com.xjeffrose.xio.application.ApplicationConfig;
 import com.xjeffrose.xio.core.Constants;
+import com.xjeffrose.xio.server.RendezvousHash;
+import com.xjeffrose.xio.server.XioServerLimits;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -22,12 +23,14 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @ChannelHandler.Sharable
-class XioServiceRateLimiter extends ChannelDuplexHandler {
-  private final Map<String, RateLimiter> softLimiterMap = PlatformDependent.newConcurrentHashMap();
-  private final Map<String, RateLimiter> hardLimiterMap = PlatformDependent.newConcurrentHashMap();
+public class ServiceRateLimiter extends ChannelDuplexHandler {
+  private final Map<CharSequence, RateLimiter> softLimiterMap =
+      PlatformDependent.newConcurrentHashMap();
+  private final Map<CharSequence, RateLimiter> hardLimiterMap =
+      PlatformDependent.newConcurrentHashMap();
   private final Meter reqs;
   private final Timer timer;
-  private final ApplicationConfig config;
+  private final XioServerLimits config;
   private final RendezvousHash<CharSequence> softRateLimitHasher;
   private final RendezvousHash<CharSequence> hardRateLimitHasher;
   private final RateLimiter globalHardLimiter;
@@ -36,7 +39,7 @@ class XioServiceRateLimiter extends ChannelDuplexHandler {
   private Map<ChannelHandlerContext, Timer.Context> timerMap =
       PlatformDependent.newConcurrentHashMap();
 
-  public XioServiceRateLimiter(MetricRegistry metrics, ApplicationConfig config) {
+  public ServiceRateLimiter(MetricRegistry metrics, XioServerLimits config) {
     this.reqs = metrics.meter(name("requests", "Rate"));
     this.timer = metrics.timer("Request Latency");
     this.config = config;
@@ -44,13 +47,13 @@ class XioServiceRateLimiter extends ChannelDuplexHandler {
     this.globalSoftLimiter = RateLimiter.create(config.getGlobalSoftReqPerSec());
 
     softRateLimitHasher =
-        buildHasher(softLimiterMap, config.getRateLimiterPoolSize(), config.getSoftReqPerSec());
+        buildHasher(softLimiterMap, config.rateLimiterPoolSize(), config.softReqPerSec());
     hardRateLimitHasher =
-        buildHasher(hardLimiterMap, config.getRateLimiterPoolSize(), config.getHardReqPerSec());
+        buildHasher(hardLimiterMap, config.rateLimiterPoolSize(), config.hardReqPerSec());
   }
 
   private RendezvousHash<CharSequence> buildHasher(
-      Map<String, RateLimiter> limiterMap, int poolSize, double rate) {
+      Map<CharSequence, RateLimiter> limiterMap, int poolSize, double rate) {
     List<String> tempPool = new ArrayList<>();
 
     for (int i = 0; i < poolSize; i++) {

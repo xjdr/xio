@@ -1,105 +1,121 @@
 package com.xjeffrose.xio.filter;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.verify;
-import static org.powermock.api.mockito.PowerMockito.mock;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
-import static org.powermock.api.mockito.PowerMockito.when;
-
+import com.codahale.metrics.MetricRegistry;
 import com.google.common.collect.ImmutableSet;
+import com.xjeffrose.xio.firewall.BlackListFilter;
+import com.xjeffrose.xio.firewall.Firewall;
+import com.xjeffrose.xio.firewall.WhiteListFilter;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.embedded.EmbeddedChannel;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.UnknownHostException;
-import java.util.HashSet;
-import java.util.Set;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({IpFilter.class, LoggerFactory.class})
 public class IpFilterUnitTest extends Assert {
 
-  private boolean eager;
+  @Test
+  public void testBlackListedIpAllow() throws UnknownHostException {
+    // given a black listed ip
+    ImmutableSet<InetAddress> blackList =
+        ImmutableSet.<InetAddress>builder().add(InetAddress.getByName("172.22.10.1")).build();
+    ImmutableSet<InetAddress> whiteList = ImmutableSet.of();
 
-  @Before
-  public void setUp() throws Exception {
-    eager = true;
-    // TODO(CK): This is a bit kludgy, basically we create a new logger for every test
-    // but log is a static member on ipFilter, we should probably just emit events instead
-    // of logging.
-    mockStatic(LoggerFactory.class);
-    Logger logger = mock(Logger.class);
-    when(LoggerFactory.getLogger(any(Class.class))).thenReturn(logger);
+    // and given a black list filter and firewall in the pipeline
+    IpFilterConfig ipFilterConfig = new IpFilterConfig(blackList, whiteList);
+    BlackListFilter ipFilter = new BlackListFilter(ipFilterConfig);
+    Firewall firewall = new Firewall(new MetricRegistry());
+
+    // when the an ip connects that is NOT black listed
+    MyEmbeddedChannel channel = new MyEmbeddedChannel("172.22.10.5", ipFilter, firewall);
+    channel.runPendingTasks();
+
+    // then the channel is NOT closed
+    assertTrue(channel.isActive());
+    assertTrue(channel.isOpen());
   }
 
   @Test
-  public void testEagerDeniedIp() throws UnknownHostException {
-    Set<InetAddress> blacklist = new HashSet<InetAddress>();
-    blacklist.add(InetAddress.getByName("172.22.10.1"));
-    IpFilter ipFilter = new IpFilter(new IpFilterConfig(ImmutableSet.copyOf(blacklist)));
-    EmbeddedChannel chDeny = newEmbeddedInetChannel("172.22.10.1", true, ipFilter);
+  public void testBlackListedIpDeny() throws UnknownHostException {
+    // given a black listed ip
+    ImmutableSet<InetAddress> blackList =
+        ImmutableSet.<InetAddress>builder().add(InetAddress.getByName("172.22.10.1")).build();
+    ImmutableSet<InetAddress> whiteList = ImmutableSet.of();
+
+    // and given a black list filter and firewall in the pipeline
+    IpFilterConfig ipFilterConfig = new IpFilterConfig(blackList, whiteList);
+    BlackListFilter ipFilter = new BlackListFilter(ipFilterConfig);
+    Firewall firewall = new Firewall(new MetricRegistry());
+
+    // when the black listed ip connects
+    MyEmbeddedChannel channel = new MyEmbeddedChannel("172.22.10.1", ipFilter, firewall);
+    channel.runPendingTasks();
+
+    // then the channel is closed
+    assertFalse(channel.isActive());
+    assertFalse(channel.isOpen());
+  }
+
+  @Test
+  public void testWhiteListedIpAllow() throws UnknownHostException {
+    // given a white listed ip
+    ImmutableSet<InetAddress> whiteList =
+        ImmutableSet.<InetAddress>builder().add(InetAddress.getByName("172.22.10.1")).build();
+    ImmutableSet<InetAddress> blackList = ImmutableSet.of();
+
+    // and given a white list filter and firewall in the pipeline
+    IpFilterConfig ipFilterConfig = new IpFilterConfig(blackList, whiteList);
+    WhiteListFilter ipFilter = new WhiteListFilter(ipFilterConfig);
+    Firewall firewall = new Firewall(new MetricRegistry());
+
+    // when the white listed ip connects
+    MyEmbeddedChannel channel = new MyEmbeddedChannel("172.22.10.1", ipFilter, firewall);
+    channel.runPendingTasks();
+
+    // then the channel is NOT closed
+    assertTrue(channel.isActive());
+    assertTrue(channel.isOpen());
+  }
+
+  @Test
+  public void testWhiteListedIpDeny() throws UnknownHostException {
+    // given a white listed ip
+    ImmutableSet<InetAddress> whiteList =
+        ImmutableSet.<InetAddress>builder().add(InetAddress.getByName("172.22.10.1")).build();
+    ImmutableSet<InetAddress> blackList = ImmutableSet.of();
+
+    // and given a white list filter and firewall in the pipeline
+    IpFilterConfig ipFilterConfig = new IpFilterConfig(blackList, whiteList);
+    WhiteListFilter ipFilter = new WhiteListFilter(ipFilterConfig);
+    Firewall firewall = new Firewall(new MetricRegistry());
+
+    // when the an ip connects that is NOT white-listed
+    MyEmbeddedChannel chDeny = new MyEmbeddedChannel("172.22.10.5", ipFilter, firewall);
     chDeny.runPendingTasks();
+
+    // then the channel is closed
     assertFalse(chDeny.isActive());
     assertFalse(chDeny.isOpen());
-    verify(ipFilter.getLog())
-        .warn("IpFilter denied blacklisted ip '{}'{}", "172.22.10.1", " (eager)");
   }
 
-  @Test
-  public void testDeniedIp() throws UnknownHostException {
-    Set<InetAddress> blacklist = new HashSet<InetAddress>();
-    blacklist.add(InetAddress.getByName("172.22.10.1"));
-    IpFilter ipFilter = new IpFilter(new IpFilterConfig(ImmutableSet.copyOf(blacklist)));
-    EmbeddedChannel chDeny = newEmbeddedInetChannel("172.22.10.1", false, ipFilter);
-    chDeny.runPendingTasks();
-    assertFalse(chDeny.isActive());
-    assertFalse(chDeny.isOpen());
-    verify(ipFilter.getLog()).warn("IpFilter denied blacklisted ip '{}'{}", "172.22.10.1", "");
-  }
+  private static class MyEmbeddedChannel extends EmbeddedChannel {
+    private final InetSocketAddress ipAddress;
 
-  @Test
-  public void testAllowedIp() throws UnknownHostException {
-    Set<InetAddress> blacklist = new HashSet<InetAddress>();
-    blacklist.add(InetAddress.getByName("172.22.10.1"));
-    IpFilter ipFilter = new IpFilter(new IpFilterConfig(ImmutableSet.copyOf(blacklist)));
-    EmbeddedChannel chAllow = newEmbeddedInetChannel("172.22.10.2", true, ipFilter);
-    chAllow.runPendingTasks();
-    assertTrue(chAllow.isActive());
-    assertTrue(chAllow.isOpen());
-    verify(ipFilter.getLog()).info("IpFilter allowed ip '{}'", "172.22.10.2");
-  }
-
-  private EmbeddedChannel newEmbeddedInetChannel(
-      final String ipAddress, boolean issueAddress, ChannelHandler... handlers) {
-    return new EmbeddedChannel(handlers) {
-
-      @Override
-      protected SocketAddress remoteAddress0() {
-        InetSocketAddress address = new InetSocketAddress(ipAddress, 5421);
-
-        if (eager && !issueAddress) {
-          // this is channelRegistered and we don't want to issue an address
-          eager = false;
-          return null;
-        } else if (eager && issueAddress) {
-          // this is channelRegistered and we want to issue an address
-          eager = false;
-          return address;
-        } else if (super.isActive()) {
-          // this is channelActive
-          return address;
-        }
-        return null;
+    private MyEmbeddedChannel(String ipAddress, ChannelHandler... handlers) {
+      super(false, true, handlers);
+      this.ipAddress = new InetSocketAddress(ipAddress, 5421);
+      try {
+        register();
+      } catch (Exception e) {
+        e.printStackTrace();
       }
-    };
+    }
+
+    @Override
+    protected SocketAddress remoteAddress0() {
+      return ipAddress;
+    }
   }
 }

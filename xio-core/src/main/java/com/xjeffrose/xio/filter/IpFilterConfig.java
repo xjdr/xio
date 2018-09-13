@@ -5,9 +5,9 @@ import com.xjeffrose.xio.config.IpAddressDeterministicRuleEngineConfig;
 import com.xjeffrose.xio.core.ConfigurationUpdater;
 import com.xjeffrose.xio.marshall.ThriftUnmarshaller;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.util.function.Consumer;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 
 @EqualsAndHashCode
 public class IpFilterConfig {
@@ -32,21 +32,20 @@ public class IpFilterConfig {
     public void update(byte[] data) {
       config.clear();
       unmarshaller.unmarshall(config, data);
-      setter.accept(new IpFilterConfig(config.getBlacklistIps()));
+      setter.accept(new IpFilterConfig(config.getBlacklistIps(), config.getWhitelistIps()));
     }
   }
 
-  private final ImmutableSet<InetAddress> blacklist;
+  @Getter private final ImmutableSet<InetAddress> blacklist;
+  @Getter private final ImmutableSet<InetAddress> whitelist;
 
   public IpFilterConfig() {
     blacklist = ImmutableSet.of();
+    whitelist = ImmutableSet.of();
   }
 
-  public IpFilterConfig(ImmutableSet<InetAddress> blacklist) {
+  public IpFilterConfig(ImmutableSet<InetAddress> blacklist, ImmutableSet<InetAddress> whitelist) {
     this.blacklist = blacklist;
-  }
-
-  public boolean denied(InetSocketAddress address) {
-    return blacklist.contains(address.getAddress());
+    this.whitelist = whitelist;
   }
 }
