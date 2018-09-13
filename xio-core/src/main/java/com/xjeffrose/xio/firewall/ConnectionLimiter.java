@@ -4,7 +4,7 @@ import static com.codahale.metrics.MetricRegistry.name;
 
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.MetricRegistry;
-import com.xjeffrose.xio.server.XioServerLimits;
+import com.xjeffrose.xio.server.ServerLimits;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler;
@@ -19,8 +19,8 @@ public class ConnectionLimiter extends ChannelDuplexHandler {
   private final int maxConnections;
   private final Counter connections;
 
-  public ConnectionLimiter(MetricRegistry metrics, XioServerLimits limits) {
-    this.maxConnections = Math.min(limits.maxConnections(), 15000);
+  public ConnectionLimiter(MetricRegistry metrics, ServerLimits limits) {
+    this.maxConnections = limits.maxConnections();
     this.numConnections = new AtomicInteger(0);
     this.connections = metrics.counter(name("Active Connections"));
   }
@@ -33,7 +33,7 @@ public class ConnectionLimiter extends ChannelDuplexHandler {
     // connection sufficient?
     if (maxConnections > 0) {
       if (numConnections.incrementAndGet() > maxConnections) {
-        log.info("Accepted connection above limit (%d). Dropping.", maxConnections);
+        log.info("Accepted connection above limit {}. Dropping.", maxConnections);
         ctx.channel().close().addListener(ChannelFutureListener.CLOSE);
       }
     }

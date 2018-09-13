@@ -27,6 +27,7 @@ public class WhiteListFilter extends ChannelDuplexHandler {
       ctx.channel().attr(Constants.IP_WHITE_LIST).set(Boolean.FALSE);
     }
 
+    ctx.pipeline().remove(this);
     ctx.fireChannelActive();
   }
 }

@@ -29,7 +29,7 @@ public abstract class XioBasePipeline implements XioPipelineFragment {
 
   public abstract ChannelHandler getCodecHandler(XioServerConfig config);
 
-  public abstract ChannelHandler getIdleDisconnectHandler(XioServerLimits limits);
+  public abstract ChannelHandler getIdleDisconnectHandler(ServerLimits limits);
 
   public abstract String applicationProtocol();
 

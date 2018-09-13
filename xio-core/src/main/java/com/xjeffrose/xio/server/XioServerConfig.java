@@ -17,7 +17,7 @@ public class XioServerConfig {
   @Getter private final boolean blackListEnabled;
   @Getter private String name;
   @Getter private InetSocketAddress bindAddress;
-  @Getter private XioServerLimits limits;
+  @Getter private ServerLimits limits;
   @Getter private TlsConfig tls;
   @Getter private final boolean messageLoggerEnabled;
 
@@ -33,7 +33,7 @@ public class XioServerConfig {
     }
 
     bindAddress = new InetSocketAddress(address, config.getInt("settings.bindPort"));
-    limits = new XioServerLimits(config.getConfig("limits"));
+    limits = new ServerLimits(config.getConfig("limits"));
     tls = new TlsConfig(config.getConfig("settings.tls"));
     messageLoggerEnabled = config.getBoolean("settings.messageLoggerEnabled");
     if (!tls.isUseSsl() && tls.isLogInsecureConfig()) {

@@ -5,9 +5,13 @@ import com.typesafe.config.Config;
 import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
+import lombok.Getter;
+import lombok.experimental.Accessors;
 
-// TODO(CK): rename this to ServerLimits
-public class XioServerLimits {
+@Getter
+@Accessors(fluent = true)
+public class ServerLimits {
+  private static final int MAX_CONNECTION_LIMIT = 15000;
 
   private final int maxConnections;
   private final int maxFrameSize;
@@ -21,8 +25,12 @@ public class XioServerLimits {
   private final double hardReqPerSec;
   private final ImmutableMap<String, List<Double>> clientRateLimitOverride;
 
-  public XioServerLimits(Config config) {
+  public ServerLimits(Config config) {
     maxConnections = config.getInt("maxConnections");
+    if (maxConnections > MAX_CONNECTION_LIMIT) {
+      throw new RuntimeException(
+          String.format("invalid configuration - maxConnections exceeds %d", MAX_CONNECTION_LIMIT));
+    }
     maxFrameSize = config.getInt("maxFrameSize");
     maxReadIdleTime = config.getDuration("maxReadIdleTime");
     maxWriteIdleTime = config.getDuration("maxWriteIdleTime");
@@ -50,49 +58,5 @@ public class XioServerLimits {
                               .collect(Collectors.toList()));
                     }));
     return builder.build();
-  }
-
-  public int maxConnections() {
-    return maxConnections;
-  }
-
-  public int maxFrameSize() {
-    return maxFrameSize;
-  }
-
-  public Duration maxReadIdleTime() {
-    return maxReadIdleTime;
-  }
-
-  public Duration maxWriteIdleTime() {
-    return maxWriteIdleTime;
-  }
-
-  public Duration maxAllIdleTime() {
-    return maxAllIdleTime;
-  }
-
-  public double getGlobalHardReqPerSec() {
-    return globalHardReqPerSec;
-  }
-
-  public double getGlobalSoftReqPerSec() {
-    return globalSoftReqPerSec;
-  }
-
-  public int rateLimiterPoolSize() {
-    return rateLimiterPoolSize;
-  }
-
-  public double softReqPerSec() {
-    return softReqPerSec;
-  }
-
-  public double hardReqPerSec() {
-    return hardReqPerSec;
-  }
-
-  public ImmutableMap<String, List<Double>> getClientRateLimitOverride() {
-    return clientRateLimitOverride;
   }
 }

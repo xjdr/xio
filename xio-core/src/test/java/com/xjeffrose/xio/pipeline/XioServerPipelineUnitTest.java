@@ -40,7 +40,7 @@ public class XioServerPipelineUnitTest {
           }
 
           @Override
-          public ChannelHandler getIdleDisconnectHandler(XioServerLimits limits) {
+          public ChannelHandler getIdleDisconnectHandler(ServerLimits limits) {
             return new XioNoOpHandler();
           }
 
