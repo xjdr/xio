@@ -107,14 +107,14 @@ public class AwsDeploymentTest {
       client.start();
       client.blockUntilConnected();
       String path = "/test-path/i-1234567890abcdef0";
+      Thread.sleep(2000);
 
       assertNotNull(client.checkExists().forPath(path));
       String data = new String(client.getData().forPath(path));
 
       Moshi moshi = new Moshi.Builder().build();
-      JsonAdapter<AwsDeployment.Payload> payloadJsonAdapter =
-          moshi.adapter(AwsDeployment.Payload.class);
-      AwsDeployment.Payload payload = payloadJsonAdapter.fromJson(data);
+      JsonAdapter<DeploymentPayload> payloadJsonAdapter = moshi.adapter(DeploymentPayload.class);
+      DeploymentPayload payload = payloadJsonAdapter.fromJson(data);
       assertEquals("10.158.112.84", payload.getHost());
       assertEquals(443, payload.getPort());
     }
