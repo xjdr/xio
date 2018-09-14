@@ -32,7 +32,7 @@ public class XioServerConfig {
 
     bindAddress = new InetSocketAddress(address, config.getInt("settings.bindPort"));
     limits = new XioServerLimits(config.getConfig("limits"));
-    tls = new TlsConfig(config.getConfig("settings.tls"));
+    tls = TlsConfig.builderFrom(config.getConfig("settings.tls")).build();
     messageLoggerEnabled = config.getBoolean("settings.messageLoggerEnabled");
     if (!tls.isUseSsl() && tls.isLogInsecureConfig()) {
       log.warn("Server '{}' has useSsl set to false!", name);

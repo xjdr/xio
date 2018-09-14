@@ -32,7 +32,7 @@ public class ClientConfig {
   }
 
   public static ClientConfig from(Config config) {
-    TlsConfig tls = new TlsConfig(config.getConfig("settings.tls"));
+    TlsConfig tls = TlsConfig.builderFrom(config.getConfig("settings.tls")).build();
     boolean messageLoggerEnabled = config.getBoolean("settings.messageLoggerEnabled");
 
     InetSocketAddress local = null;

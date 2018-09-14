@@ -1,7 +1,5 @@
 package com.xjeffrose.xio.http;
 
-import static com.xjeffrose.xio.helpers.TlsHelper.getKeyManagers;
-
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.xjeffrose.xio.SSL.TlsConfig;
@@ -68,7 +66,8 @@ public class ClientConnectionManagerIntegrationTest extends Assert {
     // set up fake origin backend server so we can connect to it, we connect to port 8888
     // the outbound 8888 is specified in the ClientConnectionManagerIntegrationTest.conf
     TlsConfig tlsConfig =
-        TlsConfig.fromConfig("xio.h2BackendServer.settings.tls", ConfigFactory.load());
+        TlsConfig.builderFrom(ConfigFactory.load().getConfig("xio.h2BackendServer.settings.tls"))
+            .build();
     server = OkHttpUnsafe.getSslMockWebServer(TlsHelper.getKeyManagers(tlsConfig));
     server.setProtocols(Arrays.asList(Protocol.HTTP_2, Protocol.HTTP_1_1));
     // tell the server to bind to 8888
@@ -77,7 +76,7 @@ public class ClientConnectionManagerIntegrationTest extends Assert {
     subject = subjectFactory(true);
     Future<Void> connectionResult = subject.connect();
     assertEquals(ClientConnectionState.CONNECTING, subject.connectionState());
-    Thread.sleep(100); //todo: (WK) do something smarter
+    Thread.sleep(100); // todo: (WK) do something smarter
     try {
       connectionResult.get(5, TimeUnit.SECONDS);
     } catch (Exception e) {
@@ -94,7 +93,7 @@ public class ClientConnectionManagerIntegrationTest extends Assert {
     // don't set up fake origin backend server so we can connect to it
     Future<Void> connectionResult = subject.connect();
     assertEquals(ClientConnectionState.CONNECTING, subject.connectionState());
-    Thread.sleep(100); //todo: (WK) do something smarter
+    Thread.sleep(100); // todo: (WK) do something smarter
     try {
       connectionResult.get(30, TimeUnit.SECONDS);
     } catch (Exception ignored) {

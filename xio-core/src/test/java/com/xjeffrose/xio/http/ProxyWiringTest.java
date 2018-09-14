@@ -3,6 +3,7 @@ package com.xjeffrose.xio.http;
 import static com.xjeffrose.xio.helpers.TlsHelper.getKeyManagers;
 
 import com.google.common.collect.ImmutableMap;
+import com.typesafe.config.ConfigFactory;
 import com.xjeffrose.xio.SSL.TlsConfig;
 import com.xjeffrose.xio.application.Application;
 import com.xjeffrose.xio.bootstrap.ApplicationBootstrap;
@@ -40,7 +41,9 @@ public class ProxyWiringTest extends Assert {
 
   @Before
   public void setUp() throws Exception {
-    TlsConfig tlsConfig = TlsConfig.fromConfig("xio.testServer.settings.tls");
+    TlsConfig tlsConfig =
+        TlsConfig.builderFrom(ConfigFactory.load().getConfig("xio.testServer.settings.tls"))
+            .build();
     client = OkHttpUnsafe.getUnsafeClient();
     server = OkHttpUnsafe.getSslMockWebServer(getKeyManagers(tlsConfig));
     server.start();

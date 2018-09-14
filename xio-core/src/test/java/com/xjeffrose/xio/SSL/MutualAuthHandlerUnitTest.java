@@ -5,6 +5,8 @@ import static io.netty.handler.codec.http.HttpResponseStatus.*;
 import static io.netty.handler.codec.http.HttpVersion.*;
 
 import com.google.common.util.concurrent.Uninterruptibles;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.ByteBuf;
@@ -42,10 +44,13 @@ public class MutualAuthHandlerUnitTest extends Assert {
   @Before
   public void setUp() throws Exception {
     group = new NioEventLoopGroup(2);
+    Config config = ConfigFactory.load();
     sslServerContext =
-        SslContextFactory.buildServerContext(TlsConfig.fromConfig("xio.testServer.settings.tls"));
+        SslContextFactory.buildServerContext(
+            TlsConfig.builderFrom(config.getConfig("xio.testServer.settings.tls")).build());
     sslClientContext =
-        SslContextFactory.buildClientContext(TlsConfig.fromConfig("xio.h1TestClient.settings.tls"));
+        SslContextFactory.buildClientContext(
+            TlsConfig.builderFrom(config.getConfig("xio.h1TestClient.settings.tls")).build());
 
     server =
         new ServerBootstrap()

@@ -1,5 +1,6 @@
 package com.xjeffrose.xio.http.test_helpers;
 
+import com.typesafe.config.ConfigFactory;
 import com.xjeffrose.xio.SSL.SslContextFactory;
 import com.xjeffrose.xio.SSL.TlsConfig;
 import helloworld.GreeterGrpc;
@@ -19,7 +20,9 @@ public class GrpcServer {
         NettyServerBuilder.forPort(port)
             .sslContext(
                 SslContextFactory.buildServerContext(
-                    TlsConfig.fromConfig("xio.testServer.settings.tls")))
+                    TlsConfig.builderFrom(
+                            ConfigFactory.load().getConfig("xio.testServer.settings.tls"))
+                        .build()))
             .addService(new GreeterImpl())
             .build()
             .start();
