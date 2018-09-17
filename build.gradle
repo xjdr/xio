@@ -9,6 +9,7 @@ allprojects {
   apply plugin: 'java'
   apply plugin: 'maven-publish'
   apply plugin: 'com.jfrog.bintray'
+  apply plugin: 'jacoco'
 
   repositories {
     jcenter()
@@ -39,6 +40,16 @@ allprojects {
     testImplementation group: 'junit', name: 'junit', version: junit_version
     testImplementation group: 'org.hamcrest', name: 'hamcrest-all', version: hamcrest_version
   }
+
+  jacocoTestReport {
+    reports {
+      xml.enabled = true // coveralls plugin depends on xml format report
+      html.enabled = true
+      html.destination file("${buildDir}/jacocoHtml")
+    }
+  }
+
+}
 
 googleJavaFormat {
   exclude "*/out/**/*"

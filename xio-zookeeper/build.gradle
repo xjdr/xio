@@ -6,14 +6,6 @@ plugins {
   id 'com.jfrog.bintray'
 }
 
-jacocoTestReport {
-  reports {
-    xml.enabled = true // coveralls plugin depends on xml format report
-    html.enabled = true
-    html.destination file("${buildDir}/jacocoHtml")
-  }
-}
-
 description = 'xio-zookeeper'
 group = project_group
 
