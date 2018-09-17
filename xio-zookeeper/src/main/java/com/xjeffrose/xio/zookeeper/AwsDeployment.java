@@ -1,7 +1,10 @@
 package com.xjeffrose.xio.zookeeper;
 
-import com.squareup.moshi.JsonAdapter;
-import com.squareup.moshi.Moshi;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import okhttp3.OkHttpClient;
@@ -51,23 +54,32 @@ public class AwsDeployment {
     return curatorClient;
   }
 
+  @JsonIgnoreProperties(ignoreUnknown = true)
   static class Identity {
+    @JsonProperty("availabilityZone")
     String availabilityZone;
+
+    @JsonProperty("instanceId")
     String instanceId;
+
+    @JsonProperty("privateIp")
     String privateIp;
+
+    @JsonProperty("region")
     String region;
   }
 
-  private Identity getIdentity(AwsDeploymentConfig config) throws IOException {
+  private Identity getIdentity(AwsDeploymentConfig config)
+      throws IOException, JsonProcessingException {
     OkHttpClient client = new OkHttpClient();
-    Moshi moshi = new Moshi.Builder().build();
-    JsonAdapter<Identity> identityJsonAdapter = moshi.adapter(Identity.class);
     Request request = new Request.Builder().url(config.getIdentityUrl()).build();
 
     try (Response response = client.newCall(request).execute()) {
       if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
 
-      Identity identity = identityJsonAdapter.fromJson(response.body().source());
+      ObjectMapper objectMapper = new ObjectMapper();
+      Identity identity =
+          objectMapper.readValue(response.body().string(), new TypeReference<Identity>() {});
       return identity;
     }
   }
@@ -76,10 +88,11 @@ public class AwsDeployment {
       CuratorFramework curatorClient,
       ZookeeperConfig config,
       String instanceId,
-      DeploymentPayload payload) {
-    Moshi moshi = new Moshi.Builder().build();
-    JsonAdapter<DeploymentPayload> payloadJsonAdapter = moshi.adapter(DeploymentPayload.class);
-    byte[] payloadBytes = payloadJsonAdapter.toJson(payload).getBytes(StandardCharsets.UTF_8);
+      DeploymentPayload payload)
+      throws JsonProcessingException {
+
+    ObjectMapper objectMapper = new ObjectMapper();
+    byte[] payloadBytes = objectMapper.writeValueAsString(payload).getBytes(StandardCharsets.UTF_8);
 
     return new GroupMember(curatorClient, config.getMembershipPath(), instanceId, payloadBytes);
   }
