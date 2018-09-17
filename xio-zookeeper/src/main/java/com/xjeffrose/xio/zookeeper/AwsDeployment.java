@@ -4,7 +4,6 @@ import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import lombok.Value;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -59,12 +58,6 @@ public class AwsDeployment {
     String region;
   }
 
-  @Value
-  static class Payload {
-    String host;
-    int port;
-  }
-
   private Identity getIdentity(AwsDeploymentConfig config) throws IOException {
     OkHttpClient client = new OkHttpClient();
     Moshi moshi = new Moshi.Builder().build();
@@ -80,9 +73,12 @@ public class AwsDeployment {
   }
 
   private GroupMember buildGroupMember(
-      CuratorFramework curatorClient, ZookeeperConfig config, String instanceId, Payload payload) {
+      CuratorFramework curatorClient,
+      ZookeeperConfig config,
+      String instanceId,
+      DeploymentPayload payload) {
     Moshi moshi = new Moshi.Builder().build();
-    JsonAdapter<Payload> payloadJsonAdapter = moshi.adapter(Payload.class);
+    JsonAdapter<DeploymentPayload> payloadJsonAdapter = moshi.adapter(DeploymentPayload.class);
     byte[] payloadBytes = payloadJsonAdapter.toJson(payload).getBytes(StandardCharsets.UTF_8);
 
     return new GroupMember(curatorClient, config.getMembershipPath(), instanceId, payloadBytes);
@@ -93,7 +89,7 @@ public class AwsDeployment {
     EnsembleProvider ensembleProvider = buildEnsembleProvider(config.getExhibitorConfig());
     this.curatorClient = buildCuratorClient(ensembleProvider, config.getZookeeperConfig());
     Identity identity = getIdentity(config);
-    Payload payload = new Payload(identity.privateIp, port);
+    DeploymentPayload payload = new DeploymentPayload(identity.privateIp, port);
     this.groupMember =
         buildGroupMember(curatorClient, config.getZookeeperConfig(), identity.instanceId, payload);
   }
