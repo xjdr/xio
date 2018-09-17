@@ -14,10 +14,12 @@ import org.apache.curator.framework.recipes.cache.PathChildrenCache;
 public class DeploymentCache {
   @Getter private final String membershipPath;
   private final PathChildrenCache childrenCache;
+  private final ObjectMapper objectMapper;
 
   public DeploymentCache(CuratorFramework curatorClient, String membershipPath) throws Exception {
     this.membershipPath = membershipPath;
     this.childrenCache = new PathChildrenCache(curatorClient, membershipPath, true);
+    objectMapper = new ObjectMapper();
   }
 
   public void start() throws Exception {
@@ -30,7 +32,6 @@ public class DeploymentCache {
   }
 
   public List<DeploymentPayload> getDeployments() throws IOException {
-    ObjectMapper objectMapper = new ObjectMapper();
     List<DeploymentPayload> result = new ArrayList<DeploymentPayload>();
     for (ChildData child : childrenCache.getCurrentData()) {
       byte[] data = child.getData();

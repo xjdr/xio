@@ -22,6 +22,7 @@ import org.apache.curator.retry.ExponentialBackoffRetry;
 
 public class AwsDeployment {
   private final AwsDeploymentConfig config;
+  private final ObjectMapper objectMapper;
   private final CuratorFramework curatorClient;
   private final GroupMember groupMember;
 
@@ -77,7 +78,6 @@ public class AwsDeployment {
     try (Response response = client.newCall(request).execute()) {
       if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
 
-      ObjectMapper objectMapper = new ObjectMapper();
       Identity identity =
           objectMapper.readValue(response.body().string(), new TypeReference<Identity>() {});
       return identity;
@@ -91,7 +91,6 @@ public class AwsDeployment {
       DeploymentPayload payload)
       throws JsonProcessingException {
 
-    ObjectMapper objectMapper = new ObjectMapper();
     byte[] payloadBytes = objectMapper.writeValueAsString(payload).getBytes(StandardCharsets.UTF_8);
 
     return new GroupMember(curatorClient, config.getMembershipPath(), instanceId, payloadBytes);
@@ -99,6 +98,7 @@ public class AwsDeployment {
 
   public AwsDeployment(AwsDeploymentConfig config, int port) throws Exception {
     this.config = config;
+    objectMapper = new ObjectMapper();
     EnsembleProvider ensembleProvider = buildEnsembleProvider(config.getExhibitorConfig());
     this.curatorClient = buildCuratorClient(ensembleProvider, config.getZookeeperConfig());
     Identity identity = getIdentity(config);
