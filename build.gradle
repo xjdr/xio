@@ -2,6 +2,7 @@ plugins {
   id 'java'
   id 'net.researchgate.release' version '2.7.0'
   id 'com.jfrog.bintray' version '1.8.0'
+  id 'com.github.sherter.google-java-format' version '0.6'
 }
 
 allprojects {
@@ -38,6 +39,12 @@ allprojects {
     testImplementation group: 'junit', name: 'junit', version: junit_version
     testImplementation group: 'org.hamcrest', name: 'hamcrest-all', version: hamcrest_version
   }
+
+googleJavaFormat {
+  exclude "*/out/**/*"
+  exclude "*/target/generated-sources/**/*.java"
+  exclude "*/target/generated-test-sources/**/*.java"
+  exclude "/target/**/*.java"
 }
 
 task('print-alpn') {

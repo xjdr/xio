@@ -3,14 +3,7 @@ plugins {
   id 'com.google.protobuf' version '0.8.5'
   id 'com.github.kt3k.coveralls' version '2.8.2'
   id 'jacoco'
-  id 'com.github.sherter.google-java-format' version '0.6'
   id 'com.jfrog.bintray'
-}
-
-googleJavaFormat {
-  exclude "out/**/*"
-  exclude "target/generated-sources/**/*.java"
-  exclude "target/generated-test-sources/**/*.java"
 }
 
 jacocoTestReport {
