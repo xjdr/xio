@@ -17,15 +17,19 @@ public class XioClusterBootstrap {
       this.bootstrap = bootstrap;
       nodeAddresses = new ArrayList<InetSocketAddress>();
     }
+
     public Bootstrap bootstrap() {
       return bootstrap;
     }
+
     public List<InetSocketAddress> nodes() {
       return nodeAddresses;
     }
+
     public int quorum() {
       return quorum;
     }
+
     public AsyncRetryLoopFactory retryLoopFactory() {
       return retryLoopFactory;
     }
@@ -41,18 +45,22 @@ public class XioClusterBootstrap {
     config.nodeAddresses.add(address);
     return this;
   }
+
   public XioClusterBootstrap addNodes(List<InetSocketAddress> addresses) {
     config.nodeAddresses.addAll(addresses);
     return this;
   }
+
   public XioClusterBootstrap quorum(int quorum) {
     config.quorum = quorum;
     return this;
   }
+
   public XioClusterBootstrap retryLoopFactory(AsyncRetryLoopFactory retryLoopFactory) {
     config.retryLoopFactory = retryLoopFactory;
     return this;
   }
+
   public Config config() {
     return config;
   }

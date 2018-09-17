@@ -64,17 +64,13 @@ public class GlogLayout extends Layout implements Glog.Formatter<LoggingEvent> {
   @Override
   public String getClassName(LoggingEvent record) {
     LocationInfo locationInformation = record.getLocationInformation();
-    return (locationInformation != null)
-        ? locationInformation.getClassName()
-        : null;
+    return (locationInformation != null) ? locationInformation.getClassName() : null;
   }
 
   @Override
   public String getMethodName(LoggingEvent record) {
     LocationInfo locationInformation = record.getLocationInformation();
-    return (locationInformation != null)
-        ? record.getLocationInformation().getMethodName()
-        : null;
+    return (locationInformation != null) ? record.getLocationInformation().getMethodName() : null;
   }
 
   @Override

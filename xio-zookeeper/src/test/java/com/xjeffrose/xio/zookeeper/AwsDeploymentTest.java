@@ -3,8 +3,8 @@ package com.xjeffrose.xio.zookeeper;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import com.squareup.moshi.JsonAdapter;
-import com.squareup.moshi.Moshi;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.typesafe.config.ConfigValueFactory;
@@ -112,9 +112,9 @@ public class AwsDeploymentTest {
       assertNotNull(client.checkExists().forPath(path));
       String data = new String(client.getData().forPath(path));
 
-      Moshi moshi = new Moshi.Builder().build();
-      JsonAdapter<DeploymentPayload> payloadJsonAdapter = moshi.adapter(DeploymentPayload.class);
-      DeploymentPayload payload = payloadJsonAdapter.fromJson(data);
+      ObjectMapper objectMapper = new ObjectMapper();
+      DeploymentPayload payload =
+          objectMapper.readValue(data, new TypeReference<DeploymentPayload>() {});
       assertEquals("10.158.112.84", payload.getHost());
       assertEquals(443, payload.getPort());
     }

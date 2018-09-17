@@ -2,12 +2,14 @@ plugins {
   id 'java'
   id 'net.researchgate.release' version '2.7.0'
   id 'com.jfrog.bintray' version '1.8.0'
+  id 'com.github.sherter.google-java-format' version '0.6'
 }
 
 allprojects {
   apply plugin: 'java'
   apply plugin: 'maven-publish'
   apply plugin: 'com.jfrog.bintray'
+  apply plugin: 'jacoco'
 
   repositories {
     jcenter()
@@ -38,6 +40,22 @@ allprojects {
     testImplementation group: 'junit', name: 'junit', version: junit_version
     testImplementation group: 'org.hamcrest', name: 'hamcrest-all', version: hamcrest_version
   }
+
+  jacocoTestReport {
+    reports {
+      xml.enabled = true // coveralls plugin depends on xml format report
+      html.enabled = true
+      html.destination file("${buildDir}/jacocoHtml")
+    }
+  }
+
+}
+
+googleJavaFormat {
+  exclude "*/out/**/*"
+  exclude "*/target/generated-sources/**/*.java"
+  exclude "*/target/generated-test-sources/**/*.java"
+  exclude "/target/**/*.java"
 }
 
 task('print-alpn') {

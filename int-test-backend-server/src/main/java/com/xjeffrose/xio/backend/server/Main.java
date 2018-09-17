@@ -1,33 +1,31 @@
 package com.xjeffrose.xio.backend.server;
 
+import static spark.Spark.*;
+
 import com.codahale.metrics.health.HealthCheck;
 import com.google.gson.Gson;
 import com.nordstrom.xrpc.server.Server;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+import java.io.IOException;
+import java.net.URL;
+import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import spark.Request;
 import spark.Response;
 import spark.resource.ClassPathResource;
 import spark.resource.Resource;
 
-import java.io.IOException;
-import java.net.URL;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Optional;
-
-import static spark.Spark.*;
-
 @Slf4j
 public class Main {
   public static void main(String args[]) throws Exception {
     if (args.length < 3) {
-      throw new RuntimeException("please specify arguments for server: \n" +
-        "port number \n" +
-        "header-tag, \n" +
-        "h2 (true|false) \n" +
-        "h1 tls (true|false) - optional and ignored for h2, default true");
+      throw new RuntimeException(
+          "please specify arguments for server: \n"
+              + "port number \n"
+              + "header-tag, \n"
+              + "h2 (true|false) \n"
+              + "h1 tls (true|false) - optional and ignored for h2, default true");
     }
 
     // header-tag might be the ip address of this host or any other information you
@@ -95,13 +93,13 @@ public class Main {
 
     // Add a service specific health check
     server.addHealthCheck(
-      "simple",
-      new HealthCheck() {
-        @Override
-        protected Result check() {
-          System.out.println("Health Check Ran");
-          return Result.healthy();
-        }
-      });
+        "simple",
+        new HealthCheck() {
+          @Override
+          protected Result check() {
+            System.out.println("Health Check Ran");
+            return Result.healthy();
+          }
+        });
   }
 }

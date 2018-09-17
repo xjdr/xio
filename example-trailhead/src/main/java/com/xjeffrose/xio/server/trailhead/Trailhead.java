@@ -8,10 +8,9 @@ import com.xjeffrose.xio.http.*;
 import com.xjeffrose.xio.pipeline.SmartHttpPipeline;
 import com.xjeffrose.xio.pipeline.XioPipelineFragment;
 import com.xjeffrose.xio.server.Route;
-import lombok.extern.slf4j.Slf4j;
-
 import java.util.LinkedHashMap;
 import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class Trailhead implements AutoCloseable {
@@ -40,9 +39,9 @@ public class Trailhead implements AutoCloseable {
 
   public Trailhead(Config config) {
     routes = RouteConfig.fromConfig("trailhead.routes", config);
-    bootstrap = new ApplicationBootstrap("trailhead.application", config)
-      .addServer("main", (bs) -> bs.addToPipeline(proxyFragment()))
-      ;
+    bootstrap =
+        new ApplicationBootstrap("trailhead.application", config)
+            .addServer("main", (bs) -> bs.addToPipeline(proxyFragment()));
   }
 
   public void start() {
@@ -53,5 +52,4 @@ public class Trailhead implements AutoCloseable {
   public void close() {
     application.close();
   }
-
 }

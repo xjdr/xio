@@ -1,4 +1,3 @@
 package com.xjeffrose.xio.client.chicago;
 
-public class WriteResult {
-}
+public class WriteResult {}
