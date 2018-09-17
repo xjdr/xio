@@ -39,7 +39,8 @@ public class DefaultChannelInitializer extends ChannelInitializer {
           sslContext.newHandler(channel.alloc(), address.getHostString(), address.getPort()));
     }
     if (config.isMessageLoggerEnabled()) {
-      Pipelines.addHandler(cp, "message logging", new XioMessageLogger(XioClient.class, config.getName()));
+      Pipelines.addHandler(
+          cp, "message logging", new XioMessageLogger(XioClient.class, config.getName()));
     }
     Pipelines.addHandler(cp, "protocol handler", applicationProtocol.get());
     Pipelines.addHandler(cp, "distributed tracing", tracingHandler.get());

@@ -25,8 +25,7 @@ public class Glog {
 
   private static final int BASE_MESSAGE_LENGTH = 30;
 
-  public Glog() {
-  }
+  public Glog() {}
 
   public static <T> String formatRecord(Formatter<T> formatter, T record) {
     String message = formatter.getMessage(record);
@@ -37,21 +36,24 @@ public class Glog {
       messageLength += className.length();
       methodName = formatter.getMethodName(record);
       if (methodName != null) {
-        messageLength += 1;  // Period between class and method.
+        messageLength += 1; // Period between class and method.
         messageLength += methodName.length();
       }
     }
 
-    StringBuilder sb = new StringBuilder(messageLength)
-        // TODO implement Lambda for checking nonNull logs
-//        .append( (T r) ->
-//         formatter.getLevel(r)  != null ? formatter.getLevel(r) : Level.UNKNOWN.label)
-        .append(formatter.getLevel(record).label)
-        .append(LocalDateTime.ofInstant(Instant.ofEpochMilli(formatter.getTimeStamp(record)),
-            ZoneOffset.UTC).format(DateTimeFormatter.ofPattern(" MMdd HH:mm:ss.SSS")))
-        .append(formatter.getTimeStamp(record))
-        .append(" THREAD")
-        .append(formatter.getThreadId(record));
+    StringBuilder sb =
+        new StringBuilder(messageLength)
+            // TODO implement Lambda for checking nonNull logs
+            //        .append( (T r) ->
+            //         formatter.getLevel(r)  != null ? formatter.getLevel(r) : Level.UNKNOWN.label)
+            .append(formatter.getLevel(record).label)
+            .append(
+                LocalDateTime.ofInstant(
+                        Instant.ofEpochMilli(formatter.getTimeStamp(record)), ZoneOffset.UTC)
+                    .format(DateTimeFormatter.ofPattern(" MMdd HH:mm:ss.SSS")))
+            .append(formatter.getTimeStamp(record))
+            .append(" THREAD")
+            .append(formatter.getThreadId(record));
     if (className != null) {
       sb.append(' ').append(className);
       if (methodName != null) {
@@ -65,9 +67,7 @@ public class Glog {
       sb.append("\n  ").append(throwable.getClass().getCanonicalName());
       String throwableMessage = throwable.getMessage();
       if (throwableMessage != null && throwableMessage.length() > 0) {
-        sb.append(": ")
-            .append(throwableMessage)
-        ;
+        sb.append(": ").append(throwableMessage);
       }
       for (StackTraceElement element : throwable.getStackTrace()) {
         sb.append("\n    at ")
@@ -78,8 +78,7 @@ public class Glog {
             .append(element.getFileName())
             .append(":")
             .append(element.getLineNumber())
-            .append(")")
-        ;
+            .append(")");
       }
     }
 

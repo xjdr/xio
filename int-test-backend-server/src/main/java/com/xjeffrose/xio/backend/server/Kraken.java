@@ -1,12 +1,10 @@
 package com.xjeffrose.xio.backend.server;
 
+import java.beans.ConstructorProperties;
 import lombok.Getter;
 
-import java.beans.ConstructorProperties;
-
 class Kraken {
-  @Getter
-  String title;
+  @Getter String title;
   @Getter String description;
 
   @ConstructorProperties({"title", "description"})
