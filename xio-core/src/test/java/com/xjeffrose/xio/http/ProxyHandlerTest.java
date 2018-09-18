@@ -53,6 +53,6 @@ public class ProxyHandlerTest extends Assert {
     assertTrue(channel.finish());
 
     DefaultFullResponse result = channel.readOutbound();
-    assertEquals(result.status().code(), 404);
+    assertEquals(result.status().code(), 503);
   }
 }

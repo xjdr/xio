@@ -30,6 +30,15 @@ public class ResponseBuilders {
         .build();
   }
 
+  public static Response newServiceTimeout(Request request) {
+    return defaultHeaders(DefaultFullResponse.builder())
+        .body(Unpooled.EMPTY_BUFFER)
+        .httpTraceInfo(request.httpTraceInfo())
+        .streamId(request.streamId())
+        .status(HttpResponseStatus.GATEWAY_TIMEOUT)
+        .build();
+  }
+
   public static DefaultFullResponse.Builder newOk() {
     return defaultHeaders(DefaultFullResponse.builder().status(HttpResponseStatus.OK));
   }
