@@ -180,8 +180,8 @@ public class ProxyHandler implements PipelineRequestHandler {
                   }
                 }));
     if (!optionalFuture.isPresent()) {
-      Response serviceTimeoutConnectFailure = ResponseBuilders.newServiceTimeout(request);
-      ctx.writeAndFlush(serviceTimeoutConnectFailure);
+      Response notFound = ResponseBuilders.newNotFound(request);
+      ctx.writeAndFlush(notFound);
     }
   }
 }
