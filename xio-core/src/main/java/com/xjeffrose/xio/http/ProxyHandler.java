@@ -179,6 +179,16 @@ public class ProxyHandler implements PipelineRequestHandler {
                     ctx.close();
                   }
                 }));
+    // This scenario occurs when the client that we have has since disconnected from the origin server
+    // we should probably throw this client away and get a new one.  Each client is hard baked with the event loop
+    // of the server channel that originally spawned it.  This causes issues when the client tries to reconnect on the
+    // original eventloop/thread and the server channel is on a different eventloop/thread. The connect and write
+    // are serialized by netty, however the write samples the current channelpipeline (which is empty before connect completes)
+    // before it gets serially scheduled to be after connect and when it finally gets scheduled to run
+    // (after connect builds the pipeline), it will try to write the first request
+    // to the HEAD channelhandlercontext which will throw an error. We need to either 1) make the connection manager
+    // resilient to this thread swapping or 2) we just get a new client that is still connected or 3) create a new client
+    // that is built based on the clientConfig/Eventloop that our current context is on.
     if (!optionalFuture.isPresent()) {
       Response notFound = ResponseBuilders.newNotFound(request);
       ctx.writeAndFlush(notFound);
