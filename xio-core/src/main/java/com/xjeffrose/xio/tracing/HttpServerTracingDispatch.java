@@ -94,11 +94,12 @@ class HttpServerTracingDispatch extends HttpTracingState {
               span.setTag(Tags.HTTP_STATUS.getKey(), responseCode);
               span.setTag("http.response.streamId", response.streamId());
               StreamSupport.stream(response.headers().spliterator(), false)
-                .forEach(
-                  (entry) -> {
-                    span.setTag(
-                      "http.response.headers." + entry.getKey().toString(), entry.getValue().toString());
-                  });
+                  .forEach(
+                      (entry) -> {
+                        span.setTag(
+                            "http.response.headers." + entry.getKey().toString(),
+                            entry.getValue().toString());
+                      });
               span.finish();
               response.httpTraceInfo().setSpan(span);
             });
