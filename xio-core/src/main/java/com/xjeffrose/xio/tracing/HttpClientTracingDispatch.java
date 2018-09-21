@@ -30,7 +30,7 @@ public class HttpClientTracingDispatch extends HttpTracingState {
       return ((InetSocketAddress) address).getHostString();
     }
 
-    return null;
+    return "unknown";
   }
 
   private String localIp(ChannelHandlerContext ctx) {
@@ -39,7 +39,7 @@ public class HttpClientTracingDispatch extends HttpTracingState {
       return ((InetSocketAddress) address).getAddress().getHostAddress();
     }
 
-    return null;
+    return "unknown";
   }
 
   public void onRequest(ChannelHandlerContext ctx, Request request) {
@@ -47,7 +47,6 @@ public class HttpClientTracingDispatch extends HttpTracingState {
     if (request.headers().get("x-remote-ip") != null) {
       requestorIpAddress = request.headers().get("x-remote-ip");
     }
-    requestorIpAddress = requestorIpAddress != null ? requestorIpAddress : "unknown";
     request.headers().set("x-remote-ip", requestorIpAddress);
 
     String httpType = request.streamId() == Message.H1_STREAM_ID_NONE ? "http1.1" : "h2";
