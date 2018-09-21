@@ -1,7 +1,5 @@
 package com.xjeffrose.xio.client;
 
-import static com.xjeffrose.xio.pipeline.Pipelines.addHandler;
-
 import com.xjeffrose.xio.core.XioIdleDisconnectHandler;
 import com.xjeffrose.xio.core.XioMessageLogger;
 import io.netty.channel.Channel;

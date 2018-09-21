@@ -1,6 +1,5 @@
 package com.xjeffrose.xio.tracing;
 
-import com.xjeffrose.xio.http.Headers;
 import com.xjeffrose.xio.http.Message;
 import com.xjeffrose.xio.http.Request;
 import com.xjeffrose.xio.http.Response;
@@ -13,6 +12,7 @@ import io.opentracing.tag.Tags;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.Optional;
+import java.util.stream.StreamSupport;
 
 public class HttpClientTracingDispatch extends HttpTracingState {
 
@@ -24,23 +24,51 @@ public class HttpClientTracingDispatch extends HttpTracingState {
     this.tracer = tracer;
   }
 
-  private void addRemoteIp(ChannelHandlerContext ctx, Headers headers) {
+  private String remoteIp(ChannelHandlerContext ctx) {
     SocketAddress address = ctx.channel().remoteAddress();
     if (address instanceof InetSocketAddress) {
-      headers.set("x-remote-ip", ((InetSocketAddress) address).getHostString());
+      return ((InetSocketAddress) address).getHostString();
     }
+
+    return null;
+  }
+
+  private String localIp(ChannelHandlerContext ctx) {
+    SocketAddress address = ctx.channel().localAddress();
+    if (address instanceof InetSocketAddress) {
+      return ((InetSocketAddress) address).getAddress().getHostAddress();
+    }
+
+    return null;
   }
 
   public void onRequest(ChannelHandlerContext ctx, Request request) {
-    addRemoteIp(ctx, request.headers());
-    Optional<Span> parentSpan = request.httpTraceInfo().getSpan();
+    String requestorIpAddress = remoteIp(ctx);
+    if (request.headers().get("x-remote-ip") != null) {
+      requestorIpAddress = request.headers().get("x-remote-ip");
+    }
+    requestorIpAddress = requestorIpAddress != null ? requestorIpAddress : "unknown";
+    request.headers().set("x-remote-ip", requestorIpAddress);
+
+    String httpType = request.streamId() == Message.H1_STREAM_ID_NONE ? "http1.1" : "h2";
     Tracer.SpanBuilder spanBuilder =
         tracer
-            .buildSpan(name + "-client")
-            .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_CLIENT)
+            .buildSpan(name + ".client")
             .withTag(Tags.HTTP_METHOD.getKey(), request.method().toString())
-            .withTag(Tags.HTTP_URL.getKey(), request.path());
+            .withTag(Tags.HTTP_URL.getKey(), request.path())
+            .withTag("http.request.type", httpType)
+            .withTag("http.request.streamId", request.streamId())
+            .withTag("http.request.source-ip-address", localIp(ctx))
+            .withTag("http.request.originating-ip-address", requestorIpAddress);
 
+    StreamSupport.stream(request.headers().spliterator(), false)
+        .forEach(
+            (entry) -> {
+              spanBuilder.withTag(
+                  "http.request.headers." + entry.getKey().toString(), entry.getValue().toString());
+            });
+
+    Optional<Span> parentSpan = request.httpTraceInfo().getSpan();
     parentSpan.ifPresent(spanBuilder::asChildOf);
 
     try (Scope scope = spanBuilder.startActive(false)) {
@@ -57,6 +85,15 @@ public class HttpClientTracingDispatch extends HttpTracingState {
     Optional<Span> requestSpan = popSpan(ctx);
     requestSpan.ifPresent(
         span -> {
+          int responseCode = response.status().code();
+          span.setTag(Tags.HTTP_STATUS.getKey(), responseCode);
+          span.setTag("http.response.streamId", response.streamId());
+          StreamSupport.stream(response.headers().spliterator(), false)
+            .forEach(
+              (entry) -> {
+                span.setTag(
+                  "http.response.headers." + entry.getKey().toString(), entry.getValue().toString());
+              });
           span.finish();
           response.httpTraceInfo().setSpan(span);
         });
