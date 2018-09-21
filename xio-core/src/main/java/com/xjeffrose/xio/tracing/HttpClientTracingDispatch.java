@@ -49,12 +49,12 @@ public class HttpClientTracingDispatch extends HttpTracingState {
           Format.Builtin.HTTP_HEADERS,
           new HttpHeadersInjectAdapter(request));
       request.httpTraceInfo().setSpan(scope.span());
-      setSpan(ctx, scope.span());
+      setSpan(ctx, request.streamId(), scope.span());
     }
   }
 
   public void onResponse(ChannelHandlerContext ctx, Response response) {
-    Optional<Span> requestSpan = popSpan(ctx);
+    Optional<Span> requestSpan = popSpan(ctx, response.streamId());
     requestSpan.ifPresent(
         span -> {
           span.finish();
@@ -68,15 +68,19 @@ public class HttpClientTracingDispatch extends HttpTracingState {
       message = cause.getClass().getSimpleName();
     }
     final String value = message;
-    popSpan(ctx)
+    // If h2, we don't know which request had a problem (there can be multiple requests)
+    // so we won't do anything. If http1.1, then we know the stream id is always
+    // Message.H1_STREAM_ID_NONE
+    popSpan(ctx, Message.H1_STREAM_ID_NONE)
         .ifPresent(
             span -> {
               span.setTag(Tags.ERROR.getKey(), value);
+              span.finish();
             });
   }
 
   public void onError(ChannelHandlerContext ctx, Message message, Throwable cause) {
-    popSpan(ctx);
+    popSpan(ctx, message.streamId());
     String errorMessage = cause.getMessage();
     if (errorMessage == null) {
       errorMessage = cause.getClass().getSimpleName();
@@ -88,6 +92,7 @@ public class HttpClientTracingDispatch extends HttpTracingState {
         .ifPresent(
             span -> {
               span.setTag(Tags.ERROR.getKey(), value);
+              span.finish();
             });
   }
 }

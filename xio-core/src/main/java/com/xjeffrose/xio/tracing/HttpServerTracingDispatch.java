@@ -51,13 +51,13 @@ class HttpServerTracingDispatch extends HttpTracingState {
     }
 
     try (Scope scope = spanBuilder.startActive(false)) {
-      setSpan(ctx, scope.span());
+      setSpan(ctx, request.streamId(), scope.span());
       request.httpTraceInfo().setSpan(scope.span());
     }
   }
 
   public void onResponse(ChannelHandlerContext ctx, Response response, Throwable error) {
-    popSpan(ctx)
+    popSpan(ctx, response.streamId())
         .ifPresent(
             span -> {
               span.finish();
