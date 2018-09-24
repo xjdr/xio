@@ -39,21 +39,6 @@ public class ProxyRouteState extends RouteState {
     this.clientStates = clientStates;
   }
 
-  // TODO(CK): This constructor is goofy and should be replaced with a factory method
-  // the new constructor should be ProxyRouteState(ProxyRouteConfig, ProxyHandler,
-  // List<ClientStates>)
-  /*
-  public ProxyRouteState(ApplicationState state, ProxyRouteConfig config, ProxyHandler handler) {
-    super(ProxyRouteState::buildRoute, config, handler);
-    List<ClientConfig> configs = config.clientConfigs();
-    clientStates =
-        configs
-            .stream()
-            .map(clientConfig -> new ClientState(clientConfig, state.workerGroup()))
-            .collect(Collectors.toList());
-  }
-  */
-
   @Override
   public ProxyHandler handler() {
     return (ProxyHandler) super.handler();
