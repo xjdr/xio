@@ -33,7 +33,7 @@ public class GrpcRouteStateBuilderTest extends Assert {
         Collections.singletonList(HttpMethod.POST), registerServiceRouteState.config().methods());
     assertEquals("", registerServiceRouteState.config().host());
     assertEquals(grpcRoute.buildPath(), registerServiceRouteState.path());
-    assertEquals("*", registerServiceRouteState.config().permissionNeeded());
+    assertEquals("none", registerServiceRouteState.config().permissionNeeded());
     assertEquals(grpcRoute.handler, registerServiceRouteState.handler());
   }
 

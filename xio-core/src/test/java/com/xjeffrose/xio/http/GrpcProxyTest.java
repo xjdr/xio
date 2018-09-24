@@ -138,7 +138,7 @@ public class GrpcProxyTest extends Assert {
                   public ChannelHandler getApplicationRouter() {
                     return new PipelineRouter(
                         ImmutableMap.of(
-                            "*",
+                            "none",
                             ProxyRouteState.create(
                                 appState,
                                 proxyConfig,

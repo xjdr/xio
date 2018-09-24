@@ -16,7 +16,7 @@ public class PathToRequestHandler {
       ImmutableMap<String, RouteState> routes, PipelineRequestHandler defaultHandler) {
     this.routes = routes;
     RouteState defaultRoute = RouteState.defaultRoute(defaultHandler);
-    defaultEntry = new AbstractMap.SimpleEntry("*", defaultRoute);
+    defaultEntry = new AbstractMap.SimpleEntry("none", defaultRoute);
   }
 
   public PathToRequestHandler(PipelineRequestHandler handler) {
