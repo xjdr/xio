@@ -16,6 +16,13 @@ public class RouteState {
     return Route.build(config.path());
   }
 
+  // copy constructor
+  public RouteState(RouteState routeState) {
+    this.config = routeState.config;
+    this.route = routeState.route;
+    this.handler = routeState.handler;
+  }
+
   public RouteState(
       Function<RouteConfig, Route> factory, RouteConfig config, PipelineRequestHandler handler) {
     this.config = config;

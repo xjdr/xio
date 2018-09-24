@@ -21,7 +21,7 @@ public class RouteStates {
         Stream.of(proxyRouteConfig)
             .map(
                 (ProxyRouteConfig config) ->
-                    new ProxyRouteState(
+                    ProxyRouteState.create(
                         applicationState,
                         config,
                         new PersistentProxyHandler(

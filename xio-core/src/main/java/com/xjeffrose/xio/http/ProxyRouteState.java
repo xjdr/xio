@@ -16,9 +16,33 @@ public class ProxyRouteState extends RouteState {
     return Route.build(config.path() + ":*path");
   }
 
+  public static ProxyRouteState create(
+      ApplicationState state, ProxyRouteConfig config, ProxyHandler handler) {
+    List<ClientConfig> configs = config.clientConfigs();
+    List<ClientState> clientStates =
+        configs
+            .stream()
+            .map(clientConfig -> new ClientState(clientConfig, state.workerGroup()))
+            .collect(Collectors.toList());
+    return new ProxyRouteState(config, handler, clientStates);
+  }
+
+  // copy constructor with new clientstates
+  public ProxyRouteState(ProxyRouteState routeState, List<ClientState> clientStates) {
+    super(routeState);
+    this.clientStates = clientStates;
+  }
+
+  public ProxyRouteState(
+      ProxyRouteConfig config, ProxyHandler handler, List<ClientState> clientStates) {
+    super(ProxyRouteState::buildRoute, config, handler);
+    this.clientStates = clientStates;
+  }
+
   // TODO(CK): This constructor is goofy and should be replaced with a factory method
   // the new constructor should be ProxyRouteState(ProxyRouteConfig, ProxyHandler,
   // List<ClientStates>)
+  /*
   public ProxyRouteState(ApplicationState state, ProxyRouteConfig config, ProxyHandler handler) {
     super(ProxyRouteState::buildRoute, config, handler);
     List<ClientConfig> configs = config.clientConfigs();
@@ -28,6 +52,7 @@ public class ProxyRouteState extends RouteState {
             .map(clientConfig -> new ClientState(clientConfig, state.workerGroup()))
             .collect(Collectors.toList());
   }
+  */
 
   @Override
   public ProxyHandler handler() {
