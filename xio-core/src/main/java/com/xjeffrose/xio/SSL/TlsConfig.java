@@ -1,10 +1,10 @@
 package com.xjeffrose.xio.SSL;
 
 import com.google.common.base.Charsets;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.CharStreams;
 import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
 import io.netty.handler.ssl.ApplicationProtocolConfig;
 import io.netty.handler.ssl.ClientAuth;
 import io.netty.handler.ssl.OpenSsl;
@@ -28,20 +28,20 @@ import java.security.cert.X509Certificate;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.BiFunction;
 import javax.xml.bind.DatatypeConverter;
 import lombok.Getter;
 
 public class TlsConfig {
-
   @Getter private final boolean useSsl;
-  // used internally
-  private final boolean useOpenSsl;
+  @Getter private final SslProvider sslProvider;
   @Getter private final boolean logInsecureConfig;
   @Getter private final PrivateKey privateKey;
   // custom getter
-  private final X509Certificate certificate;
-  @Getter private final List<X509Certificate> x509TrustedCerts;
-  private final ImmutableList<X509Certificate> x509CertChain;
+  private final List<X509Certificate> trustedCerts;
+  // custom getter
+  private final List<X509Certificate> certificateAndChain;
   @Getter private final ApplicationProtocolConfig alpnConfig;
   // custom getter
   private final List<String> ciphers;
@@ -101,10 +101,6 @@ public class TlsConfig {
       }
     }
     return readPath(value);
-  }
-
-  private static String readPathFromKey(String key, Config config) {
-    return readPathFromValue(config.getString(key));
   }
 
   /** Only works with PKCS8 formatted private keys */
@@ -172,33 +168,124 @@ public class TlsConfig {
     return certificates;
   }
 
-  public TlsConfig(Config config) {
-    useSsl = config.getBoolean("useSsl");
-    logInsecureConfig = config.getBoolean("logInsecureConfig");
-    x509TrustedCerts = buildCerts(config.getStringList("x509TrustedCertPaths"));
-    privateKey = parsePrivateKeyFromPem(readPathFromKey("privateKeyPath", config));
-    certificate = parseX509CertificateFromPem(readPathFromKey("x509CertPath", config));
-    x509CertChain =
-        new ImmutableList.Builder<X509Certificate>()
-            .add(certificate)
-            .addAll(buildCerts(config.getStringList("x509CertChainPaths")))
-            .build();
-    useOpenSsl = config.getBoolean("useOpenSsl");
-    alpnConfig = buildAlpnConfig(config.getConfig("alpn"));
-    ciphers = config.getStringList("ciphers");
-    clientAuth = config.getEnum(ClientAuth.class, "clientAuth");
-    enableOcsp = config.getBoolean("enableOcsp");
-    protocols = config.getStringList("protocols");
-    sessionCacheSize = config.getLong("sessionCacheSize");
-    sessionTimeout = config.getLong("sessionTimeout");
+  /**
+   * Returns a value from a config that might not exist.
+   *
+   * @param config the config to fetch a value out of
+   * @param path the path to fetch
+   * @param configGetter the function to fetch the value out of the config, if the path exists
+   */
+  private static <T> Optional<T> getOptionalPath(
+      Config config, String path, BiFunction<Config, String, T> configGetter) {
+    if (config.hasPath(path)) {
+      return Optional.of(configGetter.apply(config, path));
+    } else {
+      return Optional.empty();
+    }
   }
 
-  public static TlsConfig fromConfig(String key, Config config) {
-    return new TlsConfig(config.getConfig(key));
+  /**
+   * Creates a new builder with values from the given config object.
+   *
+   * @throws ConfigException if any of the keys present in the Config object have unexpected value
+   *     types
+   */
+  public static Builder builderFrom(Config config) {
+    Builder builder = TlsConfig.builder();
+    getOptionalPath(config, "useSsl", Config::getBoolean).map(builder::useSsl);
+    getOptionalPath(config, "logInsecureConfig", Config::getBoolean)
+        .map(builder::logInsecureConfig);
+
+    getOptionalPath(config, "x509TrustedCertPaths", Config::getStringList)
+        .map(TlsConfig::buildCerts)
+        .map(builder::trustedCerts);
+
+    getOptionalPath(config, "privateKeyPath", Config::getString)
+        .map(TlsConfig::readPathFromValue)
+        .map(TlsConfig::parsePrivateKeyFromPem)
+        .map(builder::privateKey);
+
+    getOptionalPath(config, "x509CertPath", Config::getString)
+        .map(TlsConfig::readPathFromValue)
+        .map(TlsConfig::parseX509CertificateFromPem)
+        .map(builder::certificate);
+
+    getOptionalPath(config, "x509CertChainPaths", Config::getStringList)
+        .map(TlsConfig::buildCerts)
+        .map(builder::certChain);
+
+    getOptionalPath(config, "useOpenSsl", Config::getBoolean).map(builder::useOpenSsl);
+
+    getOptionalPath(config, "alpn", Config::getConfig)
+        .map(TlsConfig::buildAlpnConfig)
+        .map(builder::alpnConfig);
+
+    getOptionalPath(config, "ciphers", Config::getStringList).map(builder::ciphers);
+    getOptionalPath(
+            config, "clientAuth", (configArg, key) -> configArg.getEnum(ClientAuth.class, key))
+        .map(builder::clientAuth);
+    getOptionalPath(config, "enableOcsp", Config::getBoolean).map(builder::enableOcsp);
+    getOptionalPath(config, "protocols", Config::getStringList).map(builder::protocols);
+    getOptionalPath(config, "sessionCacheSize", Config::getLong).map(builder::sessionCacheSize);
+    getOptionalPath(config, "sessionTimeout", Config::getLong).map(builder::sessionTimeout);
+
+    return builder;
   }
 
-  public static TlsConfig fromConfig(String key) {
-    return fromConfig(key, ConfigFactory.load());
+  @lombok.Builder(builderClassName = "Builder")
+  private TlsConfig(
+      Boolean useSsl,
+      Boolean useOpenSsl,
+      Boolean logInsecureConfig,
+      PrivateKey privateKey,
+      X509Certificate certificate,
+      List<X509Certificate> certChain,
+      List<X509Certificate> trustedCerts,
+      ApplicationProtocolConfig alpnConfig,
+      List<String> ciphers,
+      ClientAuth clientAuth,
+      Boolean enableOcsp,
+      List<String> protocols,
+      Long sessionCacheSize,
+      Long sessionTimeout) {
+    // Validate that *all* parameters were set in the builder.
+    String errorMessage = "{} must be set in builder";
+    Preconditions.checkNotNull(useSsl, errorMessage, "useSsl");
+    Preconditions.checkNotNull(useOpenSsl, errorMessage, "useOpenSsl");
+    Preconditions.checkNotNull(logInsecureConfig, errorMessage, "logInsecureConfig");
+    Preconditions.checkNotNull(privateKey, errorMessage, "privateKey");
+    Preconditions.checkNotNull(certificate, errorMessage, "certificate");
+    Preconditions.checkNotNull(certChain, errorMessage, "certChain");
+    Preconditions.checkNotNull(trustedCerts, errorMessage, "trustedCerts");
+    Preconditions.checkNotNull(alpnConfig, errorMessage, "alpnConfig");
+    Preconditions.checkNotNull(ciphers, errorMessage, "ciphers");
+    Preconditions.checkNotNull(clientAuth, errorMessage, "clientAuth");
+    Preconditions.checkNotNull(enableOcsp, errorMessage, "enableOcsp");
+    Preconditions.checkNotNull(protocols, errorMessage, "protocols");
+    Preconditions.checkNotNull(sessionCacheSize, errorMessage, "sessionCacheSize");
+    Preconditions.checkNotNull(sessionTimeout, errorMessage, "sessionTimeout");
+
+    this.useSsl = useSsl;
+    if (useOpenSsl) {
+      if (!OpenSsl.isAvailable()) {
+        throw new IllegalStateException("useOpenSsl = true and OpenSSL is not available");
+      }
+      this.sslProvider = SslProvider.OPENSSL;
+    } else {
+      this.sslProvider = SslProvider.JDK;
+    }
+    this.logInsecureConfig = logInsecureConfig;
+    this.privateKey = privateKey;
+    this.trustedCerts = trustedCerts;
+    this.certificateAndChain =
+        ImmutableList.<X509Certificate>builder().add(certificate).addAll(certChain).build();
+    this.alpnConfig = alpnConfig;
+    this.ciphers = ciphers;
+    this.clientAuth = clientAuth;
+    this.enableOcsp = enableOcsp;
+    this.protocols = protocols;
+    this.sessionCacheSize = sessionCacheSize;
+    this.sessionTimeout = sessionTimeout;
   }
 
   public List<String> getCiphers() {
@@ -216,20 +303,10 @@ public class TlsConfig {
   }
 
   public X509Certificate[] getCertificateAndChain() {
-    return x509CertChain.toArray(new X509Certificate[0]);
+    return certificateAndChain.toArray(new X509Certificate[0]);
   }
 
   public X509Certificate[] getTrustedCerts() {
-    return x509TrustedCerts.toArray(new X509Certificate[0]);
-  }
-
-  public SslProvider getSslProvider() {
-    if (useOpenSsl) {
-      if (!OpenSsl.isAvailable()) {
-        throw new IllegalStateException("useOpenSsl = true and OpenSSL is not available");
-      }
-      return SslProvider.OPENSSL;
-    }
-    return SslProvider.JDK;
+    return trustedCerts.toArray(new X509Certificate[0]);
   }
 }

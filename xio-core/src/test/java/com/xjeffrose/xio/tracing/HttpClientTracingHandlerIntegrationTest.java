@@ -71,11 +71,8 @@ public class HttpClientTracingHandlerIntegrationTest {
 
   private Config config() {
     // TODO(CK): this creates global state across tests we should do something smarter
-    System.setProperty(
-        "xio.baseClient.remotePort",
-        Integer.toString(
-            server
-                .getPort())); // Maybe just pick a port, then run the test by starting the mock web server with that port?
+    // Maybe just pick a port, then run the test by starting the mock web server with that port?
+    System.setProperty("xio.baseClient.remotePort", Integer.toString(server.getPort()));
     System.setProperty("xio.proxyRouteTemplate.proxyPath", "/");
     ConfigFactory.invalidateCaches();
     Config root = ConfigFactory.load();
@@ -109,7 +106,8 @@ public class HttpClientTracingHandlerIntegrationTest {
     reportedSpans = new ArrayList<>();
 
     TlsConfig tlsConfig =
-        TlsConfig.fromConfig("xio.h2BackendServer.settings.tls", ConfigFactory.load());
+        TlsConfig.builderFrom(ConfigFactory.load().getConfig("xio.h2BackendServer.settings.tls"))
+            .build();
     server = OkHttpUnsafe.getSslMockWebServer(getKeyManagers(tlsConfig));
     server.setProtocols(Collections.singletonList(Protocol.HTTP_1_1));
     server.enqueue(buildResponse());

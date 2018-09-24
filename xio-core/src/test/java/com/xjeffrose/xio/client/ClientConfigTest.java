@@ -16,7 +16,7 @@ public class ClientConfigTest extends Assert {
     Config config = ConfigFactory.load();
     ClientConfig fallbackObject = ClientConfig.from(config.getConfig("xio.clientTemplate"));
     Map expectedBootstrapOptions = Maps.newHashMap(ChannelOption.AUTO_READ, new Object());
-    TlsConfig expectedTls = new TlsConfig(ConfigFactory.load("tls-reference"));
+    TlsConfig expectedTls = TlsConfig.builderFrom(ConfigFactory.load("tls-reference")).build();
     boolean expectedMessageLoggerEnabled = true;
     InetSocketAddress expectedLocal = new InetSocketAddress("local ip", 11111);
     InetSocketAddress expectedRemote = new InetSocketAddress("remote ip", 22222);

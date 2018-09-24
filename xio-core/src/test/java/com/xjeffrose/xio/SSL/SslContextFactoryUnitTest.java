@@ -14,14 +14,16 @@ public class SslContextFactoryUnitTest extends Assert {
   @Test
   public void buildServerContext() throws Exception {
     TlsConfig tlsConfig =
-        new TlsConfig(ConfigFactory.load().getConfig("xio.testServer.settings.tls"));
+        TlsConfig.builderFrom(ConfigFactory.load().getConfig("xio.testServer.settings.tls"))
+            .build();
     SslContext context = SslContextFactory.buildServerContext(tlsConfig);
   }
 
   @Test
   public void buildClientContext() throws Exception {
     TlsConfig tlsConfig =
-        new TlsConfig(ConfigFactory.load().getConfig("xio.testServer.settings.tls"));
+        TlsConfig.builderFrom(ConfigFactory.load().getConfig("xio.testServer.settings.tls"))
+            .build();
     SslContext context = SslContextFactory.buildClientContext(tlsConfig);
   }
 }

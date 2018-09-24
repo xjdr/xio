@@ -1,6 +1,7 @@
 package com.xjeffrose.xio.http.test_helpers;
 
 import com.google.common.util.concurrent.Uninterruptibles;
+import com.typesafe.config.ConfigFactory;
 import com.xjeffrose.xio.SSL.SslContextFactory;
 import com.xjeffrose.xio.SSL.TlsConfig;
 import com.xjeffrose.xio.http.Http2HandlerBuilder;
@@ -32,7 +33,8 @@ public class GrpcClientTest {
 
     final SslContext sslContext =
         SslContextFactory.buildClientContext(
-            TlsConfig.fromConfig("xio.h2TestClient.settings.tls"),
+            TlsConfig.builderFrom(ConfigFactory.load().getConfig("xio.h2TestClient.settings.tls"))
+                .build(),
             InsecureTrustManagerFactory.INSTANCE);
 
     CountDownLatch msgReceived = new CountDownLatch(2);

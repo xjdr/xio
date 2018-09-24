@@ -1,5 +1,6 @@
 package com.xjeffrose.xio.SSL;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
@@ -19,9 +20,7 @@ import io.netty.handler.codec.DecoderException;
 import io.netty.handler.ssl.SslContext;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
-import java.security.PrivateKey;
 import java.security.cert.CertPathValidatorException;
-import java.security.cert.X509Certificate;
 import java.time.Instant;
 import java.time.Period;
 import java.util.Date;
@@ -79,39 +78,19 @@ public class XioTrustManagerFactoryUnitTest extends Assert {
     group = new NioEventLoopGroup(2);
     Config config = ConfigFactory.load();
     TlsConfig serverConfig =
-        new TlsConfig(config.getConfig("xio.testServer.settings.tls")) {
-          @Override
-          public X509Certificate[] getCertificateAndChain() {
-            return new X509Certificate[] {serverCert.certificate, rootCa.certificate};
-          }
-
-          @Override
-          public PrivateKey getPrivateKey() {
-            return serverCert.keyPair.getPrivate();
-          }
-
-          @Override
-          public X509Certificate[] getTrustedCerts() {
-            return new X509Certificate[] {rootCa.certificate};
-          }
-        };
+        TlsConfig.builderFrom(config.getConfig("xio.testServer.settings.tls"))
+            .certificate(serverCert.certificate)
+            .certChain(ImmutableList.of(rootCa.certificate))
+            .privateKey(serverCert.keyPair.getPrivate())
+            .trustedCerts(ImmutableList.of(rootCa.certificate))
+            .build();
     TlsConfig clientConfig =
-        new TlsConfig(config.getConfig("xio.h1TestClient.settings.tls")) {
-          @Override
-          public X509Certificate[] getCertificateAndChain() {
-            return new X509Certificate[] {clientCert.certificate, rootCa.certificate};
-          }
-
-          @Override
-          public PrivateKey getPrivateKey() {
-            return clientCert.keyPair.getPrivate();
-          }
-
-          @Override
-          public X509Certificate[] getTrustedCerts() {
-            return new X509Certificate[] {rootCa.certificate};
-          }
-        };
+        TlsConfig.builderFrom(config.getConfig("xio.h1TestClient.settings.tls"))
+            .certificate(clientCert.certificate)
+            .certChain(ImmutableList.of(rootCa.certificate))
+            .privateKey(clientCert.keyPair.getPrivate())
+            .trustedCerts(ImmutableList.of(rootCa.certificate))
+            .build();
     sslServerContext = SslContextFactory.buildServerContext(serverConfig);
     sslClientContext = SslContextFactory.buildClientContext(clientConfig);
 
@@ -232,39 +211,19 @@ public class XioTrustManagerFactoryUnitTest extends Assert {
     group = new NioEventLoopGroup(2);
     Config config = ConfigFactory.load();
     TlsConfig serverConfig =
-        new TlsConfig(config.getConfig("xio.testServer.settings.tls")) {
-          @Override
-          public X509Certificate[] getCertificateAndChain() {
-            return new X509Certificate[] {serverCert.certificate, rootCa.certificate};
-          }
-
-          @Override
-          public PrivateKey getPrivateKey() {
-            return serverCert.keyPair.getPrivate();
-          }
-
-          @Override
-          public X509Certificate[] getTrustedCerts() {
-            return new X509Certificate[] {rootCa.certificate};
-          }
-        };
+        TlsConfig.builderFrom(config.getConfig("xio.testServer.settings.tls"))
+            .certificate(serverCert.certificate)
+            .certChain(ImmutableList.of(rootCa.certificate))
+            .privateKey(serverCert.keyPair.getPrivate())
+            .trustedCerts(ImmutableList.of(rootCa.certificate))
+            .build();
     TlsConfig clientConfig =
-        new TlsConfig(config.getConfig("xio.h1TestClient.settings.tls")) {
-          @Override
-          public X509Certificate[] getCertificateAndChain() {
-            return new X509Certificate[] {clientCert.certificate, rootCa.certificate};
-          }
-
-          @Override
-          public PrivateKey getPrivateKey() {
-            return clientCert.keyPair.getPrivate();
-          }
-
-          @Override
-          public X509Certificate[] getTrustedCerts() {
-            return new X509Certificate[] {rootCa.certificate};
-          }
-        };
+        TlsConfig.builderFrom(config.getConfig("xio.h1TestClient.settings.tls"))
+            .certificate(clientCert.certificate)
+            .certChain(ImmutableList.of(rootCa.certificate))
+            .privateKey(clientCert.keyPair.getPrivate())
+            .trustedCerts(ImmutableList.of(rootCa.certificate))
+            .build();
     sslServerContext = SslContextFactory.buildServerContext(serverConfig, true);
     sslClientContext = SslContextFactory.buildClientContext(clientConfig);
 

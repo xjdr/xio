@@ -245,7 +245,8 @@ public class EdgeProxyFunctionalTest extends Assert {
             .build();
 
     TlsConfig tlsConfig =
-        TlsConfig.fromConfig("xio.h2BackendServer.settings.tls", ConfigFactory.load());
+        TlsConfig.builderFrom(ConfigFactory.load().getConfig("xio.h2BackendServer.settings.tls"))
+            .build();
     server = OkHttpUnsafe.getSslMockWebServer(getKeyManagers(tlsConfig));
     server.setProtocols(Arrays.asList(Protocol.HTTP_2, Protocol.HTTP_1_1));
     server.start();
