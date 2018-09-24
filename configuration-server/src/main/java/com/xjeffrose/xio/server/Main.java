@@ -1,6 +1,5 @@
 package com.xjeffrose.xio.server;
 
-import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.xjeffrose.xio.config.Configurator;
 import org.apache.curator.test.TestingServer;
@@ -23,5 +22,4 @@ public class Main {
   public static void main(String[] args) throws Exception {
     new Main().run();
   }
-
 }

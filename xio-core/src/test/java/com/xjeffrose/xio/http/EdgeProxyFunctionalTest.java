@@ -133,7 +133,7 @@ public class EdgeProxyFunctionalTest extends Assert {
                       // for each ProxyRouteConfig create a ProxyRouteState
                       .map(
                           (ProxyRouteConfig prConfig) ->
-                              new ProxyRouteState(
+                              ProxyRouteState.create(
                                   this,
                                   prConfig,
                                   new ProxyHandler(

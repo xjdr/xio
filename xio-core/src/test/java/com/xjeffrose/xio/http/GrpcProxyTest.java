@@ -139,7 +139,7 @@ public class GrpcProxyTest extends Assert {
                     return new PipelineRouter(
                         ImmutableMap.of(
                             "*",
-                            new ProxyRouteState(
+                            ProxyRouteState.create(
                                 appState,
                                 proxyConfig,
                                 new ProxyHandler(

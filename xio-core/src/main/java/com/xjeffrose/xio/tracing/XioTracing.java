@@ -40,11 +40,7 @@ public class XioTracing {
         break;
       case DATADOG:
         if (GlobalTracer.isRegistered()) {
-          Tracer globalTracer = GlobalTracer.get();
-          if (!(globalTracer instanceof DDTracer)) {
-            log.error("Wrong type of Global Tracer is registered: {}", globalTracer.getClass().toString());
-          }
-          tracer = globalTracer;
+          tracer = GlobalTracer.get();
         } else {
           tracer = new DDTracer();
           GlobalTracer.register(tracer);

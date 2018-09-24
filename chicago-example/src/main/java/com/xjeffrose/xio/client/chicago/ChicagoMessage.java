@@ -8,6 +8,7 @@ public class ChicagoMessage {
   final String colFam;
   final String key;
   final String val;
+
   protected ChicagoMessage(UUID id, Op op, String colFam, String key, String val) {
     this.id = id;
     this.op = op;

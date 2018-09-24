@@ -11,14 +11,9 @@ import com.xjeffrose.xio.core.XioExceptionLogger;
 import com.xjeffrose.xio.core.XioMessageLogger;
 import com.xjeffrose.xio.core.XioNoOpHandler;
 import com.xjeffrose.xio.filter.Http1Filter;
-import com.xjeffrose.xio.filter.IpFilter;
-import com.xjeffrose.xio.server.XioBehavioralRuleEngine;
-import com.xjeffrose.xio.server.XioConnectionLimiter;
-import com.xjeffrose.xio.server.XioResponseClassifier;
-import com.xjeffrose.xio.server.XioServerConfig;
-import com.xjeffrose.xio.server.XioServerLimits;
-import com.xjeffrose.xio.server.XioServerState;
-import com.xjeffrose.xio.server.XioWebApplicationFirewall;
+import com.xjeffrose.xio.firewall.ConnectionLimiter;
+import com.xjeffrose.xio.firewall.Firewall;
+import com.xjeffrose.xio.server.*;
 import com.xjeffrose.xio.tracing.HttpServerTracingHandler;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelPipeline;
@@ -45,7 +40,7 @@ public class XioServerPipelineUnitTest {
           }
 
           @Override
-          public ChannelHandler getIdleDisconnectHandler(XioServerLimits limits) {
+          public ChannelHandler getIdleDisconnectHandler(ServerLimits limits) {
             return new XioNoOpHandler();
           }
 
@@ -94,19 +89,13 @@ public class XioServerPipelineUnitTest {
     InOrder inOrder = inOrder(pipeline);
     inOrder
         .verify(pipeline, times(1))
-        .addLast(eq("globalConnectionLimiter"), isA(XioConnectionLimiter.class));
-    inOrder
-        .verify(pipeline, times(1))
-        .addLast(eq("serviceConnectionLimiter"), isA(XioConnectionLimiter.class));
-    inOrder
-        .verify(pipeline, times(1))
         .addLast(eq("idleDisconnectHandler"), isA(XioNoOpHandler.class));
     inOrder
         .verify(pipeline, times(1))
-        .addLast(eq("l4DeterministicRuleEngine"), isA(IpFilter.class));
-    inOrder
-        .verify(pipeline, times(1))
-        .addLast(eq("l4BehavioralRuleEngine"), isA(XioBehavioralRuleEngine.class));
+        .addLast(eq("l4ConnectionLimiter"), isA(ConnectionLimiter.class));
+    //todo: (WK) ServiceRateLimiter needs to be tested b4 we allow it to be added to the pipeline
+    //inOrder.verify(pipeline, times(1)).addLast(eq("l4RateLimiter"), isA(ServiceRateLimiter.class));
+    inOrder.verify(pipeline, times(1)).addLast(eq("l4Firewall"), isA(Firewall.class));
     inOrder
         .verify(pipeline, times(1))
         .addLast(eq("connectionContext"), isA(ConnectionContextHandler.class));
@@ -131,12 +120,6 @@ public class XioServerPipelineUnitTest {
     inOrder
         .verify(pipeline, times(1))
         .addLast(eq("l7DeterministicRuleEngine"), isA(Http1Filter.class));
-    inOrder
-        .verify(pipeline, times(1))
-        .addLast(eq("l7BehavioralRuleEngine"), isA(XioBehavioralRuleEngine.class));
-    inOrder
-        .verify(pipeline, times(1))
-        .addLast(eq("webApplicationFirewall"), isA(XioWebApplicationFirewall.class));
     inOrder
         .verify(pipeline, times(1))
         .addLast(eq("authorization handler"), isA(XioNoOpHandler.class));

@@ -1,30 +1,40 @@
-package com.xjeffrose.xio.server;
+package com.xjeffrose.xio.firewall;
 
+import static com.codahale.metrics.MetricRegistry.name;
+
+import com.codahale.metrics.Counter;
+import com.codahale.metrics.MetricRegistry;
+import com.xjeffrose.xio.server.ServerLimits;
 import io.netty.channel.ChannelDuplexHandler;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.extern.slf4j.Slf4j;
 
-@ChannelHandler.Sharable
 @Slf4j
-public class XioConnectionLimiter extends ChannelDuplexHandler {
-
+@ChannelHandler.Sharable
+public class ConnectionLimiter extends ChannelDuplexHandler {
   private final AtomicInteger numConnections;
   private final int maxConnections;
+  private final Counter connections;
 
-  public XioConnectionLimiter(int maxConnections) {
-    this.maxConnections = maxConnections;
+  public ConnectionLimiter(MetricRegistry metrics, ServerLimits limits) {
+    this.maxConnections = limits.maxConnections();
     this.numConnections = new AtomicInteger(0);
+    this.connections = metrics.counter(name("Active Connections"));
   }
 
   @Override
   public void channelActive(ChannelHandlerContext ctx) throws Exception {
+    connections.inc();
+
+    // TODO(JR): Should this return a 429 or is the current logic of silently dropping the
+    // connection sufficient?
     if (maxConnections > 0) {
       if (numConnections.incrementAndGet() > maxConnections) {
-        ctx.channel().close();
-        // numConnections will be decremented in channelClosed
-        log.info("Accepted connection above limit (" + maxConnections + "). Dropping.");
+        log.info("Accepted connection above limit {}. Dropping.", maxConnections);
+        ctx.channel().close().addListener(ChannelFutureListener.CLOSE);
       }
     }
     ctx.fireChannelActive();
@@ -32,6 +42,8 @@ public class XioConnectionLimiter extends ChannelDuplexHandler {
 
   @Override
   public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+    connections.dec();
+
     if (maxConnections > 0) {
       if (numConnections.decrementAndGet() < 0) {
         log.error("BUG in ConnectionLimiter");
