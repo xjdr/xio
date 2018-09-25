@@ -72,7 +72,10 @@ task verifyBintrayConfig {
   }
 }
 
-afterReleaseBuild.dependsOn 'bintrayUpload'
+task imWithStupid(type:Exec) {
+  commandLine './gradlew', '-info', 'bintrayUpload'
+}
+afterReleaseBuild.dependsOn imWithStupid
 
 task wrapper(type: Wrapper) {
   gradleVersion = '4.7'
