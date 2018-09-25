@@ -1,5 +1,4 @@
 rootProject.name = 'xio-parent'
-// Special case as xio-core is xio
 include 'xio-core'
 include 'xio-tls'
 include 'xio-test'

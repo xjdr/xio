@@ -72,7 +72,7 @@ task verifyBintrayConfig {
   }
 }
 
-afterReleaseBuild.dependsOn ':bintrayUpload'
+afterReleaseBuild.dependsOn 'bintrayUpload'
 
 task wrapper(type: Wrapper) {
   gradleVersion = '4.7'
