@@ -9,17 +9,15 @@ public class SslContextFactoryUnitTest extends Assert {
 
   @Test
   public void buildServerContext() throws Exception {
-    TlsConfig tlsConfig =
-        TlsConfig.builderFrom(ConfigFactory.load().getConfig("xio.testServer.settings.tls"))
-            .build();
+    TlsConfig tlsConfig = TlsConfig.builderFrom(ConfigFactory.load("tls-reference.conf")).build();
     SslContext context = SslContextFactory.buildServerContext(tlsConfig);
+    assertNotNull(context);
   }
 
   @Test
   public void buildClientContext() throws Exception {
-    TlsConfig tlsConfig =
-        TlsConfig.builderFrom(ConfigFactory.load().getConfig("xio.testServer.settings.tls"))
-            .build();
+    TlsConfig tlsConfig = TlsConfig.builderFrom(ConfigFactory.load("tls-reference.conf")).build();
     SslContext context = SslContextFactory.buildClientContext(tlsConfig);
+    assertNotNull(context);
   }
 }
