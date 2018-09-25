@@ -7,9 +7,9 @@ import static okhttp3.Protocol.HTTP_2;
 import com.google.common.collect.Streams;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
-import com.xjeffrose.xio.SSL.TlsConfig;
 import com.xjeffrose.xio.test.JulBridge;
 import com.xjeffrose.xio.test.OkHttpUnsafe;
+import com.xjeffrose.xio.tls.TlsConfig;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
@@ -56,7 +56,8 @@ public class ReverseProxyFunctionalTest extends Assert {
     String back = h2 ? "h2" : "h1";
 
     TlsConfig tlsConfig =
-        TlsConfig.fromConfig("xio." + back + "BackendServer.settings.tls", config);
+        TlsConfig.builderFrom(config.getConfig("xio." + back + "BackendServer.settings.tls"))
+            .build();
     List<Protocol> protocols;
     if (h2) {
       protocols = Arrays.asList(HTTP_2, HTTP_1_1);

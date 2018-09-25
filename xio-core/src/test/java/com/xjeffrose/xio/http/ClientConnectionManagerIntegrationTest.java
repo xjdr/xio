@@ -2,11 +2,11 @@ package com.xjeffrose.xio.http;
 
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
-import com.xjeffrose.xio.SSL.TlsConfig;
 import com.xjeffrose.xio.bootstrap.ClientChannelConfiguration;
 import com.xjeffrose.xio.client.ClientConfig;
 import com.xjeffrose.xio.helpers.TlsHelper;
 import com.xjeffrose.xio.test.OkHttpUnsafe;
+import com.xjeffrose.xio.tls.TlsConfig;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.nio.NioEventLoopGroup;

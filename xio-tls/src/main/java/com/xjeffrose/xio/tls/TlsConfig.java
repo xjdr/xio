@@ -1,4 +1,4 @@
-package com.xjeffrose.xio.SSL;
+package com.xjeffrose.xio.tls;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
@@ -187,8 +187,8 @@ public class TlsConfig {
   /**
    * Creates a new builder with values from the given config object.
    *
-   * @throws ConfigException if any of the keys present in the Config object have unexpected value
-   *     types
+   * @throws {@link com.typesafe.config.ConfigException} if any of the keys present in the Config
+   *     object have unexpected value types.
    */
   public static Builder builderFrom(Config config) {
     Builder builder = TlsConfig.builder();

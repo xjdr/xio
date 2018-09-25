@@ -5,8 +5,8 @@ import static io.netty.handler.codec.http.HttpResponseStatus.*;
 import static io.netty.handler.codec.http.HttpVersion.*;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
-import com.xjeffrose.xio.SSL.SelfSignedX509CertGenerator;
-import com.xjeffrose.xio.SSL.X509Certificate;
+import com.xjeffrose.xio.tls.SelfSignedX509CertGenerator;
+import com.xjeffrose.xio.tls.X509Certificate;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.ByteBuf;
