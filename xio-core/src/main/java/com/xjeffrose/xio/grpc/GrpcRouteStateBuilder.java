@@ -22,7 +22,7 @@ public class GrpcRouteStateBuilder {
 
         List<HttpMethod> methods = Collections.singletonList(HttpMethod.POST);
         String host = "";
-        String permissionNeeded = "*";
+        String permissionNeeded = "none";
 
         RouteConfig config = new RouteConfig(methods, host, route.buildPath(), permissionNeeded);
         routeStates.add(new RouteState(config, route.handler));
