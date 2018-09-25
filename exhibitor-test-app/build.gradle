@@ -6,7 +6,7 @@ plugins {
 mainClassName = 'com.xjeffrose.xio.exhibitor.Main'
 
 dependencies {
-  implementation project(':xio')
+  implementation project(':xio-core')
   implementation(group: 'org.apache.curator', name: 'curator-recipes', version: curator_version) {
     exclude(module: 'zookeeper')
   }

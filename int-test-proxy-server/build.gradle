@@ -11,7 +11,7 @@ mainClassName = 'com.xjeffrose.xio.proxy.Main'
 apply from: '../alpn-boot.gradle'
 
 dependencies {
-  implementation project(':xio')
+  implementation project(':xio-core')
   implementation group: 'ch.qos.logback', name: 'logback-classic', version: logback_version
   implementation group: 'ch.qos.logback', name: 'logback-core', version: logback_version
   implementation group: 'org.codehaus.groovy', name: 'groovy-all', version: groovy_version

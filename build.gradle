@@ -3,12 +3,12 @@ plugins {
   id 'net.researchgate.release' version '2.7.0'
   id 'com.jfrog.bintray' version '1.8.0'
   id 'com.github.sherter.google-java-format' version '0.6'
+  id 'jacoco'
 }
 
 allprojects {
   apply plugin: 'java'
-  apply plugin: 'maven-publish'
-  apply plugin: 'jacoco'
+  apply plugin: 'com.github.sherter.google-java-format'
 
   repositories {
     jcenter()

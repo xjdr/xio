@@ -4,6 +4,7 @@ plugins {
   id 'com.github.kt3k.coveralls' version '2.8.2'
   id 'jacoco'
   id 'com.jfrog.bintray'
+  id 'maven-publish'
 }
 
 description = 'xio'

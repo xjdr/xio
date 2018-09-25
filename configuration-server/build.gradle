@@ -9,6 +9,6 @@ group = project_group
 mainClassName = 'com.xjeffrose.xio.server.Main'
 
 dependencies {
-  implementation project(':xio')
+  implementation project(':xio-core')
   implementation group: 'org.apache.curator', name: 'curator-test', version: curator_version
 }
