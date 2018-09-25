@@ -38,7 +38,9 @@ public class XioServerBootstrap {
     this.config = config;
     this.state = state;
 
-    XioServiceLocator.buildInstance(appState.config(), appState);
+    if (XioServiceLocator.getInstance() == null) {
+      XioServiceLocator.buildInstance(appState.config(), appState);
+    }
 
     bindAddress(config.getBindAddress());
     channelConfig(appState.getChannelConfiguration());
