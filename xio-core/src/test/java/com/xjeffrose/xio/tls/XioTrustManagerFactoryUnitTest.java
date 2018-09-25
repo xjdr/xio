@@ -1,4 +1,4 @@
-package com.xjeffrose.xio.SSL;
+package com.xjeffrose.xio.tls;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.Uninterruptibles;

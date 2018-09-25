@@ -1,8 +1,4 @@
-package com.xjeffrose.xio.SSL;
-
-import static io.netty.handler.codec.http.HttpMethod.*;
-import static io.netty.handler.codec.http.HttpResponseStatus.*;
-import static io.netty.handler.codec.http.HttpVersion.*;
+package com.xjeffrose.xio.tls;
 
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.typesafe.config.Config;

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.xjeffrose.xio.SSL;
+package com.xjeffrose.xio.tls;
 
 // import com.xjeffrose.log.Log;
 

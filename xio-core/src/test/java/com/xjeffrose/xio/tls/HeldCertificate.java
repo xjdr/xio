@@ -1,4 +1,4 @@
-package com.xjeffrose.xio.SSL;
+package com.xjeffrose.xio.tls;
 
 import static okhttp3.internal.Util.verifyAsIpAddress;
 

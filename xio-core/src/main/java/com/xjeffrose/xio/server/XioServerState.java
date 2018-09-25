@@ -1,8 +1,8 @@
 package com.xjeffrose.xio.server;
 
-import com.xjeffrose.xio.SSL.SslContextFactory;
 import com.xjeffrose.xio.application.ApplicationState;
 import com.xjeffrose.xio.core.ChannelStatistics;
+import com.xjeffrose.xio.tls.SslContextFactory;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;

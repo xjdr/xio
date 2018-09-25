@@ -2,9 +2,9 @@ package com.xjeffrose.xio.http.test_helpers;
 
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.typesafe.config.ConfigFactory;
-import com.xjeffrose.xio.SSL.SslContextFactory;
-import com.xjeffrose.xio.SSL.TlsConfig;
 import com.xjeffrose.xio.http.Http2HandlerBuilder;
+import com.xjeffrose.xio.tls.SslContextFactory;
+import com.xjeffrose.xio.tls.TlsConfig;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;

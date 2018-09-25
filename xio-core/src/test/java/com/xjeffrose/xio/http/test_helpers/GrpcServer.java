@@ -1,8 +1,8 @@
 package com.xjeffrose.xio.http.test_helpers;
 
 import com.typesafe.config.ConfigFactory;
-import com.xjeffrose.xio.SSL.SslContextFactory;
-import com.xjeffrose.xio.SSL.TlsConfig;
+import com.xjeffrose.xio.tls.SslContextFactory;
+import com.xjeffrose.xio.tls.TlsConfig;
 import helloworld.GreeterGrpc;
 import helloworld.HelloReply;
 import helloworld.HelloRequest;

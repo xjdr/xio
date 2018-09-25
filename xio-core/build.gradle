@@ -12,6 +12,7 @@ group = project_group
 apply from: '../alpn-boot.gradle'
 
 dependencies {
+  api project(':xio-tls')
   implementation group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: jackson_core_version
   implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: jackson_databind_version
   implementation group: 'com.google.code.findbugs', name: 'jsr305', version: findbugs_jsr305_version

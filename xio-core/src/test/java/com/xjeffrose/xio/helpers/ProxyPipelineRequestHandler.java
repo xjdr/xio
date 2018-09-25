@@ -1,6 +1,5 @@
 package com.xjeffrose.xio.helpers;
 
-import com.xjeffrose.xio.SSL.SslContextFactory;
 import com.xjeffrose.xio.client.ChannelConfiguration;
 import com.xjeffrose.xio.client.ClientConfig;
 import com.xjeffrose.xio.http.Http1ClientCodec;
@@ -8,6 +7,7 @@ import com.xjeffrose.xio.http.PipelineRequestHandler;
 import com.xjeffrose.xio.http.RawBackendHandler;
 import com.xjeffrose.xio.http.Request;
 import com.xjeffrose.xio.http.RouteState;
+import com.xjeffrose.xio.tls.SslContextFactory;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;

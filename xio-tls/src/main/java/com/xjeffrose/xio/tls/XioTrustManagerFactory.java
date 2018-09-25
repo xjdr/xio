@@ -1,4 +1,4 @@
-package com.xjeffrose.xio.SSL;
+package com.xjeffrose.xio.tls;
 
 import io.netty.handler.ssl.util.SimpleTrustManagerFactory;
 import java.security.KeyStore;
@@ -13,7 +13,7 @@ import javax.net.ssl.X509TrustManager;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class XioTrustManagerFactory extends SimpleTrustManagerFactory {
+class XioTrustManagerFactory extends SimpleTrustManagerFactory {
 
   private final TrustManagerFactory delegateFactory;
   private final TrustManager[] trustManagers;

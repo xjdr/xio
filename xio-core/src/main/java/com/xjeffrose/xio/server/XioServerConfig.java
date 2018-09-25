@@ -2,7 +2,7 @@ package com.xjeffrose.xio.server;
 
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
-import com.xjeffrose.xio.SSL.TlsConfig;
+import com.xjeffrose.xio.tls.TlsConfig;
 import io.netty.channel.ChannelOption;
 import java.net.InetSocketAddress;
 import java.util.Map;

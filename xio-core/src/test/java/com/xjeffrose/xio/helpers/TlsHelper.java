@@ -1,7 +1,7 @@
 package com.xjeffrose.xio.helpers;
 
-import com.xjeffrose.xio.SSL.TlsConfig;
 import com.xjeffrose.xio.test.OkHttpUnsafe;
+import com.xjeffrose.xio.tls.TlsConfig;
 import java.security.KeyStore;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;

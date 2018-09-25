@@ -6,13 +6,13 @@ import static org.junit.Assert.assertEquals;
 
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
-import com.xjeffrose.xio.SSL.TlsConfig;
 import com.xjeffrose.xio.bootstrap.ChannelConfiguration;
 import com.xjeffrose.xio.client.ClientConfig;
 import com.xjeffrose.xio.config.TracingConfig;
 import com.xjeffrose.xio.http.*;
 import com.xjeffrose.xio.test.JulBridge;
 import com.xjeffrose.xio.test.OkHttpUnsafe;
+import com.xjeffrose.xio.tls.TlsConfig;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.channel.*;
 import java.util.ArrayList;

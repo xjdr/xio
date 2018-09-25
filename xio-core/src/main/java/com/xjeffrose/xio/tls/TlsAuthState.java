@@ -1,4 +1,4 @@
-package com.xjeffrose.xio.SSL;
+package com.xjeffrose.xio.tls;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.AttributeKey;

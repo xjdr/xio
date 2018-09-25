@@ -6,10 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
-@ToString
 @Slf4j
 public class Route {
 

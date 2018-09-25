@@ -1,9 +1,9 @@
 package com.xjeffrose.xio.http;
 
-import com.xjeffrose.xio.SSL.SslContextFactory;
 import com.xjeffrose.xio.bootstrap.ChannelConfiguration;
 import com.xjeffrose.xio.bootstrap.ClientChannelConfiguration;
 import com.xjeffrose.xio.client.ClientConfig;
+import com.xjeffrose.xio.tls.SslContextFactory;
 import io.netty.channel.EventLoopGroup;
 import io.netty.handler.ssl.SslContext;
 import java.net.InetSocketAddress;
