@@ -224,7 +224,7 @@ public class XioTrustManagerFactoryUnitTest extends Assert {
             .privateKey(clientCert.keyPair.getPrivate())
             .trustedCerts(ImmutableList.of(rootCa.certificate))
             .build();
-    sslServerContext = SslContextFactory.buildServerContext(serverConfig, true);
+    sslServerContext = SslContextFactory.buildServerContext(serverConfig);
     sslClientContext = SslContextFactory.buildClientContext(clientConfig);
 
     server =

@@ -30,29 +30,18 @@ public class SslContextFactory {
     return SslContextBuilder.forServer(config.getPrivateKey(), config.getCertificateAndChain());
   }
 
-  public static SslContext buildServerContext(
-      TlsConfig config, TrustManagerFactory trustManager, boolean allowExpiredClients) {
+  public static SslContext buildServerContext(TlsConfig config, TrustManagerFactory trustManager) {
     try {
       return configure(config, newServerBuilder(config))
-          .trustManager(new XioTrustManagerFactory(trustManager, allowExpiredClients))
+          .trustManager(new XioTrustManagerFactory(trustManager))
           .build();
     } catch (SSLException e) {
       return null;
     }
   }
 
-  public static SslContext buildServerContext(TlsConfig config, TrustManagerFactory trustManager) {
-    return buildServerContext(config, trustManager, false);
-  }
-
-  public static SslContext buildServerContext(TlsConfig config, boolean allowExpiredClients) {
-    // servers will trust only certs in trusted certs collection
-    return buildServerContext(
-        config, buildTrustManagerFactory(config.getTrustedCerts()), allowExpiredClients);
-  }
-
   public static SslContext buildServerContext(TlsConfig config) {
-    return buildServerContext(config, false);
+    return buildServerContext(config, buildTrustManagerFactory(config.getTrustedCerts()));
   }
 
   public static SslContext buildClientContext(TlsConfig config, TrustManagerFactory trustManager) {
