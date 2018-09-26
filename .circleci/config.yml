@@ -19,7 +19,7 @@
         command: ./gradlew build
     - run:
         name: build reports
-        command: ./gradlew :xio:jacocoTestReport :xio:coveralls :xio:javadoc
+        command: ./gradlew jacocoTestReport coveralls javadoc
     - save_cache:
         paths:
           - ~/.gradle
