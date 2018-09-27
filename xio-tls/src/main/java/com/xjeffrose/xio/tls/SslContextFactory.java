@@ -36,10 +36,12 @@ public class SslContextFactory {
     return buildServerContext(config, trustManager, null);
   }
 
-  public static SslContext buildServerContext(TlsConfig config, TrustManagerFactory trustManager, @Nullable ClientAuth clientAuth) {
+  public static SslContext buildServerContext(
+      TlsConfig config, TrustManagerFactory trustManager, @Nullable ClientAuth clientAuth) {
     try {
-      SslContextBuilder builder = configure(config, newServerBuilder(config))
-        .trustManager(new XioTrustManagerFactory(trustManager));
+      SslContextBuilder builder =
+          configure(config, newServerBuilder(config))
+              .trustManager(new XioTrustManagerFactory(trustManager));
 
       if (clientAuth != null) {
         builder.clientAuth(clientAuth);
@@ -56,7 +58,8 @@ public class SslContextFactory {
   }
 
   public static SslContext buildServerContext(TlsConfig config, ClientAuth clientAuth) {
-    return buildServerContext(config, buildTrustManagerFactory(config.getTrustedCerts()), clientAuth);
+    return buildServerContext(
+        config, buildTrustManagerFactory(config.getTrustedCerts()), clientAuth);
   }
 
   public static SslContext buildClientContext(TlsConfig config, TrustManagerFactory trustManager) {
