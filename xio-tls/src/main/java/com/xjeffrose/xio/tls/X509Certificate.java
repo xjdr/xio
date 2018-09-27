@@ -20,7 +20,6 @@ import java.security.PrivateKey;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import sun.security.x509.X509CertImpl;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -28,5 +27,5 @@ import sun.security.x509.X509CertImpl;
 public final class X509Certificate {
   private final String fqdn;
   private final PrivateKey key;
-  private final X509CertImpl cert;
+  private final java.security.cert.X509Certificate cert;
 }

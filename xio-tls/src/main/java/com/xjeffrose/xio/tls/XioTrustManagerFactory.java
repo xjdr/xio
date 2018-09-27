@@ -39,49 +39,12 @@ class XioTrustManagerFactory extends SimpleTrustManagerFactory {
         try {
           delegate.checkClientTrusted(chain, authType);
           log.debug("checkClientTrusted succeeded.");
-        } catch (sun.security.validator.ValidatorException e) {
-          log.debug(
-              "error certificate {}, error type {}", e.getErrorCertificate(), e.getErrorType());
-          if (e.getCause() instanceof sun.security.provider.certpath.SunCertPathBuilderException) {
-            log.debug(
-                "adjacency list: {}",
-                ((sun.security.provider.certpath.SunCertPathBuilderException) e.getCause())
-                    .getAdjacencyList());
-          }
-
-          log.debug("cause", e.getCause());
-          log.debug("validation exception", e);
-          if (e.getCause() instanceof CertPathValidatorException) {
-            CertPathValidatorException cause = (CertPathValidatorException) e.getCause();
-            if (cause.getCause() != null
-                && cause.getCause() instanceof CertificateExpiredException) {
-              if (allowExpiredClients) {
-                log.debug("allowExpiredClients = true, ignoring CertificatedExpiredException");
-                return;
-              }
-            }
-          }
-
-          throw e;
-        } catch (Exception e) {
+        } catch (CertificateException e) {
           log.debug("checkClientTrusted failed.", e);
           throw e;
         }
       } else {
-        try {
-          delegate.checkClientTrusted(chain, authType);
-        } catch (sun.security.validator.ValidatorException e) {
-          if (e.getCause() instanceof CertPathValidatorException) {
-            CertPathValidatorException cause = (CertPathValidatorException) e.getCause();
-            if (cause.getCause() != null
-                && cause.getCause() instanceof CertificateExpiredException) {
-              if (allowExpiredClients) {
-                log.warn("allowExpiredClients = true, ignoring CertificatedExpiredException");
-                return;
-              }
-            }
-          }
-        }
+        delegate.checkClientTrusted(chain, authType);
       }
     }
 
@@ -97,20 +60,7 @@ class XioTrustManagerFactory extends SimpleTrustManagerFactory {
         try {
           delegate.checkServerTrusted(chain, authType);
           log.debug("checkServerTrusted succeeded.");
-        } catch (sun.security.validator.ValidatorException e) {
-          log.debug(
-              "error certificate {}, error type {}", e.getErrorCertificate(), e.getErrorType());
-          if (e.getCause() instanceof sun.security.provider.certpath.SunCertPathBuilderException) {
-            log.debug(
-                "adjacency list: {}",
-                ((sun.security.provider.certpath.SunCertPathBuilderException) e.getCause())
-                    .getAdjacencyList());
-          }
-
-          log.debug("cause", e.getCause());
-          log.debug("validation exception", e);
-          throw e;
-        } catch (Exception e) {
+        } catch (CertificateException e) {
           log.debug("checkServerTrusted failed.", e);
           throw e;
         }
@@ -155,10 +105,6 @@ class XioTrustManagerFactory extends SimpleTrustManagerFactory {
     trustManagers = buildTrustManagers(factory);
     this.rootCerts = rootCerts;
     this.allowExpiredClients = allowExpiredClients;
-  }
-
-  XioTrustManagerFactory(TrustManagerFactory factory, boolean allowExpiredClients) {
-    this(factory, null, allowExpiredClients);
   }
 
   XioTrustManagerFactory(TrustManagerFactory factory) {
