@@ -1,5 +1,6 @@
 package com.xjeffrose.xio.tls;
 
+import io.netty.handler.ssl.ClientAuth;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.SupportedCipherSuiteFilter;
@@ -9,6 +10,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import javax.annotation.Nullable;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.TrustManagerFactory;
 
@@ -31,10 +33,19 @@ public class SslContextFactory {
   }
 
   public static SslContext buildServerContext(TlsConfig config, TrustManagerFactory trustManager) {
+    return buildServerContext(config, trustManager, null);
+  }
+
+  public static SslContext buildServerContext(TlsConfig config, TrustManagerFactory trustManager, @Nullable ClientAuth clientAuth) {
     try {
-      return configure(config, newServerBuilder(config))
-          .trustManager(new XioTrustManagerFactory(trustManager))
-          .build();
+      SslContextBuilder builder = configure(config, newServerBuilder(config))
+        .trustManager(new XioTrustManagerFactory(trustManager));
+
+      if (clientAuth != null) {
+        builder.clientAuth(clientAuth);
+      }
+
+      return builder.build();
     } catch (SSLException e) {
       return null;
     }
@@ -42,6 +53,10 @@ public class SslContextFactory {
 
   public static SslContext buildServerContext(TlsConfig config) {
     return buildServerContext(config, buildTrustManagerFactory(config.getTrustedCerts()));
+  }
+
+  public static SslContext buildServerContext(TlsConfig config, ClientAuth clientAuth) {
+    return buildServerContext(config, buildTrustManagerFactory(config.getTrustedCerts()), clientAuth);
   }
 
   public static SslContext buildClientContext(TlsConfig config, TrustManagerFactory trustManager) {
