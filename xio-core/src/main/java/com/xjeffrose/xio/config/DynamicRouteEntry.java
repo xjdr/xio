@@ -28,4 +28,7 @@ public class DynamicRouteEntry {
 
   @JsonProperty("tls_enabled")
   private boolean tlsEnabled;
+
+  @JsonProperty("health_check_path")
+  private String healthCheckPath;
 }
