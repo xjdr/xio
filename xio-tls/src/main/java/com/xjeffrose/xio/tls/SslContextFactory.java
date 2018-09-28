@@ -1,5 +1,6 @@
 package com.xjeffrose.xio.tls;
 
+import io.netty.handler.ssl.ClientAuth;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.SupportedCipherSuiteFilter;
@@ -9,6 +10,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import javax.annotation.Nullable;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.TrustManagerFactory;
 
@@ -30,29 +32,34 @@ public class SslContextFactory {
     return SslContextBuilder.forServer(config.getPrivateKey(), config.getCertificateAndChain());
   }
 
+  public static SslContext buildServerContext(TlsConfig config, TrustManagerFactory trustManager) {
+    return buildServerContext(config, trustManager, null);
+  }
+
   public static SslContext buildServerContext(
-      TlsConfig config, TrustManagerFactory trustManager, boolean allowExpiredClients) {
+      TlsConfig config, TrustManagerFactory trustManager, @Nullable ClientAuth clientAuth) {
     try {
-      return configure(config, newServerBuilder(config))
-          .trustManager(new XioTrustManagerFactory(trustManager, allowExpiredClients))
-          .build();
+      SslContextBuilder builder =
+          configure(config, newServerBuilder(config))
+              .trustManager(new XioTrustManagerFactory(trustManager));
+
+      if (clientAuth != null) {
+        builder.clientAuth(clientAuth);
+      }
+
+      return builder.build();
     } catch (SSLException e) {
       return null;
     }
   }
 
-  public static SslContext buildServerContext(TlsConfig config, TrustManagerFactory trustManager) {
-    return buildServerContext(config, trustManager, false);
-  }
-
-  public static SslContext buildServerContext(TlsConfig config, boolean allowExpiredClients) {
-    // servers will trust only certs in trusted certs collection
-    return buildServerContext(
-        config, buildTrustManagerFactory(config.getTrustedCerts()), allowExpiredClients);
-  }
-
   public static SslContext buildServerContext(TlsConfig config) {
-    return buildServerContext(config, false);
+    return buildServerContext(config, buildTrustManagerFactory(config.getTrustedCerts()));
+  }
+
+  public static SslContext buildServerContext(TlsConfig config, ClientAuth clientAuth) {
+    return buildServerContext(
+        config, buildTrustManagerFactory(config.getTrustedCerts()), clientAuth);
   }
 
   public static SslContext buildClientContext(TlsConfig config, TrustManagerFactory trustManager) {
