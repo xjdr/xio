@@ -3,6 +3,7 @@ package com.xjeffrose.xio.tls;
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.google.common.io.BaseEncoding;
 import com.google.common.io.CharStreams;
 import com.typesafe.config.Config;
 import io.netty.handler.ssl.ApplicationProtocolConfig;
@@ -30,7 +31,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiFunction;
-import javax.xml.bind.DatatypeConverter;
 import lombok.Getter;
 
 public class TlsConfig {
@@ -124,7 +124,7 @@ public class TlsConfig {
         }
       }
 
-      byte[] encoded = DatatypeConverter.parseBase64Binary(builder.toString());
+      byte[] encoded = BaseEncoding.base64().decode(builder.toString());
       PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(encoded);
       KeyFactory kf = KeyFactory.getInstance("RSA");
       key = kf.generatePrivate(keySpec);
