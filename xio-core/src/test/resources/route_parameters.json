@@ -6,7 +6,8 @@
       "port_number": 1234,
       "tls_enabled": false,
       "ip_addresses": ["1.2.3.4", "1.2.3.5"],
-      "extra_stuff": "extra_stuff"
+      "extra_stuff": "extra_stuff",
+      "health_check_path": "/path1HealthCheckPath/"
   },
   {
       "name": "route2",

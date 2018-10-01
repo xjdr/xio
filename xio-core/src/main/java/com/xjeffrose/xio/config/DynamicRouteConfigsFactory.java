@@ -29,12 +29,12 @@ public class DynamicRouteConfigsFactory {
     Map<String, ArrayList<DynamicRouteEntry>> groupedRouteEntries =
         groupRouteEntriesByPath(dynamicRouteEntries);
     // Now we will squash the various versions of each route together
-    for (ArrayList<DynamicRouteEntry> routeEntries : groupedRouteEntries.values()) {
+    for (Map.Entry<String, ArrayList<DynamicRouteEntry>> entry : groupedRouteEntries.entrySet()) {
+      //for (ArrayList<DynamicRouteEntry> routeEntries : groupedRouteEntries.values()) {
+      ArrayList<DynamicRouteEntry> routeEntries = entry.getValue();
       if (!routeEntries.isEmpty()) {
-        // We will use the first entries name/path as the base template, this is not really an issue for paths since these are
-        // grouped by path anyway
-        DynamicRouteEntry firstElement = routeEntries.get(0);
-        String path = firstElement.getPath();
+        // these were grouped by path so all of the routeEntries have the same path
+        String path = entry.getKey();
 
         // combine the generated clientConfigs from different instances of this route path
         ArrayList<DynamicClientConfig> dynamicClientConfigs = new ArrayList<>();
@@ -74,7 +74,10 @@ public class DynamicRouteConfigsFactory {
     for (String clientIp : dynamicRouteEntry.getClientsIps()) {
       dynamicClientConfigs.add(
           new DynamicClientConfig(
-              clientIp, dynamicRouteEntry.getPort(), dynamicRouteEntry.isTlsEnabled()));
+              clientIp,
+              dynamicRouteEntry.getPort(),
+              dynamicRouteEntry.isTlsEnabled(),
+              dynamicRouteEntry.getHealthCheckPath()));
     }
     return dynamicClientConfigs;
   }

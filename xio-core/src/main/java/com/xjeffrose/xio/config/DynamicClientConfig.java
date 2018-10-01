@@ -12,4 +12,5 @@ public class DynamicClientConfig {
   private final String ipAddress;
   private final int port;
   private final boolean tlsEnabled;
+  private final String healthCheckPath;
 }
