@@ -16,7 +16,7 @@ public class DeploymentCache {
   private final PathChildrenCache childrenCache;
   private final ObjectMapper objectMapper;
 
-  public DeploymentCache(CuratorFramework curatorClient, String membershipPath) throws Exception {
+  public DeploymentCache(CuratorFramework curatorClient, String membershipPath) {
     this.membershipPath = membershipPath;
     this.childrenCache = new PathChildrenCache(curatorClient, membershipPath, true);
     objectMapper = new ObjectMapper();
@@ -32,7 +32,7 @@ public class DeploymentCache {
   }
 
   public List<DeploymentPayload> getDeployments() throws IOException {
-    List<DeploymentPayload> result = new ArrayList<DeploymentPayload>();
+    List<DeploymentPayload> result = new ArrayList<>();
     for (ChildData child : childrenCache.getCurrentData()) {
       byte[] data = child.getData();
       if (data != null) {
