@@ -2,6 +2,7 @@ package com.xjeffrose.xio.config;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
 import java.io.IOException;
 import java.util.*;
 
@@ -15,11 +16,11 @@ public class DynamicRouteConfigsFactory {
    * This is a factory method used to invoke the build operation given a JSON input string The
    * output of this file is the raw material used to build ProxyRoutes dynamically from JSON
    */
-  public static List<DynamicRouteConfig> build(String string) throws IOException {
+  public static ImmutableList<DynamicRouteConfig> build(String string) throws IOException {
     ObjectMapper objectMapper = new ObjectMapper();
     List<DynamicRouteEntry> dynamicRouteEntries =
         objectMapper.readValue(string, new TypeReference<List<DynamicRouteEntry>>() {});
-    return createDynamicRouteConfigs(dynamicRouteEntries);
+    return ImmutableList.copyOf(createDynamicRouteConfigs(dynamicRouteEntries));
   }
 
   private static List<DynamicRouteConfig> createDynamicRouteConfigs(
