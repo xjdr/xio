@@ -6,6 +6,9 @@ import com.xjeffrose.xio.client.ClientConfig;
 import com.xjeffrose.xio.tracing.XioTracing;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.AttributeKey;
+import java.net.InetSocketAddress;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import lombok.Getter;
 
@@ -15,7 +18,7 @@ public abstract class ClientFactory {
 
   @Getter private final XioTracing tracing;
 
-  private static final AttributeKey<Client> CLIENT_KEY =
+  private static final AttributeKey<Map<InetSocketAddress, Client>> CLIENT_KEY =
       AttributeKey.newInstance("xio_http_client_key");
 
   public ClientFactory(XioTracing tracing) {
@@ -28,21 +31,32 @@ public abstract class ClientFactory {
 
   public abstract Client createClient(ChannelHandlerContext ctx, ClientConfig config);
 
-  protected Optional<Client> getHandlerClient(ChannelHandlerContext ctx) {
-    return Optional.ofNullable(ctx.channel().attr(CLIENT_KEY).get());
+  protected Optional<Client> getHandlerClient(
+      ChannelHandlerContext ctx, InetSocketAddress address) {
+    return Optional.ofNullable(getClientMap(ctx).get(address));
   }
 
   public Client getClient(ChannelHandlerContext ctx, ClientConfig config) {
-    return getHandlerClient(ctx)
+    return getHandlerClient(ctx, config.remote())
         .orElseGet(
             () -> {
               Client client = createClient(ctx, config);
-              updateChannelAttr(ctx, client);
+              updateChannelAttr(ctx, config.remote(), client);
               return client;
             });
   }
 
-  public void updateChannelAttr(ChannelHandlerContext ctx, Client client) {
-    ctx.channel().attr(CLIENT_KEY).set(client);
+  private Map<InetSocketAddress, Client> getClientMap(ChannelHandlerContext ctx) {
+    Map<InetSocketAddress, Client> map = ctx.channel().attr(CLIENT_KEY).get();
+    if (map == null) {
+      map = new HashMap<>();
+      ctx.channel().attr(CLIENT_KEY).set(map);
+    }
+    return map;
+  }
+
+  public void updateChannelAttr(
+      ChannelHandlerContext ctx, InetSocketAddress remoteAddress, Client client) {
+    getClientMap(ctx).put(remoteAddress, client);
   }
 }

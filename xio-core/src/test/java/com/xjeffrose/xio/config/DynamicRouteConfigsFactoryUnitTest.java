@@ -10,7 +10,7 @@ import org.junit.Test;
 public class DynamicRouteConfigsFactoryUnitTest extends Assert {
 
   public String buildContent(String filename) throws Exception {
-    ClassLoader classLoader = new DynamicRouteConfigsFactoryUnitTest().getClass().getClassLoader();
+    ClassLoader classLoader = getClass().getClassLoader();
     File file = new File(classLoader.getResource(filename).getFile());
     return new String(Files.readAllBytes(file.toPath()));
   }
