@@ -41,7 +41,8 @@ public class ReverseProxyFunctionalTest extends Assert {
 
   List<OkHttpClient> clients;
   Config config;
-  MockWebServer server;
+  MockWebServer backEnd1;
+  MockWebServer backEnd2;
   ReverseProxyServer reverseProxy;
 
   @Rule public TestName testName = new TestName();
@@ -53,6 +54,10 @@ public class ReverseProxyFunctionalTest extends Assert {
   }
 
   void setupBack(boolean h2) throws Exception {
+    setupBack(h2, false);
+  }
+
+  void setupBack(boolean h2, boolean isSecondServer) throws Exception {
     String back = h2 ? "h2" : "h1";
 
     TlsConfig tlsConfig =
@@ -65,7 +70,7 @@ public class ReverseProxyFunctionalTest extends Assert {
       protocols = Collections.singletonList(HTTP_1_1);
     }
 
-    server =
+    MockWebServer server =
         OkHttpUnsafe.getSslMockWebServer(
             getKeyManagers(tlsConfig.getPrivateKey(), tlsConfig.getCertificateAndChain()));
     server.setProtocols(protocols);
@@ -80,7 +85,13 @@ public class ReverseProxyFunctionalTest extends Assert {
                 .setSocketPolicy(SocketPolicy.KEEP_OPEN);
           }
         });
-    server.start(8443);
+    if (isSecondServer) {
+      this.backEnd2 = server;
+      server.start(8442);
+    } else {
+      this.backEnd1 = server;
+      server.start(8443);
+    }
   }
 
   void setupFrontBack(boolean h2Front, boolean h2Back) throws Exception {
@@ -92,6 +103,17 @@ public class ReverseProxyFunctionalTest extends Assert {
       proxyConfig = "xio.h1ReverseProxy";
     }
     reverseProxy = new ReverseProxyServer(proxyConfig, "xio.testProxyRoute");
+    reverseProxy.start(config);
+  }
+
+  void setupFront(boolean h2Front, String proxyRouteConfigs) {
+    final String proxyConfig;
+    if (h2Front) {
+      proxyConfig = "xio.h2ReverseProxy";
+    } else {
+      proxyConfig = "xio.h1ReverseProxy";
+    }
+    reverseProxy = new ReverseProxyServer(proxyConfig, proxyRouteConfigs);
     reverseProxy.start(config);
   }
 
@@ -143,37 +165,46 @@ public class ReverseProxyFunctionalTest extends Assert {
     if (reverseProxy != null) {
       reverseProxy.stop();
     }
-    server.close();
+    backEnd1.close();
+    if (backEnd2 != null) {
+      backEnd2.close();
+    }
   }
 
-  int port() {
+  int proxyPort() {
     return reverseProxy.port();
   }
 
-  String url(int port, boolean sanity) {
-    StringBuilder path =
-        new StringBuilder("https://").append("127.0.0.1").append(":").append(port).append("/");
-    if (sanity) {
-      path.append("hello/");
-    }
-
-    return path.toString();
+  String url(int port, String path) {
+    return "https://" + "127.0.0.1" + ":" + port + path;
   }
 
-  void get(int port, boolean sanity, Protocol expectedProtocol) throws Exception {
-    String url = url(port, sanity);
+  void get(
+      int port,
+      Protocol expectedProtocol,
+      String path,
+      String expectedPath,
+      MockWebServer expectedBackend)
+      throws Exception {
+    String url = url(port, path);
     Request request = new Request.Builder().url(url).build();
 
     Response response = clients.get(0).newCall(request).execute();
     response.close();
     assertEquals(expectedProtocol, response.protocol());
 
-    RecordedRequest servedRequest = server.takeRequest();
-    assertEquals("/hello/", servedRequest.getRequestUrl().encodedPath());
+    RecordedRequest servedRequest = expectedBackend.takeRequest();
+    assertEquals(expectedPath, servedRequest.getRequestUrl().encodedPath());
   }
 
-  void post(int port, boolean sanity, Protocol expectedProtocol) throws Exception {
-    String url = url(port, sanity);
+  void post(
+      int port,
+      Protocol expectedProtocol,
+      String path,
+      String expectedPath,
+      MockWebServer expectedBackend)
+      throws Exception {
+    String url = url(port, path);
     MediaType mediaType = MediaType.parse("text/plain");
     RequestBody body = RequestBody.create(mediaType, "this is the post body");
     Request request = new Request.Builder().url(url).post(body).build();
@@ -182,9 +213,15 @@ public class ReverseProxyFunctionalTest extends Assert {
     response.close();
     assertEquals("unexpected client response protocol", expectedProtocol, response.protocol());
 
-    RecordedRequest servedRequest = server.takeRequest();
-    assertEquals("/hello/", servedRequest.getRequestUrl().encodedPath());
+    RecordedRequest servedRequest = expectedBackend.takeRequest();
+    assertEquals(expectedPath, servedRequest.getRequestUrl().encodedPath());
     assertEquals("this is the post body", servedRequest.getBody().readUtf8());
+  }
+
+  private void assertProxiedRequests(int count) {
+    if (reverseProxy != null) {
+      assertEquals(count, reverseProxy.getRequestCount());
+    }
   }
 
   @Test
@@ -192,7 +229,9 @@ public class ReverseProxyFunctionalTest extends Assert {
     setupClient(1, false);
     setupBack(false);
 
-    get(server.getPort(), true, HTTP_1_1);
+    get(backEnd1.getPort(), HTTP_1_1, "/foo", "/foo", backEnd1);
+    assertEquals(1, backEnd1.getRequestCount());
+    assertProxiedRequests(0);
   }
 
   @Test
@@ -200,7 +239,9 @@ public class ReverseProxyFunctionalTest extends Assert {
     setupClient(1, false);
     setupBack(false);
 
-    post(server.getPort(), true, HTTP_1_1);
+    post(backEnd1.getPort(), HTTP_1_1, "/ifoo/", "/ifoo/", backEnd1);
+    assertEquals(1, backEnd1.getRequestCount());
+    assertProxiedRequests(0);
   }
 
   @Test
@@ -208,7 +249,9 @@ public class ReverseProxyFunctionalTest extends Assert {
     setupClient(1, true);
     setupBack(true);
 
-    get(server.getPort(), true, HTTP_2);
+    get(backEnd1.getPort(), HTTP_2, "/ifoo/", "/ifoo/", backEnd1);
+    assertEquals(1, backEnd1.getRequestCount());
+    assertProxiedRequests(0);
   }
 
   @Test
@@ -216,7 +259,9 @@ public class ReverseProxyFunctionalTest extends Assert {
     setupClient(1, true);
     setupBack(true);
 
-    post(server.getPort(), true, HTTP_2);
+    post(backEnd1.getPort(), HTTP_2, "/ifoo/", "/ifoo/", backEnd1);
+    assertEquals(1, backEnd1.getRequestCount());
+    assertProxiedRequests(0);
   }
 
   @Test
@@ -224,7 +269,30 @@ public class ReverseProxyFunctionalTest extends Assert {
     setupClient(1, true);
     setupFrontBack(true, false);
 
-    get(port(), false, HTTP_2);
+    get(proxyPort(), HTTP_2, "/foo/", "/ifoo/", backEnd1);
+    assertEquals(1, backEnd1.getRequestCount());
+    assertProxiedRequests(1);
+  }
+
+  @Test
+  public void testMultipleBacksMixedGET() throws Exception {
+    // given 1 client
+    setupClient(1, true);
+
+    // and 1 proxy
+    setupFront(true, "xio.testProxyRoute,xio.testProxyRoute2Foo");
+
+    // and 2 backends
+    setupBack(false);
+    setupBack(true, true);
+
+    // when routes corresponding to each back end is queried
+    // then the appropriate backend is reached
+    get(proxyPort(), HTTP_2, "/foo/", "/ifoo/", backEnd1);
+    get(proxyPort(), HTTP_2, "/bar/", "/ibar/", backEnd2);
+    assertEquals(1, backEnd1.getRequestCount());
+    assertEquals(1, backEnd2.getRequestCount());
+    assertProxiedRequests(2);
   }
 
   @Test
@@ -232,7 +300,9 @@ public class ReverseProxyFunctionalTest extends Assert {
     setupClient(1, true);
     setupFrontBack(true, false);
 
-    post(port(), false, HTTP_2);
+    post(proxyPort(), HTTP_2, "/foo/", "/ifoo/", backEnd1);
+    assertEquals(1, backEnd1.getRequestCount());
+    assertProxiedRequests(1);
   }
 
   @Test
@@ -240,7 +310,9 @@ public class ReverseProxyFunctionalTest extends Assert {
     setupClient(1, true);
     setupFrontBack(true, true);
 
-    get(port(), false, HTTP_2);
+    get(proxyPort(), HTTP_2, "/foo/", "/ifoo/", backEnd1);
+    assertEquals(1, backEnd1.getRequestCount());
+    assertProxiedRequests(1);
   }
 
   @Test
@@ -248,7 +320,9 @@ public class ReverseProxyFunctionalTest extends Assert {
     setupClient(1, false);
     setupFrontBack(false, true);
 
-    get(port(), false, HTTP_1_1);
+    get(proxyPort(), HTTP_1_1, "/foo/", "/ifoo/", backEnd1);
+    assertEquals(1, backEnd1.getRequestCount());
+    assertProxiedRequests(1);
   }
 
   @Test
@@ -256,7 +330,9 @@ public class ReverseProxyFunctionalTest extends Assert {
     setupClient(1, false);
     setupFrontBack(false, true);
 
-    post(port(), false, HTTP_1_1);
+    post(proxyPort(), HTTP_1_1, "/foo/", "/ifoo/", backEnd1);
+    assertEquals(1, backEnd1.getRequestCount());
+    assertProxiedRequests(1);
   }
 
   @Test
@@ -265,6 +341,8 @@ public class ReverseProxyFunctionalTest extends Assert {
     setupFrontBack(false, true);
 
     verify(multipleAsyncRequests(true).blockingIterable());
+    assertEquals(NUM_REQUESTS * 2, backEnd1.getRequestCount());
+    assertProxiedRequests(NUM_REQUESTS * 2);
   }
 
   @Test
@@ -273,6 +351,8 @@ public class ReverseProxyFunctionalTest extends Assert {
     setupFrontBack(false, false);
 
     verify(multipleAsyncRequests(false).blockingIterable());
+    assertEquals(NUM_REQUESTS * 2, backEnd1.getRequestCount());
+    assertProxiedRequests(NUM_REQUESTS * 2);
   }
 
   @Test
@@ -281,6 +361,8 @@ public class ReverseProxyFunctionalTest extends Assert {
     setupFrontBack(false, true);
 
     verify(multipleAsyncRequests(false).blockingIterable());
+    assertEquals(NUM_REQUESTS * 2, backEnd1.getRequestCount());
+    assertProxiedRequests(NUM_REQUESTS * 2);
   }
 
   @Test
@@ -289,6 +371,8 @@ public class ReverseProxyFunctionalTest extends Assert {
     setupFrontBack(false, false);
 
     verify(multipleAsyncRequests(true).blockingIterable());
+    assertEquals(NUM_REQUESTS * 2, backEnd1.getRequestCount());
+    assertProxiedRequests(NUM_REQUESTS * 2);
   }
 
   @Test
@@ -297,6 +381,8 @@ public class ReverseProxyFunctionalTest extends Assert {
     setupFrontBack(true, false);
 
     verify(multipleAsyncRequests(false).blockingIterable());
+    assertEquals(NUM_REQUESTS * 2, backEnd1.getRequestCount());
+    assertProxiedRequests(NUM_REQUESTS * 2);
   }
 
   @Test
@@ -305,6 +391,8 @@ public class ReverseProxyFunctionalTest extends Assert {
     setupFrontBack(true, true);
 
     verify(multipleAsyncRequests(false).blockingIterable());
+    assertEquals(20, backEnd1.getRequestCount());
+    assertProxiedRequests(20);
   }
 
   @Test
@@ -313,6 +401,8 @@ public class ReverseProxyFunctionalTest extends Assert {
     setupFrontBack(true, false);
 
     verify(multipleAsyncRequests(true).blockingIterable());
+    assertEquals(20, backEnd1.getRequestCount());
+    assertProxiedRequests(20);
   }
 
   @Test
@@ -321,6 +411,8 @@ public class ReverseProxyFunctionalTest extends Assert {
     setupFrontBack(true, true);
 
     verify(multipleAsyncRequests(true).blockingIterable());
+    assertEquals(NUM_REQUESTS * 2, backEnd1.getRequestCount());
+    assertProxiedRequests(NUM_REQUESTS * 2);
   }
 
   private void verify(Iterable<IndexResponse> responses) {
@@ -336,7 +428,7 @@ public class ReverseProxyFunctionalTest extends Assert {
   }
 
   private Observable<IndexResponse> multipleAsyncRequests(boolean post) {
-    String url = url(port(), false);
+    String url = url(proxyPort(), "/foo/");
     return Observable.merge(
         Observable.fromIterable(() -> clients.iterator())
             .map(

@@ -14,7 +14,7 @@ public class Main {
               + "name \n"
               + "config file path \n"
               + "proxy config key \n"
-              + "route config key - optional, default = 'xio.testProxyRoute'");
+              + "route config key(s) (comma delimited) - optional, default = 'xio.testProxyRoute'");
     }
 
     String name = args[0];
