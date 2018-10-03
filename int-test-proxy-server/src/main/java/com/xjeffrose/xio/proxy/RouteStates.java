@@ -14,11 +14,11 @@ public class RouteStates {
   private final AtomicReference<ImmutableMap<String, RouteState>> routeMap;
 
   public RouteStates(
-      ProxyRouteConfig proxyRouteConfig,
+      Stream<ProxyRouteConfig> proxyRouteConfigs,
       ApplicationState applicationState,
       ProxyClientFactory clientFactory) {
     List<ProxyRouteState> proxyRouteStates =
-        Stream.of(proxyRouteConfig)
+        proxyRouteConfigs
             .map(
                 (ProxyRouteConfig config) ->
                     ProxyRouteState.create(

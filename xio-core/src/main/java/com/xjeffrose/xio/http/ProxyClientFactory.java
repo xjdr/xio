@@ -32,9 +32,9 @@ public class ProxyClientFactory extends ClientFactory {
   @Override
   public Client getClient(ChannelHandlerContext ctx, ClientConfig config) {
     Client client =
-        getHandlerClient(ctx)
+        getHandlerClient(ctx, config.remote())
             .orElseGet(() -> clientPool.acquire(ctx, config, () -> createClient(ctx, config)));
-    updateChannelAttr(ctx, client);
+    updateChannelAttr(ctx, config.remote(), client);
     return client;
   }
 }
