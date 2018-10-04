@@ -1,5 +1,6 @@
 package com.xjeffrose.xio.http;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.xjeffrose.xio.bootstrap.ChannelConfiguration;
 import com.xjeffrose.xio.bootstrap.ClientChannelConfiguration;
 import com.xjeffrose.xio.client.ClientConfig;
@@ -33,7 +34,16 @@ public abstract class ClientFactory {
 
   protected Optional<Client> getHandlerClient(
       ChannelHandlerContext ctx, InetSocketAddress address) {
-    return Optional.ofNullable(getClientMap(ctx).get(address));
+    return Optional.ofNullable(getClientMap(ctx).get(address))
+        .flatMap(
+            it -> {
+              if (it.isReusable()) {
+                return Optional.of(it);
+              } else {
+                getClientMap(ctx).remove(address);
+                return Optional.empty();
+              }
+            });
   }
 
   public Client getClient(ChannelHandlerContext ctx, ClientConfig config) {
@@ -46,7 +56,8 @@ public abstract class ClientFactory {
             });
   }
 
-  private Map<InetSocketAddress, Client> getClientMap(ChannelHandlerContext ctx) {
+  @VisibleForTesting
+  Map<InetSocketAddress, Client> getClientMap(ChannelHandlerContext ctx) {
     Map<InetSocketAddress, Client> map = ctx.channel().attr(CLIENT_KEY).get();
     if (map == null) {
       map = new HashMap<>();
