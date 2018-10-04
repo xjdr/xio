@@ -165,7 +165,9 @@ public class ReverseProxyFunctionalTest extends Assert {
     if (reverseProxy != null) {
       reverseProxy.stop();
     }
-    backEnd1.close();
+    if (backEnd1 != null) {
+      backEnd1.close();
+    }
     if (backEnd2 != null) {
       backEnd2.close();
     }
@@ -195,6 +197,15 @@ public class ReverseProxyFunctionalTest extends Assert {
 
     RecordedRequest servedRequest = expectedBackend.takeRequest();
     assertEquals(expectedPath, servedRequest.getRequestUrl().encodedPath());
+  }
+
+  Response get(int port, String path) throws Exception {
+    String url = url(port, path);
+    Request request = new Request.Builder().url(url).build();
+
+    Response response = clients.get(0).newCall(request).execute();
+    response.close();
+    return response;
   }
 
   void post(
@@ -312,6 +323,19 @@ public class ReverseProxyFunctionalTest extends Assert {
 
     get(proxyPort(), HTTP_2, "/foo/", "/ifoo/", backEnd1);
     assertEquals(1, backEnd1.getRequestCount());
+    assertProxiedRequests(1);
+  }
+
+  @Test
+  public void testHttp2toHttp2ServerGetError() throws Exception {
+    // given 1 client
+    setupClient(1, true);
+    // and 1 front end
+    setupFront(true, "xio.testProxyRoute");
+
+    // and 0 back ends
+    Response response = get(proxyPort(), "/foo/");
+    assertEquals(503, response.code());
     assertProxiedRequests(1);
   }
 
