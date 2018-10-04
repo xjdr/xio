@@ -153,6 +153,6 @@ public class Client {
    *     incorrect.
    */
   public boolean isReusable() {
-    return manager.connectionState() == ClientConnectionState.CONNECTED;
+    return manager.connectionState() != ClientConnectionState.CLOSED_CONNECTION;
   }
 }
