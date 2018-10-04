@@ -171,12 +171,13 @@ public class ProxyHandler implements PipelineRequestHandler {
             channelFuture.addListener(
                 (f) -> {
                   if (!f.isSuccess()) {
-                    // todo: (WK) do something more polite
-                    // we should probably emit a signal and have the application codec handle the event based
-                    // on the the response state
-                    // h2 - keep the connection open and close the stream
-                    // h1 - respond with 503 if not mid-stream
-                    ctx.close();
+                    if (request.startOfMessage()) {
+                      log.error("proxy request failed client write failed", f.cause());
+                      Response notFound = ResponseBuilders.newServiceUnavailable(request);
+                      ctx.writeAndFlush(notFound);
+                    } else {
+                      log.error("proxy request failed client write failed mid stream", f.cause());
+                    }
                   }
                 }));
     // This scenario occurs when the client that we have has since disconnected from the origin server
@@ -190,8 +191,13 @@ public class ProxyHandler implements PipelineRequestHandler {
     // resilient to this thread swapping or 2) we just get a new client that is still connected or 3) create a new client
     // that is built based on the clientConfig/Eventloop that our current context is on.
     if (!optionalFuture.isPresent()) {
-      Response notFound = ResponseBuilders.newNotFound(request);
-      ctx.writeAndFlush(notFound);
+      if (request.startOfMessage()) {
+        log.error("proxy request failed - backend client disconnected");
+        Response notFound = ResponseBuilders.newNotFound(request);
+        ctx.writeAndFlush(notFound);
+      } else {
+        log.error("proxy request failed - backend client disconnected mid stream");
+      }
     }
   }
 }
