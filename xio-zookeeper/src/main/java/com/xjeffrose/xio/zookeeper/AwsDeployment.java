@@ -65,9 +65,6 @@ public class AwsDeployment {
 
     @JsonProperty("privateIp")
     String privateIp;
-
-    @JsonProperty("region")
-    String region;
   }
 
   private Identity getIdentity(AwsDeploymentConfig config)
@@ -102,7 +99,8 @@ public class AwsDeployment {
     EnsembleProvider ensembleProvider = buildEnsembleProvider(config.getExhibitorConfig());
     this.curatorClient = buildCuratorClient(ensembleProvider, config.getZookeeperConfig());
     Identity identity = getIdentity(config);
-    DeploymentPayload payload = new DeploymentPayload(identity.privateIp, port);
+    DeploymentPayload payload =
+        new DeploymentPayload(identity.privateIp, port, identity.availabilityZone);
     this.groupMember =
         buildGroupMember(curatorClient, config.getZookeeperConfig(), identity.instanceId, payload);
   }

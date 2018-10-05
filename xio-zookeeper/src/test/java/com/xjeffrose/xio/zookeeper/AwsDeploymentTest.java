@@ -117,6 +117,7 @@ public class AwsDeploymentTest {
           objectMapper.readValue(data, new TypeReference<DeploymentPayload>() {});
       assertEquals("10.158.112.84", payload.getHost());
       assertEquals(443, payload.getPort());
+      assertEquals("us-west-2b", payload.getAvailabilityZone());
     }
   }
 }

@@ -18,4 +18,7 @@ public class DeploymentPayload {
 
   @JsonProperty("port")
   int port;
+
+  @JsonProperty("availabilityZone")
+  String availabilityZone;
 }
