@@ -1,15 +1,8 @@
 package com.xjeffrose.xio.zookeeper;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.ensemble.EnsembleProvider;
 import org.apache.curator.ensemble.exhibitor.DefaultExhibitorRestClient;
@@ -55,32 +48,6 @@ public class AwsDeployment {
     return curatorClient;
   }
 
-  @JsonIgnoreProperties(ignoreUnknown = true)
-  static class Identity {
-    @JsonProperty("availabilityZone")
-    String availabilityZone;
-
-    @JsonProperty("instanceId")
-    String instanceId;
-
-    @JsonProperty("privateIp")
-    String privateIp;
-  }
-
-  private Identity getIdentity(AwsDeploymentConfig config)
-      throws IOException, JsonProcessingException {
-    OkHttpClient client = new OkHttpClient();
-    Request request = new Request.Builder().url(config.getIdentityUrl()).build();
-
-    try (Response response = client.newCall(request).execute()) {
-      if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
-
-      Identity identity =
-          objectMapper.readValue(response.body().string(), new TypeReference<Identity>() {});
-      return identity;
-    }
-  }
-
   private GroupMember buildGroupMember(
       CuratorFramework curatorClient,
       ZookeeperConfig config,
@@ -98,7 +65,7 @@ public class AwsDeployment {
     objectMapper = new ObjectMapper();
     EnsembleProvider ensembleProvider = buildEnsembleProvider(config.getExhibitorConfig());
     this.curatorClient = buildCuratorClient(ensembleProvider, config.getZookeeperConfig());
-    Identity identity = getIdentity(config);
+    AwsIdentity identity = AwsIdentity.getIdentity(config);
     DeploymentPayload payload =
         new DeploymentPayload(identity.privateIp, port, identity.availabilityZone);
     this.groupMember =
