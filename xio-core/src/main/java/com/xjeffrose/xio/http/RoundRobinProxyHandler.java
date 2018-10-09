@@ -5,14 +5,14 @@ import com.xjeffrose.xio.client.ClientConfig;
 import com.xjeffrose.xio.core.SocketAddressHelper;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.AttributeKey;
-import java.util.HashMap;
-import java.util.Map;
+import io.netty.util.collection.IntObjectHashMap;
+import io.netty.util.collection.IntObjectMap;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.val;
 
 public class RoundRobinProxyHandler extends ProxyHandler {
-  private static final AttributeKey<Map<String, Optional<ClientConfig>>> ROUND_ROBIN_KEY =
+  private static final AttributeKey<IntObjectMap<Optional<ClientConfig>>> ROUND_ROBIN_KEY =
       AttributeKey.newInstance("xio_round_robin_key");
   private final AtomicInteger next = new AtomicInteger();
 
@@ -24,10 +24,10 @@ public class RoundRobinProxyHandler extends ProxyHandler {
   @Override
   public Optional<ClientConfig> getClientConfig(ChannelHandlerContext ctx, Request request) {
     // get/create the cachedClientConfig that is instanced per server channel
-    Map<String, Optional<ClientConfig>> cachedClientConfig =
+    IntObjectMap<Optional<ClientConfig>> cachedClientConfig =
         ctx.channel().attr(ROUND_ROBIN_KEY).get();
     if (cachedClientConfig == null) {
-      cachedClientConfig = new HashMap<>();
+      cachedClientConfig = new IntObjectHashMap<Optional<ClientConfig>>();
       ctx.channel().attr(ROUND_ROBIN_KEY).set(cachedClientConfig);
     }
     return getClientConfig(cachedClientConfig, request);
@@ -35,12 +35,9 @@ public class RoundRobinProxyHandler extends ProxyHandler {
 
   @VisibleForTesting
   Optional<ClientConfig> getClientConfig(
-      Map<String, Optional<ClientConfig>> cachedClientConfig, Request request) {
-    // build hash key based on the request path + stream id
-    String hashKey = request.path() + ":" + request.streamId();
-
-    // we only do a fresh round robin if the request is the start of message
-    // full httprequest or httprequest (when chunked)
+      IntObjectMap<Optional<ClientConfig>> cachedClientConfig, Request request) {
+    int hashKey = request.streamId();
+    // we only do a fresh round robin if the request is a either a FULL HTTP REQUEST or the First Part of a Chunked Requets
     if (request.isFullMessage()) {
       return computeRoundRobin(request);
     } else if (request.startOfMessage()) {

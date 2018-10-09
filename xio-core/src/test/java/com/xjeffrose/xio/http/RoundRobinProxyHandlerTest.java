@@ -4,6 +4,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.xjeffrose.xio.client.ClientConfig;
+import io.netty.util.collection.IntObjectHashMap;
+import io.netty.util.collection.IntObjectMap;
 import java.util.*;
 import org.junit.Assert;
 import org.junit.Before;
@@ -53,7 +55,8 @@ public class RoundRobinProxyHandlerTest extends Assert {
     when(request4.path()).thenReturn("dontcare");
     when(request4.streamId()).thenReturn(Message.H1_STREAM_ID_NONE);
 
-    Map<String, Optional<ClientConfig>> cacheMap = new HashMap<>();
+    IntObjectMap<Optional<ClientConfig>> cacheMap = new IntObjectHashMap<>();
+
     ClientConfig result1 = subject.getClientConfig(cacheMap, request1).orElse(null);
     assertEquals(clientConfig1, result1);
 
@@ -100,7 +103,8 @@ public class RoundRobinProxyHandlerTest extends Assert {
     when(request3.path()).thenReturn("/foo");
     when(request3.streamId()).thenReturn(Message.H1_STREAM_ID_NONE);
 
-    Map<String, Optional<ClientConfig>> cacheMap = new HashMap<>();
+    IntObjectMap<Optional<ClientConfig>> cacheMap = new IntObjectHashMap<>();
+
     ClientConfig result1 = subject.getClientConfig(cacheMap, request1).orElse(null);
     assertEquals(clientConfig1, result1);
 
@@ -120,8 +124,6 @@ public class RoundRobinProxyHandlerTest extends Assert {
 
     int streamId1 = 1;
     int streamId2 = 3;
-
-    Map<String, Optional<ClientConfig>> cacheMap = new HashMap<>();
 
     Request request1a = mock(Request.class);
     Request request2a = mock(Request.class);
@@ -173,6 +175,8 @@ public class RoundRobinProxyHandlerTest extends Assert {
     when(request3b.endOfMessage()).thenReturn(true);
     when(request3b.path()).thenReturn("/foo");
     when(request3b.streamId()).thenReturn(streamId2);
+
+    IntObjectMap<Optional<ClientConfig>> cacheMap = new IntObjectHashMap<>();
 
     ClientConfig result1a = subject.getClientConfig(cacheMap, request1a).orElse(null);
     assertEquals(clientConfig1, result1a);
