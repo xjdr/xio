@@ -56,7 +56,7 @@ public class RoundRobinProxyHandler extends ProxyHandler {
     // when we overflow from incrementing
     if (idx < 0) {
       next.set(0);
-      idx = next.getAndIncrement();
+      idx = 0;
     }
 
     val clientConfigs = config.clientConfigs();
