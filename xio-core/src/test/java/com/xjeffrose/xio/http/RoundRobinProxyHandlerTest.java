@@ -1,12 +1,16 @@
 package com.xjeffrose.xio.http;
 
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.xjeffrose.xio.client.ClientConfig;
 import io.netty.util.collection.IntObjectHashMap;
 import io.netty.util.collection.IntObjectMap;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.Random;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,7 +38,8 @@ public class RoundRobinProxyHandlerTest extends Assert {
   @Test
   public void testFullRequests() {
     when(config.clientConfigs()).thenReturn(clientConfigs);
-    subject = new RoundRobinProxyHandler(null, config, null);
+    Random mockRandom = mock(Random.class);
+    subject = new RoundRobinProxyHandler(null, config, null, () -> mockRandom);
 
     Request request1 = mock(Request.class);
     Request request2 = mock(Request.class);
@@ -57,16 +62,19 @@ public class RoundRobinProxyHandlerTest extends Assert {
 
     IntObjectMap<Optional<ClientConfig>> cacheMap = new IntObjectHashMap<>();
 
+    when(mockRandom.nextInt(eq(config.clientConfigs().size()))).thenReturn(0);
     ClientConfig result1 = subject.getClientConfig(cacheMap, request1).orElse(null);
     assertEquals(clientConfig1, result1);
 
+    when(mockRandom.nextInt(eq(config.clientConfigs().size()))).thenReturn(1);
     ClientConfig result2 = subject.getClientConfig(cacheMap, request2).orElse(null);
     assertEquals(clientConfig2, result2);
 
+    when(mockRandom.nextInt(eq(config.clientConfigs().size()))).thenReturn(2);
     ClientConfig result3 = subject.getClientConfig(cacheMap, request3).orElse(null);
     assertEquals(clientConfig3, result3);
 
-    // loops around
+    when(mockRandom.nextInt(eq(config.clientConfigs().size()))).thenReturn(0);
     ClientConfig result4 = subject.getClientConfig(cacheMap, request3).orElse(null);
     assertEquals(clientConfig1, result4);
 
@@ -76,7 +84,8 @@ public class RoundRobinProxyHandlerTest extends Assert {
   @Test
   public void testChunkedRequestsHttp1() {
     when(config.clientConfigs()).thenReturn(clientConfigs);
-    subject = new RoundRobinProxyHandler(null, config, null);
+    Random mockRandom = mock(Random.class);
+    subject = new RoundRobinProxyHandler(null, config, null, () -> mockRandom);
 
     Request request1 = mock(Request.class);
     Request request2 = mock(Request.class);
@@ -105,12 +114,15 @@ public class RoundRobinProxyHandlerTest extends Assert {
 
     IntObjectMap<Optional<ClientConfig>> cacheMap = new IntObjectHashMap<>();
 
+    when(mockRandom.nextInt(eq(config.clientConfigs().size()))).thenReturn(0);
     ClientConfig result1 = subject.getClientConfig(cacheMap, request1).orElse(null);
     assertEquals(clientConfig1, result1);
 
+    when(mockRandom.nextInt(eq(config.clientConfigs().size()))).thenReturn(1);
     ClientConfig result2 = subject.getClientConfig(cacheMap, request2).orElse(null);
     assertEquals(clientConfig1, result2);
 
+    when(mockRandom.nextInt(eq(config.clientConfigs().size()))).thenReturn(2);
     ClientConfig result3 = subject.getClientConfig(cacheMap, request3).orElse(null);
     assertEquals(clientConfig1, result3);
 
@@ -120,7 +132,8 @@ public class RoundRobinProxyHandlerTest extends Assert {
   @Test
   public void testChunkedRequestsHttp2() {
     when(config.clientConfigs()).thenReturn(clientConfigs);
-    subject = new RoundRobinProxyHandler(null, config, null);
+    Random mockRandom = mock(Random.class);
+    subject = new RoundRobinProxyHandler(null, config, null, () -> mockRandom);
 
     int streamId1 = 1;
     int streamId2 = 3;
@@ -178,8 +191,11 @@ public class RoundRobinProxyHandlerTest extends Assert {
 
     IntObjectMap<Optional<ClientConfig>> cacheMap = new IntObjectHashMap<>();
 
+    when(mockRandom.nextInt(eq(config.clientConfigs().size()))).thenReturn(0);
     ClientConfig result1a = subject.getClientConfig(cacheMap, request1a).orElse(null);
     assertEquals(clientConfig1, result1a);
+
+    when(mockRandom.nextInt(eq(config.clientConfigs().size()))).thenReturn(1);
     ClientConfig result1b = subject.getClientConfig(cacheMap, request1b).orElse(null);
     assertEquals(clientConfig2, result1b);
 
