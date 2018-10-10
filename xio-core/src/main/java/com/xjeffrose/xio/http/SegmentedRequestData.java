@@ -27,6 +27,11 @@ public class SegmentedRequestData implements Request, SegmentedData {
   // region Request
 
   @Override
+  public String host() {
+    return request.host();
+  }
+
+  @Override
   public boolean startOfMessage() {
     return false;
   }
