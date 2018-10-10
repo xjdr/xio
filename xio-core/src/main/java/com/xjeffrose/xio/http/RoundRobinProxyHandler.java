@@ -53,6 +53,12 @@ public class RoundRobinProxyHandler extends ProxyHandler {
 
   private Optional<ClientConfig> computeRoundRobin(Request request) {
     int idx = next.getAndIncrement();
+    // when we overflow from incrementing
+    if (idx < 0) {
+      next.set(0);
+      idx = 0;
+    }
+
     val clientConfigs = config.clientConfigs();
     if (clientConfigs.size() > 0) {
       return Optional.of(clientConfigs.get(idx % clientConfigs.size()));
