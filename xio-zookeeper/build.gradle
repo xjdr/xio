@@ -48,6 +48,16 @@ dependencies {
   }
 }
 
+// Used below to add javadoc + sources jars to the published artifacts list.
+task javadocJar(type: Jar) {
+  classifier = 'javadoc'
+  from javadoc
+}
+task sourcesJar(type: Jar) {
+  classifier = 'sources'
+  from sourceSets.main.allSource
+}
+
 bintray_package = 'xio-zookeeper'
 publishing {
   publications {
@@ -56,6 +66,8 @@ publishing {
       artifactId bintray_package
       version version
       from components.java
+      artifact sourcesJar
+      artifact javadocJar
     }
   }
 }
