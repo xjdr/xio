@@ -187,8 +187,8 @@ public class TlsConfig {
   /**
    * Creates a new builder with values from the given config object.
    *
-   * @throws com.typesafe.config.ConfigException if any of the keys present in the Config
-   *     object have unexpected value types.
+   * @throws com.typesafe.config.ConfigException if any of the keys present in the Config object
+   *     have unexpected value types.
    */
   public static Builder builderFrom(Config config) {
     Builder builder = TlsConfig.builder();

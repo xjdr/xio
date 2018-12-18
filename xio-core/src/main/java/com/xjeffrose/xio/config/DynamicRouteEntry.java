@@ -9,8 +9,8 @@ import lombok.Setter;
 
 /**
  * This class is the POJO representation of the data elements inside the route.json file This is
- * used as the base input for RouteReloading. It is later transformed into a
- * List of DynamicRouteConfig
+ * used as the base input for RouteReloading. It is later transformed into a List of
+ * DynamicRouteConfig
  */
 @Getter
 @Setter
