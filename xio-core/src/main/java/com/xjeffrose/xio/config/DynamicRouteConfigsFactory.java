@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.util.*;
 
 /**
- * This class is used to generate a List<DynamicRouteConfig> based in a JSON string input matching
+ * This class is used to generate a List of DynamicRouteConfig based in a JSON string input matching
  * the format described in /test/resources/route_parameters.json
  */
 public class DynamicRouteConfigsFactory {
