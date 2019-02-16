@@ -17,6 +17,7 @@ Contents:
    client
    core
    configuration
+   http
    examples
    logging
    hacking
