@@ -6,7 +6,7 @@ future==0.15.2
 imagesize==0.7.1
 javalang==0.10.1
 javasphinx==0.9.14
-Jinja2==2.8
+Jinja2==2.11.3
 lxml==3.6.4
 MarkupSafe==0.23
 Pygments==2.1.3
